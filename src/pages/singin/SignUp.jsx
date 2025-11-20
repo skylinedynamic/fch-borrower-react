@@ -132,13 +132,13 @@ export default function SignUp() {
           </div>
         </div>
 
-        <div id="password-contain" className="p-3 bg-light mt-3 rounded d-block">
+        {/* <div id="password-contain" className="p-3 bg-light mt-3 rounded d-block">
           <h5 className="fs-13">Password must contain:</h5>
           <p className={`${rules.hasLength ? 'valid' : 'invalid'} fs-12 mb-2`}>Minimum <b>8 characters</b></p>
           <p className={`${rules.hasLower ? 'valid' : 'invalid'} fs-12 mb-2`}>At <b>least 1 lowercase</b> letter (a-z)</p>
           <p className={`${rules.hasUpper ? 'valid' : 'invalid'} fs-12 mb-2`}>At least <b>1 uppercase</b> letter (A-Z)</p>
           <p className={`${rules.hasNumber ? 'valid' : 'invalid'} fs-12 mb-0`}>At least <b>1 number</b> (0-9)</p>
-        </div>
+        </div> */}
       </form>
     </Auth>
   )
