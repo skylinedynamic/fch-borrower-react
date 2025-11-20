@@ -5,7 +5,7 @@ export type LoginSuccess = { token: string; user: AuthUser }
 
 export async function login(email: string, password: string, remember: boolean = true): Promise<LoginSuccess> {
   try {
-    const res = await apiClient.post('/auth/login', { email, password, remember })
+    const res = await apiClient.post('/borrower/login', { email, password, remember })
     const data = res?.data
 
     if (data?.status === true) {
@@ -34,7 +34,7 @@ export async function login(email: string, password: string, remember: boolean =
 
 export async function logout(): Promise<{ status?: boolean; message?: string; data?: any }> {
   try {
-    const res = await apiClient.post('/auth/logout')
+    const res = await apiClient.post('/borrower/logout')
     return res?.data ?? { status: true }
   } catch (err) {
     throw err

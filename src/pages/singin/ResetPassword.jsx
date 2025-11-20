@@ -72,10 +72,11 @@ export default function ResetPassword() {
       header={(
         <div className="text-center mt-2">
           <h5 className="text-primary">Create new password</h5>
-           <i className="ri-folder-keyhole-line display-5 text-success mb-3"></i>
+           <i className="ri-folder-keyhole-line display-5 text-primary mb-3"></i>
         </div>
       )}
-      colClass="col-xl-5 col-lg-6 col-md-8"
+      colClass="col-xl-6 col-lg-7 col-md-8"
+      bodyClass="p-4"
     >
       {success && (
         <div role="alert" className="alert alert-success border-0 text-center mb-2 mx-2 fade show">
@@ -182,7 +183,7 @@ export default function ResetPassword() {
           {/* Removed Remember me checkbox as it is not needed here */}
 
           <div className="mt-4">
-            <button type="submit" className="btn btn-success w-100" disabled={loading}>
+            <button type="submit" className="btn btn-primary w-100" disabled={loading}>
               {loading ? 'Resetting...' : 'Reset Password'}
             </button>
           </div>

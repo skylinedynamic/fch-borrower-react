@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { NavLink, Link } from 'react-router-dom'
+import { NavLink, Link, useLocation } from 'react-router-dom'
 import faviconImg from '../../../assets/images/Favicon.png'
 import logoImg from '../../../assets/images/logo.png'
 import avatarDefault from '../../../assets/images/users/avatar-1.jpg'
@@ -7,6 +7,11 @@ import avatarDefault from '../../../assets/images/users/avatar-1.jpg'
 export default function Sidebar() {
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 992 : false)
   const [open, setOpen] = useState(false)
+  const location = useLocation()
+  const [creditOpen, setCreditOpen] = useState(() => {
+    const path = typeof window !== 'undefined' ? window.location.pathname : ''
+    return /credit-|vendor-application|progress-tracker|resources/.test(path)
+  })
 
   useEffect(() => {
     const onResize = () => {
@@ -17,6 +22,12 @@ export default function Sidebar() {
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
+
+  useEffect(() => {
+    const path = location.pathname
+    const inSection = /credit-|vendor-application|progress-tracker|resources/.test(path)
+    if (inSection) setCreditOpen(true)
+  }, [location.pathname])
 
   const menuClass = useMemo(() => 'app-menu navbar-menu', [])
 
@@ -37,8 +48,21 @@ export default function Sidebar() {
         @media (max-width: 991.98px){
           .navbar-brand-box{position:sticky;top:0;z-index:1;background:var(--bs-body-bg);display:block!important}
         }
+        .submenu-collapse{overflow:hidden;max-height:0;opacity:.0;transition:max-height .25s ease,opacity .25s ease}
+        .submenu-collapse.open{max-height:500px;opacity:1}
+        .submenu-caret{transition:transform .2s ease}
+        .submenu-caret.open{transform:rotate(180deg)}
+        .nav-link.subitem{display:flex;align-items:center;gap:.5rem}
+        .partner-sidebar .menu-link{font-weight:600}
+        .partner-sidebar .subitem{font-weight:500}
+        .partner-sidebar .subitem.active{background:rgba(255,255,255,.06);color:#ffffff}
+        .partner-sidebar .subitem.active i{color:#ffffff}
+        .partner-sidebar .nav-item{border-bottom:1px solid rgba(255,255,255,.08)}
+        .partner-sidebar .nav-item:last-child{border-bottom:0}
+        .partner-sidebar .submenu-collapse .nav-item{border-bottom:1px solid rgba(255,255,255,.08)}
+        .partner-sidebar .submenu-collapse .nav-item:last-child{border-bottom:0}
       `}</style>
-      <div className="navbar-brand-box">
+      <div className="navbar-brand-box py-2">
         <a href="/" className="logo logo-dark">
           <span className="logo-sm">
             <img src={faviconImg} alt="" height="22" />
@@ -52,7 +76,7 @@ export default function Sidebar() {
             <img src={faviconImg} alt="" height="40" />
           </span>
           <span className="logo-lg">
-            <img src={logoImg} alt="" height="30" />
+            <img src={logoImg} alt="" height="120" />
           </span>
         </a>
         <button type="button" className="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover" onClick={toggleOpen} aria-label="Toggle menu" aria-expanded={open}>
@@ -92,88 +116,63 @@ export default function Sidebar() {
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/partners">
-                <i className="las la-handshake"></i> <span>Partners</span>
+              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/pre-qualification">
+                <i className="ri-clipboard-line"></i> <span>Pre Qualification</span>
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/demo-requests">
-                <i className="las la-calendar-check"></i> <span>Demo Requests</span>
+              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/fund-application">
+                <i className="ri-hand-coin-line"></i> <span>Fund Application</span>
+                <span className="badge bg-info rounded-pill ms-auto">2</span>
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/leads">
-                <i className="las la-chart-pie"></i> <span>Leads</span>
+              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/my-application">
+                <i className="ri-file-list-3-line"></i> <span>My Application</span>
+                <span className="badge bg-info rounded-pill ms-auto">1</span>
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/contacts">
-                <i className="las la-clipboard-list"></i> <span>Contacts</span>
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/clients">
-                <i className="las la-user-friends"></i> <span>Clients</span>
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/commissions">
-                <i className="bx bx-dollar"></i> <span>Commisions</span>
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/payments">
-                <i className="bx bx-credit-card"></i> <span>Payments</span>
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/invoices">
-                <i className="bx bx-file"></i> <span>Invoices</span>
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/subscriptions">
-                <i className="bx bx-sync"></i> <span>Subscriptions</span>
+              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/documents">
+                <i className="ri-file-2-line"></i> <span>Documents</span>
               </NavLink>
             </li>
             <li className="nav-item">
               <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/appointments">
-                <i className="ri-calendar-2-line"></i> <span>Appointments</span>
+                <i className="ri-calendar-2-line"></i> <span>Appointment</span>
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/training-courses">
-                <i className="ri-live-fill"></i> <span>Training &amp; Courses</span>
+              <button type="button" className="nav-link menu-link btn material-shadow-none w-100 text-start" onClick={() => setCreditOpen((s) => !s)} aria-expanded={creditOpen} aria-controls="creditBuilderMenu">
+                <i className="ri-building-2-line"></i> <span>Credit Builder</span>
+                <i className={`ri-arrow-down-s-line float-end submenu-caret ${creditOpen ? 'open' : ''}`}></i>
+              </button>
+              <ul id="creditBuilderMenu" className={`navbar-nav ms-3 mt-1 submenu-collapse ${creditOpen ? 'open' : ''}`}>
+                <li className="nav-item">
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/under-construction/credit-overview"><i className="ri-arrow-right-s-line"></i> <span>Overview</span></NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/under-construction/credit-guide"><i className="ri-arrow-right-s-line"></i> <span>Step-By-Step Guide</span></NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/under-construction/vendor-application"><i className="ri-arrow-right-s-line"></i> <span>Vendor Application</span></NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/under-construction/progress-tracker"><i className="ri-arrow-right-s-line"></i> <span>Progress Tracker</span></NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/under-construction/resources"><i className="ri-arrow-right-s-line"></i> <span>Resources</span></NavLink>
+                </li>
+              </ul>
+            </li>
+            <li className="nav-item">
+              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/profile">
+                <i className="ri-user-3-line"></i> <span>Profile</span>
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/support-tickets">
-                <i className="las la-life-ring"></i> <span>Support Tickets</span>
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/resources">
-                <i className="ri-folder-fill"></i> <span>Resources</span>
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/employees">
-                <i className="ri-user-2-fill"></i> <span>Employees</span>
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/users">
-                <i className="ri-user-3-fill"></i> <span>Users</span>
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/roles-permissions">
-                <i className="ri-shield-user-fill"></i> <span>Roles &amp; Permissions</span>
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/settings">
-                <i className="ri-file-settings-fill"></i> <span>Settings</span>
+              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/logout">
+                <i className="ri-logout-circle-r-line"></i> <span>Logout</span>
               </NavLink>
             </li>
           </ul>

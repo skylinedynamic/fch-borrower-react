@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { login } from '../../lib/auth'
 import Auth from '../../components/Layout/Auth'
+import handshakeImg from '../../../assets/images/form-side-image.png'
 
 export default function SignIn() {
   const navigate = useNavigate()
@@ -54,78 +55,99 @@ export default function SignIn() {
 
   return (
     <Auth
-      header={(
-        <div className="text-center mt-2">
-          <h5 className="text-primary">Sign In</h5>
-          <p className="text-muted">Access your account</p>
+      colClass="col-xl-9 col-lg-9 col-md-10"
+      belowCard={(
+        <div className="mt-4 text-center">
+          <p className="mb-0 text-white">
+            Don't have an account?{' '}
+            <Link className="fw-semibold text-warning text-decoration-underline" to="/signup">Sign up</Link>
+          </p>
         </div>
       )}
-      colClass="col-md-8 col-lg-6 col-xl-5"
     >
-      <div className="p-2 mt-4">
-        <form className="needs-validation" noValidate onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label htmlFor="useremail" className="form-label">Email <span className="text-danger">*</span></label>
-            <input
-              value={email}
-              onChange={(e)=>setEmail(e.target.value)}
-              type="email"
-              className={`form-control ${emailError ? 'is-invalid' : ''}`}
-              id="useremail"
-              placeholder="Enter email address"
-              required
-            />
-            <div className="invalid-feedback">
-              {emailError || 'Please enter email'}
-            </div>
-          </div>
-
-          <div className="mb-3">
-            <div className="float-end">
-              <Link className="text-muted" to="/forgot-password">Forgot password?</Link>
-            </div>
-
-            <label className="form-label" htmlFor="password-input">Password</label>
-            <div className="position-relative auth-pass-inputgroup">
+      <div className="row g-2">
+        <div className="col-md-6 p-4 d-flex flex-column justify-content-center">
+          <div className="text-center mt-2">
+          <h5 className="text-primary mb-1">Welcome Back!</h5>
+          <p className="text-muted">Good to see you again.</p>
+        </div>
+          <form className="needs-validation" noValidate onSubmit={handleSubmit}>
+            <div className="mb-3">
+              <label htmlFor="useremail" className="form-label">Email <span className="text-danger">*</span></label>
               <input
-                value={password}
-                onChange={(e)=>setPassword(e.target.value)}
-                type={showPassword ? 'text' : 'password'}
-                className={`form-control pe-5 password-input ${passwordError ? 'is-invalid' : ''}`}
-                placeholder="Enter password"
-                id="password-input"
+                value={email}
+                onChange={(e)=>setEmail(e.target.value)}
+                type="email"
+                className={`form-control ${emailError ? 'is-invalid' : ''}`}
+                id="useremail"
+                placeholder="Enter email"
                 required
               />
-              <button
-                className="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon"
-                type="button"
-                onClick={()=>setShowPassword(s=>!s)}
-                aria-label="Toggle password visibility"
-              >
-                <i className="ri-eye-fill align-middle"></i>
-              </button>
-              <div className="invalid-feedback">{passwordError || 'Please enter password'}</div>
+              <div className="invalid-feedback">
+                {emailError || 'Please enter email'}
+              </div>
             </div>
-          </div>
 
-          <div className="block mt-4">
-              <label className="flex items-center">
+            <div className="mb-3">
+              <div className="float-end">
+                <Link className="text-muted" to="/forgot-password">Forgot password?</Link>
+              </div>
+              <label className="form-label" htmlFor="password-input">Password <span className="text-danger">*</span></label>
+              <div className="position-relative auth-pass-inputgroup">
                 <input
-                    type="checkbox"
-                    className="form-check-input"
-                    id="rememberMe"
-                    checked={remember}
-                    onChange={(e)=>setRemember(e.target.checked)}
+                  value={password}
+                  onChange={(e)=>setPassword(e.target.value)}
+                  type={showPassword ? 'text' : 'password'}
+                  className={`form-control pe-5 password-input ${passwordError ? 'is-invalid' : ''}`}
+                  placeholder="Enter password"
+                  id="password-input"
+                  required
                 />
-                <label htmlFor="auth-remember-check" className="form-check-label">
-                  <span className="ms-2">Remember me</span>
-                </label>
-              </label>
+                <button
+                  className="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon"
+                  type="button"
+                  onClick={()=>setShowPassword(s=>!s)}
+                  aria-label="Toggle password visibility"
+                >
+                  <i className="ri-eye-fill align-middle"></i>
+                </button>
+                <div className="invalid-feedback">{passwordError || 'Please enter password'}</div>
+              </div>
+            </div>
+
+            <div className="mb-3">
+              <div className="form-check">
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  id="rememberMe"
+                  checked={remember}
+                  onChange={(e)=>setRemember(e.target.checked)}
+                />
+                <label className="form-check-label" htmlFor="rememberMe">Remember me</label>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <button className="btn w-100" type="submit" disabled={loading} style={{background:'#0b2a4a',borderColor:'#0b2a4a',color:'#fff'}}>{loading ? 'Signing in...' : 'Sign in'}</button>
+            </div>
+
+            <div className="border-top my-3"></div>
+            <div className="text-center mb-3">
+              <span className="text-muted">Sign In with</span>
+            </div>
+            <div className="d-flex justify-content-center gap-2">
+              <a href="#" aria-label="Facebook" className="btn" style={{width:36,height:36,display:'inline-flex',alignItems:'center',justifyContent:'center',background:'#1877F2',color:'#fff'}}><i className="ri-facebook-fill"></i></a>
+              <a href="#" aria-label="Google" className="btn" style={{width:36,height:36,display:'inline-flex',alignItems:'center',justifyContent:'center',background:'#ea4335',color:'#fff'}}><i className="ri-google-fill"></i></a>
+              <a href="#" aria-label="GitHub" className="btn" style={{width:36,height:36,display:'inline-flex',alignItems:'center',justifyContent:'center',background:'#000000',color:'#fff'}}><i className="ri-github-fill"></i></a>
+            </div>
+          </form>
+        </div>
+        <div className="col-lg-6 d-none d-lg-block">
+          <div className="h-100 w-100">
+            <img src={handshakeImg} alt="Handshake" className="img-fluid rounded-end" style={{objectFit:'cover', width:'100%', height:'100%'}} />
           </div>
-          <div className="mt-4">
-            <button className="btn btn-success w-100" type="submit" disabled={loading}>{loading ? 'Signing in...' : 'Sign In'}</button>
-          </div>
-        </form>
+        </div>
       </div>
     </Auth>
   )

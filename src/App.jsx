@@ -7,6 +7,7 @@ import EmployeeDetails from '../src/pages/employees/EmployeeDetails.jsx'
 import SignIn from '../src/pages/singin/SignIn.jsx'
 import ForgotPassword from '../src/pages/singin/ForgotPassword.jsx'
 import ResetPassword from '../src/pages/singin/ResetPassword.jsx'
+import SignUp from '../src/pages/singin/SignUp.jsx'
 import Users from '../src/pages/users/Users.jsx'
 import UnderConstruction from '../src/pages/UnderConstruction.jsx'
 import RolesPermissions from '../src/pages/roles/RolesPermissions.tsx'
@@ -43,8 +44,10 @@ export default function App() {
     <>
     <ToastContainer theme="colored" />
     <Routes>
-      <Route element={<GuestRoute />}> 
-        <Route path="login" element={<SignIn />} />
+      <Route element={<GuestRoute />}>        
+          <Route path="login" element={<SignIn />} />
+          <Route path="signup" element={<SignUp />} />
+
         <Route path="forgot-password" element={<ForgotPassword />} />
         <Route path="reset-password" element={<ResetPassword />} />
       </Route>
@@ -63,5 +66,4 @@ export default function App() {
       </Route>
     </Routes>
     </>
-  )
-}
+    )}
