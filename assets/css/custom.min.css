@@ -315,3 +315,10 @@
 
 #roles-permissions-page .module-header .title-wrap strong{font-size:1.06rem !important;}
 #roles-permissions-page .module-header .desc{font-size:0.95rem !important}
+
+
+/* Borrower Profile moshiur */
+.input-group .form-select {
+  max-width: 145px;
+  background-color: #e9e9e9;
+}

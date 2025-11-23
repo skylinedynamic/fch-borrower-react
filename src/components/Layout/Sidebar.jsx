@@ -116,7 +116,7 @@ export default function Sidebar() {
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/pre-qualification">
+              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/pre-qualification">
                 <i className="ri-clipboard-line"></i> <span>Pre Qualification</span>
               </NavLink>
             </li>
@@ -166,8 +166,8 @@ export default function Sidebar() {
               </ul>
             </li>
             <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/profile">
-                <i className="ri-user-3-line"></i> <span>Profile</span>
+              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/profile">
+                <i className="ri-account-circle-line"></i> <span>Profile</span>
               </NavLink>
             </li>
             <li className="nav-item">
