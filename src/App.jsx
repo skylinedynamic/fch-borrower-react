@@ -39,7 +39,12 @@ function PartnersPage() {
   )
 }
 
+
 export default function App() {
+  useEffect(() => {
+    checkSession()
+  }, [])
+
   return (
     <>
     <ToastContainer theme="colored" />

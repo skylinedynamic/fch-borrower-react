@@ -1,5 +1,5 @@
-import { apiClient } from '../../lib/apiClient'
-import type { Borrower } from './types'
+import { apiClient } from '../../lib/http/apiClient'
+import type { Borrower, BorrowerRegistrationPayload } from './types'
 
 export const fetchBorrowers = async (): Promise<Borrower[]> => {
   const { data } = await apiClient.get('/borrowers')
@@ -23,4 +23,9 @@ export const updateBorrower = async (id: string | number, payload: Partial<Borro
 
 export const deleteBorrower = async (id: string | number): Promise<void> => {
   await apiClient.delete(`/borrowers/${id}`)
+}
+
+export const registerBorrower = async (payload: BorrowerRegistrationPayload): Promise<any> => {
+  const { data } = await apiClient.post('/borrower/register', payload)
+  return data
 }
