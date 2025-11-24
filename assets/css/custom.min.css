@@ -298,3 +298,9 @@
 .signup-page-form .p-dropdown-label.p-inputtext {
   font-size: .9rem !important;
 }
+
+/* Borrower Profile moshiur */
+.input-group .form-select {
+  max-width: 145px;
+  background-color: #e9e9e9;
+}
