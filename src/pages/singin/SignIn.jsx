@@ -65,6 +65,7 @@ export default function SignIn() {
         </div>
       )}
     >
+      <div className="signin-page">
       <div className="row g-2">
         <div className="col-md-6 p-4 d-flex flex-column justify-content-center">
           <div className="text-center mt-2">
@@ -129,7 +130,7 @@ export default function SignIn() {
             </div>
 
             <div className="mt-4">
-              <button className="btn w-100" type="submit" disabled={loading} style={{background:'#0b2a4a',borderColor:'#0b2a4a',color:'#fff'}}>{loading ? 'Signing in...' : 'Sign in'}</button>
+              <button className="btn w-100 primary-btn" type="submit" disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</button>
             </div>
 
             <div className="border-top my-3"></div>
@@ -137,17 +138,18 @@ export default function SignIn() {
               <span className="text-muted">Sign In with</span>
             </div>
             <div className="d-flex justify-content-center gap-2">
-              <a href="#" aria-label="Facebook" className="btn" style={{width:36,height:36,display:'inline-flex',alignItems:'center',justifyContent:'center',background:'#1877F2',color:'#fff'}}><i className="ri-facebook-fill"></i></a>
-              <a href="#" aria-label="Google" className="btn" style={{width:36,height:36,display:'inline-flex',alignItems:'center',justifyContent:'center',background:'#ea4335',color:'#fff'}}><i className="ri-google-fill"></i></a>
-              <a href="#" aria-label="GitHub" className="btn" style={{width:36,height:36,display:'inline-flex',alignItems:'center',justifyContent:'center',background:'#000000',color:'#fff'}}><i className="ri-github-fill"></i></a>
+              <a href="#" aria-label="Facebook" className="btn social-btn social-facebook"><i className="ri-facebook-fill"></i></a>
+              <a href="#" aria-label="Google" className="btn social-btn social-google"><i className="ri-google-fill"></i></a>
+              <a href="#" aria-label="GitHub" className="btn social-btn social-github"><i className="ri-github-fill"></i></a>
             </div>
           </form>
         </div>
         <div className="col-lg-6 d-none d-lg-block">
           <div className="h-100 w-100">
-            <img src={handshakeImg} alt="Handshake" className="img-fluid rounded-end" style={{objectFit:'cover', width:'100%', height:'100%'}} />
+            <img src={handshakeImg} alt="Handshake" className="img-fluid rounded-end side-image" />
           </div>
         </div>
+      </div>
       </div>
     </Auth>
   )

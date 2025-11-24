@@ -122,49 +122,21 @@ export default function PreQualification() {
     }
   }
 
-  const activeTabStyle: React.CSSProperties = { background: '#0b2a4a', color: '#fff', borderColor: '#0b2a4a' }
-  const inactiveTabStyle: React.CSSProperties = { background: '#eef2f7', color: '#0b2a4a', borderColor: '#eef2f7' }
+  
 
   return (
-    <div className="page-content">
+    <div className="page-content prequalification-page">
       <div className="container-fluid min-vh-70 pt-2">
         <div className="text-center mb-4">
           <h3 className="mb-1">Prequalify to Build Your Business Credit. Access the Right Capital.</h3>
-          <div className="text-muted mx-auto" style={{maxWidth: 920}}>
+          <div className="text-muted mx-auto intro-text">
             <span className="d-block">We don't just help you get funding – we guarantee strategies to build business credit, improve fundability, and secure long-term growth.</span>
             <span className="d-block">Complete your profile to get matched with pre-qualified programs – no credit impact.</span>
           </div>
         </div>
         <div className="d-flex align-items-center justify-content-center">
-        <div className="card w-100" style={{maxWidth: 1080}}>
+        <div className="card w-100 main-card">
           <div className="card-header p-0">
-            <style>{`
-              .tab-chevrons{font-size: 15px;display:flex;background:#eef2f7;border-radius:0px;overflow:visible;width:100%;list-style:none;margin:0;padding:0}
-              .tab-chevrons li{flex:1}
-              .tab-btn{position:relative;width:100%;background:#dadcdf;color:#0b2a4a;border:none;padding:12px 24px;text-align:center;border-radius:0px !important;transition:background-color .25s ease,color .25s ease}
-              .tab-btn.active{background:#0b2a4a;color:#fff;z-index:2}
-              .tab-btn.active::after{content:"";position:absolute;right:-20px;top:0;width:0;height:0;border-top:22px solid transparent;border-bottom:24px solid transparent;border-left:20px solid #0b2a4a}
-              .tab-chevrons li:last-child .tab-btn.active::after{display:none}
-              .tab-chevrons li:first-child .tab-btn{border-top-left-radius:6px;border-bottom-left-radius:6px}
-              .tab-chevrons li:last-child .tab-btn{border-top-right-radius:6px;border-bottom-right-radius:6px}
-              .fade-panel{animation:fadeSlide .28s ease both}
-              .review-grid{display:grid;grid-template-columns:1fr;gap:16px}
-              @media (min-width: 992px){.review-grid{grid-template-columns:1fr}}
-              .review-card{border:1px solid #e6eaef;border-radius:8px;padding:16px;background:#fff}
-              .review-card h6{margin-bottom:12px}
-              .kv{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-top:1px dashed #eef2f7}
-              .kv:first-child{border-top:none}
-              .kv .label{color:#6c757d}
-              .kv .value{font-weight:500}
-              @keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-              @media (max-width: 576px){
-                .tab-chevrons{flex-direction:column;background:transparent;gap:8px}
-                .tab-chevrons li{flex:none}
-                .tab-btn{border-radius:6px}
-                .tab-btn.active::after{display:none}
-                .tab-btn.active::before{content:"";position:absolute;left:50%;bottom:-10px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:10px solid #0b2a4a;transform:translateX(-50%)}
-              }
-            `}</style>
             <div className="text-center py-4">
               <h4 className="mb-1">{step===0?'Personal Info':step===1?'Business Details':step===2?'Funding Needs':'Review'}</h4>
               <div className="text-muted">{step===0?"Let's start with your personal information":step===1?"Tell us about your business":step===2?"Help us understand your funding needs":"Confirm your details before submitting"}</div>
@@ -224,7 +196,7 @@ export default function PreQualification() {
                 </select>
               </div>
               <div className="col-12 d-flex justify-content-end mt-4">
-                <button type="button" className="btn" style={{background:'#0b2a4a',borderColor:'#0b2a4a',color:'#fff'}} onClick={()=>setStep(1)}>Next Step</button>
+                <button type="button" className="btn next-btn" onClick={()=>setStep(1)}>Next Step</button>
               </div>
             </form>
             </div>
@@ -271,7 +243,7 @@ export default function PreQualification() {
               </div>
               <div className="col-12 d-flex justify-content-between mt-4">
                 <button type="button" className="btn btn-warning" onClick={() => setStep(0)}>Previous</button>
-                <button type="button" className="btn" style={{background:'#0b2a4a',borderColor:'#0b2a4a',color:'#fff'}} onClick={() => setStep(2)}>Next Step</button>
+                <button type="button" className="btn next-btn" onClick={() => setStep(2)}>Next Step</button>
               </div>
             </form>
             </div>
@@ -350,7 +322,7 @@ export default function PreQualification() {
               </div>
               <div className="col-12 d-flex justify-content-between mt-4">
                 <button type="button" className="btn btn-warning" onClick={() => setStep(1)}>Previous</button>
-                <button type="button" className="btn" style={{background:'#0b2a4a',borderColor:'#0b2a4a',color:'#fff'}} onClick={() => setStep(3)}>Next Step</button>
+                <button type="button" className="btn next-btn" onClick={() => setStep(3)}>Next Step</button>
               </div>
             </form>
             </div>
@@ -400,12 +372,12 @@ export default function PreQualification() {
                 <div className="kv"><div className="label">Contact Consent</div><div className="value">{support.consent ? 'Agreed' : 'Not agreed'}</div></div>
               </div>
 
-              <div className="review-card" style={{gridColumn: '1 / -1'}}>
+              <div className="review-card review-card-wide">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="text-muted">Review your details then submit</div>
                   <div className="d-flex gap-2">
                     <button type="button" className="btn btn-warning" onClick={() => setStep(2)}>Previous</button>
-                    <button type="button" className="btn" style={{background:'#0b2a4a',borderColor:'#0b2a4a',color:'#fff'}} onClick={onSave}>{saving ? 'Submitting...' : 'Submit'}</button>
+                    <button type="button" className="btn next-btn" onClick={onSave}>{saving ? 'Submitting...' : 'Submit'}</button>
                   </div>
                 </div>
               </div>

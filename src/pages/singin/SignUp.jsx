@@ -50,6 +50,7 @@ export default function SignUp() {
         </div>
       )}
     >
+      <div className="signup-page">
       <form noValidate onSubmit={handleSubmit}>
         <div className="row g-3">
           <div className="col-md-6">
@@ -128,7 +129,7 @@ export default function SignUp() {
           </div>
 
           <div className="col-12 mt-2">
-            <button type="submit" className="btn w-100" disabled={!agree || loading} style={{background:'#0b2a4a',borderColor:'#0b2a4a',color:'#fff'}}>{loading ? 'Signing up...' : 'Sign up'}</button>
+            <button type="submit" className="btn w-100 primary-btn" disabled={!agree || loading}>{loading ? 'Signing up...' : 'Sign up'}</button>
           </div>
         </div>
 
@@ -140,6 +141,7 @@ export default function SignUp() {
           <p className={`${rules.hasNumber ? 'valid' : 'invalid'} fs-12 mb-0`}>At least <b>1 number</b> (0-9)</p>
         </div> */}
       </form>
+      </div>
     </Auth>
   )
 }
