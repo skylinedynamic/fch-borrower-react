@@ -1,7 +1,13 @@
-import { apiClient } from '../http'
-import { setAuth, AuthUser } from './auth'
+import { apiClient } from '../../lib/http/apiClient'
+import { setAuth, AuthUser } from '../../lib/auth/auth'
+import type { BorrowerRegistrationPayload } from './types'
 
 export type LoginSuccess = { token: string; user: AuthUser }
+
+export const registerBorrower = async (payload: BorrowerRegistrationPayload): Promise<any> => {
+  const { data } = await apiClient.post('/borrower/register', payload)
+  return data
+}
 
 export async function login(email: string, password: string, remember: boolean = true): Promise<LoginSuccess> {
   try {
@@ -12,7 +18,6 @@ export async function login(email: string, password: string, remember: boolean =
       const token: string | undefined = data?.data?.token
       const user: AuthUser | undefined = data?.data?.user
       if (!token || !user) {
-        // preserve server message shape in response for UI consumption
         const error: any = new Error('Login response missing token or user')
         error.response = { data }
         throw error
@@ -21,16 +26,13 @@ export async function login(email: string, password: string, remember: boolean =
       return { token, user }
     }
 
-    // If API returned 200 with status=false, throw an error carrying server data
     const error: any = new Error(data?.message ?? 'Login failed')
     error.response = { data }
     throw error
   } catch (err) {
-    // Axios errors already have response; just rethrow
     throw err
   }
 }
-
 
 export async function logout(): Promise<{ status?: boolean; message?: string; data?: any }> {
   try {
@@ -41,7 +43,6 @@ export async function logout(): Promise<{ status?: boolean; message?: string; da
   }
 }
 
-// Send password reset link
 export async function forgotPassword(email: string): Promise<any> {
   try {
     const res = await apiClient.post('/auth/forgot', { email })
@@ -57,7 +58,6 @@ export async function forgotPassword(email: string): Promise<any> {
   }
 }
 
-// Reset password using token + email
 export async function resetPassword(payload: {
   token: string
   email: string

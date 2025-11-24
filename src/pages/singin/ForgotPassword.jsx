@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { forgotPassword } from '../../lib/auth'
+import { forgotPassword } from '../../modules/auth/services'
 import Auth from '../../components/Layout/Auth'
 
 export default function ForgotPassword() {

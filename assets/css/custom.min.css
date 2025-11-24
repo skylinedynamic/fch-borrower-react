@@ -638,3 +638,25 @@
   border-color: #0b2a4a;
   color: #fff;
 }
+
+
+
+.skeleton-label {
+  display: block;
+  height: 14px;
+  background-color: #d8d7d7ff;
+}
+
+.skeleton-field {
+  display: block;
+  width: 100%;
+  height: 42px;
+  background-color: #d8d7d7ff;
+}
+
+.skeleton-button {
+  display: block;
+  width: 140px;
+  height: 40px;
+  background-color: #d8d7d7ff;
+}

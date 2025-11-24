@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { login } from '../../lib/auth'
+import { login } from '../../modules/auth/services'
 import Auth from '../../components/Layout/Auth'
 import handshakeImg from '../../../assets/images/form-side-image.png'
 

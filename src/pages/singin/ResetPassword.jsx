@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { resetPassword } from '../../lib/auth'
+import { resetPassword } from '../../modules/auth/services'
 import Auth from '../../components/Layout/Auth'
 
 export default function ResetPassword() {

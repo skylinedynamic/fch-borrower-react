@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Auth from '../../components/Layout/Auth'
-import { registerBorrower } from '../../modules/borrower/services'
-import { login } from '../../lib/auth'
+import { registerBorrower, login } from '../../modules/auth/services'
 import { toast } from 'react-toastify'
 import { Dropdown } from 'primereact/dropdown'
 import countriesData from '../../data/countries.json'
@@ -85,25 +84,6 @@ export default function SignUp() {
     }
   }
 
-  const countryOptionTemplate = (option) => {
-    return (
-      <div className="flex align-items-center">
-        <div>{option.name} ({option.phone_code})</div>
-      </div>
-    );
-  };
-
-  const selectedCountryTemplate = (option, props) => {
-    if (option) {
-      return (
-        <div className="flex align-items-center">
-          <div>{option.code} ({option.phone_code})</div>
-        </div>
-      );
-    }
-    return <span>{props.placeholder}</span>;
-  };
-
   return (
     <Auth
       header={(
@@ -142,21 +122,37 @@ export default function SignUp() {
 
           <div className="col-md-6">
             <label className="form-label" htmlFor="phone-number">Phone Number <span className="text-danger">*</span></label>
-            <div className="d-flex gap-2">
+            <div className="input-group">
               <Dropdown
                 value={countryCode}
                 onChange={handleCountryChange}
                 options={countriesData}
-                optionLabel="name"
+                optionLabel="code"
                 optionValue="code"
-                valueTemplate={selectedCountryTemplate}
-                itemTemplate={countryOptionTemplate}
-                filter
-                filterBy="name,code,phone_code"
-                className="w-auto"
-                style={{ minWidth: '120px' }}
+                valueTemplate={(option) => {
+                  if (option) {
+                    return (
+                      <div className="d-flex align-items-center gap-2">
+                        <span className="fw-semibold">{option.code}</span>
+                        <span className="text-muted">{option.phone_code}</span>
+                      </div>
+                    )
+                  }
+                  return <span>Select</span>
+                }}
+                itemTemplate={(option) => {
+                  return (
+                    <div className="d-flex align-items-center justify-content-between">
+                      <span className="fw-medium">{option.code}</span>
+                      <span className="text-muted ms-2">{option.phone_code}</span>
+                    </div>
+                  )
+                }}
+                className="border-end-0"
+                style={{ minWidth: '120px', height: '38px', borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
+                panelStyle={{ minWidth: '200px' }}
               />
-              <input id="phone-number" type="tel" className={`form-control ${errors?.phone_number ? 'is-invalid' : ''}`} placeholder="Enter number" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} required />
+              <input id="phone-number" type="tel" className={`form-control ${errors?.phone_number ? 'is-invalid' : ''}`} placeholder="Enter number" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} required style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }} />
             </div>
             {errors?.phone_number && (<div className="invalid-feedback d-block">{String(errors.phone_number)}</div>)}
           </div>
@@ -218,9 +214,10 @@ export default function SignUp() {
             </div>
           </div>
 
-          <div className="col-12 mt-4">
-            <button type="submit" className="btn w-100" disabled={!agree || loading} style={{ background: '#0b2a4a', borderColor: '#0b2a4a', color: '#fff' }}>{loading ? 'Signing up...' : 'Sign up'}</button>
+          <div className="col-12 mt-2">
+            <button type="submit" className="btn w-100 primary-btn" disabled={!agree || loading}>{loading ? 'Signing up...' : 'Sign up'}</button>
           </div>
+          
         </div>
       </form>
       </div>
