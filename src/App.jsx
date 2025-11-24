@@ -16,7 +16,7 @@ import CreateRole from '../src/pages/roles/CreateRole.tsx'
 import EditRole from '../src/pages/roles/EditRole.tsx'
 import { ProtectedRoute, GuestRoute, checkSession } from './lib/auth'
 import Profile from '../src/pages/profile/Profile.tsx'
-import { ProtectedRoute, GuestRoute } from './lib/auth'
+
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
