@@ -106,33 +106,21 @@ export default function Profile() {
     }
   }
 
-  const activeTabStyle: React.CSSProperties = { background: '#0b2a4a', color: '#fff', borderColor: '#0b2a4a' }
-  const inactiveTabStyle: React.CSSProperties = { background: '#eef2f7', color: '#0b2a4a', borderColor: '#eef2f7' }
+  
 
   return (
-    <div className="page-content">
-      <div className="container-fluid min-vh-70 d-flex align-items-center justify-content-center pt-2">
-        <div className="card w-100" style={{maxWidth: 1080}}>
+    <div className="page-content profile-page">
+      <div className="container-fluid min-vh-70 pt-2">
+        <div className="text-center mb-4">
+          <h3 className="mb-1">Your Profile</h3>
+          <div className="text-muted mx-auto intro-text">
+            <span className="d-block">Review and update your personal, business, and financial details. Keep Your</span>
+            <span className="d-block">information current to streamline applications and support.</span>
+          </div>
+        </div>
+        <div className="d-flex align-items-center justify-content-center">
+        <div className="card w-100 main-card">
           <div className="card-header p-0">
-            <style>{`
-              .tab-chevrons{font-size: 15px;display:flex;background:#eef2f7;border-radius:0px;overflow:visible;width:100%;list-style:none;margin:0;padding:0}
-              .tab-chevrons li{flex:1}
-              .tab-btn{position:relative;width:100%;background:#dadcdf;color:#0b2a4a;border:none;padding:12px 24px;text-align:center;border-radius:0px !important;transition:background-color .25s ease,color .25s ease}
-              .tab-btn.active{background:#0b2a4a;color:#fff;z-index:2}
-              .tab-btn.active::after{content:"";position:absolute;right:-20px;top:0;width:0;height:0;border-top:22px solid transparent;border-bottom:24px solid transparent;border-left:20px solid #0b2a4a}
-              .tab-chevrons li:last-child .tab-btn.active::after{display:none}
-              .tab-chevrons li:first-child .tab-btn{border-top-left-radius:6px;border-bottom-left-radius:6px}
-              .tab-chevrons li:last-child .tab-btn{border-top-right-radius:6px;border-bottom-right-radius:6px}
-              .fade-panel{animation:fadeSlide .28s ease both}
-              @keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-              @media (max-width: 576px){
-                .tab-chevrons{flex-direction:column;background:transparent;gap:8px}
-                .tab-chevrons li{flex:none}
-                .tab-btn{border-radius:6px}
-                .tab-btn.active::after{display:none}
-                .tab-btn.active::before{content:"";position:absolute;left:50%;bottom:-10px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:10px solid #0b2a4a;transform:translateX(-50%)}
-              }
-            `}</style>
             <ul className="tab-chevrons">
               <li>
                 <button type="button" className={`tab-btn ${step===0?'active':''}`} onClick={() => setStep(0)}>Personal Info</button>
@@ -225,7 +213,7 @@ export default function Profile() {
                 <input type="text" className="form-control" placeholder="Enter last 4 ssn number" required />
               </div>
               <div className="col-12 d-flex justify-content-end mt-4">
-                <button type="button" className="btn" style={{background:'#0b2a4a',borderColor:'#0b2a4a',color:'#fff'}} onClick={onSave}>Save Changes</button>
+                <button type="button" className="btn primary-btn" onClick={onSave}>Save Changes</button>
               </div>
             </form>
             </div>
@@ -302,7 +290,7 @@ export default function Profile() {
               </div>
               <div className="col-12 d-flex justify-content-between mt-4">
                 <button type="button" className="btn btn-warning" onClick={() => setStep(0)}>Previous</button>
-                <button type="button" className="btn" style={{background:'#0b2a4a',borderColor:'#0b2a4a',color:'#fff'}} onClick={onSave}>Save Changes</button>
+                <button type="button" className="btn primary-btn" onClick={onSave}>Save Changes</button>
               </div>
             </form>
             </div>
@@ -340,12 +328,13 @@ export default function Profile() {
               </div>
               <div className="col-12 d-flex justify-content-between mt-4">
                 <button type="button" className="btn btn-warning" onClick={() => setStep(1)}>Previous</button>
-                <button type="button" className="btn" style={{background:'#0b2a4a',borderColor:'#0b2a4a',color:'#fff'}} onClick={onSave}>{saving ? 'Saving...' : 'Save Changes'}</button>
+                <button type="button" className="btn primary-btn" onClick={onSave}>{saving ? 'Saving...' : 'Save Changes'}</button>
               </div>
             </form>
             </div>
             )}
           </div>
+        </div>
         </div>
       </div>
     </div>

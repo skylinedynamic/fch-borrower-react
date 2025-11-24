@@ -44,6 +44,7 @@ export default function ForgotPassword() {
       colClass="col-xl-6 col-lg-7 col-md-8"
       bodyClass="p-4"
     >
+      <div className="forgot-page">
       {!success && (
         <div role="alert" className="alert alert-warning border-0 text-center mb-2 fade show">
           Enter your email and instructions will be sent to you!
@@ -71,7 +72,7 @@ export default function ForgotPassword() {
         />
         <div className="mt-2 d-block invalid-feedback">{error || ''}</div>
         <div className="flex items-center justify-end mt-4">
-          <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+          <button type="submit" className="btn w-100 primary-btn" disabled={loading}>
             {loading ? 'Sending...' : 'Send Reset Link'}
           </button>
         </div>
@@ -84,6 +85,7 @@ export default function ForgotPassword() {
             Click here
           </Link>
         </p>
+      </div>
       </div>
     </Auth>
   )

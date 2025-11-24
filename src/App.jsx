@@ -2,18 +2,13 @@ import React, { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Layout from '../src/components/Layout/Layout.jsx'
 import Dashboard from '../src/pages/dashboard/Dashboard.jsx'
-import Employees from '../src/pages/employees/Employees.jsx'
-import EmployeeDetails from '../src/pages/employees/EmployeeDetails.jsx'
 import SignIn from '../src/pages/singin/SignIn.jsx'
 import ForgotPassword from '../src/pages/singin/ForgotPassword.jsx'
 import ResetPassword from '../src/pages/singin/ResetPassword.jsx'
 import SignUp from '../src/pages/singin/SignUp.jsx'
-import Users from '../src/pages/users/Users.jsx'
 import UnderConstruction from '../src/pages/UnderConstruction.jsx'
 import PreQualification from '../src/pages/prequalification/PreQualification.tsx'
-import RolesPermissions from '../src/pages/roles/RolesPermissions.tsx'
-import CreateRole from '../src/pages/roles/CreateRole.tsx'
-import EditRole from '../src/pages/roles/EditRole.tsx'
+import Documents from '../src/pages/documents/Documents.tsx'
 import { ProtectedRoute, GuestRoute, checkSession } from './lib/auth'
 import Profile from '../src/pages/profile/Profile.tsx'
 
@@ -62,16 +57,10 @@ export default function App() {
       <Route element={<ProtectedRoute />}> 
         <Route element={<Layout />}> 
           <Route index element={<Dashboard />} />
-          <Route path="partners" element={<PartnersPage />} />
-          <Route path="employees" element={<Employees />} />
-          <Route path="users" element={<Users />} />
-          <Route path="employee-details" element={<EmployeeDetails />} />
           <Route path="under-construction/:feature" element={<UnderConstruction />} />
           <Route path="pre-qualification" element={<PreQualification />} />
+          <Route path="documents" element={<Documents />} />
           <Route path="profile" element={<Profile />} />
-          <Route path="roles-permissions" element={<RolesPermissions />} />
-          <Route path="roles-permissions/create" element={<CreateRole />} />
-          <Route path="roles-permissions/edit/:id" element={<EditRole />} />
         </Route>
       </Route>
     </Routes>

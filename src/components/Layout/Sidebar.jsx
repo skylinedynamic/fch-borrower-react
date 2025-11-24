@@ -133,7 +133,7 @@ export default function Sidebar() {
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/documents">
+              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/documents">
                 <i className="ri-file-2-line"></i> <span>Documents</span>
               </NavLink>
             </li>

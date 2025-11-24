@@ -126,6 +126,7 @@ export default function SignUp() {
         </div>
       )}
     >
+      <div className="signup-page">
       <form noValidate onSubmit={handleSubmit} className="signup-page-form">
         <div className="row g-3">
           <div className="col-md-6">
@@ -222,6 +223,7 @@ export default function SignUp() {
           </div>
         </div>
       </form>
+      </div>
     </Auth>
   )
 }
