@@ -10,7 +10,7 @@ import UnderConstruction from '../src/pages/UnderConstruction.jsx'
 import PreQualification from '../src/pages/prequalification/PreQualification.tsx'
 import Documents from '../src/pages/documents/Documents.tsx'
 import { ProtectedRoute, GuestRoute, checkSession } from './lib/auth'
-import Profile from '../src/pages/profile/Profile.tsx'
+import Profile from "./pages/profile/Profile";
 
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -45,24 +45,25 @@ export default function App() {
 
   return (
     <>
-    <ToastContainer theme="colored" />
-    <Routes>
-      <Route element={<GuestRoute />}>        
+      <ToastContainer theme="colored" />
+      <Routes>
+        <Route element={<GuestRoute />}>
           <Route path="login" element={<SignIn />} />
           <Route path="signup" element={<SignUp />} />
 
-        <Route path="forgot-password" element={<ForgotPassword />} />
-        <Route path="reset-password" element={<ResetPassword />} />
-      </Route>
-      <Route element={<ProtectedRoute />}> 
-        <Route element={<Layout />}> 
-          <Route index element={<Dashboard />} />
-          <Route path="under-construction/:feature" element={<UnderConstruction />} />
-          <Route path="pre-qualification" element={<PreQualification />} />
-          <Route path="documents" element={<Documents />} />
-          <Route path="profile" element={<Profile />} />
+          <Route path="forgot-password" element={<ForgotPassword />} />
+          <Route path="reset-password" element={<ResetPassword />} />
         </Route>
-      </Route>
-    </Routes>
+        <Route element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="under-construction/:feature" element={<UnderConstruction />} />
+            <Route path="pre-qualification" element={<PreQualification />} />
+            <Route path="documents" element={<Documents />} />
+            <Route path="profile" element={<Profile />} />
+          </Route>
+        </Route>
+      </Routes>
     </>
-    )}
+  )
+}
