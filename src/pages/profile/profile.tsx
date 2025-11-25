@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 
 type PersonalInfo = {
@@ -42,6 +42,11 @@ type FinancialSupport = {
 export default function Profile() {
   const [step, setStep] = useState<number>(0)
   const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState(true)
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 700)
+    return () => clearTimeout(t)
+  }, [])
 
   const [personal, setPersonal] = useState<PersonalInfo>({
     firstName: '',
@@ -136,6 +141,14 @@ export default function Profile() {
           <div className="card-body checkout-tab">
             {step === 0 && (
             <div className="fade-panel">
+            {loading ? (
+              <div className="row g-3">
+                {[1,2,3,4,5,6,7,8,9,10,11,12].map((i) => (
+                  <div className="col-md-6" key={i}><div className="skeleton-line w-100" style={{ height: 42, borderRadius: 8 }}></div></div>
+                ))}
+                <div className="col-12 d-flex justify-content-end mt-4"><div className="skeleton-line" style={{ width: 140, height: 38, borderRadius: 10 }}></div></div>
+              </div>
+            ) : (
             <form className="row g-3">
               <div className="col-md-6">
                 <label className="form-label">First Name <span className="text-danger">*</span></label>
@@ -216,11 +229,20 @@ export default function Profile() {
                 <button type="button" className="btn primary-btn" onClick={onSave}>Save Changes</button>
               </div>
             </form>
+            )}
             </div>
             )}
 
             {step === 1 && (
             <div className="fade-panel">
+            {loading ? (
+              <div className="row g-3">
+                {[1,2,3,4,5,6,7,8,9,10].map((i) => (
+                  <div className="col-md-6" key={i}><div className="skeleton-line w-100" style={{ height: 42, borderRadius: 8 }}></div></div>
+                ))}
+                <div className="col-12 d-flex justify-content-between mt-4"><div className="skeleton-line" style={{ width: 110, height: 38, borderRadius: 10 }}></div><div className="skeleton-line" style={{ width: 140, height: 38, borderRadius: 10 }}></div></div>
+              </div>
+            ) : (
             <form className="row g-3">
               <div className="col-md-6">
                 <label className="form-label">Legal Business Name <span className="text-danger">*</span></label>
@@ -293,11 +315,20 @@ export default function Profile() {
                 <button type="button" className="btn primary-btn" onClick={onSave}>Save Changes</button>
               </div>
             </form>
+            )}
             </div>
             )}
 
             {step === 2 && (
             <div className="fade-panel">
+            {loading ? (
+              <div className="row g-3">
+                {[1,2,3,4,5,6].map((i) => (
+                  <div className="col-md-6" key={i}><div className="skeleton-line w-100" style={{ height: 42, borderRadius: 8 }}></div></div>
+                ))}
+                <div className="col-12 d-flex justify-content-between mt-4"><div className="skeleton-line" style={{ width: 110, height: 38, borderRadius: 10 }}></div><div className="skeleton-line" style={{ width: 140, height: 38, borderRadius: 10 }}></div></div>
+              </div>
+            ) : (
             <form className="row g-3">
               <div className="col-md-6">
                 <label className="form-label">Currency <span className="text-danger">*</span></label>
@@ -331,6 +362,7 @@ export default function Profile() {
                 <button type="button" className="btn primary-btn" onClick={onSave}>{saving ? 'Saving...' : 'Save Changes'}</button>
               </div>
             </form>
+            )}
             </div>
             )}
           </div>

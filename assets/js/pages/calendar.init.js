@@ -5,16 +5,20 @@ var start_date = document.getElementById("event-start-date"),
     T_check = null;
 function flatPickrInit() {
     var e = { enableTime: !0, noCalendar: !0 };
-    flatpickr(start_date, {
-        enableTime: !1,
-        mode: "single",
-        minDate: "today",
-        onChange: function () {
-            // Show the time slot UI; keep hidden time inputs
-            document.getElementById("event-time").removeAttribute("hidden");
-        },
-    });
-    flatpickr(timepicker1, e), flatpickr(timepicker2, e);
+    try {
+        if (start_date) {
+            flatpickr(start_date, {
+                enableTime: !1,
+                mode: "single",
+                minDate: "today",
+                onChange: function () {
+                    document.getElementById("event-time")?.removeAttribute("hidden");
+                },
+            });
+        }
+        if (timepicker1) flatpickr(timepicker1, e);
+        if (timepicker2) flatpickr(timepicker2, e);
+    } catch (_) {}
 }
 function flatpicekrValueClear() {
     start_date.flatpickr().clear(), timepicker1.flatpickr().clear(), timepicker2.flatpickr().clear();
@@ -305,27 +309,61 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("edit-event-btn").setAttribute("data-id", "new-event"),
             document.getElementById("edit-event-btn").click(),
             document.getElementById("edit-event-btn").setAttribute("hidden", !0);
+
+        try {
+            var startInput = document.getElementById("event-start-date");
+            if (startInput && e && (e.dateStr || e.date)) {
+                var iso = e.dateStr || (e.date && e.date.toISOString().slice(0, 10));
+                startInput.value = iso;
+                document.getElementById("event-time").removeAttribute("hidden");
+            }
+        } catch (_) {}
     }
     function r() {
-        return 768 <= window.innerWidth && window.innerWidth < 1200
-            ? "timeGridWeek"
-            : window.innerWidth <= 768
-              ? "listMonth"
-              : "dayGridMonth";
+        var hasDay = !!(FullCalendar && FullCalendar.dayGridPlugin);
+        var hasTime = !!(FullCalendar && FullCalendar.timeGridPlugin);
+        var hasList = !!(FullCalendar && FullCalendar.listPlugin);
+        if (window.innerWidth <= 768) {
+            return hasList ? "listMonth" : (hasDay ? "dayGridMonth" : "dayGridMonth");
+        }
+        if (window.innerWidth < 1200) {
+            return hasTime ? "timeGridWeek" : (hasDay ? "dayGridMonth" : "dayGridMonth");
+        }
+        return hasDay ? "dayGridMonth" : "dayGridMonth";
     }
-    var c = new Choices("#event-category", { searchEnabled: !1 }),
-        b = new FullCalendar.Calendar(e, {
+    try {
+        var c = document.querySelector("#event-category");
+        if (c) new Choices(c, { searchEnabled: !1 });
+    } catch (_) {}
+    var plugins = [];
+        try {
+            FullCalendar.interactionPlugin && plugins.push(FullCalendar.interactionPlugin);
+            FullCalendar.dayGridPlugin && plugins.push(FullCalendar.dayGridPlugin);
+            FullCalendar.timeGridPlugin && plugins.push(FullCalendar.timeGridPlugin);
+            FullCalendar.listPlugin && plugins.push(FullCalendar.listPlugin);
+        } catch (_) {}
+        var hasDay = !!(FullCalendar && FullCalendar.dayGridPlugin);
+        var hasTime = !!(FullCalendar && FullCalendar.timeGridPlugin);
+        var hasList = !!(FullCalendar && FullCalendar.listPlugin);
+        var rightViews = [
+            hasDay ? "dayGridMonth" : null,
+            hasTime ? "timeGridWeek" : null,
+            hasTime ? "timeGridDay" : null,
+            hasList ? "listMonth" : null,
+        ].filter(Boolean).join(",");
+        var b = new FullCalendar.Calendar(e, {
+            plugins: plugins,
             timeZone: "local",
             editable: !0,
             droppable: !0,
             selectable: !0,
             navLinks: !0,
             initialView: r(),
-            themeSystem: "bootstrap",
+            themeSystem: "standard",
             headerToolbar: {
                 left: "prev,next today",
                 center: "title",
-                right: "dayGridMonth,timeGridWeek,timeGridDay,listMonth",
+                right: rightViews,
             },
             windowResize: function (e) {
                 var t = r();
