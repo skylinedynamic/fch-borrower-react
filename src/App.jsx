@@ -10,7 +10,7 @@ import UnderConstruction from '../src/pages/UnderConstruction.jsx'
 import PreQualification from '../src/pages/prequalification/PreQualification.tsx'
 import Documents from '../src/pages/documents/Documents.tsx'
 import { ProtectedRoute, GuestRoute, checkSession } from './lib/auth'
-import Profile from "./pages/profile/Profile";
+import Profile from "./pages/profile/profile";
 
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
