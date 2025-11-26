@@ -12,9 +12,13 @@ import FundApplication from '../src/pages/fundapplication/FundApplication.tsx'
 import PreQualification from '../src/pages/prequalification/PreQualification.tsx'
 import Documents from '../src/pages/documents/Documents.tsx'
 import { ProtectedRoute, GuestRoute, checkSession } from './lib/auth'
+<<<<<<< HEAD
 import Profile from '../src/pages/profile/Profile.tsx'
 import MyApplication from '../src/pages/myapplication/MyApplication.tsx'
 import Appointmnet from '../src/pages/appointment/appointmnet.tsx'
+=======
+import Profile from "./pages/profile/profile";
+>>>>>>> 5b95763fc7608c9ac8ba1235b01cf0148bac6114
 
 import CreditOverview from '../src/pages/creditoverview/CreditOverview.tsx'
 import { ToastContainer } from 'react-toastify'
@@ -50,12 +54,13 @@ export default function App() {
 
   return (
     <>
-    <ToastContainer theme="colored" />
-    <Routes>
-      <Route element={<GuestRoute />}>        
+      <ToastContainer theme="colored" />
+      <Routes>
+        <Route element={<GuestRoute />}>
           <Route path="login" element={<SignIn />} />
           <Route path="signup" element={<SignUp />} />
 
+<<<<<<< HEAD
         <Route path="forgot-password" element={<ForgotPassword />} />
         <Route path="reset-password" element={<ResetPassword />} />
       </Route>
@@ -71,8 +76,21 @@ export default function App() {
           <Route path="credit-overview" element={<CreditOverview />} />
           <Route path="documents" element={<Documents />} />
           <Route path="profile" element={<Profile />} />
+=======
+          <Route path="forgot-password" element={<ForgotPassword />} />
+          <Route path="reset-password" element={<ResetPassword />} />
+>>>>>>> 5b95763fc7608c9ac8ba1235b01cf0148bac6114
         </Route>
-      </Route>
-    </Routes>
+        <Route element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="under-construction/:feature" element={<UnderConstruction />} />
+            <Route path="pre-qualification" element={<PreQualification />} />
+            <Route path="documents" element={<Documents />} />
+            <Route path="profile" element={<Profile />} />
+          </Route>
+        </Route>
+      </Routes>
     </>
-    )}
+  )
+}
