@@ -8,6 +8,11 @@ import FinancialSupport from './components/FinancialSupport'
 export default function Profile() {
   const [step, setStep] = useState<number>(0)
   const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState(true)
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 700)
+    return () => clearTimeout(t)
+  }, [])
 
   const [personal, setPersonal] = useState<PersonalInfoType>({
     firstName: '',

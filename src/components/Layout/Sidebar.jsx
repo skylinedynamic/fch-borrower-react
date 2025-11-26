@@ -121,15 +121,15 @@ export default function Sidebar() {
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/fund-application">
+              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/fund-application">
                 <i className="ri-hand-coin-line"></i> <span>Fund Application</span>
-                <span className="badge bg-info rounded-pill ms-auto">2</span>
+                {/* <span className="badge bg-info rounded-pill ms-auto">2</span> */}
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/my-application">
-                <i className="ri-file-list-3-line"></i> <span>My Application</span>
-                <span className="badge bg-info rounded-pill ms-auto">1</span>
+              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/my-applications">
+                <i className="ri-file-list-line"></i> <span>My Applications</span>
+                {/* <span className="badge bg-info rounded-pill ms-auto">1</span> */}
               </NavLink>
             </li>
             <li className="nav-item">
@@ -138,7 +138,7 @@ export default function Sidebar() {
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/appointments">
+              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/appointment">
                 <i className="ri-calendar-2-line"></i> <span>Appointment</span>
               </NavLink>
             </li>
@@ -149,10 +149,10 @@ export default function Sidebar() {
               </button>
               <ul id="creditBuilderMenu" className={`navbar-nav ms-3 mt-1 submenu-collapse ${creditOpen ? 'open' : ''}`}>
                 <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/under-construction/credit-overview"><i className="ri-arrow-right-s-line"></i> <span>Overview</span></NavLink>
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-overview"><i className="ri-arrow-right-s-line"></i> <span>Overview</span></NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/under-construction/credit-guide"><i className="ri-arrow-right-s-line"></i> <span>Step-By-Step Guide</span></NavLink>
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-guide"><i className="ri-arrow-right-s-line"></i> <span>Step-By-Step Guide</span></NavLink>
                 </li>
                 <li className="nav-item">
                   <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/under-construction/vendor-application"><i className="ri-arrow-right-s-line"></i> <span>Vendor Application</span></NavLink>
