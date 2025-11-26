@@ -15,7 +15,7 @@ import { ProtectedRoute, GuestRoute, checkSession } from './lib/auth'
 import Profile from '../src/pages/profile/Profile.tsx'
 import MyApplication from '../src/pages/myapplication/MyApplication.tsx'
 import Appointmnet from '../src/pages/appointment/appointmnet.tsx'
-import { ProtectedRoute, GuestRoute } from './lib/auth'
+
 import CreditOverview from '../src/pages/creditoverview/CreditOverview.tsx'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
