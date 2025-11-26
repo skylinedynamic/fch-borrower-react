@@ -660,3 +660,81 @@
   height: 40px;
   background-color: #d8d7d7ff;
 }
+
+/* Custom Dropdown Validation Styles */
+.dropdown.is-invalid .form-select {
+    border-color: #dc3545 !important;
+}
+
+.dropdown.is-invalid .form-select:focus {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.input-group>:not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback)
+ {
+    border-top-right-radius: .25rem;
+    border-bottom-right-radius: .25rem;
+}
+
+
+/* calender */
+.flatpickr-weekday,.flatpickr-months .flatpickr-month, .flatpickr-current-month .flatpickr-monthDropdown-months
+ {
+    background: #001f3f !important;
+    color: rgb(255 255 255) !important;
+}
+.flatpickr-weekday, .flatpickr-weekdays {
+    background: #001f3f !important;
+    color: rgb(255 255 255) !important;
+}
+.flatpickr-weekday{
+  background: #001f3f !important;
+}
+.flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange, .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus, .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover, .flatpickr-day.selected.prevMonthDay, .flatpickr-day.startRange.prevMonthDay, .flatpickr-day.endRange.prevMonthDay, .flatpickr-day.selected.nextMonthDay, .flatpickr-day.startRange.nextMonthDay, .flatpickr-day.endRange.nextMonthDay {
+    background: #001f3f !important;
+    color: #fff !important;
+    border-color: #0b2a4a !important;
+}
+
+.flatpickr-day.today {
+    border-color: #001f3f !important;
+    color: #fff !important;
+    background: #001f3f !important;
+}
+
+.flatpickr-day.flatpickr-disabled, .flatpickr-day.flatpickr-disabled:hover {
+    cursor: not-allowed;
+    color: rgb(72 72 72 / 41%) !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months .flatpickr-monthDropdown-month {
+    background-color: #ffffff !important;
+    font-size: 12px !important;
+}
+
+
+
+.dropdown-menu.show {
+    margin-top: 0px !important;
+}
+.input-group-text.border {
+    border:var(--vz-border-width) solid var(--vz-input-border-custom) !important
+}
+
+.form-select:focus {
+    border-color: var(--vz-primary-border-subtle);
+    outline: 0;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important;
+}
+
+/* Custom Dropdown Validation Styles */
+.dropdown.is-invalid .form-select {
+    border-color: #dc3545 !important;
+}
+
+.dropdown.is-invalid .form-select:focus {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+}

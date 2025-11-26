@@ -1,3 +1,3 @@
 export * from './types'
-export * from './services'
-export * from './queries'
+export { usePersonalInfo, useSavePersonalInfo } from './queries'
+export type { PersonalInfoData, SavePersonalInfoRequest, ErrorResponse, ValidationErrors } from './types'

@@ -80,7 +80,7 @@ export default function CustomDropdown({
             <div className="p-2 sticky-top bg-white border-bottom">
               <input
                 type="text"
-                className="form-control form-control-sm"
+                className="form-control form-control-md"
                 placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}

@@ -19,3 +19,35 @@ export type PersonalInfoResponse = {
   message: string
   data: PersonalInfoData
 }
+
+export type SavePersonalInfoRequest = {
+  first_name: string
+  last_name: string
+  email: string
+  home_address: string
+  city: string
+  state: string
+  zip_code: string
+  country: string
+  country_code: string
+  mobile_phone: string
+  home_phone?: string
+  last_4_ssn: string
+  date_of_birth: string
+}
+
+export type ValidationErrors = {
+  [key: string]: string
+}
+
+export type ErrorResponse = {
+  status: boolean
+  message: string
+  errors?: ValidationErrors
+}
+
+export type SavePersonalInfoResponse = {
+  status: boolean
+  message: string
+  data?: PersonalInfoData
+}

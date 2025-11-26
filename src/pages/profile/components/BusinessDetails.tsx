@@ -1,5 +1,5 @@
 import React from 'react'
-import CustomDropdown from '../../../components/CustomDropdown'
+import CustomDropdown from './CustomDropdown'
 import { BusinessDetails as BusinessDetailsType } from '../types'
 import countriesData from '../../../data/countries.json'
 
