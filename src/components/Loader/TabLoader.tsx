@@ -4,7 +4,7 @@ export default function TabLoader() {
   return (
     <div className="fade-panel">
       <form className="row g-3">
-        {/* First Name & Last Name */}
+    
         <div className="col-md-6">
           <div className="mb-2">
             <div className="placeholder-glow">
@@ -26,7 +26,7 @@ export default function TabLoader() {
           </div>
         </div>
 
-        {/* Email & Phone Number */}
+     
         <div className="col-md-6">
           <div className="mb-2">
             <div className="placeholder-glow">
@@ -48,7 +48,7 @@ export default function TabLoader() {
           </div>
         </div>
 
-        {/* Country & City */}
+      
         <div className="col-md-6">
           <div className="mb-2">
             <div className="placeholder-glow">
@@ -70,7 +70,7 @@ export default function TabLoader() {
           </div>
         </div>
 
-        {/* State & Zip Code */}
+
         <div className="col-md-6">
           <div className="mb-2">
             <div className="placeholder-glow">
@@ -92,7 +92,7 @@ export default function TabLoader() {
           </div>
         </div>
 
-        {/* Home Address & Home Phone */}
+      
         <div className="col-md-6">
           <div className="mb-2">
             <div className="placeholder-glow">
@@ -114,7 +114,7 @@ export default function TabLoader() {
           </div>
         </div>
 
-        {/* Date of Birth & Last 4 SSN */}
+     
         <div className="col-md-6">
           <div className="mb-2">
             <div className="placeholder-glow">
@@ -136,7 +136,6 @@ export default function TabLoader() {
           </div>
         </div>
 
-        {/* Save Button */}
         <div className="col-12 d-flex justify-content-end mt-4">
           <div className="placeholder-glow">
             <span className="placeholder rounded skeleton-button"></span>
