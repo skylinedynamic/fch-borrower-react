@@ -46,16 +46,23 @@ export default function CreditOverview() {
               </div>
               <div className="card-body">
                 <style>{`
-                  @keyframes stripeMove{from{background-position:0 0}to{background-position:40px 0}}
-                  .progress-animated{background-image:repeating-linear-gradient(45deg, rgba(46,116,249,.6) 0, rgba(46,116,249,.6) 10px, rgba(46,116,249,.85) 10px, rgba(46,116,249,.85) 20px);animation:stripeMove 2s linear infinite}
+                  @keyframes stripeMove{from{background-position:0 0,0 0}to{background-position:0 0,24px 0}}
+                  .progress-animated{
+                    background-image: linear-gradient(90deg, #D4AF37 0%, #001F3F 100%),
+                                      repeating-linear-gradient(45deg, rgba(255,255,255,.24) 0, rgba(255,255,255,.24) 12px, rgba(255,255,255,0) 12px, rgba(255,255,255,0) 24px);
+                    animation: stripeMove 1.8s linear infinite;
+                    background-size: auto, 24px 24px;
+                  }
+                  .progress-goldnavy{background:#eef2f7;border:1px solid #e5e7eb;overflow:hidden;border-radius:999px;box-shadow:inset 0 1px 2px rgba(0,0,0,.06)}
+                  .progress-goldnavy .progress-bar{border-radius:999px}
                   .tooltip-info .tooltip-inner{background:#0b5ed7;color:#ffffff;border:none}
                   .tooltip-info.bs-tooltip-top .tooltip-arrow::before{border-top-color:#0b5ed7}
                   .tooltip-info.bs-tooltip-bottom .tooltip-arrow::before{border-bottom-color:#0b5ed7}
                   .tooltip-info.bs-tooltip-start .tooltip-arrow::before{border-left-color:#0b5ed7}
                   .tooltip-info.bs-tooltip-end .tooltip-arrow::before{border-right-color:#0b5ed7}
                 `}</style>
-                <div className="progress" style={{height:12,borderRadius:12}}>
-                  <div className="progress-bar progress-animated" style={{width:'28%',borderRadius:12}}></div>
+                <div className="progress progress-goldnavy" style={{height:12}}>
+                  <div className="progress-bar progress-animated" style={{width:'28%'}}></div>
                 </div>
                 <div className="row text-center text-muted mt-2">
                   <div className="col"><div className="fw-semibold">Tier 0</div></div>
@@ -147,7 +154,7 @@ export default function CreditOverview() {
                       
                         </div>
                         <div className="mt-3">
-                          <div className="progress" style={{height:10}}><div className="progress-bar progress-animated" style={{width:'60%'}}></div></div>
+                          <div className="progress progress-goldnavy" style={{height:10}}><div className="progress-bar progress-animated" style={{width:'60%'}}></div></div>
                           <div className="text-muted mt-1">60% of Tier 1 tasks complete</div>
                         </div>
                       </div>
