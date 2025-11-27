@@ -37,6 +37,7 @@ export default function Profile() {
     businessPhoneCountry: '+1',
     businessPhone: '',
     businessAddress: '',
+    country: 'United States',
     city: '',
     state: '',
     zip: '',

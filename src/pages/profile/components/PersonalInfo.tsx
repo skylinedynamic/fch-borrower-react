@@ -74,7 +74,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
       zip_code: formData.zip,
       country: formData.country, 
       country_code: country?.phone_code || '+1', 
-      mobile_phone: formData.phoneNumber,
+      phone_number: formData.phoneNumber,
       home_phone: formData.homePhone,
       last_4_ssn: formData.last4ssn,
       date_of_birth: formData.dob,

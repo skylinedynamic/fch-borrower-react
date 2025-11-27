@@ -2,6 +2,7 @@
     {
         "name": "United States",
         "code": "USA",
+        "currency": "USD",
         "phone_code": "+1",
         "flag": "🇺🇸.svg",
         "states": [
@@ -265,6 +266,7 @@
     {
         "name": "Canada",
         "code": "CAN",
+        "currency": "CAD",
         "phone_code": "+1",
         "flag": "🇨🇦.svg",
         "states": [

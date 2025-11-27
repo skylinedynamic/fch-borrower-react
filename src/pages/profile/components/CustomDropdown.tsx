@@ -14,6 +14,7 @@ interface CustomDropdownProps {
   searchable?: boolean
   disabled?: boolean
   className?: string
+  renderOption?: (option: Option) => React.ReactNode
 }
 
 export default function CustomDropdown({
@@ -25,7 +26,8 @@ export default function CustomDropdown({
   placeholder = 'Select...',
   searchable = false,
   disabled = false,
-  className = ''
+  className = '',
+  renderOption
 }: CustomDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -102,7 +104,7 @@ export default function CustomDropdown({
                     setIsOpen(false)
                   }}
                 >
-                  {option[optionLabel]}
+                  {renderOption ? renderOption(option) : option[optionLabel]}
                 </button>
               ))
             ) : (

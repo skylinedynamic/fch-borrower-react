@@ -21,6 +21,7 @@ export type BusinessDetails = {
   businessPhoneCountry: string
   businessPhone: string
   businessAddress: string
+  country: string
   city: string
   state: string
   zip: string

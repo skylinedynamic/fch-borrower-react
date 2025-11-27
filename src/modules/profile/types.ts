@@ -30,7 +30,7 @@ export type SavePersonalInfoRequest = {
   zip_code: string
   country: string
   country_code: string
-  mobile_phone: string
+  phone_number: string
   home_phone?: string
   last_4_ssn: string
   date_of_birth: string
@@ -50,4 +50,72 @@ export type SavePersonalInfoResponse = {
   status: boolean
   message: string
   data?: PersonalInfoData
+}
+
+export type BusinessDetailsData = {
+  business_name: string
+  business_ein: string
+  business_phone: string
+  business_address: string
+  country: string
+  country_code: string
+  business_state: string
+  business_city: string
+  business_postal_code: string
+  business_website: string
+  business_entity_type: string
+  business_industry_type: string
+}
+
+export type BusinessDetailsResponse = {
+  status: boolean
+  message: string
+  data: BusinessDetailsData
+}
+
+export type SaveBusinessDetailsRequest = {
+  business_name: string
+  business_ein: string
+  business_phone: string
+  business_address: string
+  business_city: string
+  business_state: string
+  business_zip_code: string
+  business_website: string
+  business_entity_type: string
+  business_industry_type: string
+}
+
+export type SaveBusinessDetailsResponse = {
+  status: boolean
+  message: string
+  data?: BusinessDetailsData
+  errors?: ValidationErrors
+}
+
+export type FinancialInfoData = {
+  currency: string
+  years_in_business: number
+  monthly_revenue: string
+  annual_revenue: string
+}
+
+export type FinancialInfoResponse = {
+  status: boolean
+  message: string
+  data: FinancialInfoData
+}
+
+export type SaveFinancialInfoRequest = {
+  currency: string
+  years_in_business: number
+  monthly_revenue: number
+  annual_revenue: number
+}
+
+export type SaveFinancialInfoResponse = {
+  status: boolean
+  message: string
+  data?: FinancialInfoData
+  errors?: ValidationErrors
 }
