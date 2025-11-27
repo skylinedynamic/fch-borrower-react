@@ -16,6 +16,9 @@ import MyApplication from '../src/pages/myapplication/MyApplication.tsx'
 import Appointmnet from '../src/pages/appointment/appointmnet.tsx'
 import { ProtectedRoute, GuestRoute } from './lib/auth'
 import CreditOverview from '../src/pages/creditoverview/CreditOverview.tsx'
+import VendorApplication from '../src/pages/creditvendorapplication/VendorApplication.tsx'
+import ProgressTracker from '../src/pages/creditprogresstracker/ProgressTracker.tsx'
+import CreditResources from '../src/pages/creditresources/CreditResources.tsx'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -63,6 +66,9 @@ export default function App() {
           <Route path="my-applications" element={<MyApplication />} />
           <Route path="appointment" element={<Appointmnet />} />
           <Route path="credit-overview" element={<CreditOverview />} />
+          <Route path="vendor-application" element={<VendorApplication />} />
+          <Route path="progress-tracker" element={<ProgressTracker />} />
+          <Route path="credit-resources" element={<CreditResources />} />
           <Route path="documents" element={<Documents />} />
           <Route path="profile" element={<Profile />} />
         </Route>
