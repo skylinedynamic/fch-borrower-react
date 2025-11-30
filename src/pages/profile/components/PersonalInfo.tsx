@@ -9,6 +9,8 @@ import type { PersonalInfoData, SavePersonalInfoRequest, ErrorResponse, Validati
 import TabLoader from '../../../components/Loader/TabLoader'
 import countriesData from '../../../data/countries.json'
 
+import { formatPhoneNumber, formatLast4SSN } from '../../../utils/formatters'
+
 interface PersonalInfoProps {
   data: PersonalInfoType
   onChange: (data: PersonalInfoType) => void
@@ -251,9 +253,9 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             <input 
               type="tel" 
               className={`form-control ${hasError('mobile_phone') ? 'is-invalid' : ''}`}
-              placeholder="Enter number" 
+              placeholder="(555) 555-5555" 
               value={data.phoneNumber}
-              onChange={(e) => onChange({ ...data, phoneNumber: e.target.value })}
+              onChange={(e) => onChange({ ...data, phoneNumber: formatPhoneNumber(e.target.value) })}
               required 
             />
             {hasError('mobile_phone') && (
@@ -261,83 +263,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             )}
           </div>
         </div>
-        <div className="col-md-6">
-          <label className="form-label">Country <span className="text-danger">*</span></label>
-          <CustomDropdown
-            value={data.country}
-            onChange={(value) => {
-              onChange({ 
-                ...data, 
-                country: value,
-                state: '', // Reset state when country changes
-                city: '' // Reset city when country changes
-              })
-            }}
-            options={countriesData}
-            optionLabel="name"
-            optionValue="name"
-            placeholder="Select country"
-            searchable={true}
-            className={`w-100 ${hasError('country') ? 'is-invalid' : ''}`}
-          />
-          {hasError('country') && (
-            <div className="invalid-feedback d-block">{getFieldError('country')}</div>
-          )}
-        </div>
-        <div className="col-md-6">
-          <label className="form-label">State <span className="text-danger">*</span></label>
-          <CustomDropdown
-            value={data.state}
-            onChange={(value) => {
-              onChange({ 
-                ...data, 
-                state: value,
-                city: '' // Reset city when state changes
-              })
-            }}
-            options={availableStates}
-            optionLabel="name"
-            optionValue="name"
-            placeholder="Select state"
-            searchable={true}
-            className={`w-100 ${hasError('state') ? 'is-invalid' : ''}`}
-            disabled={!data.country}
-          />
-          {hasError('state') && (
-            <div className="invalid-feedback d-block">{getFieldError('state')}</div>
-          )}
-        </div>
-        <div className="col-md-6">
-          <label className="form-label">City <span className="text-danger">*</span></label>
-          <CustomDropdown
-            value={data.city}
-            onChange={(value) => onChange({ ...data, city: value })}
-            options={availableCities}
-            optionLabel="name"
-            optionValue="name"
-            placeholder="Select city"
-            searchable={true}
-            className={`w-100 ${hasError('city') ? 'is-invalid' : ''}`}
-            disabled={!data.state}
-          />
-          {hasError('city') && (
-            <div className="invalid-feedback d-block">{getFieldError('city')}</div>
-          )}
-        </div>
-        <div className="col-md-6">
-          <label className="form-label">Zip Code <span className="text-danger">*</span></label>
-          <input 
-            type="text" 
-            className={`form-control ${hasError('zip_code') ? 'is-invalid' : ''}`}
-            placeholder="Enter zip code" 
-            value={data.zip}
-            onChange={(e) => onChange({ ...data, zip: e.target.value })}
-            required 
-          />
-          {hasError('zip_code') && (
-            <div className="invalid-feedback">{getFieldError('zip_code')}</div>
-          )}
-        </div>
+
         <div className="col-md-6">
           <label className="form-label">Home Address <span className="text-danger">*</span></label>
           <textarea 
@@ -352,6 +278,84 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             <div className="invalid-feedback">{getFieldError('home_address')}</div>
           )}
         </div>
+
+        <div className="col-md-6">
+          <label className="form-label">City <span className="text-danger">*</span></label>
+          <input 
+            type="text" 
+            className={`form-control ${hasError('city') ? 'is-invalid' : ''}`}
+            placeholder="Enter city" 
+            value={data.city}
+            onChange={(e) => onChange({ ...data, city: e.target.value })}
+            required 
+          />
+          {hasError('city') && (
+            <div className="invalid-feedback">{getFieldError('city')}</div>
+          )}
+        </div>
+
+        <div className="col-md-6">
+          <label className="form-label">State <span className="text-danger">*</span></label>
+          <CustomDropdown
+            value={data.state}
+            onChange={(value) => {
+              onChange({ 
+                ...data, 
+                      state: value,
+                    })
+                  }}
+                  options={availableStates}
+                  optionLabel="name"
+                  optionValue="name"
+                  placeholder="Select state"
+                  searchable={true}
+                  className={`w-100 ${hasError('state') ? 'is-invalid' : ''}`}
+                  disabled={!data.country}
+                />
+                {hasError('state') && (
+                  <div className="invalid-feedback d-block">{getFieldError('state')}</div>
+                )}
+        </div>
+
+        <div className="col-md-6">
+          <label className="form-label">Zip Code <span className="text-danger">*</span></label>
+          <input 
+            type="text" 
+            className={`form-control ${hasError('zip_code') ? 'is-invalid' : ''}`}
+            placeholder="Enter zip code" 
+            value={data.zip}
+            onChange={(e) => onChange({ ...data, zip: e.target.value })}
+            required 
+          />
+          {hasError('zip_code') && (
+            <div className="invalid-feedback">{getFieldError('zip_code')}</div>
+          )}
+        </div>
+
+
+        <div className="col-md-6">
+          <label className="form-label">Country <span className="text-danger">*</span></label>
+          <CustomDropdown
+            value={data.country}
+            onChange={(value) => {
+              onChange({ 
+                ...data, 
+                country: value,
+                state: '', // Reset state when country changes
+              })
+            }}
+            options={countriesData}
+            optionLabel="name"
+            optionValue="name"
+            placeholder="Select country"
+            searchable={true}
+            className={`w-100 ${hasError('country') ? 'is-invalid' : ''}`}
+          />
+          {hasError('country') && (
+            <div className="invalid-feedback d-block">{getFieldError('country')}</div>
+          )}
+        </div>
+        
         <div className="col-md-6">
           <label className="form-label">Home Phone <span className="text-danger">*</span></label>
           <div className="input-group">
@@ -362,9 +366,9 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             <input 
               type="tel" 
               className={`form-control ${hasError('home_phone') ? 'is-invalid' : ''}`}
-              placeholder="Enter number" 
+              placeholder="(555) 555-5555" 
               value={data.homePhone}
-              onChange={(e) => onChange({ ...data, homePhone: e.target.value })}
+              onChange={(e) => onChange({ ...data, homePhone: formatPhoneNumber(e.target.value) })}
               required 
             />
             {hasError('home_phone') && (
@@ -395,11 +399,11 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
         <div className="col-md-6">
           <label className="form-label">Last 4 SSN <span className="text-danger">*</span></label>
           <input 
-            type="text" 
+            type="password" 
             className={`form-control ${hasError('last_4_ssn') ? 'is-invalid' : ''}`}
-            placeholder="Enter last 4 ssn number" 
+            placeholder="****" 
             value={data.last4ssn}
-            onChange={(e) => onChange({ ...data, last4ssn: e.target.value })}
+            onChange={(e) => onChange({ ...data, last4ssn: formatLast4SSN(e.target.value) })}
             maxLength={4}
             required 
           />

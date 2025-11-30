@@ -2,9 +2,11 @@ import React, { useState, useMemo, useEffect } from 'react'
 import { FinancialSupport as FinancialSupportType } from '../types'
 import CustomDropdown from './CustomDropdown'
 import countriesData from '../../../data/countries.json'
+import { yearsInBusinessOptions } from '../../../data/profile'
 import { useFinancialInfo, useSaveFinancialInfo } from '../../../modules/profile/queries'
 import { toast } from 'react-toastify'
 import { ValidationErrors } from '../../../modules/profile/types'
+import TabLoader from '../../../components/Loader/TabLoader'
 
 interface FinancialSupportProps {
   data: FinancialSupportType
@@ -15,7 +17,7 @@ interface FinancialSupportProps {
 }
 
 export default function FinancialSupport({ data, onChange, onSave, onBack, saving }: FinancialSupportProps) {
-  const { data: apiData, isSuccess } = useFinancialInfo()
+  const { data: apiData, isSuccess, isLoading } = useFinancialInfo()
   const { mutate: saveFinancial, isPending } = useSaveFinancialInfo()
   const [errors, setErrors] = useState<ValidationErrors>({})
 
@@ -62,20 +64,16 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
     }
   }, [isSuccess, apiData])
 
-  const yearsOptions = [
-    { label: '1 Year', value: '1' },
-    { label: '2 Years', value: '2' },
-    { label: '3 Years', value: '3' },
-    { label: '5 Years', value: '5' },
-    { label: '10 Years', value: '10' }
-  ]
-
   const currencyOptions = useMemo(() => {
     return countriesData.map(country => ({
       label: `${country.currency} - ${country.name}`,
       value: country.currency
     }))
   }, [])
+
+  if (isLoading) {
+    return <TabLoader />
+  }
 
   return (
     <div className="fade-panel">
@@ -98,7 +96,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           <CustomDropdown
             value={data.yearsInBusiness}
             onChange={(value) => onChange({ ...data, yearsInBusiness: value })}
-            options={yearsOptions}
+            options={yearsInBusinessOptions}
             optionLabel="label"
             optionValue="value"
             placeholder="Select years"

@@ -1,147 +1,24 @@
 import React from 'react'
 
 export default function TabLoader() {
+  const labelWidths = ['30%', '28%', '20%', '38%', '25%', '18%', '20%', '28%', '35%', '32%', '33%', '28%']
+
   return (
     <div className="fade-panel">
-      <form className="row g-3">
-    
-        <div className="col-md-6">
-          <div className="mb-2">
-            <div className="placeholder-glow">
-              <span className="placeholder rounded skeleton-label" style={{ width: '30%' }}></span>
+      <div className="row g-3">
+        {labelWidths.map((width, i) => (
+          <div className="col-md-6" key={i}>
+            <div className="mb-2">
+              <div className="skeleton-line" style={{ width: width, height: 14, borderRadius: 4 }}></div>
             </div>
+            <div className="skeleton-line w-100" style={{ height: 42, borderRadius: 8 }}></div>
           </div>
-          <div className="placeholder-glow">
-            <span className="placeholder rounded skeleton-field"></span>
-          </div>
-        </div>
-        <div className="col-md-6">
-          <div className="mb-2">
-            <div className="placeholder-glow">
-              <span className="placeholder rounded skeleton-label" style={{ width: '28%' }}></span>
-            </div>
-          </div>
-          <div className="placeholder-glow">
-            <span className="placeholder rounded skeleton-field"></span>
-          </div>
-        </div>
-
-     
-        <div className="col-md-6">
-          <div className="mb-2">
-            <div className="placeholder-glow">
-              <span className="placeholder rounded skeleton-label" style={{ width: '20%' }}></span>
-            </div>
-          </div>
-          <div className="placeholder-glow">
-            <span className="placeholder rounded skeleton-field"></span>
-          </div>
-        </div>
-        <div className="col-md-6">
-          <div className="mb-2">
-            <div className="placeholder-glow">
-              <span className="placeholder rounded skeleton-label" style={{ width: '38%' }}></span>
-            </div>
-          </div>
-          <div className="placeholder-glow">
-            <span className="placeholder rounded skeleton-field"></span>
-          </div>
-        </div>
-
-      
-        <div className="col-md-6">
-          <div className="mb-2">
-            <div className="placeholder-glow">
-              <span className="placeholder rounded skeleton-label" style={{ width: '25%' }}></span>
-            </div>
-          </div>
-          <div className="placeholder-glow">
-            <span className="placeholder rounded skeleton-field"></span>
-          </div>
-        </div>
-        <div className="col-md-6">
-          <div className="mb-2">
-            <div className="placeholder-glow">
-              <span className="placeholder rounded skeleton-label" style={{ width: '18%' }}></span>
-            </div>
-          </div>
-          <div className="placeholder-glow">
-            <span className="placeholder rounded skeleton-field"></span>
-          </div>
-        </div>
-
-
-        <div className="col-md-6">
-          <div className="mb-2">
-            <div className="placeholder-glow">
-              <span className="placeholder rounded skeleton-label" style={{ width: '20%' }}></span>
-            </div>
-          </div>
-          <div className="placeholder-glow">
-            <span className="placeholder rounded skeleton-field"></span>
-          </div>
-        </div>
-        <div className="col-md-6">
-          <div className="mb-2">
-            <div className="placeholder-glow">
-              <span className="placeholder rounded skeleton-label" style={{ width: '28%' }}></span>
-            </div>
-          </div>
-          <div className="placeholder-glow">
-            <span className="placeholder rounded skeleton-field"></span>
-          </div>
-        </div>
-
-      
-        <div className="col-md-6">
-          <div className="mb-2">
-            <div className="placeholder-glow">
-              <span className="placeholder rounded skeleton-label" style={{ width: '35%' }}></span>
-            </div>
-          </div>
-          <div className="placeholder-glow">
-            <span className="placeholder rounded skeleton-field"></span>
-          </div>
-        </div>
-        <div className="col-md-6">
-          <div className="mb-2">
-            <div className="placeholder-glow">
-              <span className="placeholder rounded skeleton-label" style={{ width: '32%' }}></span>
-            </div>
-          </div>
-          <div className="placeholder-glow">
-            <span className="placeholder rounded skeleton-field"></span>
-          </div>
-        </div>
-
-     
-        <div className="col-md-6">
-          <div className="mb-2">
-            <div className="placeholder-glow">
-              <span className="placeholder rounded skeleton-label" style={{ width: '33%' }}></span>
-            </div>
-          </div>
-          <div className="placeholder-glow">
-            <span className="placeholder rounded skeleton-field"></span>
-          </div>
-        </div>
-        <div className="col-md-6">
-          <div className="mb-2">
-            <div className="placeholder-glow">
-              <span className="placeholder rounded skeleton-label" style={{ width: '28%' }}></span>
-            </div>
-          </div>
-          <div className="placeholder-glow">
-            <span className="placeholder rounded skeleton-field"></span>
-          </div>
-        </div>
+        ))}
 
         <div className="col-12 d-flex justify-content-end mt-4">
-          <div className="placeholder-glow">
-            <span className="placeholder rounded skeleton-button"></span>
-          </div>
+          <div className="skeleton-line" style={{ width: 120, height: 38, borderRadius: 10 }}></div>
         </div>
-      </form>
+      </div>
     </div>
   )
 }

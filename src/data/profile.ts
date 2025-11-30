@@ -41,3 +41,11 @@ export const industryTypes: OptionType[] = [
   { label: 'Transportation & Logistics', value: 'Transportation & Logistics' },
   { label: 'Other', value: 'Other' }
 ]
+
+export const yearsInBusinessOptions: OptionType[] = [
+  { label: 'Under 6 months', value: 'Under 6 months' },
+  { label: '6–12 months', value: '6–12 months' },
+  { label: '1–2 years', value: '1–2 years' },
+  { label: '2–3 years', value: '2–3 years' },
+  { label: '3+ years', value: '3+ years' }
+]

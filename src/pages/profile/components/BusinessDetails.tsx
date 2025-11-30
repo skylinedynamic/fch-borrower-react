@@ -2,11 +2,12 @@ import React from 'react'
 import CustomDropdown from './CustomDropdown'
 import { BusinessDetails as BusinessDetailsType } from '../types'
 import countriesData from '../../../data/countries.json'
-import { entityTypes, industryTypes } from '../../../data/businessTypes'
+import { entityTypes, industryTypes } from '../../../data/profile'
 import { useBusinessDetails, useSaveBusinessDetails } from '../../../modules/profile/queries'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import { ValidationErrors } from '../../../modules/profile/types'
+import TabLoader from '../../../components/Loader/TabLoader'
 
 interface BusinessDetailsProps {
   data: BusinessDetailsType
@@ -16,7 +17,8 @@ interface BusinessDetailsProps {
 }
 
 export default function BusinessDetails({ data, onChange, onSave, onBack }: BusinessDetailsProps) {
-  const { data: apiData, isSuccess } = useBusinessDetails()
+
+  const { data: apiData, isLoading, isSuccess } = useBusinessDetails()
   const { mutate: saveBusiness, isPending } = useSaveBusinessDetails()
   const [errors, setErrors] = useState<ValidationErrors>({})
 
@@ -93,6 +95,11 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
   const phoneCountry = useMemo(() => {
     return countriesData.find(c => c.phone_code === data.businessPhoneCountry)
   }, [data.businessPhoneCountry])
+
+
+  if (isLoading) {
+    return <TabLoader />
+  }
 
   return (
     <div className="fade-panel">
