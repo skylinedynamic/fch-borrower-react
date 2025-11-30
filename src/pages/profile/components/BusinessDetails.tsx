@@ -2,6 +2,7 @@ import React from 'react'
 import CustomDropdown from './CustomDropdown'
 import { BusinessDetails as BusinessDetailsType } from '../types'
 import countriesData from '../../../data/countries.json'
+import { entityTypes, industryTypes } from '../../../data/businessTypes'
 import { useBusinessDetails, useSaveBusinessDetails } from '../../../modules/profile/queries'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
@@ -75,51 +76,6 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
       })
     }
   }, [isSuccess, apiData])
-
-  // Static options for dropdowns
-  const entityTypes = [
-    { label: 'Corporation (C-Corp)', value: 'Corporation (C-Corp)' },
-    { label: 'Corporation (S-Corp)', value: 'Corporation (S-Corp)' },
-    { label: 'Franchise', value: 'Franchise' },
-    { label: 'Licensed Mortgage Loan Originator (NMLS)', value: 'Licensed Mortgage Loan Originator (NMLS)' },
-    { label: 'Licensed Real Estate Agent', value: 'Licensed Real Estate Agent' },
-    { label: 'Limited Liability Company (LLC)', value: 'Limited Liability Company (LLC)' },
-    { label: 'Mortgage Brokerage (Entity)', value: 'Mortgage Brokerage (Entity)' },
-    { label: 'Non-Profit', value: 'Non-Profit' },
-    { label: 'Partnership', value: 'Partnership' },
-    { label: 'Real Estate Brokerage (Entity)', value: 'Real Estate Brokerage (Entity)' },
-    { label: 'Sole Proprietorship', value: 'Sole Proprietorship' },
-    { label: 'Trust', value: 'Trust' },
-    { label: 'Other', value: 'Other' }
-  ]
-
-  const industryTypes = [
-    { label: 'Accounting & Financial Services', value: 'Accounting & Financial Services' },
-    { label: 'Automotive Services & Dealerships', value: 'Automotive Services & Dealerships' },
-    { label: 'Beauty, Salon & Spa Services', value: 'Beauty, Salon & Spa Services' },
-    { label: 'Cannabis / CBD Industry', value: 'Cannabis / CBD Industry' },
-    { label: 'Childcare & Daycare', value: 'Childcare & Daycare' },
-    { label: 'Cleaning & Janitorial Services', value: 'Cleaning & Janitorial Services' },
-    { label: 'Construction & Contracting', value: 'Construction & Contracting' },
-    { label: 'E-Commerce / Online Retail', value: 'E-Commerce / Online Retail' },
-    { label: 'Education & Tutoring Services', value: 'Education & Tutoring Services' },
-    { label: 'Fitness & Wellness (Gyms, Yoga, Etc.)', value: 'Fitness & Wellness (Gyms, Yoga, Etc.)' },
-    { label: 'Franchise Businesses', value: 'Franchise Businesses' },
-    { label: 'Government Contractor / Vendor', value: 'Government Contractor / Vendor' },
-    { label: 'Healthcare & Medical Practices', value: 'Healthcare & Medical Practices' },
-    { label: 'Home Services (Plumbing, HVAC, Landscaping, etc.)', value: 'Home Services (Plumbing, HVAC, Landscaping, etc.)' },
-    { label: 'Hospitality (Hotels / Lodging)', value: 'Hospitality (Hotels / Lodging)' },
-    { label: 'IT & Software Development', value: 'IT & Software Development' },
-    { label: 'Legal & Professional Services', value: 'Legal & Professional Services' },
-    { label: 'Manufacturing & Wholesale', value: 'Manufacturing & Wholesale' },
-    { label: 'Marketing, Advertising & Media', value: 'Marketing, Advertising & Media' },
-    { label: 'Non-Profit Organization', value: 'Non-Profit Organization' },
-    { label: 'Real Estate & Property Management', value: 'Real Estate & Property Management' },
-    { label: 'Restaurants, Bars & Catering', value: 'Restaurants, Bars & Catering' },
-    { label: 'Retail (Brick & Mortar)', value: 'Retail (Brick & Mortar)' },
-    { label: 'Transportation & Logistics', value: 'Transportation & Logistics' },
-    { label: 'Other', value: 'Other' }
-  ]
 
   const selectedCountry = useMemo(() => {
     return countriesData.find(c => c.name === (data.country || 'United States'))
