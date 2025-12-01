@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { FinancialSupport as FinancialSupportType } from '../types'
 import CustomDropdown from './CustomDropdown'
-import countriesData from '../../../data/countries.json'
+import { countries as countriesData } from '../../../data/countries'
 import { yearsInBusinessOptions } from '../../../data/profile'
 import { useFinancialInfo, useSaveFinancialInfo } from '../../../modules/profile/queries'
 import { toast } from 'react-toastify'
@@ -25,7 +25,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
     setErrors({})
     const payload = {
       currency: data.currency,
-      years_in_business: parseInt(data.yearsInBusiness) || 0,
+      years_in_business: data.yearsInBusiness || null,
       monthly_revenue: parseFloat(data.monthlyRevenue) || 0,
       annual_revenue: parseFloat(data.annualRevenue) || 0,
     }
@@ -72,7 +72,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
   }, [])
 
   if (isLoading) {
-    return <TabLoader />
+    return <TabLoader count={4} colClass="col-md-6" />
   }
 
   return (

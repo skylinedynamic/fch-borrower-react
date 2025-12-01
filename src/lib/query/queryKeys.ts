@@ -34,4 +34,7 @@ export const queryKeys = {
     businessDetails: () => [...queryKeys.profile.all, 'businessDetails'] as const,
     financialInfo: () => [...queryKeys.profile.all, 'financialInfo'] as const,
   },
+  preQualification: {
+    all: ['preQualification'] as const,
+  },
 } as const

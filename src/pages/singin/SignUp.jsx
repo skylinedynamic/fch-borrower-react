@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Auth from '../../components/Layout/Auth'
 import { registerBorrower, login } from '../../modules/auth/services'
 import { toast } from 'react-toastify'
 import { Dropdown } from 'primereact/dropdown'
-import countriesData from '../../data/countries.json'
+import { countries as countriesData } from '../../data/countries'
+import { formatPhoneNumber } from '../../utils/formatters'
+import CustomDropdown from '../profile/components/CustomDropdown'
 
 export default function SignUp() {
   const navigate = useNavigate()
@@ -26,6 +28,11 @@ export default function SignUp() {
 
   const [availableStates, setAvailableStates] = useState([])
 
+  // Get selected country object
+  const selectedCountry = useMemo(() => {
+    return countriesData.find(c => c.code === countryCode) || countriesData.find(c => c.name === 'United States')
+  }, [countryCode])
+
   useEffect(() => {
     const idFromUrl = searchParams.get('id')
     if (idFromUrl) {
@@ -34,13 +41,12 @@ export default function SignUp() {
   }, [searchParams])
 
   useEffect(() => {
-    const selectedCountry = countriesData.find(c => c.code === countryCode)
     if (selectedCountry) {
       setAvailableStates(selectedCountry.states)
     } else {
       setAvailableStates([])
     }
-  }, [countryCode])
+  }, [selectedCountry])
 
   const handleCountryChange = (e) => {
     setCountryCode(e.value)
@@ -152,24 +158,32 @@ export default function SignUp() {
                 style={{ minWidth: '120px', height: '38px', borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
                 panelStyle={{ minWidth: '200px' }}
               />
-              <input id="phone-number" type="tel" className={`form-control ${errors?.phone_number ? 'is-invalid' : ''}`} placeholder="Enter number" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} required style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }} />
+              <input 
+                id="phone-number" 
+                type="tel" 
+                className={`form-control ${errors?.phone_number ? 'is-invalid' : ''}`} 
+                placeholder="(555) 555-5555" 
+                value={phoneNumber} 
+                onChange={(e) => setPhoneNumber(formatPhoneNumber(e.target.value))} 
+                required 
+                style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+              />
             </div>
             {errors?.phone_number && (<div className="invalid-feedback d-block">{String(errors.phone_number)}</div>)}
           </div>
 
           <div className="col-md-6">
             <label className="form-label" htmlFor="state-select">State <span className="text-danger">*</span></label>
-            <Dropdown
+            <CustomDropdown
               id="state-select"
               value={stateVal}
-              onChange={(e) => setStateVal(e.value)}
+              onChange={(value) => setStateVal(value)}
               options={availableStates}
               optionLabel="name"
               optionValue="name"
               placeholder="Select state"
-              filter
-              className={`w-100 ${errors?.state ? 'p-invalid' : ''}`}
-              required
+              searchable={true}
+              className={`w-100 ${errors?.state ? 'is-invalid' : ''}`}
             />
             {errors?.state && (<div className="invalid-feedback d-block">{String(errors.state)}</div>)}
           </div>

@@ -1,7 +1,7 @@
 import React from 'react'
 import CustomDropdown from './CustomDropdown'
 import { BusinessDetails as BusinessDetailsType } from '../types'
-import countriesData from '../../../data/countries.json'
+import { countries as countriesData } from '../../../data/countries'
 import { entityTypes, industryTypes } from '../../../data/profile'
 import { useBusinessDetails, useSaveBusinessDetails } from '../../../modules/profile/queries'
 import { useEffect, useMemo, useState } from 'react'
@@ -98,7 +98,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
 
 
   if (isLoading) {
-    return <TabLoader />
+    return <TabLoader count={10} colClass="col-md-6" />
   }
 
   return (
@@ -153,7 +153,21 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
           {errors.business_address && <div className="invalid-feedback">{errors.business_address}</div>}
         </div>
 
+      
+
         <div className="col-md-6">
+          <label className="form-label">City <span className="text-danger">*</span></label>
+          <input 
+            type="text" 
+            value={data.city} 
+            onChange={(e) => onChange({ ...data, city: e.target.value })} 
+            className={`form-control ${errors.business_city ? 'is-invalid' : ''}`}
+            placeholder="Enter city"
+          />
+          {errors.business_city && <div className="invalid-feedback">{errors.business_city}</div>}
+        </div>
+
+          <div className="col-md-6">
           <label className="form-label">State <span className="text-danger">*</span></label>
           <CustomDropdown
             value={data.state}
@@ -168,20 +182,6 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
           {errors.business_state && <div className="invalid-feedback d-block">{errors.business_state}</div>}
         </div>
 
-        <div className="col-md-6">
-          <label className="form-label">City <span className="text-danger">*</span></label>
-          <CustomDropdown
-            value={data.city}
-            onChange={(value) => onChange({ ...data, city: value })}
-            options={cities}
-            optionLabel="label"
-            optionValue="value"
-            searchable={true}
-            placeholder="Select city"
-            className={`w-100 ${errors.business_city ? 'is-invalid' : ''}`}
-          />
-          {errors.business_city && <div className="invalid-feedback d-block">{errors.business_city}</div>}
-        </div>
       
         <div className="col-md-6">
           <label className="form-label">Zip Code <span className="text-danger">*</span></label>
@@ -224,6 +224,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
             options={industryTypes}
             optionLabel="label"
             optionValue="value"
+            searchable={true}
             placeholder="Select industry type"
             className={`w-100 ${errors.business_industry_type ? 'is-invalid' : ''}`}
           />

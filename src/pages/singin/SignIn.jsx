@@ -14,6 +14,7 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false)
   const [formError, setFormError] = useState('')
   const [remember, setRemember] = useState(false)
+  
 
  const handleSubmit = async (e) => {
   e.preventDefault()
@@ -133,15 +134,7 @@ export default function SignIn() {
               <button className="btn w-100 primary-btn" type="submit" disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</button>
             </div>
 
-            <div className="border-top my-3"></div>
-            <div className="text-center mb-3">
-              <span className="text-muted">Sign In with</span>
-            </div>
-            <div className="d-flex justify-content-center gap-2">
-              <a href="#" aria-label="Facebook" className="btn social-btn social-facebook"><i className="ri-facebook-fill"></i></a>
-              <a href="#" aria-label="Google" className="btn social-btn social-google"><i className="ri-google-fill"></i></a>
-              <a href="#" aria-label="GitHub" className="btn social-btn social-github"><i className="ri-github-fill"></i></a>
-            </div>
+ 
           </form>
         </div>
         <div className="col-lg-6 d-none d-lg-block">

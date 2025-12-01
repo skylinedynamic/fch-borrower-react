@@ -109,7 +109,7 @@ export default function Profile() {
                       setStep(2)
                     }}
                   >
-                    Financial Support
+                    Financial
                   </button>
                 </li>
               </ul>

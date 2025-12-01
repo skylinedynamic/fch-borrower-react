@@ -703,9 +703,9 @@
   position: absolute;
   right: -12px;
   top: 0;
-  width: 24px;
+  width: 12px;
   height: 100%;
-  background: linear-gradient(90deg, #0b2a4a 0%, #173a6a 100%);
+  background: linear-gradient(90deg, #163968 0%, #163967 100%);
   background-size: 200% 100%;
   animation: tabShift 0.6s ease both;
   clip-path: polygon(0 0, 100% 50%, 0 100%);
@@ -881,9 +881,9 @@
   position: absolute;
   right: -12px;
   top: 0;
-  width: 24px;
+  width: 12px;
   height: 100%;
-  background: linear-gradient(90deg, #0b2a4a 0%, #173a6a 100%);
+  background: linear-gradient(90deg, #163968 0%, #163967 100%);
   background-size: 200% 100%;
   animation: tabShift 0.6s ease both;
   clip-path: polygon(0 0, 100% 50%, 0 100%);
@@ -2336,4 +2336,45 @@
 .dropdown.is-invalid .form-select:focus {
     border-color: #dc3545 !important;
     box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+}
+
+
+.p-dropdown-panel .p-dropdown-items{
+  margin-bottom: 0 !important;
+}
+
+.signup-page-form .p-inputwrapper-filled{
+    min-width: 100px !important;
+    height: 37.5px !important;
+}
+
+.signup-page-form .p-dropdown:not(.p-disabled):hover {
+    border-color: none !important;
+}
+
+.signup-page-form  .p-dropdown .p-dropdown-trigger{
+      width: 2rem !important;
+      font-size: .8rem !important;
+}
+.signup-page-form .p-icon{
+  width: .6rem !important;
+  height: .6rem !important;
+}
+
+.signup-page-form .p-dropdown:not(.p-disabled):hover {
+    border-color: #ced4da !important;
+}
+.p-dropdown:not(.p-disabled).p-focus{
+  box-shadow: none !important;
+}
+
+.signup-page-form .p-inputtext{
+  font-size: .8rem !important;
+}
+.p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight.p-focus,.p-dropdown-panel .p-dropdown-items .p-dropdown-item:not(.p-highlight):not(.p-disabled).p-focus {
+    background: #0b2a4a !important;
+    color: #fff !important;
+}
+.p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+  font-size: .8rem !important;
 }

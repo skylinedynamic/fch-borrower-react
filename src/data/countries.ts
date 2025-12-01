@@ -1,4 +1,19 @@
-[
+export interface State {
+  name: string
+  code: string
+  cities: string[]
+}
+
+export interface Country {
+  name: string
+  code: string
+  currency: string
+  phone_code: string
+  flag: string
+  states: State[]
+}
+
+export const countries: Country[] = [
     {
         "name": "United States",
         "code": "USA",

@@ -7,7 +7,7 @@ import { PersonalInfo as PersonalInfoType } from '../types'
 import { usePersonalInfo, useSavePersonalInfo } from '../../../modules/profile'
 import type { PersonalInfoData, SavePersonalInfoRequest, ErrorResponse, ValidationErrors } from '../../../modules/profile'
 import TabLoader from '../../../components/Loader/TabLoader'
-import countriesData from '../../../data/countries.json'
+import { countries as countriesData } from '../../../data/countries'
 
 import { formatPhoneNumber, formatLast4SSN } from '../../../utils/formatters'
 
@@ -184,7 +184,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
   }, [apiData])
 
   if (isLoading) {
-    return <TabLoader />
+    return <TabLoader count={12} colClass="col-md-6" />
   }
 
   if (error) {
@@ -386,6 +386,8 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             }}
             options={{
               dateFormat: "Y-m-d",
+              altInput: true,
+              altFormat: "m-d-Y",
               maxDate: "today",
               yearDropdown: true,
               yearRange: "1900:" + new Date().getFullYear(),
