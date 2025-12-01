@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import { ValidationErrors } from '../../../modules/profile/types'
 import TabLoader from '../../../components/Loader/TabLoader'
+import { formatPhoneNumber } from '../../../utils/formatters'
 
 interface BusinessDetailsProps {
   data: BusinessDetailsType
@@ -134,9 +135,10 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
             <input 
               type="tel" 
               className={`form-control ${errors.business_phone ? 'is-invalid' : ''}`}
-              placeholder="Enter number" 
+              placeholder="(123) 456-7890" 
               value={data.businessPhone}
-              onChange={(e) => onChange({ ...data, businessPhone: e.target.value })}
+              onChange={(e) => onChange({ ...data, businessPhone: formatPhoneNumber(e.target.value) })}
+              maxLength={14}
               required 
             />
             {errors.business_phone && <div className="invalid-feedback">{errors.business_phone}</div>}

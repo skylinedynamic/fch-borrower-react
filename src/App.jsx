@@ -21,6 +21,7 @@ import ProgressTracker from '../src/pages/creditprogresstracker/ProgressTracker.
 import CreditResources from '../src/pages/creditresources/CreditResources.tsx'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import ProfileCompleteCheckModal from './components/ProfileCompleteCheckModal/ProfileCompleteCheckModal'
 
 
 export default function App() {
@@ -39,7 +40,13 @@ export default function App() {
         <Route path="forgot-password" element={<ForgotPassword />} />
       <Route path="reset-password" element={<ResetPassword />} />
       </Route>
-      <Route element={<ProtectedRoute />}> 
+      <Route element={
+        <>
+          <ProfileCompleteCheckModal />
+          <ProtectedRoute />
+        </>
+      }>
+       
         <Route element={<Layout />}> 
           <Route index element={<Dashboard />} />
           <Route path="under-construction/:feature" element={<UnderConstruction />} />

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { PersonalInfo as PersonalInfoType, BusinessDetails as BusinessDetailsType, FinancialSupport as FinancialSupportType } from './types'
 import PersonalInfo from './components/PersonalInfo'
@@ -6,7 +7,11 @@ import BusinessDetails from './components/BusinessDetails'
 import FinancialSupport from './components/FinancialSupport'
 
 export default function Profile() {
-  const [step, setStep] = useState<number>(0)
+  const [searchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const initialStep = tabParam ? parseInt(tabParam, 10) : 0
+  
+  const [step, setStep] = useState<number>(initialStep)
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
   useEffect(() => {

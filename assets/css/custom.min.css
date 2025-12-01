@@ -2371,10 +2371,528 @@
 .signup-page-form .p-inputtext{
   font-size: .8rem !important;
 }
+.progress-tracker .tp-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+}
+.progress-tracker .tp-info i { font-size: 12px; }
+.progress-tracker .tp-desc {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+}
+.progress-tracker .tier-card .status-badge {
+  font-size: 12px;
+}
+.progress-tracker .tasks-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 992px){
+  .progress-tracker .tasks-grid { grid-template-columns: 1fr; }
+}
+.progress-tracker .task-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px;
+}
+.progress-tracker .task-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.progress-tracker .task-title { font-weight: 600; }
+.progress-tracker .task-desc { color: var(--bs-secondary-color); }
+.progress-tracker .task-meta { margin-top: 6px; display: flex; gap: 8px; align-items: center; }
+.progress-tracker .tier-card .percent { font-weight: 700; }
+.progress-tracker .tier-card.tier-completed { background: #eaf9f0; border-color: #c9f3dc; }
+.progress-tracker .tier-card.tier-active { background: #eaf2ff; border-color: #d7e6ff; }
+.progress-tracker .tier-card.tier-pending { background: #ffffff; }
+.progress-tracker .tier-card.tier-locked { background: #ffffff; opacity: 0.98; }
+.progress-tracker .tier-card .vc-title { font-weight: 700; }
+.progress-tracker .tier-progress { height: 10px; border-radius: 999px; background: #eef0f4; overflow: hidden; }
+.progress-tracker .tier-progress-fill { position: relative; height: 100%; background: linear-gradient(90deg,#D4AF37 0%, #001F3F 100%); }
+.progress-tracker .tier-progress-fill::after { content: ""; position: absolute; inset: 0; background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.22) 0, rgba(255,255,255,0.22) 8px, rgba(255,255,255,0) 8px, rgba(255,255,255,0) 16px); }
+.progress-tracker .tier-list { list-style: none; padding-left: 0; margin: 0; }
+.progress-tracker .tier-list li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid #eef0f4; }
+.progress-tracker .tier-list li:first-child { border-top: none; }
+.progress-tracker .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.progress-tracker .dot-green { background: #22c55e; }
+.progress-tracker .dot-orange { background: #f59e0b; }
+.progress-tracker .tier-footer { margin-top: 12px; border-radius: 8px; padding: 10px; text-align: center; font-weight: 600; }
+.progress-tracker .footer-completed { background: #22c55e; color: #fff; }
+.progress-tracker .footer-active { background: #4056d8; color: #fff; }
+.progress-tracker .footer-pending { background: #f3f4f6; color: #6b7280; }
+.progress-tracker .footer-locked { background: #f3f4f6; color: #6b7280; }
+
+
+
+.skeleton-label {
+  display: block;
+  height: 14px;
+  background-color: #d8d7d7ff;
+}
+
+.skeleton-field {
+  display: block;
+  width: 100%;
+  height: 42px;
+  background-color: #d8d7d7ff;
+}
+
+.skeleton-button {
+  display: block;
+  width: 140px;
+  height: 40px;
+  background-color: #d8d7d7ff;
+}
+
+/* Custom Dropdown Validation Styles */
+.dropdown.is-invalid .form-select {
+    border-color: #dc3545 !important;
+}
+
+.dropdown.is-invalid .form-select:focus {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.input-group>:not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback)
+ {
+    border-top-right-radius: .25rem;
+    border-bottom-right-radius: .25rem;
+}
+
+
+/* calender */
+.flatpickr-weekday,.flatpickr-months .flatpickr-month, .flatpickr-current-month .flatpickr-monthDropdown-months
+ {
+    background: #001f3f !important;
+    color: rgb(255 255 255) !important;
+}
+.flatpickr-weekday, .flatpickr-weekdays {
+    background: #001f3f !important;
+    color: rgb(255 255 255) !important;
+}
+.flatpickr-weekday{
+  background: #001f3f !important;
+}
+.flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange, .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus, .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover, .flatpickr-day.selected.prevMonthDay, .flatpickr-day.startRange.prevMonthDay, .flatpickr-day.endRange.prevMonthDay, .flatpickr-day.selected.nextMonthDay, .flatpickr-day.startRange.nextMonthDay, .flatpickr-day.endRange.nextMonthDay {
+    background: #001f3f !important;
+    color: #fff !important;
+    border-color: #0b2a4a !important;
+}
+
+.flatpickr-day.today {
+    border-color: #001f3f !important;
+    color: #fff !important;
+    background: #001f3f !important;
+}
+
+.flatpickr-day.flatpickr-disabled, .flatpickr-day.flatpickr-disabled:hover {
+    cursor: not-allowed;
+    color: rgb(72 72 72 / 41%) !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months .flatpickr-monthDropdown-month {
+    background-color: #ffffff !important;
+    font-size: 12px !important;
+}
+
+
+
+.dropdown-menu.show {
+    margin-top: 0px !important;
+}
+.input-group-text.border {
+    border:var(--vz-border-width) solid var(--vz-input-border-custom) !important
+}
+
+.form-select:focus {
+    border-color: var(--vz-primary-border-subtle);
+    outline: 0;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important;
+}
+
+/* Custom Dropdown Validation Styles */
+.dropdown.is-invalid .form-select {
+    border-color: #dc3545 !important;
+}
+
+.dropdown.is-invalid .form-select:focus {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+}
+
+
+.p-dropdown-panel .p-dropdown-items{
+  margin-bottom: 0 !important;
+}
+
+.signup-page-form .p-inputwrapper-filled{
+    min-width: 100px !important;
+    height: 37.5px !important;
+}
+
+.signup-page-form .p-dropdown:not(.p-disabled):hover {
+    border-color: none !important;
+}
+
+.signup-page-form  .p-dropdown .p-dropdown-trigger{
+      width: 2rem !important;
+      font-size: .8rem !important;
+}
+.signup-page-form .p-icon{
+  width: .6rem !important;
+  height: .6rem !important;
+}
+
+.signup-page-form .p-dropdown:not(.p-disabled):hover {
+    border-color: #ced4da !important;
+}
+.p-dropdown:not(.p-disabled).p-focus{
+  box-shadow: none !important;
+}
+
+.signup-page-form .p-inputtext{
+  font-size: .8rem !important;
+}
 .p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight.p-focus,.p-dropdown-panel .p-dropdown-items .p-dropdown-item:not(.p-highlight):not(.p-disabled).p-focus {
     background: #0b2a4a !important;
     color: #fff !important;
 }
 .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
   font-size: .8rem !important;
+}
+
+/* Profile Complete Check Modal Styles */
+#profileCompleteModal .modal-header {
+  background: linear-gradient(135deg, #0b2a4a 0%, #001f3f 100%);
+  color: white;
+  border-bottom: none;
+}
+
+#profileCompleteModal .modal-header .modal-title {
+  color: white;
+}
+
+#profileCompleteModal .modal-body {
+  background: #f8f9fa;
+}
+
+#profileCompleteModal .pcm-icon-circle {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #d4af37 0%, #f4d47e 100%);
+  box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3);
+}
+
+#profileCompleteModal .pcm-icon-circle i {
+  font-size: 32px;
+  color: #0b2a4a;
+}
+
+#profileCompleteModal .pcm-title {
+  color: #2d3748;
+  font-weight: 600;
+}
+
+#profileCompleteModal .pcm-subtitle {
+  font-size: 14px;
+}
+
+#profileCompleteModal .pcm-section-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  background: white;
+}
+
+.progress-tracker .tier-list li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid #eef0f4; }
+.progress-tracker .tier-list li:first-child { border-top: none; }
+.progress-tracker .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.progress-tracker .dot-green { background: #22c55e; }
+.progress-tracker .dot-orange { background: #f59e0b; }
+.progress-tracker .tier-footer { margin-top: 12px; border-radius: 8px; padding: 10px; text-align: center; font-weight: 600; }
+.progress-tracker .footer-completed { background: #22c55e; color: #fff; }
+.progress-tracker .footer-active { background: #4056d8; color: #fff; }
+.progress-tracker .footer-pending { background: #f3f4f6; color: #6b7280; }
+.progress-tracker .footer-locked { background: #f3f4f6; color: #6b7280; }
+
+
+
+.skeleton-label {
+  display: block;
+  height: 14px;
+  background-color: #d8d7d7ff;
+}
+
+.skeleton-field {
+  display: block;
+  width: 100%;
+  height: 42px;
+  background-color: #d8d7d7ff;
+}
+
+.skeleton-button {
+  display: block;
+  width: 140px;
+  height: 40px;
+  background-color: #d8d7d7ff;
+}
+
+/* Custom Dropdown Validation Styles */
+.dropdown.is-invalid .form-select {
+    border-color: #dc3545 !important;
+}
+
+.dropdown.is-invalid .form-select:focus {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.input-group>:not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback)
+ {
+    border-top-right-radius: .25rem;
+    border-bottom-right-radius: .25rem;
+}
+
+
+/* calender */
+.flatpickr-weekday,.flatpickr-months .flatpickr-month, .flatpickr-current-month .flatpickr-monthDropdown-months
+ {
+    background: #001f3f !important;
+    color: rgb(255 255 255) !important;
+}
+.flatpickr-weekday, .flatpickr-weekdays {
+    background: #001f3f !important;
+    color: rgb(255 255 255) !important;
+}
+.flatpickr-weekday{
+  background: #001f3f !important;
+}
+.flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange, .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus, .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover, .flatpickr-day.selected.prevMonthDay, .flatpickr-day.startRange.prevMonthDay, .flatpickr-day.endRange.prevMonthDay, .flatpickr-day.selected.nextMonthDay, .flatpickr-day.startRange.nextMonthDay, .flatpickr-day.endRange.nextMonthDay {
+    background: #001f3f !important;
+    color: #fff !important;
+    border-color: #0b2a4a !important;
+}
+
+.flatpickr-day.today {
+    border-color: #001f3f !important;
+    color: #fff !important;
+    background: #001f3f !important;
+}
+
+.flatpickr-day.flatpickr-disabled, .flatpickr-day.flatpickr-disabled:hover {
+    cursor: not-allowed;
+    color: rgb(72 72 72 / 41%) !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months .flatpickr-monthDropdown-month {
+    background-color: #ffffff !important;
+    font-size: 12px !important;
+}
+
+
+
+.dropdown-menu.show {
+    margin-top: 0px !important;
+}
+.input-group-text.border {
+    border:var(--vz-border-width) solid var(--vz-input-border-custom) !important
+}
+
+.form-select:focus {
+    border-color: var(--vz-primary-border-subtle);
+    outline: 0;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important;
+}
+
+/* Custom Dropdown Validation Styles */
+.dropdown.is-invalid .form-select {
+    border-color: #dc3545 !important;
+}
+
+.dropdown.is-invalid .form-select:focus {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+}
+
+
+.p-dropdown-panel .p-dropdown-items{
+  margin-bottom: 0 !important;
+}
+
+.signup-page-form .p-inputwrapper-filled{
+    min-width: 100px !important;
+    height: 37.5px !important;
+}
+
+.signup-page-form .p-dropdown:not(.p-disabled):hover {
+    border-color: none !important;
+}
+
+.signup-page-form  .p-dropdown .p-dropdown-trigger{
+      width: 2rem !important;
+      font-size: .8rem !important;
+}
+.signup-page-form .p-icon{
+  width: .6rem !important;
+  height: .6rem !important;
+}
+
+.signup-page-form .p-dropdown:not(.p-disabled):hover {
+    border-color: #ced4da !important;
+}
+.p-dropdown:not(.p-disabled).p-focus{
+  box-shadow: none !important;
+}
+
+.signup-page-form .p-inputtext{
+  font-size: .8rem !important;
+}
+.p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight.p-focus,.p-dropdown-panel .p-dropdown-items .p-dropdown-item:not(.p-highlight):not(.p-disabled).p-focus {
+    background: #0b2a4a !important;
+    color: #fff !important;
+}
+.p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+  font-size: .8rem !important;
+}
+
+/* Profile Complete Check Modal Styles */
+#profileCompleteModal .modal-header {
+  background: linear-gradient(135deg, #0b2a4a 0%, #001f3f 100%);
+  color: white;
+  border-bottom: none;
+}
+
+#profileCompleteModal .modal-header .modal-title {
+  color: white;
+}
+
+#profileCompleteModal .modal-body {
+  background: #f8f9fa;
+}
+
+#profileCompleteModal .pcm-icon-circle {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #d4af37 0%, #f4d47e 100%);
+  box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3);
+}
+
+#profileCompleteModal .pcm-icon-circle i {
+  font-size: 32px;
+  color: #0b2a4a;
+}
+
+#profileCompleteModal .pcm-title {
+  color: #2d3748;
+  font-weight: 600;
+}
+
+#profileCompleteModal .pcm-subtitle {
+  font-size: 14px;
+}
+
+#profileCompleteModal .pcm-section-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  background: white;
+}
+
+#profileCompleteModal .pcm-section-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+#profileCompleteModal .pcm-accent-bar.personal,
+#profileCompleteModal .pcm-accent-bar.business,
+#profileCompleteModal .pcm-accent-bar.financial {
+  background: linear-gradient(135deg, #0b2a4a 0%, #001f3f 100%);
+}
+
+#profileCompleteModal .pcm-icon-box {
+  width: 40px;
+  height: 40px;
+}
+
+#profileCompleteModal .pcm-icon-box.personal,
+#profileCompleteModal .pcm-icon-box.business,
+#profileCompleteModal .pcm-icon-box.financial {
+  background: rgba(11, 42, 74, 0.1);
+  border: 2px solid rgba(11, 42, 74, 0.2);
+}
+
+#profileCompleteModal .pcm-icon-box i {
+  font-size: 20px;
+}
+
+#profileCompleteModal .pcm-icon-box.personal i,
+#profileCompleteModal .pcm-icon-box.business i,
+#profileCompleteModal .pcm-icon-box.financial i {
+  color: #0b2a4a;
+}
+
+#profileCompleteModal .pcm-section-title {
+  color: #2d3748;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+#profileCompleteModal .pcm-badge {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+#profileCompleteModal .pcm-badge.personal,
+#profileCompleteModal .pcm-badge.business,
+#profileCompleteModal .pcm-badge.financial {
+  background: rgba(11, 42, 74, 0.2);
+  color: #0b2a4a;
+}
+
+#profileCompleteModal .pcm-arrow {
+  font-size: 18px;
+  opacity: 0.6;
+}
+
+#profileCompleteModal .pcm-arrow.personal,
+#profileCompleteModal .pcm-arrow.business,
+#profileCompleteModal .pcm-arrow.financial {
+  color: #0b2a4a;
+}
+
+#profileCompleteModal .pcm-fields {
+  font-size: 12px;
+}
+
+#profileCompleteModal .pcm-field-dot {
+  font-size: 6px;
+}
+
+#profileCompleteModal .pcm-field-dot.personal,
+#profileCompleteModal .pcm-field-dot.business,
+#profileCompleteModal .pcm-field-dot.financial {
+  color: #0b2a4a;
+}
+
+#profileCompleteModal .pcm-more {
+  font-size: 11px;
+}
+
+#profileCompleteModal .pcm-later-btn {
+  text-decoration: none;
+  font-size: 14px;
 }
