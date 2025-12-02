@@ -1,5 +1,6 @@
 import React from 'react'
 import type { FinancialSupport } from '../../../modules/pre-qualification'
+import { formatCurrency } from '../../../utils/formatters'
 
 interface FundingNeedsStepProps {
   support: FinancialSupport
@@ -9,6 +10,16 @@ interface FundingNeedsStepProps {
 }
 
 export default function FundingNeedsStep({ support, setSupport, onNext, onPrevious }: FundingNeedsStepProps) {
+  const handleFundingAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCurrency(e.target.value)
+    setSupport({ ...support, fundingAmount: formatted })
+  }
+
+  const handleDebtBalanceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCurrency(e.target.value)
+    setSupport({ ...support, debtBalance: formatted })
+  }
+
   return (
     <form className="row g-3">
       <div className="col-md-6">
@@ -16,9 +27,9 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
         <input 
           type="text" 
           className="form-control" 
-          placeholder="Enter funding amount needed" 
+          placeholder="50,000" 
           value={support.fundingAmount} 
-          onChange={(e) => setSupport({ ...support, fundingAmount: e.target.value })} 
+          onChange={handleFundingAmountChange} 
         />
       </div>
       <div className="col-md-6">
@@ -84,13 +95,13 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
         <label className="form-label">Note</label>
         <textarea 
           className="form-control" 
-          placeholder="Enter notes" 
+          placeholder="Additional information or special requirements" 
           rows={1} 
           value={support.note} 
           onChange={(e) => setSupport({ ...support, note: e.target.value })} 
         />
       </div>
-      <div className="col-12 d-flex align-items-center gap-3">
+      <div className="col-6 d-flex align-items-center gap-3">
         <span className="fw-medium">Existing Business Debt?</span>
         <div className="form-check form-check-inline">
           <input 
@@ -117,6 +128,18 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
           <label className="form-check-label" htmlFor="debtNo">No</label>
         </div>
       </div>
+      {support.existingDebt === 'yes' && (
+        <div className="col-md-6">
+          <label className="form-label">Debt Balance <span className="text-danger">*</span></label>
+          <input 
+            type="text" 
+            className="form-control" 
+            placeholder="10,000" 
+            value={support.debtBalance} 
+            onChange={handleDebtBalanceChange} 
+          />
+        </div>
+      )}
       <div className="col-12">
         <div className="form-check">
           <input 

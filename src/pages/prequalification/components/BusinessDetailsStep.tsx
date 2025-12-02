@@ -2,6 +2,7 @@ import React from 'react'
 import type { BusinessDetails, FinancialSupport } from '../../../modules/pre-qualification'
 import CustomDropdown from '../../profile/components/CustomDropdown'
 import { entityTypes, industryTypes, yearsInBusinessOptions } from '../../../data/profile'
+import { formatCurrency } from '../../../utils/formatters'
 
 interface BusinessDetailsStepProps {
   business: BusinessDetails
@@ -13,6 +14,16 @@ interface BusinessDetailsStepProps {
 }
 
 export default function BusinessDetailsStep({ business, support, setBusiness, setSupport, onNext, onPrevious }: BusinessDetailsStepProps) {
+  const handleMonthlyRevenueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCurrency(e.target.value)
+    setSupport({ ...support, monthlyRevenue: formatted })
+  }
+
+  const handleAnnualRevenueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCurrency(e.target.value)
+    setSupport({ ...support, annualRevenue: formatted })
+  }
+
   return (
     <form className="row g-3">
       <div className="col-md-6">
@@ -20,7 +31,7 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
         <input 
           type="text" 
           className="form-control" 
-          placeholder="Enter business name" 
+          placeholder="ABC Corporation" 
           value={business.businessName} 
           onChange={(e) => setBusiness({ ...business, businessName: e.target.value })} 
         />
@@ -64,22 +75,22 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
       </div>
       <div className="col-md-6">
         <label className="form-label">Monthly Revenue <span className="text-danger">*</span></label>
-        <input 
-          type="text" 
-          className="form-control" 
-          placeholder="$40,000" 
-          value={support.monthlyRevenue} 
-          onChange={(e) => setSupport({ ...support, monthlyRevenue: e.target.value })} 
+        <input
+          type="text"
+          className="form-control"
+          placeholder="40,000"
+          value={support.monthlyRevenue}
+          onChange={handleMonthlyRevenueChange}
         />
       </div>
       <div className="col-md-6">
         <label className="form-label">Annual Revenue <span className="text-danger">*</span></label>
-        <input 
-          type="text" 
-          className="form-control" 
-          placeholder="$60,000" 
-          value={support.annualRevenue} 
-          onChange={(e) => setSupport({ ...support, annualRevenue: e.target.value })} 
+        <input
+          type="text"
+          className="form-control"
+          placeholder="60,000"
+          value={support.annualRevenue}
+          onChange={handleAnnualRevenueChange}
         />
       </div>
       <div className="col-12 d-flex justify-content-between mt-4">

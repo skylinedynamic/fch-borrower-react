@@ -30,7 +30,7 @@ export default function PersonalInfoStep({ personal, business, setPersonal, setB
         <input 
           type="text" 
           className="form-control" 
-          placeholder="Enter first name" 
+          placeholder="John" 
           value={personal.firstName} 
           onChange={(e) => setPersonal({ ...personal, firstName: e.target.value })} 
         />
@@ -40,7 +40,7 @@ export default function PersonalInfoStep({ personal, business, setPersonal, setB
         <input 
           type="text" 
           className="form-control" 
-          placeholder="Enter last name" 
+          placeholder="Doe" 
           value={personal.lastName} 
           onChange={(e) => setPersonal({ ...personal, lastName: e.target.value })} 
         />
@@ -50,7 +50,7 @@ export default function PersonalInfoStep({ personal, business, setPersonal, setB
         <input 
           type="email" 
           className="form-control" 
-          placeholder="Enter email" 
+          placeholder="john.doe@example.com" 
           value={personal.email} 
           onChange={(e) => setPersonal({ ...personal, email: e.target.value })} 
         />
@@ -76,7 +76,7 @@ export default function PersonalInfoStep({ personal, business, setPersonal, setB
         <input 
           type="url" 
           className="form-control" 
-          placeholder="Enter business website" 
+          placeholder="https://www.yourbusiness.com" 
           value={business.website} 
           onChange={(e) => setBusiness({ ...business, website: e.target.value })} 
         />

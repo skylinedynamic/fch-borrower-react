@@ -85,5 +85,6 @@ export type FinancialSupport = {
   businessCreditScore: string
   note: string
   existingDebt: string
+  debtBalance: string
   consent: boolean
 }

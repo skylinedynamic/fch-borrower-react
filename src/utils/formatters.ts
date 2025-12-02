@@ -25,3 +25,28 @@ export const formatPhoneNumber = (value: string): string => {
 export const formatLast4SSN = (value: string): string => {
   return value.replace(/\D/g, '').slice(0, 4)
 }
+
+/**
+ * Formats a currency value with comma separators
+ * @param value The raw input string
+ * @returns The formatted currency string with commas
+ */
+export const formatCurrency = (value: string): string => {
+  // Remove all non-digit characters
+  const numericValue = value.replace(/\D/g, '')
+  
+  // If empty, return empty string
+  if (!numericValue) return ''
+  
+  // Convert to number and format with commas
+  return Number(numericValue).toLocaleString('en-US')
+}
+
+/**
+ * Removes formatting from currency string to get raw numeric value
+ * @param value The formatted currency string
+ * @returns The raw numeric string
+ */
+export const unformatCurrency = (value: string): string => {
+  return value.replace(/\D/g, '')
+}

@@ -104,7 +104,8 @@ export default function PreQualification() {
     personalCreditScore: '',
     businessCreditScore: '',
     note: '',
-    existingDebt: '',
+    existingDebt: 'no',
+    debtBalance: '',
     consent: false,
   })
 
