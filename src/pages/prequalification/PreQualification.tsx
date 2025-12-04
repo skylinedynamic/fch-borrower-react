@@ -1,6 +1,5 @@
-import React, { useMemo, useState, useEffect } from 'react'
-import { toast } from 'react-toastify'
-import { usePreQualification } from '../../modules/pre-qualification'
+import React, { useMemo, useState, useEffect, useRef } from 'react'
+import { usePreQualification, useSubmitPersonalInfo, useSubmitBusinessInfo, useSubmitFundingInfo } from '../../modules/pre-qualification'
 import type { PersonalInfo, BusinessDetails, FinancialSupport } from '../../modules/pre-qualification'
 import PersonalInfoStep from './components/PersonalInfoStep'
 import BusinessDetailsStep from './components/BusinessDetailsStep'
@@ -14,6 +13,20 @@ export default function PreQualification() {
   const [loading, setLoading] = useState(true)
   const [mobileOpenIdx, setMobileOpenIdx] = useState<number | null>(0)
   const { data: apiData, isLoading } = usePreQualification()
+  const submitPersonalInfoMutation = useSubmitPersonalInfo()
+  const submitBusinessInfoMutation = useSubmitBusinessInfo()
+  const submitFundingInfoMutation = useSubmitFundingInfo()
+
+  // Track the furthest step reached to allow navigation back
+  const [maxStepReached, setMaxStepReached] = useState<number>(0)
+  const [personalErrors, setPersonalErrors] = useState<Record<string, string>>({})
+  const [businessErrors, setBusinessErrors] = useState<Record<string, string>>({})
+  const [fundingErrors, setFundingErrors] = useState<Record<string, string>>({})
+
+  // Refs to track initial values for change detection
+  const initialPersonalRef = useRef<PersonalInfo | null>(null)
+  const initialBusinessRef = useRef<BusinessDetails | null>(null)
+  const initialSupportRef = useRef<FinancialSupport | null>(null)
 
   useEffect(() => {
     if (apiData) {
@@ -57,6 +70,54 @@ export default function PreQualification() {
       }))
       
       setLoading(false)
+
+      // Store initial values after data is loaded
+      setTimeout(() => {
+        initialPersonalRef.current = {
+          firstName: apiData.first_name || '',
+          lastName: apiData.last_name || '',
+          email: apiData.email || '',
+          phoneCountry: apiData.country_code ? `${apiData.country} (${apiData.country_code})` : 'USA (+1)',
+          phoneNumber: apiData.phone_number || '',
+          country: apiData.country || '',
+          city: apiData.city || '',
+          state: apiData.state || '',
+          zip: apiData.postal_code || '',
+          address: apiData.home_address || '',
+          homeCountry: apiData.country_code ? `${apiData.country} (${apiData.country_code})` : 'USA (+1)',
+          homePhone: apiData.home_phone || '',
+          dob: apiData.date_of_birth || '',
+          last4ssn: apiData.last_4_ssn || '',
+        }
+        initialBusinessRef.current = {
+          businessName: apiData.business_name || '',
+          ein: apiData.business_ein || '',
+          businessPhoneCountry: 'USA (+1)',
+          businessPhone: apiData.business_phone || '',
+          businessAddress: apiData.business_address || '',
+          city: apiData.business_city || '',
+          state: apiData.business_state || '',
+          zip: apiData.business_postal_code || '',
+          entityType: apiData.business_entity_type || '',
+          industryType: apiData.business_industry_type || '',
+          website: apiData.business_website || '',
+        }
+        initialSupportRef.current = {
+          currency: apiData.currency || 'USD',
+          yearsInBusiness: apiData.years_in_business ? String(apiData.years_in_business) : '',
+          monthlyRevenue: apiData.monthly_revenue || '',
+          annualRevenue: apiData.annual_revenue || '',
+          fundingAmount: '',
+          fundingUrgency: '',
+          fundingPurpose: '',
+          personalCreditScore: '',
+          businessCreditScore: '',
+          note: '',
+          existingDebt: 'no',
+          debtBalance: '',
+          consent: false,
+        }
+      }, 100)
     } else if (!isLoading) {
        setLoading(false)
     }
@@ -109,29 +170,262 @@ export default function PreQualification() {
     consent: false,
   })
 
-  const canSavePersonal = useMemo(() => {
-    return (
-      personal.firstName &&
-      personal.lastName &&
-      personal.email &&
-      personal.phoneNumber &&
-      personal.country &&
-      personal.city &&
-      personal.state &&
-      personal.zip &&
-      personal.address &&
-      personal.dob &&
-      personal.last4ssn
-    )
-  }, [personal])
+  const handlePersonalInfoSubmit = async (navigateToStep?: number) => {
+    // Check if any required field is empty
+    const hasEmptyFields = !personal.firstName.trim() || 
+      !personal.lastName.trim() || 
+      !personal.email.trim() || 
+      !personal.phoneNumber.trim() || 
+      !business.state.trim()
 
-  const onSave = async () => {
-    setSaving(true)
-    try {
-      toast.success('Profile saved')
-    } finally {
-      setSaving(false)
+    // Check if any field has changed
+    const hasChanged = initialPersonalRef.current === null || 
+      personal.firstName !== initialPersonalRef.current.firstName ||
+      personal.lastName !== initialPersonalRef.current.lastName ||
+      personal.email !== initialPersonalRef.current.email ||
+      personal.phoneNumber !== initialPersonalRef.current.phoneNumber ||
+      business.website !== initialBusinessRef.current?.website ||
+      business.state !== initialBusinessRef.current?.state
+
+    // Only call API if fields are empty OR changed
+    if (!hasEmptyFields && !hasChanged) {
+      // All fields filled and no changes, just navigate to target step
+      setPersonalErrors({}) // Clear errors when navigating
+      setMaxStepReached(Math.max(maxStepReached, 1))
+      const nextStep = navigateToStep !== undefined ? navigateToStep : 1
+      setStep(nextStep)
+      setMobileOpenIdx(nextStep)
+      return
     }
+
+    try {
+      await submitPersonalInfoMutation.mutateAsync({
+        first_name: personal.firstName,
+        last_name: personal.lastName,
+        email: personal.email,
+        phone: personal.phoneNumber,
+        business_website: business.website || undefined,
+        state_of_incorporation: business.state,
+      })
+      setPersonalErrors({}) // Clear errors on success
+      setMaxStepReached(Math.max(maxStepReached, 1))
+      const nextStep = navigateToStep !== undefined ? navigateToStep : 1
+      setStep(nextStep)
+      setMobileOpenIdx(nextStep)
+      
+      // Update initial values after successful save
+      initialPersonalRef.current = { ...personal }
+      if (initialBusinessRef.current) {
+        initialBusinessRef.current = { ...initialBusinessRef.current, website: business.website, state: business.state }
+      }
+    } catch (error: any) {
+      // Handle API validation errors
+      if (error?.response?.data?.errors) {
+        const apiErrors = error.response.data.errors
+        const mappedErrors: Record<string, string> = {}
+        
+        // Map snake_case API keys to camelCase form keys
+        const errorKeyMap: Record<string, string> = {
+          'first_name': 'firstName',
+          'last_name': 'lastName',
+          'email': 'email',
+          'phone': 'phoneNumber',
+          'business_website': 'website',
+          'state_of_incorporation': 'state'
+        }
+        
+        Object.keys(apiErrors).forEach(key => {
+          const mappedKey = errorKeyMap[key] || key
+          mappedErrors[mappedKey] = typeof apiErrors[key] === 'string' ? apiErrors[key] : apiErrors[key][0]
+        })
+        
+        setPersonalErrors(mappedErrors)
+      }
+    }
+  }
+
+  const handleBusinessInfoSubmit = async (navigateToStep?: number) => {
+    // Check if any required field is empty
+    const hasEmptyFields = !business.businessName.trim() ||
+      !business.industryType.trim() ||
+      !business.entityType.trim() ||
+      !support.yearsInBusiness.trim() ||
+      !support.monthlyRevenue.trim() ||
+      !support.annualRevenue.trim()
+
+    // Check if any field has changed
+    const hasChanged = initialBusinessRef.current === null ||
+      business.businessName !== initialBusinessRef.current.businessName ||
+      business.industryType !== initialBusinessRef.current.industryType ||
+      business.entityType !== initialBusinessRef.current.entityType ||
+      support.yearsInBusiness !== initialSupportRef.current?.yearsInBusiness ||
+      support.monthlyRevenue !== initialSupportRef.current?.monthlyRevenue ||
+      support.annualRevenue !== initialSupportRef.current?.annualRevenue
+
+    // Only call API if fields are empty OR changed
+    if (!hasEmptyFields && !hasChanged) {
+      // All fields filled and no changes, just navigate to target step
+      setBusinessErrors({}) // Clear errors when navigating
+      setMaxStepReached(Math.max(maxStepReached, 2))
+      const nextStep = navigateToStep !== undefined ? navigateToStep : 2
+      setStep(nextStep)
+      setMobileOpenIdx(nextStep)
+      return
+    }
+    try {
+      const monthlyRevenue = parseFloat(support.monthlyRevenue.replace(/,/g, '')) || 0
+      const annualRevenue = parseFloat(support.annualRevenue.replace(/,/g, '')) || 0
+
+      await submitBusinessInfoMutation.mutateAsync({
+        business_name: business.businessName,
+        industry_type: business.industryType,
+        business_structure: business.entityType,
+        monthly_revenue: monthlyRevenue,
+        annual_revenue: annualRevenue,
+        time_in_business: support.yearsInBusiness
+      })
+      setBusinessErrors({}) // Clear errors on success
+      setMaxStepReached(Math.max(maxStepReached, 2))
+      const nextStep = navigateToStep !== undefined ? navigateToStep : 2
+      setStep(nextStep)
+      setMobileOpenIdx(nextStep)
+      
+      // Update initial values after successful save
+      initialBusinessRef.current = { ...business }
+      if (initialSupportRef.current) {
+        initialSupportRef.current = { 
+          ...initialSupportRef.current, 
+          yearsInBusiness: support.yearsInBusiness,
+          monthlyRevenue: support.monthlyRevenue,
+          annualRevenue: support.annualRevenue
+        }
+      }
+    } catch (error: any) {
+      // Handle API validation errors
+      if (error?.response?.data?.errors) {
+        const apiErrors = error.response.data.errors
+        const mappedErrors: Record<string, string> = {}
+        
+        // Map snake_case API keys to camelCase form keys
+        const errorKeyMap: Record<string, string> = {
+          'business_name': 'businessName',
+          'industry_type': 'industryType',
+          'business_structure': 'entityType',
+          'monthly_revenue': 'monthlyRevenue',
+          'annual_revenue': 'annualRevenue',
+          'time_in_business': 'yearsInBusiness'
+        }
+        
+        Object.keys(apiErrors).forEach(key => {
+          const mappedKey = errorKeyMap[key] || key
+          mappedErrors[mappedKey] = typeof apiErrors[key] === 'string' ? apiErrors[key] : apiErrors[key][0]
+        })
+        
+        setBusinessErrors(mappedErrors)
+      }
+    }
+  }
+
+  const handleFundingInfoSubmit = async (navigateToStep?: number) => {
+    // Check if any required field is empty
+    const hasEmptyFields = !support.fundingAmount.trim() ||
+      !support.fundingUrgency.trim() ||
+      !support.fundingPurpose.trim() ||
+      !support.personalCreditScore.trim() ||
+      !support.businessCreditScore.trim() ||
+      (support.existingDebt === 'yes' && !support.debtBalance.trim())
+
+    // Check if any field has changed
+    const hasChanged = initialSupportRef.current === null ||
+      support.fundingAmount !== initialSupportRef.current.fundingAmount ||
+      support.fundingUrgency !== initialSupportRef.current.fundingUrgency ||
+      support.fundingPurpose !== initialSupportRef.current.fundingPurpose ||
+      support.personalCreditScore !== initialSupportRef.current.personalCreditScore ||
+      support.businessCreditScore !== initialSupportRef.current.businessCreditScore ||
+      support.existingDebt !== initialSupportRef.current.existingDebt ||
+      support.debtBalance !== initialSupportRef.current.debtBalance ||
+      support.note !== initialSupportRef.current.note
+
+    // Only call API if fields are empty OR changed
+    if (!hasEmptyFields && !hasChanged) {
+      // All fields filled and no changes, just navigate to target step
+      setFundingErrors({}) // Clear errors when navigating
+      setMaxStepReached(Math.max(maxStepReached, 3))
+      const nextStep = navigateToStep !== undefined ? navigateToStep : 3
+      setStep(nextStep)
+      setMobileOpenIdx(nextStep)
+      return
+    }
+    try {
+      const fundingAmount = support.fundingAmount.trim() ? parseFloat(support.fundingAmount.replace(/,/g, '')) : null
+      const debtBalance = support.debtBalance.trim() ? parseFloat(support.debtBalance.replace(/,/g, '')) : null
+
+      await submitFundingInfoMutation.mutateAsync({
+        funding_requested_amount: fundingAmount,
+        funding_urgency: support.fundingUrgency,
+        purpose_of_funding: support.fundingPurpose,
+        personal_credit_score: support.personalCreditScore,
+        estimated_business_credit_score: support.businessCreditScore,
+        existing_business_debt: support.existingDebt === 'yes',
+        debt_balance: debtBalance,
+        notes: support.note
+      })
+      setFundingErrors({}) // Clear errors on success
+      setMaxStepReached(Math.max(maxStepReached, 3))
+      const nextStep = navigateToStep !== undefined ? navigateToStep : 3
+      setStep(nextStep)
+      setMobileOpenIdx(nextStep)
+      
+      // Update initial values after successful save
+      initialSupportRef.current = { ...support }
+    } catch (error: any) {
+      // Handle API validation errors
+      if (error?.response?.data?.errors) {
+        const apiErrors = error.response.data.errors
+        const mappedErrors: Record<string, string> = {}
+        
+        // Map snake_case API keys to camelCase form keys
+        const errorKeyMap: Record<string, string> = {
+          'funding_requested_amount': 'fundingAmount',
+          'funding_urgency': 'fundingUrgency',
+          'purpose_of_funding': 'fundingPurpose',
+          'personal_credit_score': 'personalCreditScore',
+          'estimated_business_credit_score': 'businessCreditScore',
+          'existing_business_debt': 'existingDebt',
+          'debt_balance': 'debtBalance',
+          'notes': 'note'
+        }
+        
+        Object.keys(apiErrors).forEach(key => {
+          const mappedKey = errorKeyMap[key] || key
+          mappedErrors[mappedKey] = typeof apiErrors[key] === 'string' ? apiErrors[key] : apiErrors[key][0]
+        })
+        
+        setFundingErrors(mappedErrors)
+      }
+    }
+  }
+
+  const handleTabClick = async (targetStep: number) => {
+    // If clicking the current step, do nothing
+    if (targetStep === step) return
+
+    // Always trigger submission when leaving current step (forward or backward)
+    // This ensures data is saved if changed
+    if (step === 0 && targetStep !== 0) {
+      await handlePersonalInfoSubmit(targetStep)
+      return
+    } else if (step === 1 && targetStep !== 1) {
+      await handleBusinessInfoSubmit(targetStep)
+      return
+    } else if (step === 2 && targetStep !== 2) {
+      await handleFundingInfoSubmit(targetStep)
+      return
+    }
+
+    // If no submission was needed (step 3), allow free navigation
+    setStep(targetStep)
+    setMobileOpenIdx(mobileOpenIdx === targetStep ? null : targetStep)
   }
 
   const renderStepSection = (idx: number) => {
@@ -146,7 +440,9 @@ export default function PreQualification() {
               business={business} 
               setPersonal={setPersonal} 
               setBusiness={setBusiness} 
-              onNext={() => { setStep(1); setMobileOpenIdx(1) }} 
+              onNext={handlePersonalInfoSubmit}
+              errors={personalErrors}
+              isSubmitting={submitPersonalInfoMutation.isPending}
             />
           )}
         </div>
@@ -163,8 +459,10 @@ export default function PreQualification() {
               support={support} 
               setBusiness={setBusiness} 
               setSupport={setSupport} 
-              onNext={() => { setStep(2); setMobileOpenIdx(2) }} 
-              onPrevious={() => { setStep(0); setMobileOpenIdx(0) }} 
+              onNext={handleBusinessInfoSubmit}
+              onPrevious={() => handleTabClick(0)} 
+              errors={businessErrors}
+              isSubmitting={submitBusinessInfoMutation.isPending}
             />
           )}
         </div>
@@ -179,8 +477,10 @@ export default function PreQualification() {
             <FundingNeedsStep 
               support={support} 
               setSupport={setSupport} 
-              onNext={() => { setStep(3); setMobileOpenIdx(3) }} 
-              onPrevious={() => { setStep(1); setMobileOpenIdx(1) }} 
+              onNext={handleFundingInfoSubmit}
+              onPrevious={() => handleTabClick(1)} 
+              errors={fundingErrors}
+              isSubmitting={submitFundingInfoMutation.isPending}
             />
           )}
         </div>
@@ -218,7 +518,14 @@ export default function PreQualification() {
               support={support} 
               onEdit={(stepIdx) => { setStep(stepIdx); setMobileOpenIdx(stepIdx) }} 
               onPrevious={() => { setStep(2); setMobileOpenIdx(2) }} 
-              onSubmit={onSave} 
+              onSubmit={async () => {
+                setSaving(true)
+                try {
+                  toast.success('Profile saved')
+                } finally {
+                  setSaving(false)
+                }
+              }} 
               isSaving={saving} 
             />
           )}
@@ -259,7 +566,13 @@ export default function PreQualification() {
             </div>
             <ul className="tab-chevrons">
               <li>
-                <button type="button" className={`tab-btn ${step===0?'active':''}`} onClick={() => {setStep(0); setMobileOpenIdx(mobileOpenIdx===0?null:0)}}>Personal Info</button>
+                <button 
+                  type="button" 
+                  className={`tab-btn ${step===0?'active':''}`} 
+                  onClick={() => handleTabClick(0)}
+                >
+                  Personal Info
+                </button>
                 {mobileOpenIdx===0 && (
                   <div className="p-3 d-block d-md-none">
                     {renderStepSection(0)}
@@ -267,7 +580,15 @@ export default function PreQualification() {
                 )}
               </li>
               <li>
-                <button type="button" className={`tab-btn ${step===1?'active':''}`} onClick={() => {setStep(1); setMobileOpenIdx(mobileOpenIdx===1?null:1)}}>Business Details</button>
+                <button 
+                  type="button" 
+                  className={`tab-btn ${step===1?'active':''}`} 
+                  onClick={() => handleTabClick(1)}
+                  disabled={step < 0 || step > 2}
+                  style={{ cursor: (step < 0 || step > 2) ? 'not-allowed' : 'pointer' }}
+                >
+                  Business Details
+                </button>
                 {mobileOpenIdx===1 && (
                   <div className="p-3 d-block d-md-none">
                     {renderStepSection(1)}
@@ -275,7 +596,15 @@ export default function PreQualification() {
                 )}
               </li>
               <li>
-                <button type="button" className={`tab-btn ${step===2?'active':''}`} onClick={() => {setStep(2); setMobileOpenIdx(mobileOpenIdx===2?null:2)}}>Funding Needs</button>
+                <button 
+                  type="button" 
+                  className={`tab-btn ${step===2?'active':''}`} 
+                  onClick={() => handleTabClick(2)}
+                  disabled={step < 1 || step > 3}
+                  style={{ cursor: (step < 1 || step > 3) ? 'not-allowed' : 'pointer' }}
+                >
+                  Funding Needs
+                </button>
                 {mobileOpenIdx===2 && (
                   <div className="p-3 d-block d-md-none">
                     {renderStepSection(2)}
@@ -283,7 +612,15 @@ export default function PreQualification() {
                 )}
               </li>
               <li>
-                <button type="button" className={`tab-btn ${step===3?'active':''}`} onClick={() => {setStep(3); setMobileOpenIdx(mobileOpenIdx===3?null:3)}}>Review</button>
+                <button 
+                  type="button" 
+                  className={`tab-btn ${step===3?'active':''}`} 
+                  onClick={() => handleTabClick(3)}
+                  disabled={step < 2}
+                  style={{ cursor: step < 2 ? 'not-allowed' : 'pointer' }}
+                >
+                  Review
+                </button>
                 {mobileOpenIdx===3 && (
                   <div className="p-3 d-block d-md-none">
                     {renderStepSection(3)}

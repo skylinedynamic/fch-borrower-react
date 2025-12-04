@@ -11,9 +11,11 @@ interface BusinessDetailsStepProps {
   setSupport: (data: FinancialSupport) => void
   onNext: () => void
   onPrevious: () => void
+  errors?: Record<string, string>
+  isSubmitting?: boolean
 }
 
-export default function BusinessDetailsStep({ business, support, setBusiness, setSupport, onNext, onPrevious }: BusinessDetailsStepProps) {
+export default function BusinessDetailsStep({ business, support, setBusiness, setSupport, onNext, onPrevious, errors = {}, isSubmitting = false }: BusinessDetailsStepProps) {
   const handleMonthlyRevenueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCurrency(e.target.value)
     setSupport({ ...support, monthlyRevenue: formatted })
@@ -30,11 +32,13 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
         <label className="form-label">Business Name <span className="text-danger">*</span></label>
         <input 
           type="text" 
-          className="form-control" 
-          placeholder="ABC Corporation" 
+          className={`form-control ${errors.businessName ? 'is-invalid' : ''}`}
+          placeholder="ABC Corporation"
           value={business.businessName} 
           onChange={(e) => setBusiness({ ...business, businessName: e.target.value })} 
+          disabled={isSubmitting}
         />
+        {errors.businessName && <div className="invalid-feedback">{errors.businessName}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Industry Type <span className="text-danger">*</span></label>
@@ -48,6 +52,7 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
           searchable={true}
           className="w-100"
         />
+        {errors.industryType && <div className="text-danger small mt-1">{errors.industryType}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Business Structure <span className="text-danger">*</span></label>
@@ -60,6 +65,7 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
           placeholder="Select business structure"
           className="w-100"
         />
+        {errors.entityType && <div className="text-danger small mt-1">{errors.entityType}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Time in Business <span className="text-danger">*</span></label>
@@ -72,30 +78,44 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
           placeholder="Select time in business"
           className="w-100"
         />
+        {errors.yearsInBusiness && <div className="text-danger small mt-1">{errors.yearsInBusiness}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Monthly Revenue <span className="text-danger">*</span></label>
         <input
           type="text"
-          className="form-control"
-          placeholder="40,000"
+          className={`form-control ${errors.monthlyRevenue ? 'is-invalid' : ''}`}
+          placeholder="10,000"
           value={support.monthlyRevenue}
           onChange={handleMonthlyRevenueChange}
+          disabled={isSubmitting}
         />
+        {errors.monthlyRevenue && <div className="invalid-feedback">{errors.monthlyRevenue}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Annual Revenue <span className="text-danger">*</span></label>
         <input
           type="text"
-          className="form-control"
-          placeholder="60,000"
+          className={`form-control ${errors.annualRevenue ? 'is-invalid' : ''}`}
+          placeholder="120,000"
           value={support.annualRevenue}
           onChange={handleAnnualRevenueChange}
+          disabled={isSubmitting}
         />
+        {errors.annualRevenue && <div className="invalid-feedback">{errors.annualRevenue}</div>}
       </div>
       <div className="col-12 d-flex justify-content-between mt-4">
-        <button type="button" className="btn btn-warning" onClick={onPrevious}>Previous</button>
-        <button type="button" className="btn next-btn" onClick={onNext}>Next Step</button>
+        <button type="button" className="btn btn-warning" onClick={onPrevious} disabled={isSubmitting}>Previous</button>
+        <button type="button" className="btn next-btn" onClick={onNext} disabled={isSubmitting}>
+          {isSubmitting ? (
+            <>
+              <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Saving...
+            </>
+          ) : (
+            'Next Step'
+          )}
+        </button>
       </div>
     </form>
   )

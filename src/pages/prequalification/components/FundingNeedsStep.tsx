@@ -7,9 +7,11 @@ interface FundingNeedsStepProps {
   setSupport: (data: FinancialSupport) => void
   onNext: () => void
   onPrevious: () => void
+  errors?: Record<string, string>
+  isSubmitting?: boolean
 }
 
-export default function FundingNeedsStep({ support, setSupport, onNext, onPrevious }: FundingNeedsStepProps) {
+export default function FundingNeedsStep({ support, setSupport, onNext, onPrevious, errors = {}, isSubmitting = false }: FundingNeedsStepProps) {
   const handleFundingAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCurrency(e.target.value)
     setSupport({ ...support, fundingAmount: formatted })
@@ -26,18 +28,21 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
         <label className="form-label">Funding Requested Amount <span className="text-danger">*</span></label>
         <input 
           type="text" 
-          className="form-control" 
-          placeholder="50,000" 
+          className={`form-control ${errors.fundingAmount ? 'is-invalid' : ''}`}
+          placeholder="25,000" 
           value={support.fundingAmount} 
           onChange={handleFundingAmountChange} 
+          disabled={isSubmitting}
         />
+        {errors.fundingAmount && <div className="invalid-feedback">{errors.fundingAmount}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Funding Urgency <span className="text-danger">*</span></label>
         <select 
-          className="form-select" 
+          className={`form-select ${errors.fundingUrgency ? 'is-invalid' : ''}`}
           value={support.fundingUrgency} 
           onChange={(e) => setSupport({ ...support, fundingUrgency: e.target.value })}
+          disabled={isSubmitting}
         >
           <option value="">Select urgency</option>
           <option value="Immediate">Immediate</option>
@@ -45,13 +50,15 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
           <option value="1_3_months">1-3 months</option>
           <option value="Flexible">Flexible</option>
         </select>
+        {errors.fundingUrgency && <div className="invalid-feedback">{errors.fundingUrgency}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Purpose of Funding <span className="text-danger">*</span></label>
         <select 
-          className="form-select" 
+          className={`form-select ${errors.fundingPurpose ? 'is-invalid' : ''}`}
           value={support.fundingPurpose} 
           onChange={(e) => setSupport({ ...support, fundingPurpose: e.target.value })}
+          disabled={isSubmitting}
         >
           <option value="">Select purpose</option>
           <option value="Working Capital">Working Capital</option>
@@ -61,13 +68,15 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
           <option value="Expansion">Expansion</option>
           <option value="Other">Other</option>
         </select>
+        {errors.fundingPurpose && <div className="invalid-feedback">{errors.fundingPurpose}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Personal Credit Score <span className="text-danger">*</span></label>
         <select 
-          className="form-select" 
+          className={`form-select ${errors.personalCreditScore ? 'is-invalid' : ''}`}
           value={support.personalCreditScore} 
           onChange={(e) => setSupport({ ...support, personalCreditScore: e.target.value })}
+          disabled={isSubmitting}
         >
           <option value="">Select personal credit score</option>
           <option value="Poor">Poor (&lt;580)</option>
@@ -76,13 +85,15 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
           <option value="Very Good">Very Good (740-799)</option>
           <option value="Excellent">Excellent (800+)</option>
         </select>
+        {errors.personalCreditScore && <div className="invalid-feedback">{errors.personalCreditScore}</div>}
       </div>
       <div className="col-md-6">
-        <label className="form-label">Estimate Business Credit Score</label>
+        <label className="form-label">Estimate Business Credit Score <span className="text-danger">*</span></label>
         <select 
-          className="form-select" 
+          className={`form-select ${errors.businessCreditScore ? 'is-invalid' : ''}`}
           value={support.businessCreditScore} 
           onChange={(e) => setSupport({ ...support, businessCreditScore: e.target.value })}
+          disabled={isSubmitting}
         >
           <option value="">Select business credit score</option>
           <option value="None">No Business Credit</option>
@@ -90,16 +101,19 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
           <option value="Medium">Medium</option>
           <option value="High">High</option>
         </select>
+        {errors.businessCreditScore && <div className="invalid-feedback">{errors.businessCreditScore}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Note</label>
         <textarea 
-          className="form-control" 
+          className={`form-control ${errors.note ? 'is-invalid' : ''}`}
           placeholder="Additional information or special requirements" 
           rows={1} 
           value={support.note} 
           onChange={(e) => setSupport({ ...support, note: e.target.value })} 
+          disabled={isSubmitting}
         />
+        {errors.note && <div className="invalid-feedback">{errors.note}</div>}
       </div>
       <div className="col-6 d-flex align-items-center gap-3">
         <span className="fw-medium">Existing Business Debt?</span>
@@ -112,6 +126,7 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
             value="yes" 
             checked={support.existingDebt === 'yes'} 
             onChange={(e) => setSupport({ ...support, existingDebt: e.target.value })} 
+            disabled={isSubmitting}
           />
           <label className="form-check-label" htmlFor="debtYes">Yes</label>
         </div>
@@ -124,6 +139,7 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
             value="no" 
             checked={support.existingDebt === 'no'} 
             onChange={(e) => setSupport({ ...support, existingDebt: e.target.value })} 
+            disabled={isSubmitting}
           />
           <label className="form-check-label" htmlFor="debtNo">No</label>
         </div>
@@ -133,11 +149,13 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
           <label className="form-label">Debt Balance <span className="text-danger">*</span></label>
           <input 
             type="text" 
-            className="form-control" 
-            placeholder="10,000" 
+            className={`form-control ${errors.debtBalance ? 'is-invalid' : ''}`}
+            placeholder="5,000" 
             value={support.debtBalance} 
             onChange={handleDebtBalanceChange} 
+            disabled={isSubmitting}
           />
+          {errors.debtBalance && <div className="invalid-feedback">{errors.debtBalance}</div>}
         </div>
       )}
       <div className="col-12">
@@ -148,13 +166,23 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
             id="contactConsent" 
             checked={support.consent} 
             onChange={(e) => setSupport({ ...support, consent: e.target.checked })} 
+            disabled={isSubmitting}
           />
           <label className="form-check-label" htmlFor="contactConsent">I agree to be contacted by Four Corner Holdings, LLC</label>
         </div>
       </div>
       <div className="col-12 d-flex justify-content-between mt-4">
-        <button type="button" className="btn btn-warning" onClick={onPrevious}>Previous</button>
-        <button type="button" className="btn next-btn" onClick={onNext}>Next Step</button>
+        <button type="button" className="btn btn-warning" onClick={onPrevious} disabled={isSubmitting}>Previous</button>
+        <button type="button" className="btn next-btn" onClick={onNext} disabled={isSubmitting}>
+          {isSubmitting ? (
+            <>
+              <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Saving...
+            </>
+          ) : (
+            'Next Step'
+          )}
+        </button>
       </div>
     </form>
   )

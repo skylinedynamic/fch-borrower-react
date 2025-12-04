@@ -88,3 +88,61 @@ export type FinancialSupport = {
   debtBalance: string
   consent: boolean
 }
+
+export type PersonalInfoRequest = {
+  first_name: string
+  last_name: string
+  email: string
+  phone: string
+  business_website?: string
+  state_of_incorporation: string
+}
+
+export type BusinessInfoRequest = {
+  business_name: string
+  industry_type: string
+  business_structure: string
+  monthly_revenue: number
+  annual_revenue: number
+  time_in_business: string
+}
+
+export type FundingInfoRequest = {
+  funding_requested_amount: number | null
+  funding_urgency: string
+  purpose_of_funding: string
+  personal_credit_score: string
+  estimated_business_credit_score: string
+  existing_business_debt: boolean
+  debt_balance: number | null
+  notes: string
+}
+
+export type StepSubmissionResponse = {
+  status: boolean
+  message: string
+  data: {
+    id: string
+    first_name: string
+    last_name: string
+    business_website: string
+    email: string
+    phone: string
+    state_of_incorporation: string
+    business_name: string
+    industry: string
+    business_structure: string
+    monthly_revenue: string
+    annual_revenue: string
+    time_in_business: string
+    funding_requested_amount: string
+    funding_urgency: string
+    purpose_of_funding: string
+    personal_credit_score: string
+    estimated_business_credit_score: string
+    existing_business_debt: boolean
+    debt_balance: string
+    notes: string
+    status: string
+  }
+}
