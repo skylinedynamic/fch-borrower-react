@@ -1,6 +1,8 @@
 import React from 'react'
 import type { FinancialSupport } from '../../../modules/pre-qualification'
 import { formatCurrency } from '../../../utils/formatters'
+import CustomDropdown from '../../profile/components/CustomDropdown'
+import { fundingUrgencyOptions, purposeOfFundingOptions, personalCreditScoreOptions, estimatedBusinessCreditScoreOptions } from '../../../data/profile'
 
 interface FundingNeedsStepProps {
   support: FinancialSupport
@@ -14,7 +16,7 @@ interface FundingNeedsStepProps {
 export default function FundingNeedsStep({ support, setSupport, onNext, onPrevious, errors = {}, isSubmitting = false }: FundingNeedsStepProps) {
   const handleFundingAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCurrency(e.target.value)
-    setSupport({ ...support, fundingAmount: formatted })
+    setSupport({ ...support, fundingRequestedAmount: formatted })
   }
 
   const handleDebtBalanceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,97 +25,82 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
   }
 
   return (
-    <form className="row g-3">
+    <form className="row g-3" onSubmit={(e) => { e.preventDefault(); onNext(); }}>
       <div className="col-md-6">
         <label className="form-label">Funding Requested Amount <span className="text-danger">*</span></label>
         <input 
           type="text" 
-          className={`form-control ${errors.fundingAmount ? 'is-invalid' : ''}`}
+          className={`form-control ${errors.fundingRequestedAmount ? 'is-invalid' : ''}`}
           placeholder="25,000" 
-          value={support.fundingAmount} 
+          value={support.fundingRequestedAmount} 
           onChange={handleFundingAmountChange} 
           disabled={isSubmitting}
         />
-        {errors.fundingAmount && <div className="invalid-feedback">{errors.fundingAmount}</div>}
+        {errors.fundingRequestedAmount && <div className="invalid-feedback">{errors.fundingRequestedAmount}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Funding Urgency <span className="text-danger">*</span></label>
-        <select 
-          className={`form-select ${errors.fundingUrgency ? 'is-invalid' : ''}`}
-          value={support.fundingUrgency} 
-          onChange={(e) => setSupport({ ...support, fundingUrgency: e.target.value })}
-          disabled={isSubmitting}
-        >
-          <option value="">Select urgency</option>
-          <option value="Immediate">Immediate</option>
-          <option value="30_days">Within 30 days</option>
-          <option value="1_3_months">1-3 months</option>
-          <option value="Flexible">Flexible</option>
-        </select>
-        {errors.fundingUrgency && <div className="invalid-feedback">{errors.fundingUrgency}</div>}
+        <CustomDropdown
+          value={support.fundingUrgency}
+          onChange={(value) => setSupport({ ...support, fundingUrgency: value })}
+          options={fundingUrgencyOptions}
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select urgency"
+          className="w-100"
+        />
+        {errors.fundingUrgency && <div className="text-danger small mt-1">{errors.fundingUrgency}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Purpose of Funding <span className="text-danger">*</span></label>
-        <select 
-          className={`form-select ${errors.fundingPurpose ? 'is-invalid' : ''}`}
-          value={support.fundingPurpose} 
-          onChange={(e) => setSupport({ ...support, fundingPurpose: e.target.value })}
-          disabled={isSubmitting}
-        >
-          <option value="">Select purpose</option>
-          <option value="Working Capital">Working Capital</option>
-          <option value="Equipment">Equipment</option>
-          <option value="Inventory">Inventory</option>
-          <option value="Marketing">Marketing</option>
-          <option value="Expansion">Expansion</option>
-          <option value="Other">Other</option>
-        </select>
-        {errors.fundingPurpose && <div className="invalid-feedback">{errors.fundingPurpose}</div>}
+        <CustomDropdown
+          value={support.purposeOfFunding}
+          onChange={(value) => setSupport({ ...support, purposeOfFunding: value })}
+          options={purposeOfFundingOptions}
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select purpose"
+          className="w-100"
+        />
+        {errors.purposeOfFunding && <div className="text-danger small mt-1">{errors.purposeOfFunding}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Personal Credit Score <span className="text-danger">*</span></label>
-        <select 
-          className={`form-select ${errors.personalCreditScore ? 'is-invalid' : ''}`}
-          value={support.personalCreditScore} 
-          onChange={(e) => setSupport({ ...support, personalCreditScore: e.target.value })}
-          disabled={isSubmitting}
-        >
-          <option value="">Select personal credit score</option>
-          <option value="Poor">Poor (&lt;580)</option>
-          <option value="Fair">Fair (580-669)</option>
-          <option value="Good">Good (670-739)</option>
-          <option value="Very Good">Very Good (740-799)</option>
-          <option value="Excellent">Excellent (800+)</option>
-        </select>
-        {errors.personalCreditScore && <div className="invalid-feedback">{errors.personalCreditScore}</div>}
+        <CustomDropdown
+          value={support.personalCreditScore}
+          onChange={(value) => setSupport({ ...support, personalCreditScore: value })}
+          options={personalCreditScoreOptions}
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select personal credit score"
+          className="w-100"
+        />
+        {errors.personalCreditScore && <div className="text-danger small mt-1">{errors.personalCreditScore}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Estimate Business Credit Score <span className="text-danger">*</span></label>
-        <select 
-          className={`form-select ${errors.businessCreditScore ? 'is-invalid' : ''}`}
-          value={support.businessCreditScore} 
-          onChange={(e) => setSupport({ ...support, businessCreditScore: e.target.value })}
-          disabled={isSubmitting}
-        >
-          <option value="">Select business credit score</option>
-          <option value="None">No Business Credit</option>
-          <option value="Low">Low</option>
-          <option value="Medium">Medium</option>
-          <option value="High">High</option>
-        </select>
-        {errors.businessCreditScore && <div className="invalid-feedback">{errors.businessCreditScore}</div>}
+        <CustomDropdown
+          value={support.estimatedBusinessCreditScore}
+          onChange={(value) => setSupport({ ...support, estimatedBusinessCreditScore: value })}
+          options={estimatedBusinessCreditScoreOptions}
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select business credit score"
+          className="w-100"
+        />
+        {errors.estimatedBusinessCreditScore && <div className="text-danger small mt-1">{errors.estimatedBusinessCreditScore}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Note</label>
         <textarea 
-          className={`form-control ${errors.note ? 'is-invalid' : ''}`}
+          className={`form-control ${errors.notes ? 'is-invalid' : ''}`}
           placeholder="Additional information or special requirements" 
           rows={1} 
-          value={support.note} 
-          onChange={(e) => setSupport({ ...support, note: e.target.value })} 
+          value={support.notes} 
+          onChange={(e) => setSupport({ ...support, notes: e.target.value })} 
           disabled={isSubmitting}
         />
-        {errors.note && <div className="invalid-feedback">{errors.note}</div>}
+        {errors.notes && <div className="invalid-feedback">{errors.notes}</div>}
       </div>
       <div className="col-6 d-flex align-items-center gap-3">
         <span className="fw-medium">Existing Business Debt?</span>
@@ -123,9 +110,9 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
             type="radio" 
             name="existingDebt" 
             id="debtYes" 
-            value="yes" 
-            checked={support.existingDebt === 'yes'} 
-            onChange={(e) => setSupport({ ...support, existingDebt: e.target.value })} 
+            value="true" 
+            checked={support.existingBusinessDebt === true} 
+            onChange={() => setSupport({ ...support, existingBusinessDebt: true })} 
             disabled={isSubmitting}
           />
           <label className="form-check-label" htmlFor="debtYes">Yes</label>
@@ -136,15 +123,15 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
             type="radio" 
             name="existingDebt" 
             id="debtNo" 
-            value="no" 
-            checked={support.existingDebt === 'no'} 
-            onChange={(e) => setSupport({ ...support, existingDebt: e.target.value })} 
+            value="false" 
+            checked={support.existingBusinessDebt === false} 
+            onChange={() => setSupport({ ...support, existingBusinessDebt: false })} 
             disabled={isSubmitting}
           />
           <label className="form-check-label" htmlFor="debtNo">No</label>
         </div>
       </div>
-      {support.existingDebt === 'yes' && (
+      {support.existingBusinessDebt === true && (
         <div className="col-md-6">
           <label className="form-label">Debt Balance <span className="text-danger">*</span></label>
           <input 
@@ -158,22 +145,10 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
           {errors.debtBalance && <div className="invalid-feedback">{errors.debtBalance}</div>}
         </div>
       )}
-      <div className="col-12">
-        <div className="form-check">
-          <input 
-            className="form-check-input" 
-            type="checkbox" 
-            id="contactConsent" 
-            checked={support.consent} 
-            onChange={(e) => setSupport({ ...support, consent: e.target.checked })} 
-            disabled={isSubmitting}
-          />
-          <label className="form-check-label" htmlFor="contactConsent">I agree to be contacted by Four Corner Holdings, LLC</label>
-        </div>
-      </div>
+
       <div className="col-12 d-flex justify-content-between mt-4">
         <button type="button" className="btn btn-warning" onClick={onPrevious} disabled={isSubmitting}>Previous</button>
-        <button type="button" className="btn next-btn" onClick={onNext} disabled={isSubmitting}>
+        <button type="submit" className="btn next-btn" disabled={isSubmitting}>
           {isSubmitting ? (
             <>
               <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>

@@ -28,15 +28,7 @@ export default function PersonalInfoStep({
     onNext()
   }
 
-  // Find the country based on personal.country
-  const selectedCountry = useMemo(() => {
-    return countries.find(c => c.name === personal.country || c.code === personal.country) || countries.find(c => c.name === 'United States')
-  }, [personal.country])
 
-  // Get available states for the selected country
-  const availableStates = useMemo(() => {
-    return selectedCountry?.states || []
-  }, [selectedCountry])
 
   return (
     <form className="row g-3" onSubmit={(e) => { e.preventDefault(); handleNextClick(); }}>
@@ -79,7 +71,7 @@ export default function PersonalInfoStep({
       <div className="col-md-6">
         <label className="form-label">Phone Number <span className="text-danger">*</span></label>
         <div className="input-group">
-          <span className="input-group-text bg-light">{personal.phoneCountry.split('(')[1].replace(')', '')}</span>
+          <span className="input-group-text bg-light">{personal.countryCode}</span>
           <input 
             type="tel" 
             className={`form-control ${errors.phoneNumber ? 'is-invalid' : ''}`}
@@ -96,35 +88,35 @@ export default function PersonalInfoStep({
         <label className="form-label">Business Website</label>
         <input 
           type="url" 
-          className="form-control"
+          className={`form-control ${errors.businessWebsite ? 'is-invalid' : ''}`}
           placeholder="https://"
-          value={business.website}
-          onChange={(e) => setBusiness({...business, website: e.target.value})}
+          value={personal.businessWebsite}
+          onChange={(e) => setPersonal({...personal, businessWebsite: e.target.value})}
           disabled={isSubmitting}
         />
+        {errors.businessWebsite && <div className="invalid-feedback">{errors.businessWebsite}</div>}
       </div>
 
       <div className="col-md-6">
         <label className="form-label">State of Incorporation <span className="text-danger">*</span></label>
         <CustomDropdown
-          options={availableStates}
-          value={business.state}
-          onChange={(val) => setBusiness({...business, state: val})}
+          options={countries.find(c => c.name === 'United States')?.states || []}
+          value={personal.stateOfIncorporation}
+          onChange={(val) => setPersonal({...personal, stateOfIncorporation: val})}
           placeholder="Select State"
-          className={errors.state ? 'is-invalid' : ''}
+          className={errors.stateOfIncorporation ? 'is-invalid' : ''}
           disabled={isSubmitting}
           optionLabel="name"
           optionValue="name"
           searchable={true}
         />
-        {errors.state && <div className="invalid-feedback d-block">{errors.state}</div>}
+        {errors.stateOfIncorporation && <div className="invalid-feedback d-block">{errors.stateOfIncorporation}</div>}
       </div>
 
       <div className="col-12 d-flex justify-content-end mt-4">
         <button 
-          type="button" 
+          type="submit" 
           className="btn next-btn" 
-          onClick={handleNextClick}
           disabled={isSubmitting}
         >
           {isSubmitting ? (

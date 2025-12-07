@@ -18,16 +18,16 @@ interface BusinessDetailsStepProps {
 export default function BusinessDetailsStep({ business, support, setBusiness, setSupport, onNext, onPrevious, errors = {}, isSubmitting = false }: BusinessDetailsStepProps) {
   const handleMonthlyRevenueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCurrency(e.target.value)
-    setSupport({ ...support, monthlyRevenue: formatted })
+    setBusiness({ ...business, monthlyRevenue: formatted })
   }
 
   const handleAnnualRevenueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCurrency(e.target.value)
-    setSupport({ ...support, annualRevenue: formatted })
+    setBusiness({ ...business, annualRevenue: formatted })
   }
 
   return (
-    <form className="row g-3">
+    <form className="row g-3" onSubmit={(e) => { e.preventDefault(); onNext(); }}>
       <div className="col-md-6">
         <label className="form-label">Business Name <span className="text-danger">*</span></label>
         <input 
@@ -57,28 +57,28 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
       <div className="col-md-6">
         <label className="form-label">Business Structure <span className="text-danger">*</span></label>
         <CustomDropdown
-          value={business.entityType}
-          onChange={(value) => setBusiness({ ...business, entityType: value })}
+          value={business.businessStructure}
+          onChange={(value) => setBusiness({ ...business, businessStructure: value })}
           options={entityTypes}
           optionLabel="label"
           optionValue="value"
           placeholder="Select business structure"
           className="w-100"
         />
-        {errors.entityType && <div className="text-danger small mt-1">{errors.entityType}</div>}
+        {errors.businessStructure && <div className="text-danger small mt-1">{errors.businessStructure}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Time in Business <span className="text-danger">*</span></label>
         <CustomDropdown
-          value={support.yearsInBusiness}
-          onChange={(value) => setSupport({ ...support, yearsInBusiness: value })}
+          value={business.timeInBusiness}
+          onChange={(value) => setBusiness({ ...business, timeInBusiness: value })}
           options={yearsInBusinessOptions}
           optionLabel="label"
           optionValue="value"
           placeholder="Select time in business"
           className="w-100"
         />
-        {errors.yearsInBusiness && <div className="text-danger small mt-1">{errors.yearsInBusiness}</div>}
+        {errors.timeInBusiness && <div className="text-danger small mt-1">{errors.timeInBusiness}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Monthly Revenue <span className="text-danger">*</span></label>
@@ -86,7 +86,7 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
           type="text"
           className={`form-control ${errors.monthlyRevenue ? 'is-invalid' : ''}`}
           placeholder="10,000"
-          value={support.monthlyRevenue}
+          value={business.monthlyRevenue}
           onChange={handleMonthlyRevenueChange}
           disabled={isSubmitting}
         />
@@ -98,7 +98,7 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
           type="text"
           className={`form-control ${errors.annualRevenue ? 'is-invalid' : ''}`}
           placeholder="120,000"
-          value={support.annualRevenue}
+          value={business.annualRevenue}
           onChange={handleAnnualRevenueChange}
           disabled={isSubmitting}
         />
@@ -106,7 +106,7 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
       </div>
       <div className="col-12 d-flex justify-content-between mt-4">
         <button type="button" className="btn btn-warning" onClick={onPrevious} disabled={isSubmitting}>Previous</button>
-        <button type="button" className="btn next-btn" onClick={onNext} disabled={isSubmitting}>
+        <button type="submit" className="btn next-btn" disabled={isSubmitting}>
           {isSubmitting ? (
             <>
               <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
