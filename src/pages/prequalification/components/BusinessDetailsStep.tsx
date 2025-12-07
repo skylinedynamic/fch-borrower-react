@@ -30,12 +30,12 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
     <form className="row g-3" onSubmit={(e) => { e.preventDefault(); onNext(); }}>
       <div className="col-md-6">
         <label className="form-label">Business Name <span className="text-danger">*</span></label>
-        <input 
-          type="text" 
+        <input
+          type="text"
           className={`form-control ${errors.businessName ? 'is-invalid' : ''}`}
           placeholder="ABC Corporation"
-          value={business.businessName} 
-          onChange={(e) => setBusiness({ ...business, businessName: e.target.value })} 
+          value={business.businessName}
+          onChange={(e) => setBusiness({ ...business, businessName: e.target.value })}
           disabled={isSubmitting}
         />
         {errors.businessName && <div className="invalid-feedback">{errors.businessName}</div>}
@@ -50,9 +50,9 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
           optionValue="value"
           placeholder="Select industry type"
           searchable={true}
-          className="w-100"
+          className={`w-100 ${errors.industryType ? 'is-invalid' : ''}`}
         />
-        {errors.industryType && <div className="text-danger small mt-1">{errors.industryType}</div>}
+        {errors.industryType && <div className="invalid-feedback d-block">{errors.industryType}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Business Structure <span className="text-danger">*</span></label>
@@ -63,9 +63,9 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
           optionLabel="label"
           optionValue="value"
           placeholder="Select business structure"
-          className="w-100"
+          className={`w-100 ${errors.businessStructure ? 'is-invalid' : ''}`}
         />
-        {errors.businessStructure && <div className="text-danger small mt-1">{errors.businessStructure}</div>}
+        {errors.businessStructure && <div className="invalid-feedback d-block">{errors.businessStructure}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Time in Business <span className="text-danger">*</span></label>
@@ -76,9 +76,9 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
           optionLabel="label"
           optionValue="value"
           placeholder="Select time in business"
-          className="w-100"
+          className={`w-100 ${errors.timeInBusiness ? 'is-invalid' : ''}`}
         />
-        {errors.timeInBusiness && <div className="text-danger small mt-1">{errors.timeInBusiness}</div>}
+        {errors.timeInBusiness && <div className="invalid-feedback d-block">{errors.timeInBusiness}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Monthly Revenue <span className="text-danger">*</span></label>
