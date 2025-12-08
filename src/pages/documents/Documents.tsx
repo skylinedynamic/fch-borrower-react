@@ -1,7 +1,17 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
-
-type FileEntry = { name: string; size: number; type: string; file: File }
+import { Modal, ModalHeader, ModalBody } from 'reactstrap'
+import { FileManager } from '@cubone/react-file-manager'
+import '@cubone/react-file-manager/dist/style.css'
+import {
+  fetchDocuments,
+  uploadFile,
+  createFolder,
+  renameItem,
+  deleteItems,
+  pasteItems
+} from '../../modules/filemanager/services'
+import type { FileSystemItem } from '../../modules/filemanager/types'
 
 const sections = [
   "Driver's License",
@@ -17,67 +27,97 @@ const sections = [
 ]
 
 export default function Documents() {
-  const [uploads, setUploads] = useState<Record<string, FileEntry[]>>(() => {
-    const init: Record<string, FileEntry[]> = {}
+  const [uploads, setUploads] = useState<Record<string, FileSystemItem[]>>(() => {
+    const init: Record<string, FileSystemItem[]> = {}
     sections.forEach((s) => (init[s] = []))
     return init
   })
 
-  const [uploading, setUploading] = useState<Record<string, boolean>>(() => {
-    const init: Record<string, boolean> = {}
-    sections.forEach((s) => (init[s] = false))
-    return init
-  })
+  const [loading, setLoading] = useState(true)
+  const [showFileManager, setShowFileManager] = useState(false)
+  const [activeSection, setActiveSection] = useState<string | null>(null)
 
-  const [progress, setProgress] = useState<Record<string, number>>(() => {
-    const init: Record<string, number> = {}
-    sections.forEach((s) => (init[s] = 0))
-    return init
-  })
+  // Fetch documents on mount (once)
+  useEffect(() => {
+    const loadDocuments = async () => {
+      setLoading(true)
+      try {
+        const docs = await fetchDocuments()
+        setUploads(prev => {
+          const next = { ...prev }
+          sections.forEach(sec => {
+            next[sec] = docs
+          })
+          return next
+        })
+      } catch (error) {
+        console.error('Failed to load documents', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadDocuments()
+  }, [])
+
+  const refreshSection = async (section: string) => {
+    try {
+      // Refreshing a section now means refreshing everything since we don't filter by section
+      const docs = await fetchDocuments()
+      setUploads(prev => {
+        const next = { ...prev }
+        sections.forEach(sec => {
+          next[sec] = docs
+        })
+        return next
+      })
+    } catch (error) {
+      console.error(`Failed to refresh documents`, error)
+    }
+  }
 
   const totals = useMemo(() => {
     const entries = Object.entries(uploads)
-    const count = entries.reduce((acc, [, files]) => acc + files.length, 0)
-    const size = entries.reduce((acc, [, files]) => acc + files.reduce((a, f) => a + f.size, 0), 0)
+    const count = entries.reduce((acc, [, files]) => acc + files.filter(f => !f.isDirectory).length, 0)
+    const size = entries.reduce((acc, [, files]) => acc + files.reduce((a, f) => a + (f.size || 0), 0), 0)
     return { count, size }
   }, [uploads])
 
   const acceptTypes = 'image/*,.pdf,.doc,.docx,.xls,.xlsx'
   const maxSize = 10 * 1024 * 1024
 
-  const addFiles = (key: string, list: FileList | File[]) => {
+  const addFiles = async (key: string, list: FileList | File[]) => {
     const arr = Array.from(list as FileList)
     const invalid = arr.filter((f) => !(f.type.startsWith('image/') || ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(f.type)) || f.size > maxSize)
     if (invalid.length) {
       toast.error('Unsupported file or size exceeds 10MB')
       return
     }
-    setUploading((prev) => ({ ...prev, [key]: true }))
-    setProgress((prev) => ({ ...prev, [key]: 0 }))
-    setUploads((prev) => {
-      const next = { ...prev }
-      const mapped = arr.map<FileEntry>((f) => ({ name: f.name, size: f.size, type: f.type, file: f }))
-      next[key] = [...(next[key] || []), ...mapped]
-      return next
-    })
-    let pct = 0
-    const step = 7 + Math.round(Math.random() * 12)
-    const timer = setInterval(() => {
-      pct = Math.min(100, pct + step)
-      setProgress((p) => ({ ...p, [key]: pct }))
-      if (pct >= 100) {
-        clearInterval(timer)
-        setUploading((u) => ({ ...u, [key]: false }))
+    
+    // Upload each file
+    for (const file of arr) {
+      try {
+        await uploadFile(file, key, '/')
+      } catch (error) {
+        console.error('Upload failed', error)
+        toast.error(`Failed to upload ${file.name}`)
       }
-    }, 120)
+    }
+    await refreshSection(key)
   }
 
-  const removeFile = (key: string, name: string) => {
-    setUploads((prev) => {
-      const next = { ...prev }
-      next[key] = (next[key] || []).filter((f) => f.name !== name)
-      return next
-    })
+  const removeFile = async (key: string, name: string) => {
+    try {
+      // Find the file path
+      const file = uploads[key]?.find(f => f.name === name)
+      if (file) {
+        await deleteItems([file.path], key)
+        await refreshSection(key)
+        toast.success('File removed')
+      }
+    } catch (error) {
+      console.error('Delete failed', error)
+      toast.error('Failed to remove file')
+    }
   }
 
   const onDrop = (e: React.DragEvent<HTMLDivElement>, key: string) => {
@@ -91,14 +131,96 @@ export default function Documents() {
     return `${n} B`
   }
 
-  const [loading, setLoading] = useState(true)
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 700)
-    return () => clearTimeout(t)
-  }, [])
+  const toggleFileManager = (section?: string) => {
+    if (section) {
+      setActiveSection(section)
+      refreshSection(section) // Refresh when opening
+    }
+    setShowFileManager(!showFileManager)
+  }
+
+  // File Manager Handlers
+  const handleCreateFolder = async (name: string, parentPath: string) => {
+    if (!activeSection) return
+    try {
+      await createFolder(name, activeSection, parentPath)
+      await refreshSection(activeSection)
+    } catch (error) {
+      console.error('Create folder failed', error)
+      toast.error('Failed to create folder')
+    }
+  }
+
+  const handleFileUploaded = async (file: File, parentPath: string) => {
+    if (!activeSection) return
+    try {
+      await uploadFile(file, activeSection, parentPath)
+      await refreshSection(activeSection)
+    } catch (error) {
+      console.error('Upload failed', error)
+      toast.error('Failed to upload file')
+    }
+  }
+
+  const handleRename = async (path: string, newName: string) => {
+    if (!activeSection) return
+    try {
+      await renameItem(path, newName, activeSection)
+      await refreshSection(activeSection)
+    } catch (error) {
+      console.error('Rename failed', error)
+      toast.error('Failed to rename item')
+    }
+  }
+
+  const handleDelete = async (paths: string[]) => {
+    if (!activeSection) return
+    try {
+      await deleteItems(paths, activeSection)
+      await refreshSection(activeSection)
+    } catch (error) {
+      console.error('Delete failed', error)
+      toast.error('Failed to delete items')
+    }
+  }
+
+  const handlePaste = async (files: FileSystemItem[], destinationPath: string, operation: 'copy' | 'move') => {
+      if (!activeSection) return
+      try {
+        await pasteItems(files, destinationPath, operation, activeSection)
+        await refreshSection(activeSection)
+      } catch (error) {
+        console.error('Paste failed', error)
+        toast.error('Failed to paste items')
+      }
+  }
 
   return (
     <div className="page-content documents-page">
+      <Modal isOpen={showFileManager} toggle={() => toggleFileManager()} size="xl" centered>
+        <ModalHeader toggle={() => toggleFileManager()}>File Manager - {activeSection}</ModalHeader>
+        <ModalBody style={{ height: '80vh', padding: 0 }}>
+          {activeSection && (
+            <FileManager
+              files={uploads[activeSection] || []}
+              onCreateFolder={handleCreateFolder}
+              onFileUploaded={handleFileUploaded}
+              onRename={handleRename}
+              onDelete={handleDelete}
+              onPaste={handlePaste}
+              permissions={{
+                  create: true,
+                  copy: true,
+                  move: true,
+                  delete: true,
+                  rename: true,
+                  upload: true,
+                  download: true,
+              }}
+            />
+          )}
+        </ModalBody>
+      </Modal>
       <div className="container-fluid min-vh-70 pt-2">
         <div className="text-center mb-3">
           {loading ? (
@@ -155,16 +277,12 @@ export default function Documents() {
                         </h2>
                         <div id={`collapse-${idx}`} className={`accordion-collapse collapse ${idx===0 ? 'show' : ''}`} aria-labelledby={`heading-${idx}`} data-bs-parent="#docsAccordion">
                           <div className="accordion-body">
-                            {uploading[sec] && (
-                              <div className="progress mb-2" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress[sec] || 0}>
-                                <div className="progress-bar progress-bar-striped progress-bar-animated" style={{ width: `${progress[sec] || 0}%` }}></div>
-                              </div>
-                            )}
+                            {/* Removed progress bar for simplicity as uploads are now async per file or handled by FileManager */}
                             <div
                               className="dropzone dz-clickable text-center"
                               onDragOver={(e) => e.preventDefault()}
                               onDrop={(e) => onDrop(e, sec)}
-                              onClick={() => document.getElementById(`file-${idx}`)?.click()}
+                              onClick={() => toggleFileManager(sec)}
                             >
                               <div className="dz-message needsclick">
                                 <div className="mb-3">
@@ -175,11 +293,11 @@ export default function Documents() {
                               <input id={`file-${idx}`} type="file" multiple accept={acceptTypes} className="d-none" onChange={(e) => e.target.files && addFiles(sec, e.target.files)} />
                             </div>
                             <div className="mt-3 file-list">
-                              {(uploads[sec] || []).map((f) => (
+                              {(uploads[sec] || []).filter(f => !f.isDirectory).map((f) => (
                                 <div className="item" key={f.name}>
                                   <div className="d-flex flex-column">
                                     <span className="name">{f.name}</span>
-                                    <span className="meta">{fmtSize(f.size)}</span>
+                                    <span className="meta">{fmtSize(f.size || 0)}</span>
                                   </div>
                                   <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => removeFile(sec, f.name)}>
                                     Remove

@@ -3613,3 +3613,12 @@
   text-decoration: none;
   font-size: 14px;
 }
+
+.file-explorer .bread-crumb-container .breadcrumb{
+      min-height: 35px !important;
+      overflow-x: unset !important;
+}
+
+.file-explorer .toolbar {
+    min-height: 43px !important;
+}
