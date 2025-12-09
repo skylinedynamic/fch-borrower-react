@@ -9,18 +9,23 @@ import type {
   PasteItemsResponse
 } from './types'
 
-export const fetchDocuments = async (path: string = '/'): Promise<FileSystemItem[]> => {
-  const { data } = await apiClient.get<DocumentsResponse>('/filemanager')
+const BASE_URL = '/filemanager'
+
+export const fetchDocuments = async (section?: string, path: string = '/'): Promise<FileSystemItem[]> => {
+  const body: any = { path }
+  if (section) body.section = section
+  
+  const { data } = await apiClient.post<DocumentsResponse>(`${BASE_URL}/list`, body)
   return data.data
 }
 
-export const uploadFile = async (file: File, section: string, path: string): Promise<FileSystemItem> => {
+export const uploadFile = async (file: File, path: string, section?: string): Promise<FileSystemItem> => {
   const formData = new FormData()
   formData.append('file', file)
-  formData.append('section', section)
   formData.append('path', path)
+  if (section) formData.append('section', section)
 
-  const { data } = await apiClient.post<UploadFileResponse>('/documents/upload', formData, {
+  const { data } = await apiClient.post<UploadFileResponse>(`${BASE_URL}/upload`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -28,17 +33,16 @@ export const uploadFile = async (file: File, section: string, path: string): Pro
   return data.data
 }
 
-export const createFolder = async (name: string, section: string, path: string): Promise<FileSystemItem> => {
-  const { data } = await apiClient.post<CreateFolderResponse>('/documents/folder', {
+export const createFolder = async (name: string, path: string): Promise<FileSystemItem> => {
+  const { data } = await apiClient.post<CreateFolderResponse>(`${BASE_URL}/folder`, {
     name,
-    section,
     path
   })
   return data.data
 }
 
-export const renameItem = async (path: string, newName: string, section: string): Promise<FileSystemItem> => {
-  const { data } = await apiClient.put<RenameItemResponse>('/documents/rename', {
+export const renameItem = async (path: string, newName: string, section?: string): Promise<FileSystemItem> => {
+  const { data } = await apiClient.put<RenameItemResponse>(`${BASE_URL}/rename`, {
     path,
     newName,
     section
@@ -46,16 +50,16 @@ export const renameItem = async (path: string, newName: string, section: string)
   return data.data
 }
 
-export const deleteItems = async (paths: string[], section: string): Promise<boolean> => {
-  const { data } = await apiClient.post<DeleteItemsResponse>('/documents/delete', {
+export const deleteItems = async (paths: string[], section?: string): Promise<boolean> => {
+  const { data } = await apiClient.post<DeleteItemsResponse>(`${BASE_URL}/delete`, {
     paths,
     section
   })
   return data.success
 }
 
-export const pasteItems = async (files: FileSystemItem[], destinationPath: string, operation: 'copy' | 'move', section: string): Promise<FileSystemItem[]> => {
-  const { data } = await apiClient.post<PasteItemsResponse>('/documents/paste', {
+export const pasteItems = async (files: FileSystemItem[], destinationPath: string, operation: 'copy' | 'move', section?: string): Promise<FileSystemItem[]> => {
+  const { data } = await apiClient.post<PasteItemsResponse>(`${BASE_URL}/paste`, {
     files,
     destinationPath,
     operation,

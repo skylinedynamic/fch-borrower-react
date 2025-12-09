@@ -52,8 +52,8 @@ export const yearsInBusinessOptions: OptionType[] = [
 
 export const fundingUrgencyOptions: OptionType[] = [
   { label: 'Immediate', value: 'Immediate' },
-  { label: 'Within 30 days', value: '30_days' },
-  { label: '1-3 months', value: '1_3_months' },
+  { label: 'Within 30 days', value: 'Within 30 days' },
+  { label: '1-3 months', value: '1-3 months' },
   { label: 'Flexible', value: 'Flexible' }
 ]
 
@@ -67,15 +67,15 @@ export const purposeOfFundingOptions: OptionType[] = [
 ]
 
 export const personalCreditScoreOptions: OptionType[] = [
-  { label: 'Poor (<580)', value: 'Poor' },
-  { label: 'Fair (580-669)', value: 'Fair' },
-  { label: 'Good (670-739)', value: 'Good' },
-  { label: 'Very Good (740-799)', value: 'Very Good' },
-  { label: 'Excellent (800+)', value: 'Excellent' }
+  { label: 'Poor (<580)', value: 'Poor (<580)' },
+  { label: 'Fair (580-669)', value: 'Fair (580-669)' },
+  { label: 'Good (670-739)', value: 'Good (670-739)' },
+  { label: 'Very Good (740-799)', value: 'Very Good (740-799)' },
+  { label: 'Excellent (800+)', value: 'Excellent (800+)' }
 ]
 
 export const estimatedBusinessCreditScoreOptions: OptionType[] = [
-  { label: 'No Business Credit', value: 'None' },
+  { label: 'No Business Credit', value: 'No Business Credit' },
   { label: 'Low', value: 'Low' },
   { label: 'Medium', value: 'Medium' },
   { label: 'High', value: 'High' }

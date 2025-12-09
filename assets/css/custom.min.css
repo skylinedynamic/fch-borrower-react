@@ -3614,11 +3614,62 @@
   font-size: 14px;
 }
 
+.file-explorer{
+  height: 100% !important;
+}
+
 .file-explorer .bread-crumb-container .breadcrumb{
-      min-height: 35px !important;
+      min-height: 35px ;
       overflow-x: unset !important;
 }
 
 .file-explorer .toolbar {
-    min-height: 43px !important;
+    min-height: 43px ;
+}
+
+
+.modal-body:has(.file-explorer) {
+    padding: 1.25rem !important;
+}
+
+.file-explorer .files .file-item{
+  height: 100px;
+  padding-bottom: 13px !important;
+}
+
+.file-explorer .toolbar .item-action{
+  padding: 5px 10px !important;
+  height: 31px;
+}
+
+.file-explorer .files .file-selected{
+  background: #d4af37 !important;
+}
+
+.file-explorer svg {
+    stroke: #001f3f !important;
+}
+
+
+
+.file-explorer .toolbar .file-action-container .file-action:hover:not(:disabled)
+ {
+    cursor: pointer;
+    background-color: #0000001f !important;
+    color: #001f3f !important;
+    border-radius: 3px;
+}
+
+.folders-preview .file-item-container svg {
+    stroke: #d4af37 !important;
+    fill: #d4af37 !important;
+}
+
+.file-explorer .files .file-selected svg {
+    stroke: #ffffff !important;
+    fill: #ffffff !important;
+}
+
+.file-explorer .files .file-item{
+  width: 137px;
 }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useAdvisor } from '../../../modules/my-application'
 import avatarImg from '../../../../assets/images/users/cr.jpg'
 
 interface RightSideSectionProps {
@@ -8,6 +9,10 @@ interface RightSideSectionProps {
 
 export default function RightSideSection({ loading }: RightSideSectionProps) {
   const [advisorOpen, setAdvisorOpen] = useState(true)
+  const { data: advisorData, isLoading: advisorLoading } = useAdvisor()
+  const advisor = advisorData?.data
+
+  const isLoading = loading || advisorLoading
 
   return (
     <>
@@ -17,7 +22,7 @@ export default function RightSideSection({ loading }: RightSideSectionProps) {
           <i className={`ri-arrow-down-s-line caret d-xl-none ${advisorOpen ? 'open' : ''}`}></i>
         </div>
         <div className={`card-body ${advisorOpen ? '' : 'd-none d-xl-block'}`}>
-          {loading ? (
+          {isLoading ? (
             <div>
               <div className="d-flex align-items-center gap-3 mb-2">
                 <div className="skeleton-circle" style={{ width: 64, height: 64 }}></div>
@@ -36,15 +41,21 @@ export default function RightSideSection({ loading }: RightSideSectionProps) {
           ) : (
             <>
               <div className="advisor-media d-flex align-items-center gap-3 mb-2">
-                <img src={avatarImg} alt="Advisor" className="advisor-avatar-lg rounded-circle" />
+                <img 
+                  src={advisor?.avatar || avatarImg} 
+                  alt="Advisor" 
+                  className="advisor-avatar-lg rounded-circle" 
+                />
                 <div>
-                  <div className="advisor-name">Craig Rice</div>
-                  <div className="advisor-role text-muted">Founder & Managing Partner</div>
+                  <div className="advisor-name">{advisor?.name || 'Advisor'}</div>
+                  <div className="advisor-role text-muted">Financial Advisor</div>
                 </div>
               </div>
               <div className="advisor-list d-flex flex-column gap-2 mb-3">
-                <div className="item d-flex align-items-center gap-2"><span className="icon-circle"><i className="ri-phone-line"></i></span><span>+1 (813) 391-3333</span></div>
-                <div className="item d-flex align-items-center gap-2"><span className="icon-circle"><i className="ri-mail-line"></i></span><span>craig@fourcornerholdings.com</span></div>
+                {advisor?.phone && (
+                  <div className="item d-flex align-items-center gap-2"><span className="icon-circle"><i className="ri-phone-line"></i></span><span>{advisor.phone}</span></div>
+                )}
+                <div className="item d-flex align-items-center gap-2"><span className="icon-circle"><i className="ri-mail-line"></i></span><span>{advisor?.email || 'N/A'}</span></div>
                 <div className="item d-flex align-items-center gap-2"><span className="icon-circle"><i className="ri-time-line"></i></span><span>Available Mon-Fri 9–5 EST</span></div>
               </div>
               <div className="advisor-cta">

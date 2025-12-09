@@ -1,20 +1,20 @@
 import React from 'react'
+import { TableLoader } from '../../../components/Loader/TableLoader'
+import type { PreQualificationRequest } from '../../../modules/my-application/types'
 
 interface PreQualificationRequestsProps {
   loading: boolean
-  rows: Array<{
-    type: string
-    business: string
-    industry: string
-    date: string
-    amount: string
-    status: string
-  }>
+  data: PreQualificationRequest[]
 }
 
-export default function PreQualificationRequests({ loading, rows }: PreQualificationRequestsProps) {
-  const statusClass = (s: string) =>
-    s === 'Submitted' ? 'badge rounded-pill bg-success-subtle text-success' : 'badge rounded-pill bg-warning-subtle text-warning'
+export default function PreQualificationRequests({ loading, data }: PreQualificationRequestsProps) {
+  const statusClass = (s: string) => {
+    switch (s.toLowerCase()) {
+      case 'submitted': return 'badge rounded-pill bg-success-subtle text-success'
+      case 'pending': return 'badge rounded-pill bg-warning-subtle text-warning'
+      default: return 'badge rounded-pill bg-secondary-subtle text-secondary'
+    }
+  }
 
   return (
     <div className="card section-card app-card mb-0">
@@ -35,33 +35,31 @@ export default function PreQualificationRequests({ loading, rows }: PreQualifica
                 <th>Status</th>
               </tr>
             </thead>
-            {loading ? (
-              <tbody>
-                {[1, 2, 3, 4].map((i) => (
-                  <tr key={i}>
-                    <td><div className="skeleton-line w-75"></div></td>
-                    <td><div className="skeleton-line w-50"></div></td>
-                    <td><div className="skeleton-line w-60"></div></td>
-                    <td><div className="skeleton-line w-40"></div></td>
-                    <td><div className="skeleton-line w-50"></div></td>
-                    <td><div className="skeleton-line w-30"></div></td>
-                  </tr>
-                ))}
-              </tbody>
-            ) : (
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={`${r.type}-${r.business}-${r.date}`}>
-                    <td>{r.type}</td>
-                    <td className="fw-semibold">{r.business}</td>
-                    <td>{r.industry}</td>
-                    <td>{r.date}</td>
-                    <td>{r.amount}</td>
-                    <td><span className={statusClass(r.status)}>{r.status}</span></td>
-                  </tr>
-                ))}
-              </tbody>
-            )}
+            <tbody>
+              {loading ? (
+                <TableLoader rows={5} columns={6} />
+              ) : (
+                <>
+                  {data.map((r) => (
+                    <tr key={r.id}>
+                      <td>{r.funding_type}</td>
+                      <td className="fw-semibold">{r.business_name}</td>
+                      <td>{r.industry}</td>
+                      <td>{r.date}</td>
+                      <td>{r.requested_amount}</td>
+                      <td><span className={statusClass(r.status)}>{r.status}</span></td>
+                    </tr>
+                  ))}
+                  {data.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="text-center py-4 text-muted">
+                        No requests found
+                      </td>
+                    </tr>
+                  )}
+                </>
+              )}
+            </tbody>
           </table>
         </div>
       </div>

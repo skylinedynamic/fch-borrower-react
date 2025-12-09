@@ -5,29 +5,42 @@ export interface FileSystemItem {
   updatedAt: string
   size?: number
   type?: string
+  url?: string
   file?: File
 }
 
 export interface DocumentsResponse {
+  status: boolean
+  message: string
   data: FileSystemItem[]
 }
 
 export interface UploadFileResponse {
+  status: boolean
+  message: string
   data: FileSystemItem
 }
 
 export interface CreateFolderResponse {
+  status: boolean
+  message: string
   data: FileSystemItem
 }
 
 export interface RenameItemResponse {
+  status: boolean
+  message: string
   data: FileSystemItem
 }
 
 export interface DeleteItemsResponse {
+  status: boolean
+  message: string
   success: boolean
 }
 
 export interface PasteItemsResponse {
+  status: boolean
+  message: string
   data: FileSystemItem[]
 }

@@ -37,4 +37,8 @@ export const queryKeys = {
   preQualification: {
     all: ['preQualification'] as const,
   },
+  documents: {
+    all: ['documents'] as const,
+    types: () => [...queryKeys.documents.all, 'types'] as const,
+  },
 } as const
