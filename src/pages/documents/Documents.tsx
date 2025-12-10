@@ -1,13 +1,15 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import {
-  fetchDocuments
+  fetchDocuments,
+  submitFileSelection
 } from '../../modules/filemanager/services'
 import type { FileSystemItem } from '../../modules/filemanager/types'
 import { useDocumentTypes } from '../../modules/documents'
 import { DocumentStats } from './components/DocumentStats'
 import { DocumentSection } from './components/DocumentSection'
 import { FileManagerModal } from '../../components/FileManagerModal/FileManagerModal'
+
 
 export default function Documents() {
   const [sections, setSections] = useState<string[]>([])
@@ -16,6 +18,8 @@ export default function Documents() {
   const [loading, setLoading] = useState(true)
   const [showFileManager, setShowFileManager] = useState(false)
   const [openSection, setOpenSection] = useState<string | null>(null)
+  const [currentSection, setCurrentSection] = useState<string>('')
+  const [selectionMode, setSelectionMode] = useState(false)
 
   // Fetch documents on mount (once)
   // Fetch document types on mount
@@ -68,8 +72,44 @@ export default function Documents() {
     return { count, size }
   }, [uploads])
 
-  const toggleFileManager = () => {
+  const toggleFileManager = (section?: string, selectMode: boolean = false) => {
+    if (section) {
+      setCurrentSection(section)
+      setSelectionMode(selectMode)
+    }
     setShowFileManager(!showFileManager)
+  }
+
+  const handleFileSelection = async (selectedFiles: FileSystemItem[]) => {
+    if (currentSection && types) {
+      const docType = types.find(t => t.name === currentSection)
+      if (docType) {
+        try {
+          const filePaths = selectedFiles.map(f => f.path)
+          const fileNames = selectedFiles.map(f => f.url)
+          console.log('fileNames: ', fileNames)
+          await submitFileSelection(filePaths, '/filemanager/upload-file', {
+            document_type_id: docType.id
+          })
+          
+          // Refresh the section to show new files
+          await refreshSection(currentSection)
+          
+          toast.success(`${selectedFiles.length} file(s) attached to ${currentSection}`)
+        } catch (error) {
+          console.error('Failed to attach files', error)
+          toast.error('Failed to attach files')
+        }
+      }
+    }
+  }
+
+  const handleRemoveFile = (section: string, filePath: string) => {
+    setUploads(prev => ({
+      ...prev,
+      [section]: prev[section].filter(f => f.path !== filePath)
+    }))
+    toast.info('File removed from list')
   }
 
   const toggleSection = (section: string) => {
@@ -81,6 +121,9 @@ export default function Documents() {
       <FileManagerModal
         isOpen={showFileManager}
         toggle={() => toggleFileManager()}
+        section={currentSection}
+        selectionMode={selectionMode}
+        onSelectFiles={handleFileSelection}
       />
       
       <div className="container-fluid min-vh-70 pt-2">
@@ -127,6 +170,7 @@ export default function Documents() {
                         isOpen={openSection === sec}
                         onToggle={() => toggleSection(sec)}
                         onOpenFileManager={toggleFileManager}
+                        onRemoveFile={handleRemoveFile}
                       />
                     ))}
                   </div>

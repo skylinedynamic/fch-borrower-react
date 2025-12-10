@@ -7,6 +7,7 @@ export interface FileSystemItem {
   type?: string
   url?: string
   file?: File
+  children?: FileSystemItem[] // For folder tree
 }
 
 export interface DocumentsResponse {
@@ -40,6 +41,12 @@ export interface DeleteItemsResponse {
 }
 
 export interface PasteItemsResponse {
+  status: boolean
+  message: string
+  data: FileSystemItem[]
+}
+
+export interface FolderTreeResponse {
   status: boolean
   message: string
   data: FileSystemItem[]

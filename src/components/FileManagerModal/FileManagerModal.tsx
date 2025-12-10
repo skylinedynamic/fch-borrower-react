@@ -1,61 +1,70 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Modal, ModalHeader, ModalBody } from 'reactstrap'
-import { FileManager } from '@cubone/react-file-manager'
-import '@cubone/react-file-manager/dist/style.css'
+import { CustomFileManager } from './CustomFileManager'
 import { useFileManager } from './useFileManager'
+import type { FileSystemItem } from '../../modules/filemanager/types'
 
 interface FileManagerModalProps {
   isOpen: boolean
   toggle: () => void
   section?: string
   initialPath?: string
+  selectionMode?: boolean
+  onSelectFiles?: (files: FileSystemItem[]) => void
 }
 
 export const FileManagerModal: React.FC<FileManagerModalProps> = ({
   isOpen,
   toggle,
   section,
-  initialPath = '/'
+  initialPath = '/',
+  selectionMode = false,
+  onSelectFiles
 }) => {
   const {
     files,
+    folderTree,
     loading,
     currentPath,
-    setCurrentPath,
     refresh,
     handleNavigate,
     handleCreateFolder,
     handleUploadFile,
     handleRename,
     handleDelete,
-    handlePaste
+    handlePaste,
+    handleDownload
   } = useFileManager(section, initialPath, { enabled: isOpen })
+
+  const handleSelectFiles = (selectedFiles: FileSystemItem[]) => {
+    if (onSelectFiles) {
+      onSelectFiles(selectedFiles)
+    }
+    toggle()
+  }
 
   return (
     <Modal isOpen={isOpen} toggle={toggle} size="xl" centered>
-      <ModalHeader toggle={toggle}>File Manager {section ? `- ${section}` : ''}</ModalHeader>
+      <ModalHeader toggle={toggle} className="fm-modal-header-main">
+        {selectionMode ? 'Select Files' : `File Manager ${section ? `- ${section}` : ''}`}
+      </ModalHeader>
       <ModalBody style={{ height: '80vh', padding: 0 }}>
-        <FileManager
+        <CustomFileManager
           files={files}
-          initialPath={currentPath}
-          onFolderChange={(path: string) => {
-            console.log('onFolderChange path:', path)
-            handleNavigate(path)
-          }}
-          onCreateFolder={(name, parent: any) => handleCreateFolder(name, parent?.path || parent)}
-          onFileUploaded={handleUploadFile}
+          folderTree={folderTree}
+          currentPath={currentPath}
+          loading={loading}
+          selectionMode={selectionMode}
+          onNavigate={handleNavigate}
+          onRefresh={refresh}
+          onCreateFolder={handleCreateFolder}
+          onUploadFile={handleUploadFile}
           onRename={handleRename}
           onDelete={handleDelete}
+          onDownload={handleDownload}
           onPaste={handlePaste}
-          permissions={{
-            create: true,
-            copy: true,
-            move: true,
-            delete: true,
-            rename: true,
-            upload: true,
-            download: true,
-          }}
+          onSelectFiles={handleSelectFiles}
+          onCancelSelection={toggle}
         />
       </ModalBody>
     </Modal>

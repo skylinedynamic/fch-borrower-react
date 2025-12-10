@@ -6,15 +6,27 @@ import {
   createFolder,
   renameItem,
   deleteItems,
-  pasteItems
+  pasteItems,
+  downloadFile,
+  fetchFolderTree
 } from '../../modules/filemanager/services'
 import type { FileSystemItem } from '../../modules/filemanager/types'
 
 export const useFileManager = (section?: string, initialPath: string = '/', config: { enabled?: boolean } = { enabled: true }) => {
   const [files, setFiles] = useState<FileSystemItem[]>([])
+  const [folderTree, setFolderTree] = useState<FileSystemItem[]>([])
   const [currentPath, setCurrentPath] = useState(initialPath)
   const [loading, setLoading] = useState(false)
   const hasLoadedRef = useRef(false)
+
+  const loadFolderTree = useCallback(async () => {
+    try {
+      const tree = await fetchFolderTree(section, '/')
+      setFolderTree(tree)
+    } catch (error) {
+      console.error('Failed to load folder tree', error)
+    }
+  }, [section])
 
   const loadFiles = useCallback(async (path: string) => {
     setLoading(true)
@@ -35,8 +47,9 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
     if (config.enabled && !hasLoadedRef.current) {
       hasLoadedRef.current = true
       loadFiles(initialPath)
+      loadFolderTree() // Load the complete folder tree
     }
-  }, [config.enabled, initialPath, loadFiles])
+  }, [config.enabled, initialPath, loadFiles, loadFolderTree])
 
   // Reset when modal closes
   useEffect(() => {
@@ -50,10 +63,13 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
     loadFiles(path)
   }, [loadFiles])
 
-  const handleCreateFolder = async (name: string, parentPath: string) => {
+  const handleCreateFolder = async (name: string, parentPath?: string) => {
+    // Use currentPath if parentPath is not provided or is invalid
+    const targetPath = parentPath && parentPath !== '/' ? parentPath : currentPath
     try {
-      await createFolder(name, parentPath)
-      await loadFiles(parentPath)
+      await createFolder(name, targetPath)
+      await loadFiles(targetPath)
+      await loadFolderTree() // Refresh tree after creating folder
       toast.success('Folder created')
     } catch (error) {
       console.error('Create folder failed', error)
@@ -61,10 +77,12 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
     }
   }
 
-  const handleUploadFile = async (file: File, parentPath: string) => {
+  const handleUploadFile = async (file: File, parentPath?: string) => {
+    // Use currentPath if parentPath is not provided or is invalid
+    const targetPath = parentPath && parentPath !== '/' ? parentPath : currentPath
     try {
-      await uploadFile(file, parentPath, section)
-      await loadFiles(parentPath)
+      await uploadFile(file, targetPath, section)
+      await loadFiles(targetPath)
       toast.success('File uploaded')
     } catch (error) {
       console.error('Upload failed', error)
@@ -76,6 +94,7 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
     try {
       await renameItem(path, newName, section)
       await loadFiles(currentPath) // Refresh current view
+      await loadFolderTree() // Refresh tree after rename
       toast.success('Item renamed')
     } catch (error) {
       console.error('Rename failed', error)
@@ -87,6 +106,7 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
     try {
       await deleteItems(paths, section)
       await loadFiles(currentPath)
+      await loadFolderTree() // Refresh tree after delete
       toast.success('Items deleted')
     } catch (error) {
       console.error('Delete failed', error)
@@ -105,8 +125,19 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
     }
   }
 
+  const handleDownload = async (path: string, filename: string) => {
+    try {
+      await downloadFile(path, filename)
+      toast.success('Download started')
+    } catch (error) {
+      console.error('Download failed', error)
+      toast.error('Failed to download file')
+    }
+  }
+
   return {
     files,
+    folderTree,
     loading,
     currentPath,
     setCurrentPath,
@@ -116,6 +147,7 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
     handleUploadFile,
     handleRename,
     handleDelete,
-    handlePaste
+    handlePaste,
+    handleDownload
   }
 }
