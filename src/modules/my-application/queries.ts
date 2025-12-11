@@ -5,7 +5,7 @@ export const usePreQualificationRequests = (page: number = 1) => {
   return useQuery({
     queryKey: ['pre-qualification-requests', page],
     queryFn: () => fetchPreQualificationRequests(page),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 0,
   })
 }
 

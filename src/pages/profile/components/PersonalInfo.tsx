@@ -3,17 +3,16 @@ import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
 import { toast } from 'react-toastify'
 import CustomDropdown from './CustomDropdown'
-import { PersonalInfo as PersonalInfoType } from '../types'
 import { usePersonalInfo, useSavePersonalInfo } from '../../../modules/profile'
-import type { PersonalInfoData, SavePersonalInfoRequest, ErrorResponse, ValidationErrors } from '../../../modules/profile'
+import type { PersonalInfoData, SavePersonalInfoRequest, ValidationErrors } from '../../../modules/profile'
 import TabLoader from '../../../components/Loader/TabLoader'
 import { countries as countriesData } from '../../../data/countries'
 
 import { formatPhoneNumber, formatLast4SSN } from '../../../utils/formatters'
 
 interface PersonalInfoProps {
-  data: PersonalInfoType
-  onChange: (data: PersonalInfoType) => void
+  data: SavePersonalInfoRequest
+  onChange: (data: SavePersonalInfoRequest) => void
   onSave: () => void
 }
 
@@ -29,22 +28,21 @@ type CityType = {
 }
 
 // Helper function to transform API data to component format
-const transformApiToComponent = (apiData: PersonalInfoData): PersonalInfoType => {
+const transformApiToComponent = (apiData: PersonalInfoData): SavePersonalInfoRequest => {
   return {
-    firstName: apiData.first_name || '',
-    lastName: apiData.last_name || '',
+    first_name: apiData.first_name || '',
+    last_name: apiData.last_name || '',
     email: apiData.email || '',
-    phoneCountry: apiData.phone_number || '',
-    phoneNumber: apiData.phone_number || '',
+    phone_number: apiData.phone_number || '',
     country: apiData.country || '',
     city: apiData.city || '',
     state: apiData.state || '',
-    zip: apiData.zip_code || '',
-    address: apiData.home_address || '',
-    homeCountry: apiData.home_phone || '',
-    homePhone: apiData.home_phone || '',
-    dob: apiData.date_of_birth || '',
-    last4ssn: apiData.last_4_ssn || '',
+    zip_code: apiData.zip_code || '',
+    home_address: apiData.home_address || '',
+    home_phone: apiData.home_phone || '',
+    date_of_birth: apiData.date_of_birth || '',
+    last_4_ssn: apiData.last_4_ssn || '',
+    country_code: '+1',
   }
 }
 
@@ -63,24 +61,10 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
   // Get the selected country object
   const selectedCountry = getCountryByName(data.country) || countriesData.find(c => c.name === 'United States')
 
-  // Transform component data to API format
-  const transformToApiFormat = (formData: PersonalInfoType): SavePersonalInfoRequest => {
-    const country = getCountryByName(formData.country)
-    return {
-      first_name: formData.firstName,
-      last_name: formData.lastName,
-      email: formData.email,
-      home_address: formData.address,
-      city: formData.city,
-      state: formData.state, 
-      zip_code: formData.zip,
-      country: formData.country, 
-      country_code: country?.phone_code || '+1', 
-      phone_number: formData.phoneNumber,
-      home_phone: formData.homePhone,
-      last_4_ssn: formData.last4ssn,
-      date_of_birth: formData.dob,
-    }
+  // Get country code from selected country
+  const getCountryCode = () => {
+    const country = getCountryByName(data.country)
+    return country?.phone_code || '+1'
   }
 
   // Handle save with validation
@@ -88,8 +72,11 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
     // Clear previous errors
     setValidationErrors({})
     
-    // Transform and save
-    const payload = transformToApiFormat(data)
+    // Ensure country_code is set
+    const payload = {
+      ...data,
+      country_code: getCountryCode()
+    }
     
     savePersonalInfo(payload, {
       onSuccess: (response) => {
@@ -126,8 +113,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
         onChange({ 
           ...data, 
           country: usCountry.name,
-          phoneCountry: usCountry.code,
-          homeCountry: usCountry.code
+          country_code: usCountry.phone_code
         })
       }
     }
@@ -137,11 +123,10 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
   useEffect(() => {
     if (data.country) {
       const country = getCountryByName(data.country)
-      if (country && (data.phoneCountry !== country.code || data.homeCountry !== country.code)) {
+      if (country && data.country_code !== country.phone_code) {
         onChange({ 
           ...data, 
-          phoneCountry: country.code,
-          homeCountry: country.code
+          country_code: country.phone_code
         })
       }
     }
@@ -207,8 +192,8 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             type="text" 
             className={`form-control ${hasError('first_name') ? 'is-invalid' : ''}`}
             placeholder="Enter first name" 
-            value={data.firstName}
-            onChange={(e) => onChange({ ...data, firstName: e.target.value })}
+            value={data.first_name}
+            onChange={(e) => onChange({ ...data, first_name: e.target.value })}
             required 
           />
           {hasError('first_name') && (
@@ -221,8 +206,8 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             type="text" 
             className={`form-control ${hasError('last_name') ? 'is-invalid' : ''}`}
             placeholder="Enter last name" 
-            value={data.lastName}
-            onChange={(e) => onChange({ ...data, lastName: e.target.value })}
+            value={data.last_name}
+            onChange={(e) => onChange({ ...data, last_name: e.target.value })}
             required 
           />
           {hasError('last_name') && (
@@ -252,14 +237,14 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             </span>
             <input 
               type="tel" 
-              className={`form-control ${hasError('mobile_phone') ? 'is-invalid' : ''}`}
+              className={`form-control ${hasError('phone_number') ? 'is-invalid' : ''}`}
               placeholder="(555) 555-5555" 
-              value={data.phoneNumber}
-              onChange={(e) => onChange({ ...data, phoneNumber: formatPhoneNumber(e.target.value) })}
+              value={data.phone_number}
+              onChange={(e) => onChange({ ...data, phone_number: formatPhoneNumber(e.target.value) })}
               required 
             />
-            {hasError('mobile_phone') && (
-              <div className="invalid-feedback">{getFieldError('mobile_phone')}</div>
+            {hasError('phone_number') && (
+              <div className="invalid-feedback">{getFieldError('phone_number')}</div>
             )}
           </div>
         </div>
@@ -270,8 +255,8 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             className={`form-control ${hasError('home_address') ? 'is-invalid' : ''}`}
             placeholder="Enter address" 
             rows={1} 
-            value={data.address}
-            onChange={(e) => onChange({ ...data, address: e.target.value })}
+            value={data.home_address}
+            onChange={(e) => onChange({ ...data, home_address: e.target.value })}
             required 
           />
           {hasError('home_address') && (
@@ -323,8 +308,8 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             type="text" 
             className={`form-control ${hasError('zip_code') ? 'is-invalid' : ''}`}
             placeholder="Enter zip code" 
-            value={data.zip}
-            onChange={(e) => onChange({ ...data, zip: e.target.value })}
+            value={data.zip_code}
+            onChange={(e) => onChange({ ...data, zip_code: e.target.value })}
             required 
           />
           {hasError('zip_code') && (
@@ -348,7 +333,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             optionLabel="name"
             optionValue="name"
             placeholder="Select country"
-            searchable={true}
+            searchable={false}
             className={`w-100 ${hasError('country') ? 'is-invalid' : ''}`}
           />
           {hasError('country') && (
@@ -357,7 +342,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
         </div>
         
         <div className="col-md-6">
-          <label className="form-label">Home Phone <span className="text-danger">*</span></label>
+          <label className="form-label">Home Phone </label>
           <div className="input-group">
             <span className="input-group-text bg-light border">
               <span className="me-1">{selectedCountry?.code || 'US'}</span>
@@ -367,9 +352,8 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
               type="tel" 
               className={`form-control ${hasError('home_phone') ? 'is-invalid' : ''}`}
               placeholder="(555) 555-5555" 
-              value={data.homePhone}
-              onChange={(e) => onChange({ ...data, homePhone: formatPhoneNumber(e.target.value) })}
-              required 
+              value={data.home_phone}
+              onChange={(e) => onChange({ ...data, home_phone: formatPhoneNumber(e.target.value) })}
             />
             {hasError('home_phone') && (
               <div className="invalid-feedback">{getFieldError('home_phone')}</div>
@@ -380,9 +364,9 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
           <label className="form-label">Date of Birth <span className="text-danger">*</span></label>
           <Flatpickr
             className={`form-control ${hasError('date_of_birth') ? 'is-invalid' : ''}`}
-            value={data.dob}
+            value={data.date_of_birth}
             onChange={(dates, dateStr) => {
-              onChange({ ...data, dob: dateStr })
+              onChange({ ...data, date_of_birth: dateStr })
             }}
             options={{
               dateFormat: "Y-m-d",
@@ -403,9 +387,9 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
           <input 
             type="password" 
             className={`form-control ${hasError('last_4_ssn') ? 'is-invalid' : ''}`}
-            placeholder="****" 
-            value={data.last4ssn}
-            onChange={(e) => onChange({ ...data, last4ssn: formatLast4SSN(e.target.value) })}
+            placeholder="Enter last 4 digits" 
+            value={data.last_4_ssn}
+            onChange={(e) => onChange({ ...data, last_4_ssn: formatLast4SSN(e.target.value) })}
             maxLength={4}
             required 
           />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAdvisor } from '../../../modules/my-application'
+import AdvisorLoader from '../../../components/Loader/AdvisorLoader'
 import avatarImg from '../../../../assets/images/users/cr.jpg'
 
 interface RightSideSectionProps {
@@ -23,20 +24,10 @@ export default function RightSideSection({ loading }: RightSideSectionProps) {
         </div>
         <div className={`card-body ${advisorOpen ? '' : 'd-none d-xl-block'}`}>
           {isLoading ? (
-            <div>
-              <div className="d-flex align-items-center gap-3 mb-2">
-                <div className="skeleton-circle" style={{ width: 64, height: 64 }}></div>
-                <div className="flex-grow-1">
-                  <div className="skeleton-line w-50 mb-1"></div>
-                  <div className="skeleton-line w-75"></div>
-                </div>
-              </div>
-              <div className="d-flex flex-column gap-2 mb-3">
-                <div className="skeleton-line w-100" style={{ height: 36, borderRadius: 12 }}></div>
-                <div className="skeleton-line w-100" style={{ height: 36, borderRadius: 12 }}></div>
-                <div className="skeleton-line w-100" style={{ height: 36, borderRadius: 12 }}></div>
-              </div>
-              <div className="skeleton-line w-100" style={{ height: 38, borderRadius: 10 }}></div>
+            <AdvisorLoader />
+          ) : !advisor ? (
+            <div className="text-center py-3">
+              <span className="text-muted">{'No advisor yet assigned.'}</span>
             </div>
           ) : (
             <>

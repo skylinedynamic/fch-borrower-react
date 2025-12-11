@@ -40,5 +40,6 @@ export const queryKeys = {
   documents: {
     all: ['documents'] as const,
     types: () => [...queryKeys.documents.all, 'types'] as const,
+    list: () => [...queryKeys.documents.all, 'list'] as const,
   },
 } as const

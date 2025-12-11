@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { toast } from 'react-toastify'
+import { useNavigate } from 'react-router-dom'
 import PersonalInfoStep from './components/PersonalInfoStep'
 import BusinessDetailsStep from './components/BusinessDetailsStep'
 import FundingNeedsStep from './components/FundingNeedsStep'
@@ -10,6 +11,7 @@ import { usePreQualificationForm } from './hooks/usePreQualificationForm'
 
 export default function PreQualification() {
   const [saving, setSaving] = useState(false)
+  const navigate = useNavigate()
   
   const {
     step,
@@ -101,20 +103,20 @@ export default function PreQualification() {
             <div className="review-grid">
               {[1,2,3].map((i) => (
                 <div className="review-card" key={i}>
-                  <div className="skeleton-line" style={{ width: 140, height: 18, borderRadius: 8 }}></div>
+                  <div className="skeleton-line sk-review-title"></div>
                   <div className="mt-2">
                     {[1,2,3,4,5,6].map((j) => (
-                      <div className="skeleton-line mt-2" key={j} style={{ width: 100 + (j*40), height: 12, borderRadius: 6 }}></div>
+                      <div className={`skeleton-line mt-2 sk-review-line-common sk-w-${100 + (j*40)}`} key={j}></div>
                     ))}
                   </div>
                 </div>
               ))}
               <div className="review-card review-card-wide">
                 <div className="d-flex justify-content-between align-items-center">
-                  <div className="skeleton-line" style={{ width: 220, height: 14, borderRadius: 8 }}></div>
+                  <div className="skeleton-line sk-review-footer-text"></div>
                   <div className="d-flex gap-2">
-                    <div className="skeleton-line" style={{ width: 100, height: 36, borderRadius: 10 }}></div>
-                    <div className="skeleton-line" style={{ width: 120, height: 36, borderRadius: 10 }}></div>
+                    <div className="skeleton-line sk-review-btn"></div>
+                    <div className="skeleton-line sk-review-submit-btn"></div>
                   </div>
                 </div>
               </div>
@@ -131,6 +133,7 @@ export default function PreQualification() {
                 try {
                   await handleFinalSubmit()
                   toast.success('Pre-qualification submitted successfully')
+                  navigate('/my-applications')
                 } catch (error) {
                   toast.error('Failed to submit pre-qualification')
                 } finally {
@@ -164,8 +167,8 @@ export default function PreQualification() {
             <div className="text-center py-4">
               {loading ? (
                 <div className="d-flex flex-column align-items-center">
-                  <div className="skeleton-line" style={{ width: 220, height: 20, borderRadius: 8 }}></div>
-                  <div className="skeleton-line mt-2" style={{ width: 460, height: 14, borderRadius: 8 }}></div>
+                  <div className="skeleton-line sk-header-title"></div>
+                  <div className="skeleton-line mt-2 sk-header-subtitle"></div>
                 </div>
               ) : (
                 <>

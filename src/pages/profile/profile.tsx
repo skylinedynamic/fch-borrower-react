@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { PersonalInfo as PersonalInfoType, BusinessDetails as BusinessDetailsType, FinancialSupport as FinancialSupportType } from './types'
+import { SavePersonalInfoRequest, SaveBusinessDetailsRequest, SaveFinancialInfoRequest } from '../../modules/profile/types'
 import PersonalInfo from './components/PersonalInfo'
 import BusinessDetails from './components/BusinessDetails'
 import FinancialSupport from './components/FinancialSupport'
@@ -19,43 +19,41 @@ export default function Profile() {
     return () => clearTimeout(t)
   }, [])
 
-  const [personal, setPersonal] = useState<PersonalInfoType>({
-    firstName: '',
-    lastName: '',
+  const [personal, setPersonal] = useState<SavePersonalInfoRequest>({
+    first_name: '',
+    last_name: '',
     email: '',
-    phoneCountry: 'USA',
-    phoneNumber: '',
+    home_address: '',
+    city: '',
+    state: '',
+    zip_code: '',
     country: '',
-    city: '',
-    state: '',
-    zip: '',
-    address: '',
-    homeCountry: 'USA',
-    homePhone: '',
-    dob: '',
-    last4ssn: '',
+    country_code: '',
+    phone_number: '',
+    home_phone: '',
+    last_4_ssn: '',
+    date_of_birth: '',
   })
 
-  const [business, setBusiness] = useState<BusinessDetailsType>({
-    businessName: '',
-    ein: '',
-    businessPhoneCountry: '+1',
-    businessPhone: '',
-    businessAddress: '',
-    country: 'United States',
-    city: '',
-    state: '',
-    zip: '',
-    entityType: '',
-    industryType: '',
-    website: '',
+  const [business, setBusiness] = useState<SaveBusinessDetailsRequest>({
+    business_name: '',
+    business_ein: '',
+    business_phone: '',
+    business_address: '',
+    business_city: '',
+    business_state: '',
+    business_zip_code: '',
+    business_website: '',
+    business_entity_type: '',
+    business_industry_type: '',
   })
 
-  const [support, setSupport] = useState<FinancialSupportType>({
+  // Start with string values to match existing usage in FinancialSupport before we fix the component
+  const [support, setSupport] = useState<any>({
     currency: 'USD',
-    yearsInBusiness: '',
-    monthlyRevenue: '',
-    annualRevenue: '',
+    years_in_business: '',
+    monthly_revenue: '',
+    annual_revenue: '',
   })
 
   const onSave = async () => {

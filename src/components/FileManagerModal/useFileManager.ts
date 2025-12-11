@@ -21,17 +21,17 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
 
   const loadFolderTree = useCallback(async () => {
     try {
-      const tree = await fetchFolderTree(section, '/')
+      const tree = await fetchFolderTree('/')
       setFolderTree(tree)
     } catch (error) {
       console.error('Failed to load folder tree', error)
     }
-  }, [section])
+  }, [])
 
   const loadFiles = useCallback(async (path: string) => {
     setLoading(true)
     try {
-      const data = await fetchDocuments(section, path)
+      const data = await fetchDocuments(path)
       setFiles(data)
       setCurrentPath(path)
     } catch (error) {
@@ -40,7 +40,7 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
     } finally {
       setLoading(false)
     }
-  }, [section])
+  }, [])
 
   // Initial load - only runs once when enabled
   useEffect(() => {
@@ -70,20 +70,20 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
       await createFolder(name, targetPath)
       await loadFiles(targetPath)
       await loadFolderTree() // Refresh tree after creating folder
-      toast.success('Folder created')
     } catch (error) {
       console.error('Create folder failed', error)
       toast.error('Failed to create folder')
     }
   }
 
-  const handleUploadFile = async (file: File, parentPath?: string) => {
+  const handleUploadFile = async (file: File, parentPath?: string, refresh: boolean = true, onProgress?: (progress: number) => void) => {
     // Use currentPath if parentPath is not provided or is invalid
     const targetPath = parentPath && parentPath !== '/' ? parentPath : currentPath
     try {
-      await uploadFile(file, targetPath, section)
-      await loadFiles(targetPath)
-      toast.success('File uploaded')
+      await uploadFile(file, targetPath, onProgress)
+      if (refresh) {
+        await loadFiles(targetPath)
+      }
     } catch (error) {
       console.error('Upload failed', error)
       toast.error('Failed to upload file')
@@ -92,10 +92,9 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
 
   const handleRename = async (path: string, newName: string) => {
     try {
-      await renameItem(path, newName, section)
+      await renameItem(path, newName)
       await loadFiles(currentPath) // Refresh current view
       await loadFolderTree() // Refresh tree after rename
-      toast.success('Item renamed')
     } catch (error) {
       console.error('Rename failed', error)
       toast.error('Failed to rename item')
@@ -104,10 +103,9 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
 
   const handleDelete = async (paths: string[]) => {
     try {
-      await deleteItems(paths, section)
+      await deleteItems(paths)
       await loadFiles(currentPath)
       await loadFolderTree() // Refresh tree after delete
-      toast.success('Items deleted')
     } catch (error) {
       console.error('Delete failed', error)
       toast.error('Failed to delete items')
@@ -116,9 +114,8 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
 
   const handlePaste = async (items: FileSystemItem[], destinationPath: string, operation: 'copy' | 'move') => {
     try {
-      await pasteItems(items, destinationPath, operation, section)
+      await pasteItems(items, destinationPath, operation)
       await loadFiles(destinationPath)
-      toast.success('Items pasted')
     } catch (error) {
       console.error('Paste failed', error)
       toast.error('Failed to paste items')
@@ -128,7 +125,6 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
   const handleDownload = async (path: string, filename: string) => {
     try {
       await downloadFile(path, filename)
-      toast.success('Download started')
     } catch (error) {
       console.error('Download failed', error)
       toast.error('Failed to download file')

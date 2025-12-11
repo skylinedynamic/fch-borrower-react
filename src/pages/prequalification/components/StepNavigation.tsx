@@ -30,7 +30,6 @@ export default function StepNavigation({ step, onTabClick, mobileOpenIdx, render
           className={`tab-btn ${step===1?'active':''}`} 
           onClick={() => onTabClick(1)}
           disabled={step < 0}
-          style={{ cursor: step < 0 ? 'not-allowed' : 'pointer' }}
         >
           Business Details
         </button>
@@ -46,7 +45,6 @@ export default function StepNavigation({ step, onTabClick, mobileOpenIdx, render
           className={`tab-btn ${step===2?'active':''}`} 
           onClick={() => onTabClick(2)}
           disabled={step < 1}
-          style={{ cursor: step < 1 ? 'not-allowed' : 'pointer' }}
         >
           Funding Needs
         </button>
@@ -62,7 +60,6 @@ export default function StepNavigation({ step, onTabClick, mobileOpenIdx, render
           className={`tab-btn ${step===3?'active':''}`} 
           onClick={() => onTabClick(3)}
           disabled={step < 2}
-          style={{ cursor: step < 2 ? 'not-allowed' : 'pointer' }}
         >
           Review
         </button>

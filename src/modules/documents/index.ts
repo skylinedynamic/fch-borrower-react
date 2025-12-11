@@ -1,3 +1,2 @@
-export * from './types'
-export * from './services'
-export * from './queries'
+export { useDocumentTypes, useBorrowerDocuments } from './queries'
+export type { DocumentType, BorrowerDocument, BorrowerDocumentsData } from './types'

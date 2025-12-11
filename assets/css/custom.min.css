@@ -3620,3 +3620,76 @@
   height: 32px;
   flex-shrink: 0;
 }
+
+/* Advisor Loader */
+.advisor-skeleton-avatar {
+  width: 64px;
+  height: 64px;
+}
+
+.advisor-skeleton-item {
+  height: 36px;
+  border-radius: 12px;
+}
+
+.advisor-skeleton-btn {
+  height: 38px;
+  border-radius: 10px;
+}
+
+/* PreQualification Skeletons */
+.sk-review-title {
+  width: 140px;
+  height: 18px;
+  border-radius: 8px;
+}
+
+.sk-review-line-common {
+  height: 12px;
+  border-radius: 6px;
+}
+
+.sk-w-140 { width: 140px; }
+.sk-w-180 { width: 180px; }
+.sk-w-220 { width: 220px; }
+.sk-w-260 { width: 260px; }
+.sk-w-300 { width: 300px; }
+.sk-w-340 { width: 340px; }
+
+.sk-review-footer-text {
+  width: 220px;
+  height: 14px;
+  border-radius: 8px;
+}
+
+.sk-review-btn {
+  width: 100px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+.sk-review-submit-btn {
+  width: 120px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+.sk-header-title {
+  width: 220px;
+  height: 20px;
+  border-radius: 8px;
+}
+
+.sk-header-subtitle {
+  width: 460px;
+  height: 14px;
+  border-radius: 8px;
+}
+
+/* Step Navigation Cursor Override */
+.prequalification-page .tab-btn {
+  cursor: pointer;
+}
+.prequalification-page .tab-btn:disabled {
+  cursor: not-allowed !important;
+}

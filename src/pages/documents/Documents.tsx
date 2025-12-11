@@ -1,11 +1,10 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import {
-  fetchDocuments,
   submitFileSelection
 } from '../../modules/filemanager/services'
 import type { FileSystemItem } from '../../modules/filemanager/types'
-import { useDocumentTypes } from '../../modules/documents'
+import { useDocumentTypes, useBorrowerDocuments, type BorrowerDocument } from '../../modules/documents'
 import { DocumentStats } from './components/DocumentStats'
 import { DocumentSection } from './components/DocumentSection'
 import { FileManagerModal } from '../../components/FileManagerModal/FileManagerModal'
@@ -21,23 +20,38 @@ export default function Documents() {
   const [currentSection, setCurrentSection] = useState<string>('')
   const [selectionMode, setSelectionMode] = useState(false)
 
-  // Fetch documents on mount (once)
-  // Fetch document types on mount
+  // Fetch document types and documents
   const { data: types, isLoading: typesLoading, error: typesError } = useDocumentTypes()
+  const { data: documentsData, isLoading: docsLoading, error: docsError, refetch } = useBorrowerDocuments()
+
+  // Map BorrowerDocument to FileSystemItem for display
+  const mapDocumentToFileItem = (doc: BorrowerDocument): FileSystemItem => ({
+    name: doc.file_name,
+    path: doc.file_path,
+    url: doc.url,
+    isDirectory: false,
+    size: 0,
+    updatedAt: new Date().toISOString(),
+  })
 
   useEffect(() => {
-    if (types) {
+    if (types && documentsData) {
       const sectionNames = types.sort((a, b) => a.sort_order - b.sort_order).map(t => t.name)
       setSections(sectionNames)
 
-      // Initialize uploads with empty arrays for each section
-      setUploads(prev => {
-        const next: Record<string, FileSystemItem[]> = {}
-        sectionNames.forEach(sec => {
-          next[sec] = []
-        })
-        return next
+      // Map document_type_id to section name and populate uploads
+      const uploadsMap: Record<string, FileSystemItem[]> = {}
+      sectionNames.forEach(sec => {
+        uploadsMap[sec] = []
       })
+
+      // Populate uploads based on API data
+      types.forEach(docType => {
+        const docsForType = documentsData[docType.id.toString()] || []
+        uploadsMap[docType.name] = docsForType.map(mapDocumentToFileItem)
+      })
+
+      setUploads(uploadsMap)
       
       // Open first section by default
       if (sectionNames.length > 0) {
@@ -45,24 +59,15 @@ export default function Documents() {
       }
       
       setLoading(false)
-    } else if (typesError) {
-      console.error('Failed to load data', typesError)
+    } else if (typesError || docsError) {
+      console.error('Failed to load data', typesError || docsError)
       toast.error('Failed to load documents')
       setLoading(false)
     }
-  }, [types, typesError])
+  }, [types, documentsData, typesError, docsError])
 
-  const refreshSection = async (section: string) => {
-    try {
-      const files = await fetchDocuments(section)
-      setUploads(prev => ({
-        ...prev,
-        [section]: files
-      }))
-    } catch (error) {
-      console.error(`Failed to refresh section ${section}`, error)
-      toast.error('Failed to refresh documents')
-    }
+  const refreshDocuments = async () => {
+    await refetch()
   }
 
   const totals = useMemo(() => {
@@ -86,14 +91,12 @@ export default function Documents() {
       if (docType) {
         try {
           const filePaths = selectedFiles.map(f => f.path)
-          const fileNames = selectedFiles.map(f => f.url)
-          console.log('fileNames: ', fileNames)
-          await submitFileSelection(filePaths, '/filemanager/upload-file', {
+          await submitFileSelection(filePaths, '/borrower/documents/upload', {
             document_type_id: docType.id
           })
           
-          // Refresh the section to show new files
-          await refreshSection(currentSection)
+          // Refresh all documents to show new files
+          await refreshDocuments()
           
           toast.success(`${selectedFiles.length} file(s) attached to ${currentSection}`)
         } catch (error) {

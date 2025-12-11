@@ -1,16 +1,15 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import { FinancialSupport as FinancialSupportType } from '../types'
+import { SaveFinancialInfoRequest, ValidationErrors } from '../../../modules/profile/types'
 import CustomDropdown from './CustomDropdown'
 import { countries as countriesData } from '../../../data/countries'
 import { yearsInBusinessOptions } from '../../../data/profile'
 import { useFinancialInfo, useSaveFinancialInfo } from '../../../modules/profile/queries'
 import { toast } from 'react-toastify'
-import { ValidationErrors } from '../../../modules/profile/types'
 import TabLoader from '../../../components/Loader/TabLoader'
 
 interface FinancialSupportProps {
-  data: FinancialSupportType
-  onChange: (data: FinancialSupportType) => void
+  data: any
+  onChange: (data: any) => void
   onSave: () => void
   onBack: () => void
   saving: boolean
@@ -23,11 +22,11 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
 
   const handleSave = () => {
     setErrors({})
-    const payload = {
+    const payload: SaveFinancialInfoRequest = {
       currency: data.currency,
-      years_in_business: data.yearsInBusiness || null,
-      monthly_revenue: parseFloat(data.monthlyRevenue) || 0,
-      annual_revenue: parseFloat(data.annualRevenue) || 0,
+      years_in_business: parseInt(data.years_in_business) || 0,
+      monthly_revenue: parseFloat(data.monthly_revenue) || 0,
+      annual_revenue: parseFloat(data.annual_revenue) || 0,
     }
 
     saveFinancial(payload, {
@@ -57,9 +56,9 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
       onChange({
         ...data,
         currency: apiData.currency,
-        yearsInBusiness: String(apiData.years_in_business),
-        monthlyRevenue: apiData.monthly_revenue,
-        annualRevenue: apiData.annual_revenue,
+        years_in_business: String(apiData.years_in_business),
+        monthly_revenue: apiData.monthly_revenue,
+        annual_revenue: apiData.annual_revenue,
       })
     }
   }, [isSuccess, apiData])
@@ -94,8 +93,8 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
         <div className="col-md-6">
           <label className="form-label">Years in Business <span className="text-danger">*</span></label>
           <CustomDropdown
-            value={data.yearsInBusiness}
-            onChange={(value) => onChange({ ...data, yearsInBusiness: value })}
+            value={data.years_in_business}
+            onChange={(value) => onChange({ ...data, years_in_business: value })}
             options={yearsInBusinessOptions}
             optionLabel="label"
             optionValue="value"
@@ -110,19 +109,19 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           <input 
             type="text" 
             placeholder="$20,000" 
-            value={data.monthlyRevenue} 
-            onChange={(e) => onChange({ ...data, monthlyRevenue: e.target.value })} 
+            value={data.monthly_revenue} 
+            onChange={(e) => onChange({ ...data, monthly_revenue: e.target.value })} 
             className={`form-control ${errors.monthly_revenue ? 'is-invalid' : ''}`}
           />
           {errors.monthly_revenue && <div className="invalid-feedback">{errors.monthly_revenue}</div>}
         </div>
         <div className="col-md-6">
-          <label className="form-label">Annual Revenue</label>
+          <label className="form-label">Annual Revenue <span className="text-danger">*</span></label>
           <input 
             type="text" 
             placeholder="$30,000" 
-            value={data.annualRevenue} 
-            onChange={(e) => onChange({ ...data, annualRevenue: e.target.value })} 
+            value={data.annual_revenue} 
+            onChange={(e) => onChange({ ...data, annual_revenue: e.target.value })} 
             className={`form-control ${errors.annual_revenue ? 'is-invalid' : ''}`}
           />
           {errors.annual_revenue && <div className="invalid-feedback">{errors.annual_revenue}</div>}
