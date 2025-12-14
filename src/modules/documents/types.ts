@@ -28,3 +28,9 @@ export interface BorrowerDocumentsResponse {
   message: string
   data: BorrowerDocumentsData
 }
+
+export interface DeleteDocumentResponse {
+  status: boolean
+  message: string
+  data: null
+}

@@ -24,7 +24,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
     setErrors({})
     const payload: SaveFinancialInfoRequest = {
       currency: data.currency,
-      years_in_business: parseInt(data.years_in_business) || 0,
+      years_in_business: data.years_in_business,
       monthly_revenue: parseFloat(data.monthly_revenue) || 0,
       annual_revenue: parseFloat(data.annual_revenue) || 0,
     }
@@ -56,7 +56,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
       onChange({
         ...data,
         currency: apiData.currency,
-        years_in_business: String(apiData.years_in_business),
+        years_in_business: apiData.years_in_business,
         monthly_revenue: apiData.monthly_revenue,
         annual_revenue: apiData.annual_revenue,
       })

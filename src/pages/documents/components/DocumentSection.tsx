@@ -20,15 +20,17 @@ interface DocumentSectionProps {
   section: string
   files: FileSystemItem[]
   isOpen: boolean
+  isUploading?: boolean
   onToggle: () => void
   onOpenFileManager: (section: string, selectionMode: boolean) => void
-  onRemoveFile?: (section: string, filePath: string) => void
+  onRemoveFile?: (section: string, documentId: number) => void
 }
 
 export const DocumentSection: React.FC<DocumentSectionProps> = ({
   section,
   files,
   isOpen,
+  isUploading = false,
   onToggle,
   onOpenFileManager,
   onRemoveFile
@@ -88,14 +90,29 @@ export const DocumentSection: React.FC<DocumentSectionProps> = ({
         <div className="accordion-body">
           <div
             className="dropzone dz-clickable text-center"
-            onClick={() => onOpenFileManager(section, true)}
-            style={{ cursor: 'pointer' }}
+            onClick={() => !isUploading && onOpenFileManager(section, true)}
+            style={{ 
+              cursor: isUploading ? 'default' : 'pointer',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
           >
             <div className="dz-message needsclick">
-              <div className="mb-3">
-                <i className="display-4 text-muted ri-upload-cloud-2-fill"></i>
-              </div>
-              <h4>Click here to upload documents.</h4>
+              {isUploading ? (
+                <div className="py-4">
+                  <div className="spinner-border text-primary" role="status" style={{ borderWidth: '0.1rem' }}>
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <h4 className="mt-3">Uploading documents...</h4>
+                </div>
+              ) : (
+                <>
+                  <div className="mb-3">
+                    <i className="display-4 text-muted ri-upload-cloud-2-fill"></i>
+                  </div>
+                  <h4>Click here to upload documents.</h4>
+                </>
+              )}
             </div>
           </div>
           <div className="file-list mt-3">
@@ -107,12 +124,11 @@ export const DocumentSection: React.FC<DocumentSectionProps> = ({
                       {renderFileIcon(f)}
                       <div className="d-flex flex-column">
                         <span className="fw-medium">{f.name}</span>
-                        <small className="text-muted">{fmtSize(f.size || 0)}</small>
                       </div>
                     </div>
                     <button
                       className="btn btn-sm btn-outline-danger"
-                      onClick={() => onRemoveFile && onRemoveFile(section, f.path)}
+                      onClick={() => onRemoveFile && f.documentId && onRemoveFile(section, f.documentId)}
                       title="Remove file"
                     >
                       <i className="ri-delete-bin-line"></i> Remove
@@ -120,9 +136,7 @@ export const DocumentSection: React.FC<DocumentSectionProps> = ({
                   </div>
                 ))}
               </div>
-            ) : (
-              <p className="text-muted text-center mb-0">No files selected</p>
-            )}
+            ) : ''}
           </div>
         </div>
       </Collapse>

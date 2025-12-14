@@ -7,6 +7,7 @@ export interface FileSystemItem {
   type?: string
   url?: string
   file?: File
+  documentId?: number // For borrower document deletion
   children?: FileSystemItem[] // For folder tree
 }
 
@@ -46,8 +47,11 @@ export interface PasteItemsResponse {
   data: FileSystemItem[]
 }
 
+export interface FileManagerContext {
+  entity_type?: string
+  entity_id?: number | string
+}
+
 export interface FolderTreeResponse {
-  status: boolean
-  message: string
   data: FileSystemItem[]
 }

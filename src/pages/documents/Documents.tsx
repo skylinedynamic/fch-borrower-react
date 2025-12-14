@@ -1,28 +1,38 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from '../../lib/query'
 import {
   submitFileSelection
 } from '../../modules/filemanager/services'
 import type { FileSystemItem } from '../../modules/filemanager/types'
-import { useDocumentTypes, useBorrowerDocuments, type BorrowerDocument } from '../../modules/documents'
+import { useDocumentTypes, useBorrowerDocuments, useDeleteDocument, type BorrowerDocument } from '../../modules/documents'
+import { getUser } from '../../lib/auth/auth'
 import { DocumentStats } from './components/DocumentStats'
 import { DocumentSection } from './components/DocumentSection'
 import { FileManagerModal } from '../../components/FileManagerModal/FileManagerModal'
+import { DocumentSectionLoader } from '../../components/Loader/DocumentSectionLoader'
+import DeleteConfirmationModal from '../../components/GlobalModal/DeleteConfirmModal'
 
 
 export default function Documents() {
   const [sections, setSections] = useState<string[]>([])
   const [uploads, setUploads] = useState<Record<string, FileSystemItem[]>>({})
+  const [uploadingSections, setUploadingSections] = useState<Record<string, boolean>>({})
+  const queryClient = useQueryClient()
 
   const [loading, setLoading] = useState(true)
   const [showFileManager, setShowFileManager] = useState(false)
   const [openSection, setOpenSection] = useState<string | null>(null)
   const [currentSection, setCurrentSection] = useState<string>('')
   const [selectionMode, setSelectionMode] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [documentToDelete, setDocumentToDelete] = useState<{ id: number; name: string } | null>(null)
 
   // Fetch document types and documents
   const { data: types, isLoading: typesLoading, error: typesError } = useDocumentTypes()
-  const { data: documentsData, isLoading: docsLoading, error: docsError, refetch } = useBorrowerDocuments()
+  const { data: documentsData, isLoading: docsLoading, error: docsError } = useBorrowerDocuments()
+  const deleteDocumentMutation = useDeleteDocument()
 
   // Map BorrowerDocument to FileSystemItem for display
   const mapDocumentToFileItem = (doc: BorrowerDocument): FileSystemItem => ({
@@ -32,6 +42,7 @@ export default function Documents() {
     isDirectory: false,
     size: 0,
     updatedAt: new Date().toISOString(),
+    documentId: doc.id, // Include document ID for deletion
   })
 
   useEffect(() => {
@@ -53,8 +64,8 @@ export default function Documents() {
 
       setUploads(uploadsMap)
       
-      // Open first section by default
-      if (sectionNames.length > 0) {
+      // Open first section by default only on initial load
+      if (sectionNames.length > 0 && openSection === null) {
         setOpenSection(sectionNames[0])
       }
       
@@ -65,10 +76,6 @@ export default function Documents() {
       setLoading(false)
     }
   }, [types, documentsData, typesError, docsError])
-
-  const refreshDocuments = async () => {
-    await refetch()
-  }
 
   const totals = useMemo(() => {
     const entries = Object.entries(uploads)
@@ -89,30 +96,48 @@ export default function Documents() {
     if (currentSection && types) {
       const docType = types.find(t => t.name === currentSection)
       if (docType) {
+        setUploadingSections(prev => ({ ...prev, [currentSection]: true }))
         try {
           const filePaths = selectedFiles.map(f => f.path)
           await submitFileSelection(filePaths, '/borrower/documents/upload', {
             document_type_id: docType.id
           })
           
-          // Refresh all documents to show new files
-          await refreshDocuments()
-          
+          await queryClient.invalidateQueries({ queryKey: queryKeys.documents.list() })
           toast.success(`${selectedFiles.length} file(s) attached to ${currentSection}`)
         } catch (error) {
           console.error('Failed to attach files', error)
           toast.error('Failed to attach files')
+        } finally {
+          setUploadingSections(prev => ({ ...prev, [currentSection]: false }))
         }
       }
     }
   }
 
-  const handleRemoveFile = (section: string, filePath: string) => {
-    setUploads(prev => ({
-      ...prev,
-      [section]: prev[section].filter(f => f.path !== filePath)
-    }))
-    toast.info('File removed from list')
+  const handleRemoveFile = (section: string, documentId: number) => {
+    // Find document name for modal display
+    const file = uploads[section]?.find(f => f.documentId === documentId)
+    if (file) {
+      setDocumentToDelete({ id: documentId, name: file.name })
+      setShowDeleteModal(true)
+    }
+  }
+
+  const confirmDelete = async () => {
+    if (!documentToDelete) return
+
+    deleteDocumentMutation.mutate(documentToDelete.id, {
+      onSuccess: (response) => {
+        toast.success(response.message || 'Document deleted successfully')
+        setShowDeleteModal(false)
+        setDocumentToDelete(null)
+      },
+      onError: (error) => {
+        console.error('Failed to delete document', error)
+        toast.error('Failed to delete document')
+      }
+    })
   }
 
   const toggleSection = (section: string) => {
@@ -127,6 +152,16 @@ export default function Documents() {
         section={currentSection}
         selectionMode={selectionMode}
         onSelectFiles={handleFileSelection}
+        entityType="borrowers"
+        entityId={getUser()?.entity_id}
+      />
+      
+      <DeleteConfirmationModal
+        show={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        loading={deleteDocumentMutation.isPending}
+        text={`Are you sure you want to delete "${documentToDelete?.name}"? This action cannot be undone.`}
       />
       
       <div className="container-fluid min-vh-70 pt-2">
@@ -143,7 +178,7 @@ export default function Documents() {
             </div>
           </div>
         ) : (
-          <DocumentStats count={totals.count} size={totals.size} />
+          <DocumentStats />
         )}
 
         <div className="row">
@@ -151,18 +186,7 @@ export default function Documents() {
             <div className="card doc-panel">
               <div className="card-body">
                 {loading ? (
-                  <div>
-                    {[1,2,3,4].map((i) => (
-                      <div className="mb-3" key={i}>
-                        <div className="skeleton-line w-50" style={{ height: 22, borderRadius: 6 }}></div>
-                        <div className="skeleton-line w-100 mt-2" style={{ height: 120, borderRadius: 8 }}></div>
-                        <div className="d-flex gap-2 mt-2">
-                          <div className="skeleton-line" style={{ width: 160, height: 14, borderRadius: 6 }}></div>
-                          <div className="skeleton-line" style={{ width: 90, height: 14, borderRadius: 6 }}></div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <DocumentSectionLoader />
                 ) : (
                   <div className="accordion" id="docsAccordion">
                     {sections.map((sec) => (
@@ -171,6 +195,7 @@ export default function Documents() {
                         section={sec}
                         files={uploads[sec] || []}
                         isOpen={openSection === sec}
+                        isUploading={uploadingSections[sec] || false}
                         onToggle={() => toggleSection(sec)}
                         onOpenFileManager={toggleFileManager}
                         onRemoveFile={handleRemoveFile}

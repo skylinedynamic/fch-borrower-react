@@ -11,6 +11,8 @@ interface FileManagerModalProps {
   initialPath?: string
   selectionMode?: boolean
   onSelectFiles?: (files: FileSystemItem[]) => void
+  entityType?: string
+  entityId?: number | string
 }
 
 export const FileManagerModal: React.FC<FileManagerModalProps> = ({
@@ -19,7 +21,9 @@ export const FileManagerModal: React.FC<FileManagerModalProps> = ({
   section,
   initialPath = '/',
   selectionMode = false,
-  onSelectFiles
+  onSelectFiles,
+  entityType,
+  entityId
 }) => {
   const {
     files,
@@ -34,7 +38,7 @@ export const FileManagerModal: React.FC<FileManagerModalProps> = ({
     handleDelete,
     handlePaste,
     handleDownload
-  } = useFileManager(section, initialPath, { enabled: isOpen })
+  } = useFileManager(section, initialPath, { enabled: isOpen }, { entity_type: entityType, entity_id: entityId })
 
   const handleSelectFiles = (selectedFiles: FileSystemItem[]) => {
     if (onSelectFiles) {

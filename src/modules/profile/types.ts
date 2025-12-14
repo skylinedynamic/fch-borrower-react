@@ -95,7 +95,7 @@ export type SaveBusinessDetailsResponse = {
 
 export type FinancialInfoData = {
   currency: string
-  years_in_business: number
+  years_in_business: string
   monthly_revenue: string
   annual_revenue: string
 }
@@ -108,7 +108,7 @@ export type FinancialInfoResponse = {
 
 export type SaveFinancialInfoRequest = {
   currency: string
-  years_in_business: number
+  years_in_business: string
   monthly_revenue: number
   annual_revenue: number
 }

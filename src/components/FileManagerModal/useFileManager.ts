@@ -10,9 +10,9 @@ import {
   downloadFile,
   fetchFolderTree
 } from '../../modules/filemanager/services'
-import type { FileSystemItem } from '../../modules/filemanager/types'
+import type { FileSystemItem, FileManagerContext } from '../../modules/filemanager/types'
 
-export const useFileManager = (section?: string, initialPath: string = '/', config: { enabled?: boolean } = { enabled: true }) => {
+export const useFileManager = (section?: string, initialPath: string = '/', config: { enabled?: boolean } = { enabled: true }, context?: FileManagerContext) => {
   const [files, setFiles] = useState<FileSystemItem[]>([])
   const [folderTree, setFolderTree] = useState<FileSystemItem[]>([])
   const [currentPath, setCurrentPath] = useState(initialPath)
@@ -21,7 +21,7 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
 
   const loadFolderTree = useCallback(async () => {
     try {
-      const tree = await fetchFolderTree('/')
+      const tree = await fetchFolderTree('/', context)
       setFolderTree(tree)
     } catch (error) {
       console.error('Failed to load folder tree', error)
@@ -31,7 +31,7 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
   const loadFiles = useCallback(async (path: string) => {
     setLoading(true)
     try {
-      const data = await fetchDocuments(path)
+      const data = await fetchDocuments(path, context)
       setFiles(data)
       setCurrentPath(path)
     } catch (error) {
@@ -67,7 +67,7 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
     // Use currentPath if parentPath is not provided or is invalid
     const targetPath = parentPath && parentPath !== '/' ? parentPath : currentPath
     try {
-      await createFolder(name, targetPath)
+      await createFolder(name, targetPath, context)
       await loadFiles(targetPath)
       await loadFolderTree() // Refresh tree after creating folder
     } catch (error) {
@@ -80,7 +80,7 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
     // Use currentPath if parentPath is not provided or is invalid
     const targetPath = parentPath && parentPath !== '/' ? parentPath : currentPath
     try {
-      await uploadFile(file, targetPath, onProgress)
+      await uploadFile(file, targetPath, onProgress, context)
       if (refresh) {
         await loadFiles(targetPath)
       }
@@ -92,7 +92,7 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
 
   const handleRename = async (path: string, newName: string) => {
     try {
-      await renameItem(path, newName)
+      await renameItem(path, newName, context)
       await loadFiles(currentPath) // Refresh current view
       await loadFolderTree() // Refresh tree after rename
     } catch (error) {
@@ -103,7 +103,7 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
 
   const handleDelete = async (paths: string[]) => {
     try {
-      await deleteItems(paths)
+      await deleteItems(paths, context)
       await loadFiles(currentPath)
       await loadFolderTree() // Refresh tree after delete
     } catch (error) {
@@ -114,7 +114,7 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
 
   const handlePaste = async (items: FileSystemItem[], destinationPath: string, operation: 'copy' | 'move') => {
     try {
-      await pasteItems(items, destinationPath, operation)
+      await pasteItems(items, destinationPath, operation, context)
       await loadFiles(destinationPath)
     } catch (error) {
       console.error('Paste failed', error)

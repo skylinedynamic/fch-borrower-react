@@ -7,22 +7,28 @@ import type {
   RenameItemResponse,
   DeleteItemsResponse,
   PasteItemsResponse,
-  FolderTreeResponse
+  FolderTreeResponse,
+  FileManagerContext
 } from './types'
 
 const BASE_URL = '/filemanager'
 
-export const fetchDocuments = async (path: string = '/'): Promise<FileSystemItem[]> => {
-  const body: any = { path }
+export const fetchDocuments = async (path: string = '/', context?: FileManagerContext): Promise<FileSystemItem[]> => {
+  const body: any = { 
+    path,
+    ...context 
+  }
   
   const { data } = await apiClient.post<DocumentsResponse>(`${BASE_URL}/list`, body)
   return data.data
 }
 
-export const uploadFile = async (file: File, path: string, onProgress?: (progress: number) => void): Promise<FileSystemItem> => {
+export const uploadFile = async (file: File, path: string, onProgress?: (progress: number) => void, context?: FileManagerContext): Promise<FileSystemItem> => {
   const formData = new FormData()
   formData.append('file', file)
   formData.append('path', path)
+  if (context?.entity_type) formData.append('entity_type', context.entity_type)
+  if (context?.entity_id) formData.append('entity_id', String(context.entity_id))
 
   const { data } = await apiClient.post<UploadFileResponse>(`${BASE_URL}/upload`, formData, {
     headers: {
@@ -38,34 +44,38 @@ export const uploadFile = async (file: File, path: string, onProgress?: (progres
   return data.data
 }
 
-export const createFolder = async (name: string, path: string): Promise<FileSystemItem> => {
+export const createFolder = async (name: string, path: string, context?: FileManagerContext): Promise<FileSystemItem> => {
   const { data } = await apiClient.post<CreateFolderResponse>(`${BASE_URL}/folder`, {
     name,
-    path: path === '/' ? null : path
+    path: path === '/' ? null : path,
+    ...context
   })
   return data.data
 }
 
-export const renameItem = async (path: string, newName: string): Promise<FileSystemItem> => {
+export const renameItem = async (path: string, newName: string, context?: FileManagerContext): Promise<FileSystemItem> => {
   const { data } = await apiClient.put<RenameItemResponse>(`${BASE_URL}/rename`, {
     path,
-    newName
+    newName,
+    ...context
   })
   return data.data
 }
 
-export const deleteItems = async (paths: string[]): Promise<boolean> => {
+export const deleteItems = async (paths: string[], context?: FileManagerContext): Promise<boolean> => {
   const { data } = await apiClient.post<DeleteItemsResponse>(`${BASE_URL}/delete`, {
-    paths
+    paths,
+    ...context
   })
   return data.success
 }
 
-export const pasteItems = async (files: FileSystemItem[], destinationPath: string, operation: 'copy' | 'move'): Promise<FileSystemItem[]> => {
+export const pasteItems = async (files: FileSystemItem[], destinationPath: string, operation: 'copy' | 'move', context?: FileManagerContext): Promise<FileSystemItem[]> => {
   const { data } = await apiClient.post<PasteItemsResponse>(`${BASE_URL}/paste`, {
     files,
     destinationPath,
-    operation
+    operation,
+    ...context
   })
   return data.data
 }
@@ -94,8 +104,11 @@ export const downloadFile = async (path: string, filename: string): Promise<void
   }
 }
 
-export const fetchFolderTree = async (path: string = '/'): Promise<FileSystemItem[]> => {
-  const body: any = { path }
+export const fetchFolderTree = async (path: string = '/', context?: FileManagerContext): Promise<FileSystemItem[]> => {
+  const body: any = { 
+    path,
+    ...context 
+  }
   
   const { data } = await apiClient.post<FolderTreeResponse>(`${BASE_URL}/tree`, body)
   return data.data

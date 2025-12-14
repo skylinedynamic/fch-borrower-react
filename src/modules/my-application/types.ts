@@ -47,3 +47,37 @@ export interface AdvisorResponse {
   message: string
   data: Advisor
 }
+export interface PreQualificationDetail {
+  id: number
+  // Personal Info
+  first_name: string
+  last_name: string
+  email: string
+  phone_number: string
+  business_website: string
+  state_of_incorporation: string
+  // Business Info
+  business_name: string
+  industry_type: string
+  business_structure: string
+  time_in_business: string
+  monthly_revenue: string
+  annual_revenue: string
+  // Financial Info
+  funding_requested_amount: string
+  funding_urgency: string
+  purpose_of_funding: string
+  personal_credit_score: string
+  estimated_business_credit_score: string
+  existing_business_debt: boolean | number
+  debt_balance: string | null
+  // Others
+  notes: string | null
+  status: string
+}
+
+export interface PreQualificationDetailResponse {
+  status: boolean
+  message: string
+  data: PreQualificationDetail
+}

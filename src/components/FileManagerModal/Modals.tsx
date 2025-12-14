@@ -261,7 +261,6 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpl
                   aria-valuemin={0} 
                   aria-valuemax={100}
                 >
-                  {uploadProgress}%
                 </div>
               </div>
             </div>

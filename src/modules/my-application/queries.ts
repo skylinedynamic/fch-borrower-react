@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { fetchPreQualificationRequests, fetchAdvisor } from './services'
+import { fetchPreQualificationRequests, fetchAdvisor, fetchPreQualificationDetail } from './services'
 
 export const usePreQualificationRequests = (page: number = 1) => {
   return useQuery({
@@ -14,5 +14,13 @@ export const useAdvisor = () => {
     queryKey: ['advisor'],
     queryFn: fetchAdvisor,
     staleTime: 30 * 60 * 1000, // 30 minutes
+  })
+}
+
+export const usePreQualificationDetail = (id: number | string) => {
+  return useQuery({
+    queryKey: ['pre-qualification-detail', id],
+    queryFn: () => fetchPreQualificationDetail(id),
+    enabled: !!id,
   })
 }

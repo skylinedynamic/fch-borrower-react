@@ -8,6 +8,8 @@ export type AuthUser = {
   role?: string
   image?: string
   permissions?: string[]
+  entity_type?: string
+  entity_id?: string | number
   [key: string]: unknown
 }
 
