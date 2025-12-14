@@ -12,10 +12,10 @@ interface PreQualificationDetailsModalProps {
 const DetailItem = ({ label, value, icon, fullWidth = false }: { label: string; value: React.ReactNode; icon?: string; fullWidth?: boolean }) => (
   <div className={`mb-3 ${fullWidth ? 'col-12' : 'col-sm-6'}`}>
     <div className="d-flex align-items-center mb-1 text-muted">
-      {icon && <i className={`${icon} me-2 fs-12`}></i>}
-      <span className="small text-uppercase fw-bold fs-10 ls-05">{label}</span>
+      {icon && <i className={`${icon} me-2`}></i>}
+      <span className="text-uppercase fw-bold fs-12 ls-05">{label}</span>
     </div>
-    <div className="fs-13 fw-medium text-dark text-break">
+    <div className="fs-14 fw-medium text-dark text-break">
       {value || <span className="text-muted fst-italic">Not provided</span>}
     </div>
   </div>
@@ -30,7 +30,7 @@ const SectionCard = ({ title, icon, children }: { title: string; icon: string; c
             <i className={`${icon} fs-14`}></i>
           </span>
         </div>
-        <h6 className="mb-0 fs-14 fw-bold text-dark">{title}</h6>
+        <h6 className="mb-0 fs-16 fw-bold text-dark">{title}</h6>
       </div>
     </div>
     <div className="card-body pt-4">
@@ -49,7 +49,7 @@ export default function PreQualificationDetailsModal({ isOpen, toggle, requestId
     <Modal isOpen={isOpen} toggle={toggle} size="lg" centered scrollable className="zoomIn">
       <ModalHeader toggle={toggle} className="border-bottom-0 pb-0">
         Pre-Qualification Details 
-        {data && <Badge color={data.status === 'submitted' ? 'success' : 'warning'} pill className="ms-2 fs-11 text-uppercase">{data.status}</Badge>}
+        {data && <Badge color={data.status === 'submitted' ? 'success' : 'warning'} pill className="ms-2 fs-12 text-uppercase">{data.status}</Badge>}
       </ModalHeader>
       <ModalBody className="p-4 bg-light-subtle">
         {isLoading ? (
@@ -98,8 +98,8 @@ export default function PreQualificationDetailsModal({ isOpen, toggle, requestId
             {data.notes && (
               <div className="card border shadow-sm border-warning-subtle">
                 <div className="card-body bg-warning-subtle text-warning-emphasis rounded p-3">
-                  <h6 className="fs-13 fw-bold mb-2"><i className="pi pi-info-circle me-2"></i>Additional Notes</h6>
-                  <p className="mb-0 fs-13">{data.notes}</p>
+                  <h6 className="fs-14 fw-bold mb-2"><i className="pi pi-info-circle me-2"></i>Additional Notes</h6>
+                  <p className="mb-0 fs-14">{data.notes}</p>
                 </div>
               </div>
             )}
