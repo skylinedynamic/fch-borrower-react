@@ -7,7 +7,7 @@ import ForgotPassword from '../src/pages/singin/ForgotPassword.jsx'
 import ResetPassword from '../src/pages/singin/ResetPassword.jsx'
 import SignUp from '../src/pages/singin/SignUp.jsx'
 import UnderConstruction from '../src/pages/UnderConstruction.jsx'
-import CreditGuide from '../src/pages/creditguide/CreditGuide.tsx'
+import CreditGuide from '../src/pages/credit-builder/creditguide/CreditGuide.tsx'
 import FundApplication from '../src/pages/fundapplication/FundApplication.tsx'
 import PreQualification from '../src/pages/prequalification/PreQualification.tsx'
 import Documents from '../src/pages/documents/Documents.tsx'
@@ -15,10 +15,10 @@ import { ProtectedRoute, GuestRoute, checkSession } from './lib/auth'
 import Profile from '../src/pages/profile/profile.tsx'
 import MyApplication from '../src/pages/myapplication/MyApplication.tsx'
 import Appointmnet from '../src/pages/appointment/appointmnet.tsx'
-import CreditOverview from '../src/pages/creditoverview/CreditOverview.tsx'
-import VendorApplication from '../src/pages/creditvendorapplication/VendorApplication.tsx'
-import ProgressTracker from '../src/pages/creditprogresstracker/ProgressTracker.tsx'
-import CreditResources from '../src/pages/creditresources/CreditResources.tsx'
+import CreditOverview from '../src/pages/credit-builder/creditoverview/CreditOverview.tsx'
+import VendorApplication from '../src/pages/credit-builder/creditvendorapplication/VendorApplication.tsx'
+import ProgressTracker from '../src/pages/credit-builder/creditprogresstracker/ProgressTracker.tsx'
+import CreditResources from '../src/pages/credit-builder/creditresources/CreditResources.tsx'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import ProfileCompleteCheckModal from './components/ProfileCompleteCheckModal/ProfileCompleteCheckModal'
@@ -50,15 +50,18 @@ export default function App() {
         <Route element={<Layout />}> 
           <Route index element={<Dashboard />} />
           <Route path="under-construction/:feature" element={<UnderConstruction />} />
-          <Route path="credit-guide" element={<CreditGuide />} />
           <Route path="pre-qualification" element={<PreQualification />} />
           <Route path="fund-application" element={<FundApplication />} />
           <Route path="my-applications" element={<MyApplication />} />
           <Route path="appointment" element={<Appointmnet />} />
-          <Route path="credit-overview" element={<CreditOverview />} />
-          <Route path="vendor-application" element={<VendorApplication />} />
-          <Route path="progress-tracker" element={<ProgressTracker />} />
-          <Route path="credit-resources" element={<CreditResources />} />
+          <Route path="credit-builder">
+            <Route index element={<CreditOverview />} />
+            <Route path="overview" element={<CreditOverview />} />
+            <Route path="guide" element={<CreditGuide />} />
+            <Route path="vendor-application" element={<VendorApplication />} />
+            <Route path="progress-tracker" element={<ProgressTracker />} />
+            <Route path="resources" element={<CreditResources />} />
+          </Route>
           <Route path="documents" element={<Documents />} />
           <Route path="profile" element={<Profile />} />
         </Route>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import overviewImg from '../../../assets/images/blog/overview.jpg'
+import overviewImg from '../../../../assets/images/blog/overview.jpg'
 
 export default function CreditOverview() {
   const playlist = [

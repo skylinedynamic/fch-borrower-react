@@ -10,7 +10,7 @@ export default function Sidebar() {
   const location = useLocation()
   const [creditOpen, setCreditOpen] = useState(() => {
     const path = typeof window !== 'undefined' ? window.location.pathname : ''
-    return /credit-|vendor-application|progress-tracker|resources/.test(path)
+    return path.includes('/credit-builder')
   })
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export default function Sidebar() {
 
   useEffect(() => {
     const path = location.pathname
-    const inSection = /credit-|vendor-application|progress-tracker|resources/.test(path)
+    const inSection = path.includes('/credit-builder')
     if (inSection) setCreditOpen(true)
   }, [location.pathname])
 
@@ -149,19 +149,19 @@ export default function Sidebar() {
               </button>
               <ul id="creditBuilderMenu" className={`navbar-nav ms-3 mt-1 submenu-collapse ${creditOpen ? 'open' : ''}`}>
                 <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-overview"><i className="ri-arrow-right-s-line"></i> <span>Overview</span></NavLink>
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/overview"><i className="ri-arrow-right-s-line"></i> <span>Overview</span></NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-guide"><i className="ri-arrow-right-s-line"></i> <span>Step-By-Step Guide</span></NavLink>
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/guide"><i className="ri-arrow-right-s-line"></i> <span>Step-By-Step Guide</span></NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/vendor-application"><i className="ri-arrow-right-s-line"></i> <span>Vendor Application</span></NavLink>
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/vendor-application"><i className="ri-arrow-right-s-line"></i> <span>Vendor Application</span></NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/progress-tracker"><i className="ri-arrow-right-s-line"></i> <span>Progress Tracker</span></NavLink>
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/progress-tracker"><i className="ri-arrow-right-s-line"></i> <span>Progress Tracker</span></NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-resources"><i className="ri-arrow-right-s-line"></i> <span>Resources</span></NavLink>
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/resources"><i className="ri-arrow-right-s-line"></i> <span>Resources</span></NavLink>
                 </li>
               </ul>
             </li>
