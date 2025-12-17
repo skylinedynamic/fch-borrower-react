@@ -3693,3 +3693,554 @@
 .prequalification-page .tab-btn:disabled {
   cursor: not-allowed !important;
 }
+
+/* Credit Overview Page Styles */
+@keyframes stripeMove{from{background-position:0 0,0 0}to{background-position:0 0,24px 0}}
+.credit-overview-page .progress-animated{
+  background-image: linear-gradient(90deg, #D4AF37 0%, #001F3F 100%),
+                    repeating-linear-gradient(45deg, rgba(255,255,255,.24) 0, rgba(255,255,255,.24) 12px, rgba(255,255,255,0) 12px, rgba(255,255,255,0) 24px);
+  animation: stripeMove 1.8s linear infinite;
+  background-size: auto, 24px 24px;
+}
+.credit-overview-page .progress-goldnavy{background:#eef2f7;border:1px solid #e5e7eb;overflow:hidden;border-radius:999px;box-shadow:inset 0 1px 2px rgba(0,0,0,.06)}
+.credit-overview-page .progress-goldnavy .progress-bar{border-radius:999px}
+.credit-overview-page .tooltip-info .tooltip-inner{background:#0b5ed7;color:#ffffff;border:none}
+.credit-overview-page .tooltip-info.bs-tooltip-top .tooltip-arrow::before{border-top-color:#0b5ed7}
+.credit-overview-page .tooltip-info.bs-tooltip-bottom .tooltip-arrow::before{border-bottom-color:#0b5ed7}
+.credit-overview-page .tooltip-info.bs-tooltip-start .tooltip-arrow::before{border-left-color:#0b5ed7}
+.credit-overview-page .tooltip-info.bs-tooltip-end .tooltip-arrow::before{border-right-color:#0b5ed7}
+
+.credit-overview-page .panel{position:relative;border:1px solid #e5e7eb;border-radius:12px;background:#fff;box-shadow:0 6px 16px rgba(16,24,40,.06)}
+.credit-overview-page .panel::before{content:'';position:absolute;left:0;right:0;top:0;height:4px;border-top-left-radius:12px;border-top-right-radius:12px}
+.credit-overview-page .panel--pending::before{background:#ff7f32}
+.credit-overview-page .panel--completed::before{background:#16a34a}
+.credit-overview-page .panel--score::before{background:#6f42c1}
+.credit-overview-page .panel-header{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #e5e7eb}
+.credit-overview-page .panel-title{display:flex;align-items:center;gap:10px;font-weight:600}
+.credit-overview-page .icon-badge{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.credit-overview-page .icon-badge--pending{background:#fff2e9;color:#ff7f32}
+.credit-overview-page .icon-badge--completed{background:#eaf9f0;color:#16a34a}
+.credit-overview-page .icon-badge--score{background:#eee8ff;color:#6f42c1}
+.credit-overview-page .panel-body{padding:16px}
+.credit-overview-page .task{border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;margin-bottom:12px;background:#fff}
+.credit-overview-page .task .title{font-weight:600}
+.credit-overview-page .task-check{display:flex;align-items:start;gap:10px}
+.credit-overview-page .task-check .tick{width:22px;height:22px;border-radius:10%;display:inline-flex;align-items:center;justify-content:center}
+.credit-overview-page .tick-complete{background:#e8fbf0;color:#16a34a}
+.credit-overview-page .tick-pending{background:#fff8e6;color:#a37500}
+.credit-overview-page .pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;margin-right:8px}
+.credit-overview-page .pill-foundation{background:#eef6ff;color:#0b5ed7}
+.credit-overview-page .pill-high{background:#ffe5e0;color:#cc4b37}
+.credit-overview-page .pill-medium{background:#fff3cd;color:#a37500}
+.credit-overview-page .status-complete{color:#16a34a;font-weight:600}
+.credit-overview-page .status-pending{color:#a37500;font-weight:600}
+.credit-overview-page .btn-primary{border-radius:10px}
+
+.credit-overview-page .video-layout{display:grid;grid-template-columns:1fr 380px;gap:16px}
+@media (max-width: 1200px){.credit-overview-page .video-layout{grid-template-columns:1fr}}
+.credit-overview-page .video-player{position:relative;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background:#000}
+.credit-overview-page .video-header{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #e5e7eb;background:#fff}
+.credit-overview-page .video-title{font-weight:600}
+.credit-overview-page .playlist{border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background:#fff}
+.credit-overview-page .playlist-header{padding:10px 12px;border-bottom:1px solid #e5e7eb;font-weight:600}
+.credit-overview-page .playlist-items{display:flex;flex-direction:column}
+.credit-overview-page .playlist-item{padding:10px 12px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #f0f2f5;cursor:pointer}
+.credit-overview-page .playlist-item:last-child{border-bottom:none}
+.credit-overview-page .pi-thumb{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#eef6ff;color:#0b5ed7}
+.credit-overview-page .pi-body{flex:1}
+.credit-overview-page .pi-title{font-weight:600}
+.credit-overview-page .pi-meta{font-size:12px;color:var(--bs-secondary-color)}
+.credit-overview-page .pi-badge{font-size:12px;border-radius:999px;padding:2px 8px;background:#f3f4f6;color:#111827}
+.credit-overview-page .playlist-item.active{background:#f8fafc}
+.credit-overview-page .video-controls{display:flex;justify-content:flex-end;gap:8px;padding:8px;background:#fff;border-top:1px solid #e5e7eb}
+.credit-overview-page .btn-play{border-radius:8px}
+.credit-overview-page .video-surface{position:relative;height:370px}
+.credit-overview-page .video-surface iframe,.credit-overview-page .video-surface video{position:absolute;inset:0;width:100%;height:100%}
+
+.credit-overview-page .timeline{position:relative;padding-left:48px}
+.credit-overview-page .timeline::before{content:'';position:absolute;left:18px;top:6px;bottom:6px;border-left:2px dotted #e5e5e5}
+.credit-overview-page .timeline .item{position:relative;min-height:40px;padding:2px 0 16px;margin-bottom:6px}
+.credit-overview-page .timeline .dot{position:absolute;left:-47px;top:2px;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.credit-overview-page .timeline .dot::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#ffffff00;opacity:.95;z-index:0}
+.credit-overview-page .timeline .icon{position:relative;font-size:16px;z-index:1}
+.credit-overview-page .timeline .title{font-weight:600;margin-bottom:2px}
+.credit-overview-page .timeline .desc{color:var(--bs-secondary-color)}
+.credit-overview-page .timeline .meta{color:var(--bs-secondary-color);font-size:12px}
+
+.credit-overview-page .actions-list{display:flex;flex-direction:column;gap:10px}
+.credit-overview-page .action-item{border:1px solid #e5e7eb;border-radius:12px;padding:12px;background:#fff}
+.credit-overview-page .action-top{display:flex;align-items:center;gap:12px}
+.credit-overview-page .action-icon{width:36px;height:36px;border-radius:8px;background:#eef6ff;display:flex;align-items:center;justify-content:center;color:#0b5ed7;flex-shrink:0}
+.credit-overview-page .action-title{font-weight:600}
+.credit-overview-page .action-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.credit-overview-page .action-sub{color:var(--bs-secondary-color)}
+.credit-overview-page .action-meta{color:var(--bs-secondary-color);font-size:12px;margin-top:2px}
+.credit-overview-page .action-cta{display:flex;align-items:center;gap:8px;justify-content:space-between;padding-top:10px}
+.credit-overview-page .priority{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px}
+.credit-overview-page .priority-high{background:#ffe5e0;color:#cc4b37}
+.credit-overview-page .priority-medium{background:#fff3cd;color:#a37500}
+.credit-overview-page .btn-start{padding:6px 12px;border-radius:8px}
+
+/* Global ActivityLog Component Styles */
+.activity-log-component .timeline{position:relative;padding-left:48px}
+.activity-log-component .timeline::before{content:'';position:absolute;left:18px;top:6px;bottom:6px;border-left:2px dotted #e5e5e5}
+.activity-log-component .timeline .item{position:relative;min-height:40px;padding:2px 0 16px;margin-bottom:6px}
+.activity-log-component .timeline .dot{position:absolute;left:-47px;top:2px;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.activity-log-component .timeline .dot::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#ffffff00;opacity:.95;z-index:0}
+.activity-log-component .timeline .icon{position:relative;font-size:16px;z-index:1}
+.activity-log-component .timeline .title{font-weight:600;margin-bottom:2px}
+.activity-log-component .timeline .desc{color:var(--bs-secondary-color)}
+.activity-log-component .timeline .meta{color:var(--bs-secondary-color);font-size:12px}
+
+/* Credit Progress Component Styles */
+.credit-progress .tier-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  z-index: 2;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.credit-progress .tier-indicator--completed {
+  background-color: #16a34a;
+}
+
+.credit-progress .tier-indicator--current {
+  background-color: #D4AF37;
+}
+
+.credit-progress .tier-indicator--future {
+  background-color: #cbd5e1;
+}
+
+.credit-progress .tier-label-wrapper {
+  flex: 1;
+}
+
+.credit-progress .tier-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.credit-progress .tier-icon--completed {
+  background-color: #dcfce7;
+  border: 2px solid #16a34a;
+}
+
+.credit-progress .tier-icon--current {
+  background-color: #fef3c7;
+  border: 2px solid #D4AF37;
+}
+
+.credit-progress .tier-icon--future {
+  background-color: #f3f4f6;
+  border: 2px solid #e5e7eb;
+}
+
+.credit-progress .tier-icon i.icon-completed {
+  font-size: 18px;
+  color: #16a34a;
+}
+
+.credit-progress .tier-icon i.icon-current {
+  font-size: 16px;
+  color: #D4AF37;
+}
+
+.credit-progress .tier-icon i.icon-future {
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.credit-progress .tier-label {
+  font-size: 13px;
+}
+
+.credit-progress .tier-label--completed {
+  color: #16a34a;
+}
+
+.credit-progress .tier-label--current {
+  color: #001F3F;
+}
+
+.credit-progress .tier-label--future {
+  color: #6c757d;
+}
+
+/* Credit Overview Page Skeleton Loader Styles */
+.credit-overview-page .skeleton-line {
+  position: relative;
+  background: #e9edf3;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.credit-overview-page .skeleton-circle {
+  position: relative;
+  background: #e9edf3;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.credit-overview-page .skeleton-line::after,
+.credit-overview-page .skeleton-circle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-60%);
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0.7),
+      rgba(255, 255, 255, 0));
+  animation: shimmer 1.2s infinite;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(60%);
+  }
+}
+
+/* CreditProgressLoader Skeleton Styles */
+.credit-overview-page .skeleton-header-title {
+  width: 220px;
+  height: 18px;
+  border-radius: 4px;
+}
+
+.credit-overview-page .skeleton-badge-sm {
+  width: 60px;
+  height: 24px;
+  border-radius: 12px;
+}
+
+.credit-overview-page .skeleton-badge-lg {
+  width: 110px;
+  height: 24px;
+  border-radius: 12px;
+}
+
+.credit-overview-page .skeleton-progress-bar {
+  height: 16px;
+  border-radius: 999px;
+}
+
+.credit-overview-page .skeleton-tier-wrapper {
+  flex: 1;
+}
+
+.credit-overview-page .skeleton-tier-circle {
+  width: 32px;
+  height: 32px;
+}
+
+.credit-overview-page .skeleton-tier-label {
+  width: 50px;
+  height: 13px;
+  border-radius: 4px;
+}
+
+.credit-overview-page .skeleton-title {
+  width: 70%;
+  height: 16px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.credit-overview-page .skeleton-desc-line {
+  height: 14px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.credit-overview-page .skeleton-desc-short {
+  width: 85%;
+  height: 14px;
+  border-radius: 4px;
+}
+
+.credit-overview-page .skeleton-footer-lg {
+  width: 180px;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.credit-overview-page .skeleton-footer-sm {
+  width: 130px;
+  height: 12px;
+  border-radius: 4px;
+}
+
+/* Recommended Actions Component Styles */
+.actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.action-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+}
+
+.action-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.action-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #eef6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0b5ed7;
+  flex-shrink: 0;
+}
+
+.action-title {
+  font-weight: 600;
+}
+
+.action-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.action-sub {
+  color: var(--bs-secondary-color);
+}
+
+.action-meta {
+  color: var(--bs-secondary-color);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.action-cta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+  padding-top: 10px;
+}
+
+.priority {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 12px;
+}
+
+.priority-high {
+  background: #ffe5e0;
+  color: #cc4b37;
+}
+
+.priority-medium {
+  background: #fff3cd;
+  color: #a37500;
+}
+
+.priority-low {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.btn-start {
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+/* Credit Guide Page Styles */
+.credit-guide-page .stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 992px) {
+  .credit-guide-page .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.credit-guide-page .stat {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px;
+}
+
+.credit-guide-page .stat .num {
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.credit-guide-page .stat .label {
+  color: var(--bs-secondary-color);
+}
+
+.credit-guide-page .tier {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #0f2546;
+  background: #fff;
+  color: #fff;
+}
+
+.credit-guide-page .tier-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 14px;
+  cursor: pointer;
+  background: #0f2546;
+}
+
+.credit-guide-page .tier-title {
+  font-weight: 700;
+}
+
+.credit-guide-page .tier-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.credit-guide-page .tier-desc {
+  color: #cbd5e1;
+  max-width: 920px;
+}
+
+.credit-guide-page .tier-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.credit-guide-page .pill {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 12px;
+  background: #D4AF37;
+  color: #fff;
+}
+
+.credit-guide-page .tier-body {
+  background: #0f2546;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.35s ease, opacity 0.35s ease;
+  overflow: hidden;
+  display: flow-root;
+}
+
+.credit-guide-page .tier.open .tier-body {
+  max-height: 900px;
+  opacity: 1;
+  background: #fff;
+}
+
+.credit-guide-page .caret {
+  transition: transform 0.2s ease;
+}
+
+.credit-guide-page .caret.open {
+  transform: rotate(180deg);
+}
+
+.credit-guide-page .task {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 10px;
+  padding: 12px;
+  margin: 10px 14px;
+}
+
+.credit-guide-page .task.done {
+  background: #eaf9f0;
+  color: #0f172a;
+}
+
+.credit-guide-page .task.pending {
+  background: #fff7ed;
+  color: #0f172a;
+}
+
+.credit-guide-page .task .left {
+  max-width: 72%;
+}
+
+.credit-guide-page .task .title {
+  font-weight: 600;
+}
+
+.credit-guide-page .title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.credit-guide-page .check {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #94a3b8;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: #fff;
+}
+
+.credit-guide-page .task.done .check {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #fff;
+}
+
+.credit-guide-page .task.pending .check i {
+  display: none;
+}
+
+.credit-guide-page .check i {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.credit-guide-page .task .desc {
+  color: #334155;
+}
+
+.credit-guide-page .task .meta {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.credit-guide-page .task .cta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.credit-guide-page .task .cta .btn {
+  border-radius: 8px;
+}
