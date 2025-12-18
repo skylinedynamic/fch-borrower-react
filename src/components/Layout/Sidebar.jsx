@@ -1,10 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { NavLink, Link, useLocation } from 'react-router-dom'
+import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
+import { clearAuth } from '../../lib/auth'
+import { logout } from '../../modules/auth/services'
 import faviconImg from '../../../assets/images/Favicon.png'
 import logoImg from '../../../assets/images/logo.png'
 import avatarDefault from '../../../assets/images/users/avatar-1.jpg'
 
 export default function Sidebar() {
+  const navigate = useNavigate()
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 992 : false)
   const [open, setOpen] = useState(false)
   const location = useLocation()
@@ -42,26 +45,20 @@ export default function Sidebar() {
     }
   }
 
+  const handleLogout = async (e) => {
+    e?.preventDefault?.()
+    try {
+      await logout()
+    } catch (err) {
+      console.error('Logout request failed', err)
+    } finally {
+      clearAuth()
+      navigate('/login', { replace: true })
+    }
+  }
+
   return (
     <div className={menuClass}>
-      <style>{`
-        @media (max-width: 991.98px){
-          .navbar-brand-box{position:sticky;top:0;z-index:1;background:var(--bs-body-bg);display:block!important}
-        }
-        .submenu-collapse{overflow:hidden;max-height:0;opacity:.0;transition:max-height .25s ease,opacity .25s ease}
-        .submenu-collapse.open{max-height:500px;opacity:1}
-        .submenu-caret{transition:transform .2s ease}
-        .submenu-caret.open{transform:rotate(180deg)}
-        .nav-link.subitem{display:flex;align-items:center;gap:.5rem}
-        .partner-sidebar .menu-link{font-weight:600}
-        .partner-sidebar .subitem{font-weight:500}
-        .partner-sidebar .subitem.active{background:rgba(255,255,255,.06);color:#ffffff}
-        .partner-sidebar .subitem.active i{color:#ffffff}
-        .partner-sidebar .nav-item{border-bottom:1px solid rgba(255,255,255,.08)}
-        .partner-sidebar .nav-item:last-child{border-bottom:0}
-        .partner-sidebar .submenu-collapse .nav-item{border-bottom:1px solid rgba(255,255,255,.08)}
-        .partner-sidebar .submenu-collapse .nav-item:last-child{border-bottom:0}
-      `}</style>
       <div className="navbar-brand-box py-2">
         <a href="/" className="logo logo-dark">
           <span className="logo-sm">
@@ -102,7 +99,7 @@ export default function Sidebar() {
           <div className="dropdown-divider"></div>
           <a className="dropdown-item" href="#"><i className="mdi mdi-wallet text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Balance : <b>$5971.67</b></span></a>
           <a className="dropdown-item" href="#"><span className="badge bg-success-subtle text-success mt-1 float-end">New</span><i className="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Settings</span></a>
-          <a className="dropdown-item" href="#"><i className="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Logout</span></a>
+          <a className="dropdown-item" href="#" onClick={handleLogout}><i className="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Logout</span></a>
         </div>
       </div>
 
@@ -171,9 +168,9 @@ export default function Sidebar() {
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/under-construction/logout">
+              <a className="nav-link menu-link" href="#" onClick={handleLogout}>
                 <i className="ri-logout-circle-r-line"></i> <span>Logout</span>
-              </NavLink>
+              </a>
             </li>
           </ul>
         </div>

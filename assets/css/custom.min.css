@@ -1309,7 +1309,55 @@
   box-shadow: none;
 }
 
-.profile-page .skeleton-line {
+/* Global Skeleton Loader Styles */
+.skeleton-line,
+.skeleton-circle,
+.skeleton-rect {
+  position: relative;
+  background: #e9edf3;
+  overflow: hidden;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+}
+
+.skeleton-circle.small-circle {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+}
+
+.skeleton-rect {
+  border-radius: 6px;
+}
+
+.skeleton-line::after,
+.skeleton-circle::after,
+.skeleton-rect::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-60%);
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0.7),
+      rgba(255, 255, 255, 0));
+  animation: shimmer 1.2s infinite;
+}
+
+/* Page specific overrides if needed, but keeping global above allows reuse */
+/* Preserving original classes just in case they are used strictly under those scopes */
+.profile-page .skeleton-line,
+.documents-page .skeleton-line,
+.prequalification-page .skeleton-line,
+.myapplications-page .skeleton-line,
+.credit-guide-page .skeleton-line {
   position: relative;
   background: #e9edf3;
   height: 12px;
@@ -1317,89 +1365,37 @@
   overflow: hidden;
 }
 
-.profile-page .skeleton-circle {
+.profile-page .skeleton-circle,
+.documents-page .skeleton-circle,
+.prequalification-page .skeleton-circle,
+.myapplications-page .skeleton-circle,
+.credit-guide-page .skeleton-circle {
   position: relative;
   background: #e9edf3;
   border-radius: 50%;
   overflow: hidden;
 }
 
-.profile-page .skeleton-circle.small-circle {
+.profile-page .skeleton-circle.small-circle,
+.documents-page .skeleton-circle.small-circle,
+.prequalification-page .skeleton-circle.small-circle,
+.myapplications-page .skeleton-circle.small-circle,
+.credit-guide-page .skeleton-circle.small-circle {
   width: 18px;
   height: 18px;
   border-radius: 4px;
 }
 
 .profile-page .skeleton-line::after,
-.profile-page .skeleton-circle::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  transform: translateX(-60%);
-  background: linear-gradient(90deg,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0.7),
-      rgba(255, 255, 255, 0));
-  animation: shimmer 1.2s infinite;
-}
-
-.documents-page .skeleton-line {
-  position: relative;
-  background: #e9edf3;
-  height: 12px;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.documents-page .skeleton-circle {
-  position: relative;
-  background: #e9edf3;
-  border-radius: 50%;
-  overflow: hidden;
-}
-
-.documents-page .skeleton-circle.small-circle {
-  width: 18px;
-  height: 18px;
-  border-radius: 4px;
-}
-
 .documents-page .skeleton-line::after,
-.documents-page .skeleton-circle::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  transform: translateX(-60%);
-  background: linear-gradient(90deg,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0.7),
-      rgba(255, 255, 255, 0));
-  animation: shimmer 1.2s infinite;
-}
-
-.prequalification-page .skeleton-line {
-  position: relative;
-  background: #e9edf3;
-  height: 12px;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.prequalification-page .skeleton-circle {
-  position: relative;
-  background: #e9edf3;
-  border-radius: 50%;
-  overflow: hidden;
-}
-
-.prequalification-page .skeleton-circle.small-circle {
-  width: 18px;
-  height: 18px;
-  border-radius: 4px;
-}
-
 .prequalification-page .skeleton-line::after,
-.prequalification-page .skeleton-circle::after {
+.myapplications-page .skeleton-line::after,
+.credit-guide-page .skeleton-line::after,
+.profile-page .skeleton-circle::after,
+.documents-page .skeleton-circle::after,
+.prequalification-page .skeleton-circle::after,
+.myapplications-page .skeleton-circle::after,
+.credit-guide-page .skeleton-circle::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -1410,6 +1406,7 @@
       rgba(255, 255, 255, 0));
   animation: shimmer 1.2s infinite;
 }
+
 
 .myapplications-page .advisor-card {
   border: none;
@@ -4143,19 +4140,21 @@
   color: #fff;
 }
 
-.credit-guide-page .tier-body {
-  background: #0f2546;
-  max-height: 0;
-  opacity: 0;
-  transition: max-height 0.35s ease, opacity 0.35s ease;
-  overflow: hidden;
-  display: flow-root;
+/* Smooth Accordion Animation */
+.credit-guide-page .tier-body-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease-out;
+  background: #fff; /* Ensure white background to prevent flicker */
 }
 
-.credit-guide-page .tier.open .tier-body {
-  max-height: 900px;
-  opacity: 1;
-  background: #fff;
+.credit-guide-page .tier.open .tier-body-wrapper {
+  grid-template-rows: 1fr;
+}
+
+.credit-guide-page .tier-body {
+  overflow: hidden;
+  min-height: 0;
 }
 
 .credit-guide-page .caret {
@@ -4166,23 +4165,32 @@
   transform: rotate(180deg);
 }
 
+/* Task Styles */
 .credit-guide-page .task {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  align-items: center;
-  border-radius: 10px;
-  padding: 12px;
-  margin: 10px 14px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  gap: 16px;
+  transition: background 0.15s;
+  margin-bottom: 10px; /* Add margin to all tasks */
+}
+
+.credit-guide-page .task:last-child {
+  border-bottom: none;
+}
+
+.credit-guide-page .task:hover {
+  background: #fcfcfc;
 }
 
 .credit-guide-page .task.done {
-  background: #eaf9f0;
-  color: #0f172a;
+  background: #f0fdf4;
 }
 
 .credit-guide-page .task.pending {
-  background: #fff7ed;
-  color: #0f172a;
+  background: #d4af3717; /* Transparent Gold */
 }
 
 .credit-guide-page .task .left {
@@ -4199,31 +4207,81 @@
   gap: 10px;
 }
 
-.credit-guide-page .check {
-  width: 18px;
-  height: 18px;
-  border: 2px solid #94a3b8;
-  border-radius: 4px;
+
+.credit-guide-page .task .check {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 16px; /* Explicit 16px wrapper */
+  height: 16px; /* Explicit 16px wrapper */
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.credit-guide-page .task .check-box-unchecked {
+  width: 100%; /* Fill wrapper */
+  height: 100%; /* Fill wrapper */
+  border: 2px solid #cbd5e1;
+  border-radius: 4px;
+  transition: all 0.2s;
   background: #fff;
-  color: #fff;
+}
+
+.credit-guide-page .task .check.cursor-pointer {
+  cursor: pointer;
+}
+
+.credit-guide-page .task .check.cursor-pointer:hover .check-box-unchecked {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.credit-guide-page .task .check.checked {
+  color: #16a34a;
+  font-size: 12px;
+}
+
+.credit-guide-page .task .title {
+  font-weight: 500;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.credit-guide-page .task.done .title {
+  color: #166534;
 }
 
 .credit-guide-page .task.done .check {
   background: #16a34a;
-  border-color: #16a34a;
+  border: 1px solid #16a34a;
   color: #fff;
+  border-radius: 4px;
+  width: 16px; /* Standardize size */
+  height: 16px; /* Standardize size */
 }
 
-.credit-guide-page .task.pending .check i {
-  display: none;
+/* Tooltip info styling */
+.tooltip-info .tooltip-inner {
+  max-width: 300px;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  color: #1e293b;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: left;
+  border: 1px solid #e2e8f0;
 }
 
-.credit-guide-page .check i {
-  font-size: 12px;
-  line-height: 1;
+.tooltip-info .tt-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #0f172a;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 6px;
+  font-size: 14px;
 }
 
 .credit-guide-page .task .desc {
@@ -4244,3 +4302,32 @@
 .credit-guide-page .task .cta .btn {
   border-radius: 8px;
 }
+
+/* Skeleton Helpers */
+.skeleton-stat-value {
+  width: 40px;
+  height: 24px;
+}
+
+.skeleton-stat-label {
+  width: 80px;
+  height: 14px;
+}
+
+/* Sidebar Styles */
+@media (max-width: 991.98px){
+  .navbar-brand-box{position:sticky;top:0;z-index:1;background:var(--bs-body-bg);display:block!important}
+}
+.submenu-collapse{overflow:hidden;max-height:0;opacity:.0;transition:max-height .25s ease,opacity .25s ease}
+.submenu-collapse.open{max-height:500px;opacity:1}
+.submenu-caret{transition:transform .2s ease}
+.submenu-caret.open{transform:rotate(180deg)}
+.nav-link.subitem{display:flex;align-items:center;gap:.5rem}
+.partner-sidebar .menu-link{font-weight:600}
+.partner-sidebar .subitem{font-weight:500}
+.partner-sidebar .subitem.active{background:rgba(255,255,255,.06);color:#ffffff}
+.partner-sidebar .subitem.active i{color:#ffffff}
+.partner-sidebar .nav-item{border-bottom:1px solid rgba(255,255,255,.08)}
+.partner-sidebar .nav-item:last-child{border-bottom:0}
+.partner-sidebar .submenu-collapse .nav-item{border-bottom:1px solid rgba(255,255,255,.08)}
+.partner-sidebar .submenu-collapse .nav-item:last-child{border-bottom:0}

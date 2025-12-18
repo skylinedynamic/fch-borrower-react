@@ -1,18 +1,18 @@
 import React from 'react'
 
-interface ProgressStatsProps {
-  currentTier?: string | number
-  overallProgress?: string | number
-  estTimeToNext?: string
-  tasksCompleted?: string
-}
+
 
 export default function ProgressStats({
   currentTier = '1',
   overallProgress = '45%',
   estTimeToNext = '3–4 weeks',
-  tasksCompleted = '12/34'
-}: ProgressStatsProps) {
+  tasksCompleted = '4/37'
+}: {
+  currentTier?: string | number
+  overallProgress?: string | number
+  estTimeToNext?: string | number
+  tasksCompleted?: string
+}) {
   return (
     <div className="stats">
       <div className="stat">

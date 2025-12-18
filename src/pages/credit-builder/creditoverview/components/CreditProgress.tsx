@@ -1,9 +1,19 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useCreditProgress } from '../../../../modules/credit-builder/overview'
 import CreditProgressLoader from '../../../../components/Loader/CreditProgressLoader'
 
 export default function CreditProgress() {
   const { data, isLoading, isError } = useCreditProgress()
+
+  useEffect(() => {
+    const bootstrapLib = (window as unknown as { bootstrap?: any }).bootstrap
+    const els = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    if (bootstrapLib && els.length) {
+      els.forEach((el) => {
+        try { new bootstrapLib.Tooltip(el) } catch {}
+      })
+    }
+  })
 
   if (isLoading) {
     return <CreditProgressLoader />
@@ -24,7 +34,7 @@ export default function CreditProgress() {
   const currentTierIndex = data.tiers.findIndex(tier => tier.id === data.id)
   const totalTiers = data.tiers.length
   const completedTiers = currentTierIndex
-  const currentTierProgress = data.task_complete_percentage / 100
+  const currentTierProgress = data.current_tier_complete_percentage / 100
   const overallProgress = ((completedTiers + currentTierProgress) / totalTiers) * 100
 
   return (
@@ -35,7 +45,7 @@ export default function CreditProgress() {
         </div>
         <div className="d-flex align-items-center gap-2">
           <span className="badge bg-dark text-white">{data.name}</span>
-          <span className="badge bg-success-subtle text-success">{data.task_complete_percentage}% Complete</span>
+          <span className="badge bg-success-subtle text-success">{data.current_tier_complete_percentage}% Complete</span>
         </div>
       </div>
       <div className="card-body">
@@ -113,7 +123,7 @@ export default function CreditProgress() {
               title={`<strong>Why it matters:</strong> ${data.subtitle}`}
             >
               <i 
-                className="ri-information-fill align-middle text-info" 
+                className="ri-information-fill align-middle text-warning" 
                 style={{ backgroundColor: 'rgba(46,116,249,.12)', borderRadius: '50%', padding: 4 }}
               ></i>
             </span>
@@ -121,8 +131,8 @@ export default function CreditProgress() {
           <p className="text-muted mb-0">{data.subtitle}</p>
         </div>
         <div className="d-flex justify-content-start gap-5 text-muted mt-2">
-          <small>Estimated completion: {data.estimated_completion_time}</small>
-          <small>Tasks remaining: {data.tasks_remaining_count}</small>
+          <small>Estimated completion: {data.current_tier_estimated_completion_days} Days</small>
+          <small>Tasks completed: {data.current_tier_complete_task}/{data.current_tier_complete_task + data.current_tier_tasks_remaining}</small>
         </div>
       </div>
     </div>

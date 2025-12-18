@@ -15,9 +15,11 @@ export interface TierTask {
   title: string
   subtitle: string | null
   description: string
-  status: 'completed' | 'pending' | null
+  status: import('../../../data/credit-builder').CreditBuilderStatus | null
   url: string | null
   button_title: string | null
+  completed_at: string | null
+  estimated_completion_days: string | null
 }
 
 export interface TierTaskListResponse {

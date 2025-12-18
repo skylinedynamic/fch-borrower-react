@@ -4,11 +4,22 @@ import RecommendedActions from '../../../components/RecommendedActions/Recommend
 import ProgressStats from './components/ProgressStats'
 import TierAccordion from './components/TierAccordion'
 import TierTaskListLoader from '../../../components/Loader/TierTaskListLoader'
-import { useTierTaskList } from '../../../modules/credit-builder/overview'
+import { useTierTaskList, useCreditProgress } from '../../../modules/credit-builder/overview'
+import { CREDIT_BUILDER_STATUS } from '../../../data/credit-builder'
+
+import { TierTask as TierTaskType } from '../../../modules/credit-builder/guide/types'
+import TaskCompleteModal from './components/TaskCompleteModal'
 
 export default function CreditGuide() {
   const [openTier, setOpenTier] = useState<number>(0)
-  const { data: tiers, isLoading, isError } = useTierTaskList()
+  const { data: tiers, isLoading: isLoadingTiers, isError: isErrorTiers } = useTierTaskList()
+  const { data: progressData, isLoading: isLoadingProgress, isError: isErrorProgress } = useCreditProgress()
+
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedTask, setSelectedTask] = useState<TierTaskType | null>(null)
+
+  const isLoading = isLoadingTiers || isLoadingProgress
+  const isError = isErrorTiers || isErrorProgress || !tiers || !progressData
 
   useEffect(() => {
     const bootstrapLib = (window as unknown as { bootstrap?: any }).bootstrap
@@ -20,37 +31,8 @@ export default function CreditGuide() {
     }
   }, [tiers])
 
-  if (isLoading) {
-    return (
-      <div className="page-content">
-        <div className="container-fluid">
-          <div className="row">
-            <div className="col-12">
-              <div className="d-flex align-items-center mb-2">
-                <div>
-                  <h4 className="fs-20 mb-1">Credit Building Guide</h4>
-                  <p className="text-muted mb-0">Follow a step-by-step path to establish, build, and monitor your business credit</p>
-                </div>
-              </div>
-            </div>
-            <div className="col-xl-9">
-              <div className="card mb-3">
-                <div className="card-body">
-                  <TierTaskListLoader />
-                </div>
-              </div>
-            </div>
-            <div className="col-xl-3">
-              <ActivityLog />
-              <RecommendedActions />
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (isError || !tiers) {
+  // Only show error if NOT loading and error exists
+  if (!isLoading && isError) {
     return (
       <div className="page-content">
         <div className="container-fluid">
@@ -59,7 +41,7 @@ export default function CreditGuide() {
               <div className="card">
                 <div className="card-body text-center text-muted py-5">
                   <i className="ri-error-warning-line fs-1"></i>
-                  <p className="mt-2">Failed to load tier task list</p>
+                  <p className="mt-2">Failed to load credit guide</p>
                 </div>
               </div>
             </div>
@@ -69,13 +51,41 @@ export default function CreditGuide() {
     )
   }
 
-  // Calculate overall progress
-  const totalTasks = tiers.reduce((sum, tier) => sum + tier.tasks.length, 0)
-  const completedTasks = tiers.reduce((sum, tier) => 
-    sum + tier.tasks.filter(t => t.status === 'completed').length, 0
-  )
-  const currentTier = tiers.find(t => t.tasks.some(task => task.status === 'pending')) || tiers[0]
+  // Calculate overall progress safely
+  const totalTasks = tiers ? tiers.reduce((sum, tier) => sum + tier.tasks.length, 0) : 0
+  const completedTasks = tiers ? tiers.reduce((sum, tier) => 
+    sum + tier.tasks.filter(t => t.status === CREDIT_BUILDER_STATUS.COMPLETED).length, 0
+  ) : 0
+  
+  // Use API state for current tier instead of derived tasks
+  const currentTier = tiers && progressData ? tiers.find(t => t.id === progressData.id) : null
+  
   const overallProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+
+  useEffect(() => {
+    if (currentTier) {
+      setOpenTier(currentTier.id)
+    }
+  }, [currentTier?.id])
+
+  const handleTaskClick = (task: TierTaskType) => {
+    setSelectedTask(task)
+    setModalOpen(true)
+  }
+
+  const handleConfirmCompletion = () => {
+    // API Call would go here
+    console.log('Completing task:', selectedTask?.id)
+    setModalOpen(false)
+  }
+
+  const handleCompleteTier = (tier: any) => {
+    // Placeholder handler for button click
+    console.log('Complete Tier clicked:', tier.id)
+  }
+
+  const estDays = progressData?.current_tier_estimated_completion_days ?? 0
+  const estTimeLabel = estDays === 0 ? "Ready for Next Tier" : `${estDays} Days`
 
   return (
     <div className="page-content credit-guide-page">
@@ -93,20 +103,40 @@ export default function CreditGuide() {
           <div className="col-xl-9">
             <div className="card mb-3">
               <div className="card-body">
-                <ProgressStats
-                  currentTier={currentTier.order}
-                  overallProgress={`${overallProgress}%`}
-                  estTimeToNext={currentTier.estimated_completion_time}
-                  tasksCompleted={`${completedTasks}/${totalTasks}`}
-                />
-                {tiers.map((tier) => (
-                  <TierAccordion
-                    key={tier.id}
-                    tier={tier}
-                    isOpen={openTier === tier.id}
-                    onToggle={() => setOpenTier(openTier === tier.id ? -1 : tier.id)}
+                {isLoadingProgress || !progressData ? (
+                  /* Progress Stats Skeleton */
+                   <div className="stats mb-4">
+                    {[...Array(4)].map((_, i) => (
+                      <div className="stat" key={i}>
+                        <div className="skeleton-line skeleton-stat-value mb-1"></div>
+                        <div className="skeleton-line skeleton-stat-label"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <ProgressStats
+                    currentTier={progressData.name}
+                    overallProgress={`${progressData.total_complete_percentage}%`}
+                    estTimeToNext={estTimeLabel}
+                    tasksCompleted={`${progressData.total_complete_task}/${progressData.total_complete_task + progressData.total_tasks_remaining}`}
                   />
-                ))}
+                )}
+                
+                {isLoadingTiers || !tiers ? (
+                   <TierTaskListLoader />
+                ) : (
+                  tiers.map((tier) => (
+                    <TierAccordion
+                      key={tier.id}
+                      tier={tier}
+                      isOpen={openTier === tier.id}
+                      onToggle={() => setOpenTier(openTier === tier.id ? -1 : tier.id)}
+                      isCurrentTier={currentTier?.id === tier.id}
+                      onTaskClick={handleTaskClick}
+                      onCompleteTier={handleCompleteTier}
+                    />
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -117,6 +147,13 @@ export default function CreditGuide() {
           </div>
         </div>
       </div>
+      
+      <TaskCompleteModal 
+        show={modalOpen} 
+        onClose={() => setModalOpen(false)}
+        onConfirm={handleConfirmCompletion}
+        text={selectedTask ? `Are you sure you have completed the task "${selectedTask.title}"?` : undefined}
+      />
     </div>
   )
 }
