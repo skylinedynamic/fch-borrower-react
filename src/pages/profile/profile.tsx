@@ -39,6 +39,8 @@ export default function Profile() {
     business_name: '',
     business_ein: '',
     business_phone: '',
+    business_email: '',
+    duns_number: '',
     business_address: '',
     business_city: '',
     business_state: '',

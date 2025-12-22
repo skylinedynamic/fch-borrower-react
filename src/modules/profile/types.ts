@@ -57,6 +57,8 @@ export type BusinessDetailsData = {
   business_ein: string
   business_phone: string
   business_address: string
+  business_email: string
+  duns_number: string
   country: string
   country_code: string
   business_state: string
@@ -77,6 +79,8 @@ export type SaveBusinessDetailsRequest = {
   business_name: string
   business_ein: string
   business_phone: string
+  business_email: string
+  duns_number: string
   business_address: string
   business_city: string
   business_state: string

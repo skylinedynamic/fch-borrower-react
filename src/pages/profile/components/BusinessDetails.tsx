@@ -53,6 +53,8 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
         business_name: apiData.business_name,
         business_ein: apiData.business_ein,
         business_phone: apiData.business_phone,
+        business_email: apiData.business_email,
+        duns_number: apiData.duns_number,
         business_address: apiData.business_address,
         business_city: apiData.business_city,
         business_state: apiData.business_state,
@@ -123,6 +125,28 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
             />
             {errors.business_phone && <div className="invalid-feedback">{errors.business_phone}</div>}
           </div>
+        </div>
+        <div className="col-md-6">
+          <label className="form-label">Business Email <span className="text-danger">*</span></label>
+          <input 
+            type="email" 
+            placeholder="Enter business email"
+            value={data.business_email} 
+            onChange={(e) => onChange({ ...data, business_email: e.target.value })} 
+            className={`form-control ${errors.business_email ? 'is-invalid' : ''}`}
+          />
+          {errors.business_email && <div className="invalid-feedback">{errors.business_email}</div>}
+        </div>
+        <div className="col-md-6">
+          <label className="form-label">DUNS Number</label>
+          <input 
+            type="text" 
+            placeholder="Enter DUNS number"
+            value={data.duns_number} 
+            onChange={(e) => onChange({ ...data, duns_number: e.target.value })} 
+            className={`form-control ${errors.duns_number ? 'is-invalid' : ''}`}
+          />
+          {errors.duns_number && <div className="invalid-feedback">{errors.duns_number}</div>}
         </div>
         <div className="col-md-6">
           <label className="form-label">Business Address <span className="text-danger">*</span></label>
