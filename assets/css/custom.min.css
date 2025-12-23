@@ -798,6 +798,224 @@
 }
 
 .prequalification-page .fade-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff);
+  pointer-events: none;
+}
+
+/* Tier Accordion Redesign Details */
+.tier-accordion-card {
+  border: none;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+}
+
+.tier-head {
+  background-color: #0b1b32;
+  color: #fff;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  border-bottom: none;
+}
+
+.tier-head.open-head {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tier-head .tier-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.tier-head .info-badge {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  background-color: #fff;
+  color: #333;
+  border-radius: 50rem;
+  margin-left: 8px;
+}
+
+.tier-head .info-badge i {
+  font-size: 12px;
+  color: #d4af37;
+}
+
+.tier-head .tier-desc {
+  font-size: 13px;
+  color: #b0b8c1;
+}
+
+.tier-head .count-badge {
+  background-color: #d4af37;
+  color: #fff;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 50rem;
+}
+
+.tier-head .arrow-icon {
+  font-size: 20px;
+  transition: transform 0.2s;
+}
+
+.tier-body {
+  background-color: #f8f9fc;
+  padding: 16px;
+}
+
+/* Verification Card */
+.verification-card {
+  margin-bottom: 0;
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  /* Gradient background similar to the image (light gold/yellow/white) */
+  background: linear-gradient(90deg, #fff8e1 0%, #fffde7 100%);
+  border: 1px solid #ffe082;
+}
+
+.verification-card .icon-box {
+  width: 24px;
+  height: 24px;
+  background-color: #d4af37;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.verification-card .icon-box span {
+  color: #fff;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.verification-card .card-text {
+  font-size: 14px;
+  color: #5a4a18;
+  margin-bottom: 8px;
+}
+
+.verification-card .action-btn {
+  background-color: rgba(255, 255, 255, 0.6);
+  border: 1px solid #e0e0e0;
+  color: #333;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 10px;
+  width: 100%;
+  text-align: left;
+  padding-left: 1rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.verification-card .action-btn:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.verification-card .sub-text {
+  font-size: 12px;
+  color: #888;
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+/* Tier Task Items */
+.tier-task-item {
+  background-color: #fff;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tier-task-item .task-icon-box {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #d4af37;
+}
+
+.tier-task-item .task-icon-box.success {
+  background-color: #1e8e3e;
+}
+
+.tier-task-item .task-icon-box span,
+.tier-task-item .task-icon-box i {
+  color: #fff;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.tier-task-item .task-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #212529;
+}
+
+.tier-task-item .task-subtitle {
+  font-size: 13px;
+  color: #6c757d;
+  margin-top: 2px;
+}
+
+.tier-task-item .status-badge {
+  padding: 4px 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  font-size: 13px;
+  width: fit-content;
+  margin-bottom: 4px;
+}
+
+.tier-task-item .status-badge.pending {
+  background-color: #fff8e1;
+  border: 1px solid #ffe082;
+  color: #b08800;
+}
+
+.tier-task-item .status-badge.completed {
+  background-color: #e6f4ea;
+  border: 1px solid #ceead6;
+  color: #1e8e3e;
+}
+
+.tier-task-item .status-subtext {
+  font-size: 11px;
+  color: #6c757d;
+  text-align: right;
+}
   animation: fadeSlide 0.28s ease both;
 }
 
@@ -4069,6 +4287,7 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
+  margin-bottom: 20px;
 }
 
 @media (max-width: 992px) {
@@ -4332,132 +4551,290 @@
 .partner-sidebar .submenu-collapse .nav-item{border-bottom:1px solid rgba(255,255,255,.08)}
 .partner-sidebar .submenu-collapse .nav-item:last-child{border-bottom:0}
 
-/* Tier Accordion Redesign */
-.tier-accordion-header {
-  background-color: #0b2a4a !important;
-  border-radius: 8px 8px 0 0 !important;
-  color: #fff !important;
+/* Tier Accordion Redesign - Enhanced */
+.tier {
+  transition: all 0.3s ease;
 }
+
+.tier-accordion-header {
+  background: linear-gradient(135deg, #0b2a4a 0%, #0d3558 100%) !important;
+  border-radius: 10px 10px 0 0 !important;
+  color: #fff !important;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(11, 42, 74, 0.15);
+}
+
+.tier-accordion-header:hover {
+  background: linear-gradient(135deg, #0d3558 0%, #0f3f66 100%) !important;
+  box-shadow: 0 4px 12px rgba(11, 42, 74, 0.25);
+}
+
 .tier-accordion-header .tier-title {
   color: #fff !important;
   font-weight: 600;
+  letter-spacing: 0.3px;
 }
+
 .tier-accordion-header .tier-desc {
-  color: rgba(255, 255, 255, 0.7) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 13px;
+  line-height: 1.5;
 }
+
 .tier.open .tier-accordion-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px 10px 0 0 !important;
 }
+
 .tier-body {
-  border: 1px solid #e6eaef;
+  border: 1px solid #e2e8f0;
   border-top: none;
-  background-color: #fff;
-  border-radius: 0 0 8px 8px;
+  background-color: #fafbfc;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
-/* Verification Box */
+
+/* Verification Box - Enhanced */
 .tier-verification-box {
-  background-color: #fff8e6;
-  border: 1px solid #ffeeba;
-  border-radius: 8px;
-  padding: 16px;
+  background: linear-gradient(135deg, #fffbf0 0%, #fff8e6 100%);
+  border: 1.5px solid #ffd97d;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.1);
+  transition: all 0.3s ease;
 }
+
+.tier-verification-box:hover {
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
+  transform: translateY(-1px);
+}
+
 .verification-icon-box {
   flex-shrink: 0;
 }
+
 .verification-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  background-color: #d4af37;
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #d4af37 0%, #c9a332 100%);
   color: #fff;
   font-weight: bold;
-  border-radius: 4px;
-}
-.verification-action-block {
-  background: linear-gradient(to bottom, #fdfbf7, #f7f3e8);
-  border: 1px solid #ebe5d5;
+  font-size: 16px;
   border-radius: 6px;
-  padding: 10px 15px;
-  margin-top: 10px;
+  box-shadow: 0 2px 6px rgba(212, 175, 55, 0.3);
+}
+
+.verification-action-block {
+  background: linear-gradient(to bottom, #ffffff, #fdfbf7);
+  border: 1.5px solid #e5dcc8;
+  border-radius: 8px;
+  padding: 12px 18px;
+  margin-top: 12px;
   display: inline-block;
   cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
+
+.verification-action-block:hover {
+  background: linear-gradient(to bottom, #ffffff, #ffffff);
+  border-color: #d4af37;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.2);
+  transform: translateY(-1px);
+}
+
 .verification-action-block .action-text {
   font-weight: 600;
-  color: #333;
+  color: #2d3748;
 }
-/* Tier Task Item Redesign */
+
+/* Tier Task Item Redesign - Enhanced */
 .tier-task-item {
   display: flex;
   align-items: flex-start;
-  padding: 16px 0;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 10px 18px;
+  border-bottom: 1px solid #e8ecf1;
+  background: #ffffff;
+  border-radius: 8px;
+  margin-bottom: 0;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
+
+.tier-task-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-px);
+  border-color: #d4e3f0;
+}
+
 .tier-task-item:last-child {
   border-bottom: none;
 }
+
 .task-icon-col {
-  padding-right: 15px;
+  padding-right: 16px;
   padding-top: 2px;
 }
+
 .task-status-icon {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  border-radius: 6px;
   font-weight: bold;
   font-size: 14px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 .pending-icon {
-  background-color: #d4af37;
+  background: linear-gradient(135deg, #d4af37 0%, #c9a332 100%);
   color: #fff;
 }
+
 .completed-icon {
-  background-color: #10b981;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: #fff;
 }
+
 .task-details-col {
   flex-grow: 1;
 }
+
 .task-title {
   font-weight: 600;
-  color: #333;
-  margin-bottom: 4px;
+  color: #1a202c;
+  margin-bottom: 6px;
+  font-size: 15px;
+  line-height: 1.4;
 }
+
 .task-subtitle {
-  color: #666;
-  font-size: 14px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
 }
+
 .task-action-col {
-  padding-left: 20px;
+  padding-left: 24px;
   min-width: 200px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
 }
+
 .status-badge {
   display: inline-flex;
   align-items: center;
-  padding: 6px 12px;
-  border-radius: 6px;
+  gap: 4px;
+  padding: 7px 14px;
+  border-radius: 20px;
   font-size: 13px;
   font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
+
+.status-badge:hover {
+  transform: translateX(-2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
 .status-badge.pending {
-  background-color: #fff8e6;
-  color: #333;
-  border: 1px solid #ffeeba;
+  background: linear-gradient(135deg, #fffbf0 0%, #fff8e6 100%);
+  color: #92400e;
+  border: 1.5px solid #fcd34d;
 }
+
 .status-badge.completed {
-  background-color: #ecfdf5;
-  color: #064e3b;
-  border: 1px solid #a7f3d0;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  color: #065f46;
+  border: 1.5px solid #6ee7b7;
 }
+
 .review-status {
   font-size: 11px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+/* Additional Tier Accordion Elements */
+.tier-accordion-header .info-badge {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  border-radius: 50%;
+  cursor: help;
+  margin-left: 8px;
+}
+
+.tier-accordion-header .info-badge i {
+  font-size: 12px;
+  color: #d4af37;
+}
+
+.tier-accordion-header .count-badge {
+  background-color: #d4af37;
+  color: #fff;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 50rem;
+}
+
+.tier-accordion-header .arrow-icon {
+  font-size: 20px;
+  transition: transform 0.2s;
+}
+
+.tier-verification-box .verification-text {
+  font-size: 14px;
+  color: #5a4a18;
+  margin-bottom: 8px;
+}
+
+.tier-verification-box .verification-subtext {
+  font-size: 12px;
   color: #888;
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+.status-badge .badge-icon {
+  font-size: 14px;
+  margin-left: 4px;
+}
+
+.status-badge.clickable {
+  cursor: pointer;
+}
+
+/* Processing Status Styles */
+.task-status-icon.processing-icon {
+  background: rgb(234 242 255);
+    color: #6261dc;
+    border-color: rgb(234 242 255);
+}
+
+.status-badge.processing {
+    background: rgb(234 242 255);
+    color: #6261dc;
+    border-color: rgb(234 242 255);
+}
+
+.spin-animation {
+  animation: spin 1.5s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

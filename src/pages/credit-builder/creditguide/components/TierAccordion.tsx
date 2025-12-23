@@ -1,7 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import TierTask from './TierTask'
+import { toast } from 'react-toastify'
+import { useVerifyTierTasks } from '../../../../modules/credit-builder/guide/queries'
 import { Tier, TierTask as TierTaskType } from '../../../../modules/credit-builder/guide/types'
 import { CREDIT_BUILDER_STATUS } from '../../../../data/credit-builder'
+import ConfirmationModal from '../../../../components/GlobalModal/ConfirmationModal'
 
 interface TierAccordionProps {
   tier: Tier
@@ -10,66 +13,130 @@ interface TierAccordionProps {
   isCurrentTier?: boolean
   onTaskClick?: (task: TierTaskType) => void
   onCompleteTier?: (tier: Tier) => void
+  isFirstTier?: boolean
 }
 
-export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, onTaskClick, onCompleteTier }: TierAccordionProps) {
+export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, onTaskClick, onCompleteTier, isFirstTier }: TierAccordionProps) {
   const completedCount = tier.tasks.filter(t => t.status === CREDIT_BUILDER_STATUS.COMPLETED).length
   const totalCount = tier.tasks.length
-  const isTierComplete = completedCount === totalCount && totalCount > 0
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const verifyTierTasksMutation = useVerifyTierTasks()
 
   return (
-    <div className={`tier mt-3 ${isOpen ? 'open' : ''}`}>
-      <div className="tier-head" onClick={onToggle}>
-        <div className="tier-info">
-          <div className="tier-title">
-            {tier.name}: {tier.title}
-            {tier.subtitle && (
+    <div className={`tier mb-4 ${isOpen ? 'open' : ''}`}>
+      {/* Header */}
+      <div 
+        className="tier-accordion-header p-3 d-flex align-items-center justify-content-between cursor-pointer"
+        onClick={onToggle}
+      >
+        <div className="d-flex flex-column gap-1">
+          <div className="d-flex align-items-center gap-2">
+            <h5 className="tier-title m-0">
+              {tier.name}: {tier.title}
+            </h5>
+            {tier.description && (
               <span 
-                className="ms-1" 
+                className="info-badge"
                 data-bs-toggle="tooltip" 
-                data-bs-placement="top" 
-                data-bs-html="true" 
-                data-bs-custom-class="tooltip-info" 
-                title={`<div class='tt-title'>Why it matters</div><div class='tt-body'>${tier.subtitle}</div>`}
+                title={tier.description}
               >
-                <i className="ri-information-fill align-middle text-white" style={{ fontSize: 20 }}></i>
+                <i className="ri-flashlight-fill"></i>
               </span>
             )}
           </div>
-          <div className="tier-desc">{tier.description}</div>
-        </div>
-        <div className="tier-meta">
-          {isTierComplete && (
-            <button 
-              className="btn btn-sm btn-success me-2"
-              onClick={(e) => {
-                e.stopPropagation()
-                onCompleteTier?.(tier)
-              }}
-            >
-              Complete Tier
-            </button>
+          {tier.subtitle && (
+            <div className="tier-desc">
+              {tier.subtitle}
+            </div>
           )}
-          <span className="pill" style={{ backgroundColor: '#D4AF37' }}>
+        </div>
+
+        <div className="d-flex align-items-center gap-3">
+          <span className="count-badge">
             {completedCount}/{totalCount}
           </span>
-          <i className={`ri-arrow-down-s-line caret ${isOpen ? 'open' : ''}`}></i>
+          <i 
+            className="ri-arrow-down-s-line arrow-icon" 
+            style={{ 
+              transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' 
+            }}
+          ></i>
         </div>
       </div>
-      <div className="tier-body-wrapper">
-        <div className="tier-body">
-          <div className="tier-inner-content">
+
+      {/* Body */}
+      {isOpen && (
+        <div className="tier-body p-3">
+          
+          {/* Task List */}
+          <div className="tier-tasks d-flex flex-column gap-2">
             {tier.tasks.map((task) => (
               <TierTask 
                 key={task.id} 
                 task={task} 
                 isCurrentTier={isCurrentTier}
+                isFirstTier={isFirstTier}
                 onTaskClick={onTaskClick}
               />
             ))}
           </div>
+
+
+          {/* Tier 0 Verification Card - Moved to Bottom -- Show only if there are pending tasks */}
+          {isFirstTier && tier.tasks.some(t => t.status == CREDIT_BUILDER_STATUS.PENDING) && (
+            <div className="tier-verification-box mt-4">
+              <div className="d-flex gap-3">
+          
+                <div>
+                  <p className="verification-text">
+                    Run the included Tier 0 verification to complete the required business identity and compliance checks. This runs once and is reviewed by FCH.
+                  </p>
+                  <div 
+                    className="verification-action-block"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowConfirmModal(true)
+                    }}
+                  >
+                    <span className="action-text">Run Included Tier 0 Verification (One-Time)</span>
+                  </div>
+                  <p className="verification-subtext">
+                    Additional verifications require underwriting approval.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      )}
+
+      <ConfirmationModal
+        show={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={() => {
+          verifyTierTasksMutation.mutate(
+            { task_ids: tier.tasks.map(t => t.id) },
+            {
+              onSuccess: (response) => {
+                setShowConfirmModal(false)
+                toast.success(response.message || 'Task verify request submitted successfully')
+                onCompleteTier?.(tier)
+              },
+              onError: (error: any) => {
+                setShowConfirmModal(false)
+                const message = error?.response?.data?.message || 'Failed to submit verification request'
+                toast.error(message)
+              }
+            }
+          )
+        }}
+        title="Run Tier 0 Verification"
+        message="Are you sure you want to run the Tier 0 verification? This will initiate the business identity and compliance checks."
+        confirmText="Run Verification"
+        cancelText="Cancel"
+        loading={verifyTierTasksMutation.isPending}
+        loadingText="Submitting..."
+      />
     </div>
   )
 }

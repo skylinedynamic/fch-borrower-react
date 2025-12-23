@@ -1,5 +1,6 @@
 export const CREDIT_BUILDER_STATUS = {
   COMPLETED: 'completed',
+  PROCESSING: 'processing',
   PENDING: 'pending',
 } as const
 

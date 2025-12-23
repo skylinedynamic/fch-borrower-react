@@ -125,13 +125,14 @@ export default function CreditGuide() {
                 {isLoadingTiers || !tiers ? (
                    <TierTaskListLoader />
                 ) : (
-                  tiers.map((tier) => (
+                  tiers.map((tier, index) => (
                     <TierAccordion
                       key={tier.id}
                       tier={tier}
                       isOpen={openTier === tier.id}
                       onToggle={() => setOpenTier(openTier === tier.id ? -1 : tier.id)}
                       isCurrentTier={currentTier?.id === tier.id}
+                      isFirstTier={index === 0}
                       onTaskClick={handleTaskClick}
                       onCompleteTier={handleCompleteTier}
                     />

@@ -27,3 +27,22 @@ export interface TierTaskListResponse {
   message: string
   data: Tier[]
 }
+
+export interface TaskVerifyRequest {
+  task_ids: number[]
+}
+
+export interface TaskVerifyResponse {
+  success: boolean
+  message: string
+  data: {
+    id: number
+    borrower_id: number
+    partner_id: number
+    tier_id: number
+    task_id: number
+    status: string
+    verified_by: null | number
+    verified_at: null | string
+  }[]
+}
