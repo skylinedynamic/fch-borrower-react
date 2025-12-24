@@ -19,8 +19,14 @@ interface TierAccordionProps {
 export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, onTaskClick, onCompleteTier, isFirstTier }: TierAccordionProps) {
   const completedCount = tier.tasks.filter(t => t.status === CREDIT_BUILDER_STATUS.COMPLETED).length
   const totalCount = tier.tasks.length
+  const [selectedTask, setSelectedTask] = useState<TierTaskType | null>(null)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const verifyTierTasksMutation = useVerifyTierTasks()
+
+  const handleVerifyClick = (task: TierTaskType) => {
+    setSelectedTask(task)
+    setShowConfirmModal(true)
+  }
 
   return (
     <div className={`tier mb-4 ${isOpen ? 'open' : ''}`}>
@@ -77,62 +83,41 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
                 isCurrentTier={isCurrentTier}
                 isFirstTier={isFirstTier}
                 onTaskClick={onTaskClick}
+                onVerifyClick={handleVerifyClick}
               />
             ))}
           </div>
-
-
-          {/* Tier 0 Verification Card - Moved to Bottom -- Show only if there are pending tasks */}
-          {isFirstTier && tier.tasks.some(t => t.status == CREDIT_BUILDER_STATUS.PENDING) && (
-            <div className="tier-verification-box mt-4">
-              <div className="d-flex gap-3">
-          
-                <div>
-                  <p className="verification-text">
-                    Run the included Tier 0 verification to complete the required business identity and compliance checks. This runs once and is reviewed by FCH.
-                  </p>
-                  <div 
-                    className="verification-action-block"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setShowConfirmModal(true)
-                    }}
-                  >
-                    <span className="action-text">Run Included Tier 0 Verification (One-Time)</span>
-                  </div>
-                  <p className="verification-subtext">
-                    Additional verifications require underwriting approval.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       )}
 
       <ConfirmationModal
         show={showConfirmModal}
-        onClose={() => setShowConfirmModal(false)}
+        onClose={() => {
+          setShowConfirmModal(false)
+          setSelectedTask(null)
+        }}
         onConfirm={() => {
+          if (!selectedTask) return
           verifyTierTasksMutation.mutate(
-            { task_ids: tier.tasks.map(t => t.id) },
+            { task_ids: [selectedTask.id] },
             {
               onSuccess: (response) => {
                 setShowConfirmModal(false)
-                toast.success(response.message || 'Task verify request submitted successfully')
-                onCompleteTier?.(tier)
+                setSelectedTask(null)
+                toast.success(response.message || 'Task verification request submitted successfully')
               },
               onError: (error: any) => {
                 setShowConfirmModal(false)
+                setSelectedTask(null)
                 const message = error?.response?.data?.message || 'Failed to submit verification request'
                 toast.error(message)
               }
             }
           )
         }}
-        title="Run Tier 0 Verification"
-        message="Are you sure you want to run the Tier 0 verification? This will initiate the business identity and compliance checks."
-        confirmText="Run Verification"
+        title={selectedTask ? `Verify ${selectedTask.title}` : 'Verify Task'}
+        message={selectedTask ? `Are you sure you want to submit "${selectedTask.title}" for verification? This will be reviewed by FCH underwriting.` : 'Are you sure you want to verify this task?'}
+        confirmText="Submit for Verification"
         cancelText="Cancel"
         loading={verifyTierTasksMutation.isPending}
         loadingText="Submitting..."

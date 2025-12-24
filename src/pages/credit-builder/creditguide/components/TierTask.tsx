@@ -7,14 +7,19 @@ export interface TierTaskProps {
   isCurrentTier?: boolean
   isFirstTier?: boolean
   onTaskClick?: (task: TierTaskType) => void
+  onVerifyClick?: (task: TierTaskType) => void
 }
 
-export default function TierTask({ task, isCurrentTier, isFirstTier, onTaskClick }: TierTaskProps) {
+export default function TierTask({ task, isCurrentTier, isFirstTier, onTaskClick, onVerifyClick }: TierTaskProps) {
   const isDone = task.status === CREDIT_BUILDER_STATUS.COMPLETED
   const isProcessing = task.status === CREDIT_BUILDER_STATUS.PROCESSING
   
-  // For first tier, pending tasks should not be clickable. Only pending and not processing tasks are clickable if it's the current tier.
-  const isClickable = !isDone && !isProcessing && isCurrentTier && !isFirstTier
+  // For first tier pending tasks, they should be clickable for verification
+  const isClickableForVerification = isFirstTier && !isDone && !isProcessing
+  // For other tiers, existing clickability logic
+  const isClickableForNavigation = !isDone && !isProcessing && isCurrentTier && !isFirstTier
+  
+  const isClickable = isClickableForVerification || isClickableForNavigation
   
   let statusIcon
   if (isDone) {
@@ -31,7 +36,7 @@ export default function TierTask({ task, isCurrentTier, isFirstTier, onTaskClick
   } else if (isProcessing) {
     statusText = 'Processing'
   } else {
-    statusText = 'Pending Verification'
+    statusText = task.button_title || 'Pending Verification'
   }
 
   let reviewText
@@ -74,7 +79,9 @@ export default function TierTask({ task, isCurrentTier, isFirstTier, onTaskClick
         <div 
           className={`status-badge ${isDone ? 'completed' : isProcessing ? 'processing' : 'pending'} ${isClickable ? 'clickable' : ''}`}
           onClick={() => {
-            if (isClickable && onTaskClick) {
+            if (isClickableForVerification && onVerifyClick) {
+              onVerifyClick(task)
+            } else if (isClickableForNavigation && onTaskClick) {
               onTaskClick(task)
             }
           }}
