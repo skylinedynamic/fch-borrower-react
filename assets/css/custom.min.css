@@ -1016,6 +1016,8 @@
   color: #6c757d;
   text-align: right;
 }
+
+.prequalification-page .step-content {
   animation: fadeSlide 0.28s ease both;
 }
 

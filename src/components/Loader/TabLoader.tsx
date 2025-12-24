@@ -12,7 +12,7 @@ export default function TabLoader({ count = 12, colClass = 'col-md-6' }: TabLoad
   const items = Array.from({ length: count }).map((_, i) => defaultWidths[i % defaultWidths.length])
 
   return (
-    <div className="fade-panel">
+    <div className="step-content">
       <div className="row g-3">
         {items.map((width, i) => (
           <div className={colClass} key={i}>

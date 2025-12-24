@@ -41,7 +41,7 @@ export default function PreQualification() {
   const renderStepSection = (idx: number) => {
     if (idx === 0) {
       return (
-        <div className="fade-panel">
+        <div className="step-content">
           {loading ? (
             <TabLoader count={6} colClass="col-md-6" />
           ) : (
@@ -60,7 +60,7 @@ export default function PreQualification() {
     }
     if (idx === 1) {
       return (
-        <div className="fade-panel">
+        <div className="step-content">
           {loading ? (
             <TabLoader count={6} colClass="col-md-6" />
           ) : (
@@ -80,7 +80,7 @@ export default function PreQualification() {
     }
     if (idx === 2) {
       return (
-        <div className="fade-panel">
+        <div className="step-content">
           {loading ? (
             <TabLoader count={8} colClass="col-md-6" />
           ) : (
@@ -98,7 +98,7 @@ export default function PreQualification() {
     }
     if (idx === 3) {
       return (
-        <div className="fade-panel">
+        <div className="step-content">
           {loading ? (
             <div className="review-grid">
               {[1,2,3].map((i) => (
