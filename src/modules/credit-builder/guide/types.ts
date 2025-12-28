@@ -20,6 +20,7 @@ export interface TierTask {
   button_title: string | null
   completed_at: string | null
   estimated_completion_days: string | null
+  rejection_reason?: string | null
 }
 
 export interface TierTaskListResponse {

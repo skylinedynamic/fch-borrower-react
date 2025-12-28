@@ -17,7 +17,7 @@ interface TierAccordionProps {
 }
 
 export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, onTaskClick, onCompleteTier, isFirstTier }: TierAccordionProps) {
-  const completedCount = tier.tasks.filter(t => t.status === CREDIT_BUILDER_STATUS.COMPLETED).length
+  const completedCount = tier.tasks.filter(t => t.status === CREDIT_BUILDER_STATUS.VERIFIED).length
   const totalCount = tier.tasks.length
   const [selectedTask, setSelectedTask] = useState<TierTaskType | null>(null)
   const [showConfirmModal, setShowConfirmModal] = useState(false)

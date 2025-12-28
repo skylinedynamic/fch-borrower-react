@@ -1011,6 +1011,12 @@
   color: #1e8e3e;
 }
 
+.tier-task-item .status-badge.rejected {
+  background-color: #ffe6e6;
+  border: 1px solid #ffcdd2;
+  color: #c62828;
+}
+
 .tier-task-item .status-subtext {
   font-size: 11px;
   color: #6c757d;
@@ -4823,6 +4829,12 @@
   background: rgb(234 242 255);
     color: #6261dc;
     border-color: rgb(234 242 255);
+}
+
+.task-status-icon.rejected-icon {
+  background: rgb(255 242 242);
+    color: #dc6261;
+    border-color: rgb(255 242 242);
 }
 
 .status-badge.processing {

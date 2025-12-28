@@ -1,6 +1,7 @@
 import React from 'react'
 import { TierTask as TierTaskType } from '../../../../modules/credit-builder/guide/types'
 import { CREDIT_BUILDER_STATUS } from '../../../../data/credit-builder'
+import { UncontrolledTooltip } from 'reactstrap'
 
 export interface TierTaskProps {
   task: TierTaskType
@@ -11,13 +12,15 @@ export interface TierTaskProps {
 }
 
 export default function TierTask({ task, isCurrentTier, isFirstTier, onTaskClick, onVerifyClick }: TierTaskProps) {
-  const isDone = task.status === CREDIT_BUILDER_STATUS.COMPLETED
+  const isDone = task.status === CREDIT_BUILDER_STATUS.VERIFIED
   const isProcessing = task.status === CREDIT_BUILDER_STATUS.PROCESSING
+  const isRejected = task.status === CREDIT_BUILDER_STATUS.REJECTED
   
   // For first tier pending tasks, they should be clickable for verification
-  const isClickableForVerification = isFirstTier && !isDone && !isProcessing
+  const isClickableForVerification = isFirstTier && !isDone && !isProcessing && !isRejected
   // For other tiers, existing clickability logic
-  const isClickableForNavigation = !isDone && !isProcessing && isCurrentTier && !isFirstTier
+  const isClickableForNavigation = !isDone && !isProcessing && !isRejected && isCurrentTier && !isFirstTier
+  // Rejected tasks are NOT clickable for navigation/verification in the same way, but the "Submit Again" button handles it.
   
   const isClickable = isClickableForVerification || isClickableForNavigation
   
@@ -26,15 +29,19 @@ export default function TierTask({ task, isCurrentTier, isFirstTier, onTaskClick
     statusIcon = <i className="ri-check-line"></i>
   } else if (isProcessing) {
     statusIcon = <i className="ri-loader-4-line spin-animation"></i>
+  } else if (isRejected) {
+    statusIcon = <i className="ri-close-line"></i>
   } else {
     statusIcon = <span>I</span>
   }
 
   let statusText
   if (isDone) {
-    statusText = 'Completed'
+    statusText = 'Verified'
   } else if (isProcessing) {
     statusText = 'Processing'
+  } else if (isRejected) {
+    statusText = 'Rejected'
   } else {
     statusText = task.button_title || 'Pending Verification'
   }
@@ -47,16 +54,36 @@ export default function TierTask({ task, isCurrentTier, isFirstTier, onTaskClick
     }
   } else if (isProcessing) {
     reviewText = 'Verification in progress'
+  } else if (isRejected) {
+    reviewText = 'Verification Rejected'
   } else {
     reviewText = 'Reviewed by FCH underwriting'
   }
+
+  const badgeId = `status-badge-${task.id}`
+
+  const renderStatusBadge = () => (
+    <div 
+      id={badgeId}
+      className={`status-badge ${isDone ? 'completed' : isProcessing ? 'processing' : isRejected ? 'rejected' : 'pending'} ${isClickable ? 'clickable' : ''}`}
+      onClick={() => {
+        if (isClickableForVerification && onVerifyClick) {
+          onVerifyClick(task)
+        } else if (isClickableForNavigation && onTaskClick) {
+          onTaskClick(task)
+        }
+      }}
+    >
+      {statusText}
+    </div>
+  )
   
   return (
     <div className="tier-task-item">
       <div className="d-flex gap-3 align-items-start flex-grow-1">
         {/* Icon Box */}
         <div className="task-icon-col">
-          <div className={`task-status-icon ${isDone ? 'completed-icon' : isProcessing ? 'processing-icon' : 'pending-icon'}`}>
+          <div className={`task-status-icon ${isDone ? 'completed-icon' : isProcessing ? 'processing-icon' : isRejected ? 'rejected-icon' : 'pending-icon'}`}>
             {statusIcon}
           </div>
         </div>
@@ -76,19 +103,33 @@ export default function TierTask({ task, isCurrentTier, isFirstTier, onTaskClick
 
       {/* Right Side Status */}
       <div className="task-action-col">
-        <div 
-          className={`status-badge ${isDone ? 'completed' : isProcessing ? 'processing' : 'pending'} ${isClickable ? 'clickable' : ''}`}
-          onClick={() => {
-            if (isClickableForVerification && onVerifyClick) {
-              onVerifyClick(task)
-            } else if (isClickableForNavigation && onTaskClick) {
-              onTaskClick(task)
-            }
-          }}
-        >
-          {statusText}
+        <div className="d-flex gap-2 align-items-center">
+          {isRejected ? (
+            <>
+           
+             
+              {/* Rejected Badge with Tooltip */}
+              {renderStatusBadge()}
+              
+              <UncontrolledTooltip placement="top" target={badgeId}>
+                {task.rejection_reason || "No reason provided."}
+              </UncontrolledTooltip>
+
+                 {/* Submit Again Button */}
+              {onVerifyClick && (
+                 <div 
+                 className="status-badge pending clickable" 
+                 onClick={() => onVerifyClick(task)}
+               >
+                 Submit Again
+               </div>
+              )}
+            </>
+          ) : (
+            renderStatusBadge()
+          )}
         </div>
-        <div className="review-status mt-1">
+        <div className="review-status mt-1 text-end">
           {reviewText}
         </div>
       </div>
