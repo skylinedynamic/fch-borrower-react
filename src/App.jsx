@@ -48,12 +48,14 @@ export default function App() {
       }>
        
         <Route element={<Layout />}> 
+        
           <Route index element={<Dashboard />} />
           <Route path="under-construction/:feature" element={<UnderConstruction />} />
           <Route path="pre-qualification" element={<PreQualification />} />
           <Route path="fund-application" element={<FundApplication />} />
           <Route path="my-applications" element={<MyApplication />} />
           <Route path="appointment" element={<Appointmnet />} />
+
           <Route path="credit-builder">
             <Route index element={<CreditOverview />} />
             <Route path="overview" element={<CreditOverview />} />
@@ -62,8 +64,10 @@ export default function App() {
             <Route path="progress-tracker" element={<ProgressTracker />} />
             <Route path="resources" element={<CreditResources />} />
           </Route>
+
           <Route path="documents" element={<Documents />} />
           <Route path="profile" element={<Profile />} />
+
         </Route>
       </Route>
     </Routes>
