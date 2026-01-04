@@ -14,9 +14,10 @@ interface TierAccordionProps {
   onTaskClick?: (task: TierTaskType) => void
   onCompleteTier?: (tier: Tier) => void
   isFirstTier?: boolean
+  isLocked?: boolean
 }
 
-export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, onTaskClick, onCompleteTier, isFirstTier }: TierAccordionProps) {
+export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, onTaskClick, onCompleteTier, isFirstTier, isLocked }: TierAccordionProps) {
   const completedCount = tier.tasks.filter(t => t.status === CREDIT_BUILDER_STATUS.VERIFIED).length
   const totalCount = tier.tasks.length
   const [selectedTask, setSelectedTask] = useState<TierTaskType | null>(null)
@@ -32,7 +33,7 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
     <div className={`tier mb-4 ${isOpen ? 'open' : ''}`}>
       {/* Header */}
       <div 
-        className="tier-accordion-header p-3 d-flex align-items-center justify-content-between cursor-pointer"
+        className={`tier-accordion-header p-3 d-flex align-items-center justify-content-between ${isLocked ? 'cursor-default' : 'cursor-pointer'}`}
         onClick={onToggle}
       >
         <div className="d-flex flex-column gap-1">
@@ -57,16 +58,22 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
           )}
         </div>
 
+
         <div className="d-flex align-items-center gap-3">
           <span className="count-badge">
             {completedCount}/{totalCount}
           </span>
-          <i 
-            className="ri-arrow-down-s-line arrow-icon" 
-            style={{ 
-              transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' 
-            }}
-          ></i>
+          {!isLocked && (
+            <i 
+              className="ri-arrow-down-s-line arrow-icon" 
+              style={{ 
+                transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' 
+              }}
+            ></i>
+          )}
+          {isLocked && (
+             <i className="ri-lock-line text-muted fs-18"></i>
+          )}
         </div>
       </div>
 

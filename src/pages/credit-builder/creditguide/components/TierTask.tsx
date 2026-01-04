@@ -16,10 +16,10 @@ export default function TierTask({ task, isCurrentTier, isFirstTier, onTaskClick
   const isProcessing = task.status === CREDIT_BUILDER_STATUS.PROCESSING
   const isRejected = task.status === CREDIT_BUILDER_STATUS.REJECTED
   
-  // For first tier pending tasks, they should be clickable for verification
-  const isClickableForVerification = isFirstTier && !isDone && !isProcessing && !isRejected
-  // For other tiers, existing clickability logic
-  const isClickableForNavigation = !isDone && !isProcessing && !isRejected && isCurrentTier && !isFirstTier
+  // For both first tier and current tier pending tasks, they should be clickable for verification
+  const isClickableForVerification = (isFirstTier || isCurrentTier) && !isDone && !isProcessing && !isRejected
+  // Navigation is no longer needed for pending tasks in active tiers as they now go directly to verification
+  const isClickableForNavigation = false
   // Rejected tasks are NOT clickable for navigation/verification in the same way, but the "Submit Again" button handles it.
   
   const isClickable = isClickableForVerification || isClickableForNavigation

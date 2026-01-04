@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { toast } from 'react-toastify'
 import ActivityLog from '../../../components/ActivityLog/ActivityLog'
 import RecommendedActions from '../../../components/RecommendedActions/RecommendedActions'
 import ProgressStats from './components/ProgressStats'
@@ -125,18 +126,38 @@ export default function CreditGuide() {
                 {isLoadingTiers || !tiers ? (
                    <TierTaskListLoader />
                 ) : (
-                  tiers.map((tier, index) => (
-                    <TierAccordion
-                      key={tier.id}
-                      tier={tier}
-                      isOpen={openTier === tier.id}
-                      onToggle={() => setOpenTier(openTier === tier.id ? -1 : tier.id)}
-                      isCurrentTier={currentTier?.id === tier.id}
-                      isFirstTier={index === 0}
-                      onTaskClick={handleTaskClick}
-                      onCompleteTier={handleCompleteTier}
-                    />
-                  ))
+
+                  tiers.map((tier, index) => {
+                    const currentTierIndex = tiers.findIndex(t => t.id === currentTier?.id)
+                    const isLocked = index > currentTierIndex
+                    
+                    return (
+                      <TierAccordion
+                        key={tier.id}
+                        tier={tier}
+                        isOpen={openTier === tier.id}
+                        isLocked={isLocked}
+                        onToggle={() => {
+                          if (!isLocked) {
+                            setOpenTier(openTier === tier.id ? -1 : tier.id)
+                          } else {
+                            // Logic for future tiers
+                            // Collect names of all tiers between current and this one (inclusive of current, exclusive of this one)
+                            // actually requirements says: "you have to complete tier_id 0 ,1 name have to complete"
+                            // so we list all tiers from currentTierIndex up to (targetIndex - 1)
+                            
+                            const missingTiers = tiers.slice(currentTierIndex, index)
+                            const names = missingTiers.map(t => t.name).join(', ')
+                            toast.error(`You have to complete ${names}`)
+                          }
+                        }}
+                        isCurrentTier={currentTier?.id === tier.id}
+                        isFirstTier={index === 0}
+                        onTaskClick={handleTaskClick}
+                        onCompleteTier={handleCompleteTier}
+                      />
+                    )
+                  })
                 )}
               </div>
             </div>
