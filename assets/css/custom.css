@@ -49,3 +49,5 @@ File: Custom Css File
 #roles-permissions-page .permissions-scroll { max-height: 300px; overflow: auto; border: 1px solid var(--vz-border-color); border-radius: .5rem; padding: 12px; background: var(--bs-body-bg); }
 #roles-permissions-page .modal-backdrop-custom { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 1040; }
 #roles-permissions-page .users-modal { z-index: 1055; }
+
+/* Tier 2 Task Styles */

@@ -1,5 +1,10 @@
 import React, { useState } from 'react'
-import TierTask from './TierTask'
+import TierGenericTask from './TierGenericTask'
+import Tier1Task from './Tier1Task'
+import Tier2Task from './Tier2Task'
+import Tier3Task from './Tier3Task'
+import Tier4Task from './Tier4Task'
+import Tier5Task from './Tier5Task'
 import { toast } from 'react-toastify'
 import { useVerifyTierTasks } from '../../../../modules/credit-builder/guide/queries'
 import { Tier, TierTask as TierTaskType } from '../../../../modules/credit-builder/guide/types'
@@ -83,16 +88,40 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
           
           {/* Task List */}
           <div className="tier-tasks d-flex flex-column gap-2">
-            {tier.tasks.map((task) => (
-              <TierTask 
-                key={task.id} 
-                task={task} 
-                isCurrentTier={isCurrentTier}
-                isFirstTier={isFirstTier}
-                onTaskClick={onTaskClick}
-                onVerifyClick={handleVerifyClick}
-              />
-            ))}
+            {tier.tasks.map((task, index) => {
+                const commonProps = {
+                    key: task.id,
+                    task: task,
+                    isCurrentTier: isCurrentTier,
+                    isFirstTier: isFirstTier,
+                    onTaskClick: onTaskClick,
+                    onVerifyClick: handleVerifyClick,
+                }
+
+                if (tier.id === 1) {
+                    return <Tier1Task {...commonProps} />
+                } else if (tier.id === 2) {
+                    return (
+                        <Tier2Task 
+                            key={task.id}
+                            task={task}
+                            isCurrentTier={isCurrentTier}
+                            isFirstTier={isFirstTier}
+                            onTaskClick={onTaskClick}
+                            onVerifyClick={handleVerifyClick}
+                            index={index}
+                        />
+                    )
+                } else if (tier.id === 3) {
+                    return <Tier3Task {...commonProps} />
+                } else if (tier.id === 4) {
+                    return <Tier4Task {...commonProps} />
+                } else if (tier.id === 5) {
+                    return <Tier5Task {...commonProps} />
+                } else {
+                    return <TierGenericTask {...commonProps} />
+                }
+            })}
           </div>
         </div>
       )}

@@ -15,6 +15,7 @@ export interface TierTask {
   title: string
   subtitle: string | null
   description: string
+  logo?: string | null
   status: import('../../../data/credit-builder').CreditBuilderStatus | null
   url: string | null
   button_title: string | null
