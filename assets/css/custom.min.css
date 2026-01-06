@@ -4566,7 +4566,7 @@
 
 .tier-accordion-header {
   background: linear-gradient(135deg, #0b2a4a 0%, #0d3558 100%) !important;
-  border-radius: 6px 6px 0 0 !important;
+  border-radius: 0 !important;
   color: #fff !important;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(11, 42, 74, 0.15);
