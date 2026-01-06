@@ -21,6 +21,9 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
   const { data: apiData, isLoading, isSuccess } = useBusinessDetails()
   const { mutate: saveBusiness, isPending } = useSaveBusinessDetails()
   const [errors, setErrors] = useState<ValidationErrors>({})
+  const [availableCities, setAvailableCities] = useState<{name: string, code: string}[]>([])
+  const [availableStates, setAvailableStates] = useState<{name: string, code: string, cities?: string[]}[]>([])
+  const [showCityInput, setShowCityInput] = useState(false)
 
   const handleSave = () => {
     setErrors({})
@@ -58,6 +61,8 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
         business_address: apiData.business_address,
         business_city: apiData.business_city,
         business_state: apiData.business_state,
+        business_country: apiData.country,
+        business_country_code: apiData.country_code,
         business_zip_code: apiData.business_postal_code,
         business_website: apiData.business_website,
         business_entity_type: apiData.business_entity_type,
@@ -66,16 +71,53 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
     }
   }, [isSuccess, apiData])
 
+   // Update available states when country changes
+   useEffect(() => {
+    if (data.business_country) {
+      const selectedCountry = countriesData.find(c => c.name === data.business_country)
+      if (selectedCountry) {
+        setAvailableStates(selectedCountry.states)
+      } else {
+        setAvailableStates([])
+      }
+    } else {
+      setAvailableStates([])
+    }
+  }, [data.business_country])
+
+   // Update available cities when state changes
+  useEffect(() => {
+    if (data.business_state) {
+        // Find state in availableStates instead of assuming US
+        const selectedState = availableStates.find(s => s.name === data.business_state)
+        
+        if (selectedState && selectedState.cities) {
+            const cities = selectedState.cities.map(city => ({ name: city, code: city }))
+            cities.push({ name: 'Others', code: 'Others' })
+            setAvailableCities(cities)
+        } else {
+             setAvailableCities([{ name: 'Others', code: 'Others' }])
+        }
+    } else {
+        setAvailableCities([])
+    }
+  }, [data.business_state, availableStates])
+
+  // Sync showCityInput with business_city
+  useEffect(() => {
+    if (data.business_city && availableCities.length > 0) {
+      const exists = availableCities.find(c => c.code === data.business_city && c.code !== 'Others')
+      if (!exists) {
+        setShowCityInput(true)
+      } else {
+        setShowCityInput(false)
+      }
+    }
+  }, [data.business_city, availableCities])
+
   const selectedCountry = useMemo(() => {
-    return countriesData.find(c => c.name === 'United States')
-  }, [])
-
-  const states = useMemo(() => {
-    const usCountry = countriesData.find(c => c.name === 'United States')
-    return usCountry?.states.map(s => ({ label: s.name, value: s.name })) || []
-  }, [])
-
-
+    return data.business_country ? countriesData.find(c => c.name === data.business_country) : undefined
+  }, [data.business_country])
 
 
   if (isLoading) {
@@ -160,34 +202,97 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
           {errors.business_address && <div className="invalid-feedback">{errors.business_address}</div>}
         </div>
 
-      
-
         <div className="col-md-6">
-          <label className="form-label">City <span className="text-danger">*</span></label>
-          <input 
-            type="text" 
-            value={data.business_city} 
-            onChange={(e) => onChange({ ...data, business_city: e.target.value })} 
-            className={`form-control ${errors.business_city ? 'is-invalid' : ''}`}
-            placeholder="Enter city"
+          <label className="form-label">Country <span className="text-danger">*</span></label>
+          <CustomDropdown
+            value={data.business_country}
+            onChange={(value) => {
+              const selectedCountryObj = countriesData.find(c => c.name === value)
+              onChange({ 
+                ...data, 
+                business_country: value,
+                business_country_code: selectedCountryObj ? selectedCountryObj.phone_code : '',
+                business_state: '', // Reset state when country changes
+                business_city: '' // Reset city when country changes
+              })
+            }}
+            options={countriesData}
+            optionLabel="name"
+            optionValue="name"
+            placeholder="Select country"
+            searchable={false}
+            className={`w-100 ${errors.business_country ? 'is-invalid' : ''}`}
           />
-          {errors.business_city && <div className="invalid-feedback">{errors.business_city}</div>}
+          {errors.business_country && (
+            <div className="invalid-feedback d-block">{errors.business_country}</div>
+          )}
         </div>
 
-          <div className="col-md-6">
+        <div className="col-md-6">
           <label className="form-label">State <span className="text-danger">*</span></label>
           <CustomDropdown
             value={data.business_state}
-            onChange={(value) => onChange({ ...data, business_state: value })}
-            options={states}
-            optionLabel="label"
-            optionValue="value"
+            onChange={(value) => {
+                const selectedStateObj = availableStates.find(s => s.name === value)
+                let defaultCity = ''
+                if (selectedStateObj && selectedStateObj.cities && selectedStateObj.cities.length > 0) {
+                    defaultCity = selectedStateObj.cities[0]
+                }
+                onChange({ ...data, business_state: value, business_city: defaultCity })
+            }}
+            options={availableStates}
+            optionLabel="name"
+            optionValue="name"
             searchable={true}
             placeholder="Select state"
             className={`w-100 ${errors.business_state ? 'is-invalid' : ''}`}
+            disabled={!data.business_country}
           />
           {errors.business_state && <div className="invalid-feedback d-block">{errors.business_state}</div>}
         </div>
+
+        <div className={showCityInput ? "col-md-3" : "col-md-6"}>
+          <label className="form-label">City <span className="text-danger">*</span></label>
+           <CustomDropdown
+            value={showCityInput ? 'Others' : data.business_city}
+            onChange={(value) => {
+                if (value === 'Others') {
+                    setShowCityInput(true)
+                    onChange({ ...data, business_city: '' })
+                } else {
+                    setShowCityInput(false)
+                    onChange({ ...data, business_city: value })
+                }
+            }}
+            options={availableCities}
+            optionLabel="name"
+            optionValue="code"
+            placeholder="Select city"
+            searchable={true}
+            className={`w-100 ${errors.business_city ? 'is-invalid' : ''}`}
+            disabled={!data.business_state}
+          />
+          {errors.business_city && !showCityInput && (
+            <div className="invalid-feedback d-block">{errors.business_city}</div>
+          )}
+        </div>
+
+        {showCityInput && (
+            <div className="col-md-3">
+                <label className="form-label">City Name <span className="text-danger">*</span></label>
+                    <input 
+                        type="text" 
+                        className={`form-control ${errors.business_city ? 'is-invalid' : ''}`}
+                        placeholder="Enter city name" 
+                        value={data.business_city}
+                        onChange={(e) => onChange({ ...data, business_city: e.target.value })}
+                        required 
+                    />
+                    {errors.business_city && (
+                        <div className="invalid-feedback">{errors.business_city}</div>
+                    )}
+            </div>
+        )}
 
       
         <div className="col-md-6">

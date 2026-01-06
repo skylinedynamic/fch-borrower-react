@@ -96,6 +96,8 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
                     isFirstTier: isFirstTier,
                     onTaskClick: onTaskClick,
                     onVerifyClick: handleVerifyClick,
+                    index: index,
+                    tierDescription: tier.description,
                 }
 
                 if (tier.id === 1) {
@@ -110,6 +112,7 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
                             onTaskClick={onTaskClick}
                             onVerifyClick={handleVerifyClick}
                             index={index}
+                            tierDescription={tier.description}
                         />
                     )
                 } else if (tier.id === 3) {

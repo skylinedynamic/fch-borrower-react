@@ -4949,3 +4949,8 @@
 .task-details-modal .task-modal-important-note {
     font-size: 0.65rem;
 }
+
+.dropdown.is-invalid .form-select:focus {
+    border-color: #f06548 !important;
+    box-shadow: unset !important;
+}

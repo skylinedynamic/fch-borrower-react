@@ -51,6 +51,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
   const { mutate: savePersonalInfo, isPending: isSaving } = useSavePersonalInfo()
   const [availableStates, setAvailableStates] = useState<StateType[]>([])
   const [availableCities, setAvailableCities] = useState<CityType[]>([])
+  const [showCityInput, setShowCityInput] = useState(false)
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({})
   
   // Helper to find country by name or code
@@ -59,7 +60,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
   }
 
   // Get the selected country object
-  const selectedCountry = getCountryByName(data.country) || countriesData.find(c => c.name === 'United States')
+  const selectedCountry = data.country ? getCountryByName(data.country) : undefined
 
   // Get country code from selected country
   const getCountryCode = () => {
@@ -105,19 +106,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
     return !!validationErrors[fieldName]
   }
 
-  // Set default country to United States on initial load
-  useEffect(() => {
-    if (!data.country && !apiData) {
-      const usCountry = countriesData.find(c => c.name === 'United States')
-      if (usCountry) {
-        onChange({ 
-          ...data, 
-          country: usCountry.name,
-          country_code: usCountry.phone_code
-        })
-      }
-    }
-  }, [])
+
 
   // Update phone country codes when country changes
   useEffect(() => {
@@ -151,14 +140,36 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
     if (data.state && availableStates.length > 0) {
       const selectedState = availableStates.find(s => s.name === data.state || s.code === data.state)
       if (selectedState && selectedState.cities) {
-        setAvailableCities(selectedState.cities.map(city => ({ name: city, code: city })))
+        const cities = selectedState.cities.map(city => ({ name: city, code: city }))
+        cities.push({ name: 'Others', code: 'Others' })
+        setAvailableCities(cities)
       } else {
-        setAvailableCities([])
+        setAvailableCities([{ name: 'Others', code: 'Others' }])
       }
     } else {
       setAvailableCities([])
     }
   }, [data.state, availableStates])
+
+  // Sync showCityInput with data.city
+  useEffect(() => {
+    if (data.city && availableCities.length > 0) {
+      // Check if current city exists in the available list (excluding 'Others' entry)
+      const exists = availableCities.find(c => c.code === data.city && c.code !== 'Others')
+      if (!exists) {
+        setShowCityInput(true)
+      } else {
+        setShowCityInput(false)
+      }
+    } else if (data.city && availableCities.length === 0) {
+        // If city is set but no list (e.g. initial load or weird state), assumed valid if we can't check?
+        // Actually if we interpret as "Others", we show input.
+        // But on initial load, availableCities might be empty until state triggers.
+        // Let's rely on the user interaction primarily, but ensuring "Others" is selected if data.city is "Custom"
+        // If data.city is "New York" but availableCities empty, we don't want to switch to Others input yet?
+        // Safest: ONLY switch to input if we are sure it is NOT in the list.
+    }
+  }, [data.city, availableCities])
 
   // Update component state when API data is loaded
   useEffect(() => {
@@ -265,60 +276,6 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
         </div>
 
         <div className="col-md-6">
-          <label className="form-label">City <span className="text-danger">*</span></label>
-          <input 
-            type="text" 
-            className={`form-control ${hasError('city') ? 'is-invalid' : ''}`}
-            placeholder="Enter city" 
-            value={data.city}
-            onChange={(e) => onChange({ ...data, city: e.target.value })}
-            required 
-          />
-          {hasError('city') && (
-            <div className="invalid-feedback">{getFieldError('city')}</div>
-          )}
-        </div>
-
-        <div className="col-md-6">
-          <label className="form-label">State <span className="text-danger">*</span></label>
-          <CustomDropdown
-            value={data.state}
-            onChange={(value) => {
-              onChange({ 
-                ...data, 
-                      state: value,
-                    })
-                  }}
-                  options={availableStates}
-                  optionLabel="name"
-                  optionValue="name"
-                  placeholder="Select state"
-                  searchable={true}
-                  className={`w-100 ${hasError('state') ? 'is-invalid' : ''}`}
-                  disabled={!data.country}
-                />
-                {hasError('state') && (
-                  <div className="invalid-feedback d-block">{getFieldError('state')}</div>
-                )}
-        </div>
-
-        <div className="col-md-6">
-          <label className="form-label">Zip Code <span className="text-danger">*</span></label>
-          <input 
-            type="text" 
-            className={`form-control ${hasError('zip_code') ? 'is-invalid' : ''}`}
-            placeholder="Enter zip code" 
-            value={data.zip_code}
-            onChange={(e) => onChange({ ...data, zip_code: e.target.value })}
-            required 
-          />
-          {hasError('zip_code') && (
-            <div className="invalid-feedback">{getFieldError('zip_code')}</div>
-          )}
-        </div>
-
-
-        <div className="col-md-6">
           <label className="form-label">Country <span className="text-danger">*</span></label>
           <CustomDropdown
             value={data.country}
@@ -338,6 +295,102 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
           />
           {hasError('country') && (
             <div className="invalid-feedback d-block">{getFieldError('country')}</div>
+          )}
+        </div>
+
+
+        <div className="col-md-6">
+          <label className="form-label">State <span className="text-danger">*</span></label>
+          <CustomDropdown
+            value={data.state}
+            onChange={(value) => {
+              // Find the selected state object to get its cities
+              const selectedStateObj = availableStates.find(s => s.name === value || s.code === value)
+              let defaultCity = ''
+              // Default to the first city if available
+              if (selectedStateObj && selectedStateObj.cities && selectedStateObj.cities.length > 0) {
+                  defaultCity = selectedStateObj.cities[0]
+              }
+              
+              onChange({ 
+                ...data, 
+                state: value,
+                city: defaultCity
+              })
+            }}
+            options={availableStates}
+            optionLabel="name"
+            optionValue="name"
+            placeholder="Select state"
+            searchable={true}
+            className={`w-100 ${hasError('state') ? 'is-invalid' : ''}`}
+            disabled={!data.country}
+          />
+          {hasError('state') && (
+            <div className="invalid-feedback d-block">{getFieldError('state')}</div>
+          )}
+        </div>
+
+
+        <div className={showCityInput ? "col-md-3" : "col-md-6"}>
+          <label className="form-label">City <span className="text-danger">*</span></label>
+            <CustomDropdown
+            value={showCityInput ? 'Others' : data.city}
+            onChange={(value) => {
+                if (value === 'Others') {
+                    setShowCityInput(true)
+                    onChange({ ...data, city: '' })
+                } else {
+                    setShowCityInput(false)
+                    onChange({ ...data, city: value })
+                }
+            }}
+            options={availableCities}
+            optionLabel="name"
+            optionValue="code"
+            placeholder="Select city"
+            searchable={true}
+            className={`w-100 ${hasError('city') ? 'is-invalid' : ''}` }
+            disabled={!data.state}
+          />
+
+             {hasError('city') && (
+                    <div className="invalid-feedback">{getFieldError('city')}</div>
+                )}
+ 
+        </div>
+
+        {showCityInput && (
+            <div className="col-md-3">
+                <label className="form-label">City Name <span className="text-danger">*</span></label>
+                <input 
+                    type="text" 
+                    className={`form-control ${hasError('city') ? 'is-invalid' : ''}`}
+                    placeholder="Enter city name" 
+                    value={data.city}
+                    onChange={(e) => onChange({ ...data, city: e.target.value })}
+                    required 
+                />
+                {hasError('city') && (
+                    <div className="invalid-feedback">{getFieldError('city')}</div>
+                )}
+            </div>
+        )}
+
+     
+
+        <div className="col-md-6">
+          <label className="form-label">Zip Code <span className="text-danger">*</span></label>
+          <input 
+            type="text" 
+            className={`form-control ${hasError('zip_code') ? 'is-invalid' : ''}`}
+            placeholder="Enter zip code" 
+            value={data.zip_code}
+            onChange={(e) => onChange({ ...data, zip_code: e.target.value })}
+            required 
+          />
+          {hasError('zip_code') && (
+            <div className="invalid-feedback">{getFieldError('zip_code')}</div>
           )}
         </div>
         

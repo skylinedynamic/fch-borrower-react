@@ -4,15 +4,7 @@ import { CREDIT_BUILDER_STATUS } from '../../../../data/credit-builder'
 import { UncontrolledTooltip } from 'reactstrap'
 import TaskDetailsModal from './TaskDetailsModal'
 
-// Asset Imports
-import crownLogo from '../../../../../assets/images/Logos/Crown Office Supplies.png'
-import globalLogo from '../../../../../assets/images/Logos/Global-Industrial logo.png'
-import graingerLogo from '../../../../../assets/images/Logos/Grainger logo.png'
-import mscLogo from '../../../../../assets/images/Logos/MSC Industrial logo.jpg'
-import officeGarnerLogo from '../../../../../assets/images/Logos/Office Garner Logo.png'
-import quillLogo from '../../../../../assets/images/Logos/Quill Office Supplies.png'
-import setonLogo from '../../../../../assets/images/Logos/Seton Logo.png'
-import ulineLogo from '../../../../../assets/images/Logos/Uline.png'
+
 
 export interface Tier2TaskProps {
   task: TierTaskType
@@ -21,23 +13,12 @@ export interface Tier2TaskProps {
   onTaskClick?: (task: TierTaskType) => void
   onVerifyClick?: (task: TierTaskType) => void
   index: number
+  tierDescription?: string
 }
 
-const getLogo = (title: string) => {
-    if (!title) return null
-    const t = title.toLowerCase()
-    if (t.includes('uline')) return ulineLogo
-    if (t.includes('quill')) return quillLogo
-    if (t.includes('crown')) return crownLogo
-    if (t.includes('grainger')) return graingerLogo
-    if (t.includes('msc')) return mscLogo
-    if (t.includes('seton')) return setonLogo
-    if (t.includes('office garner') || t.includes('garner')) return officeGarnerLogo
-    if (t.includes('global')) return globalLogo
-    return null
-}
 
-export default function Tier2Task({ task, isCurrentTier, isFirstTier, onTaskClick, onVerifyClick, index }: Tier2TaskProps) {
+
+export default function Tier2Task({ task, isCurrentTier, isFirstTier, onTaskClick, onVerifyClick, index, tierDescription }: Tier2TaskProps) {
   const [modalOpen, setModalOpen] = useState(false)
   
   const isDone = task.status === CREDIT_BUILDER_STATUS.VERIFIED
@@ -66,27 +47,13 @@ export default function Tier2Task({ task, isCurrentTier, isFirstTier, onTaskClic
     </div>
   )
 
-  const logoSrc = task.logo || getLogo(task.title)
+  const logoSrc = task.logo
 
   return (
     <>
         {/* Tier 1 Warning Box - Only for first item */}
-        {index === 0 && (
-            <div>
-                <div className="alert alert-warning border-0 shadow-sm p-3">
-                        <div className="d-flex align-items-center gap-2 mb-2">
-                        <i className="ri-lightbulb-fill text-warning fs-1"></i>
-                        <h6 className="mb-0 text-dark fs-5">Before Starting Tier 1, Please Read Carefully.</h6>
-                        </div>
-                        <ul className="mb-0 ps-3 text-muted custom-list">
-                        <li className="mb-1">Tier 1 requires <b>opening accounts with approved starter vendors</b> before proceeding.</li>
-                        <li className="mb-1">Every business is unique; always <b>read guidance</b> before acting.</li>
-                        <li className="mb-1">Account progress is only confirmed after opening and verified by FCH.</li>
-                        <li>Do not apply for vendors outside this list. Doing so may result in denials.</li>
-                        </ul>
-                </div>
-
-            </div>
+        {index === 0 && tierDescription && (
+            <div dangerouslySetInnerHTML={{ __html: tierDescription }} />
         )}
         <div className="tier-task-item tier-vendor-task-item d-flex align-items-center gap-3 p-3 border rounded mb-2">
             {/* Index Number */}

@@ -11,9 +11,10 @@ export interface TierGenericTaskProps {
   onVerifyClick?: (task: TierTaskType) => void
   tierId?: number
   index?: number
+  tierDescription?: string
 }
 
-export default function TierGenericTask({ task, isCurrentTier, isFirstTier, onTaskClick, onVerifyClick }: TierGenericTaskProps) {
+export default function TierGenericTask({ task, isCurrentTier, isFirstTier, onTaskClick, onVerifyClick, index, tierDescription }: TierGenericTaskProps) {
   const isDone = task.status === CREDIT_BUILDER_STATUS.VERIFIED
   const isProcessing = task.status === CREDIT_BUILDER_STATUS.PROCESSING
   const isRejected = task.status === CREDIT_BUILDER_STATUS.REJECTED
@@ -81,6 +82,11 @@ export default function TierGenericTask({ task, isCurrentTier, isFirstTier, onTa
   )
   
   return (
+    <>
+        {/* Tier Description - Only for first item */}
+        {index === 0 && tierDescription && (
+            <div dangerouslySetInnerHTML={{ __html: tierDescription }} />
+        )}
     <div className="tier-task-item">
       <div className="d-flex gap-3 align-items-start flex-grow-1">
         {/* Icon Box */}
@@ -136,5 +142,6 @@ export default function TierGenericTask({ task, isCurrentTier, isFirstTier, onTa
         </div>
       </div>
     </div>
+    </>
   )
 }

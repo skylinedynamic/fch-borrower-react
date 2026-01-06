@@ -44,6 +44,7 @@ export default function Profile() {
     business_address: '',
     business_city: '',
     business_state: '',
+    business_country: '',
     business_zip_code: '',
     business_website: '',
     business_entity_type: '',

@@ -88,6 +88,8 @@ export type SaveBusinessDetailsRequest = {
   business_website: string
   business_entity_type: string
   business_industry_type: string
+  business_country: string
+  business_country_code?: string
 }
 
 export type SaveBusinessDetailsResponse = {
