@@ -52,8 +52,10 @@ export default function Tier2Task({ task, isCurrentTier, isFirstTier, onTaskClic
   return (
     <>
         {/* Tier 1 Warning Box - Only for first item */}
-        {index === 0 && tierDescription && (
-            <div dangerouslySetInnerHTML={{ __html: tierDescription }} />
+        {index === 0 && (
+            tierDescription ? (
+                <div dangerouslySetInnerHTML={{ __html: tierDescription }} />
+            ) : ''
         )}
         <div className="tier-task-item tier-vendor-task-item d-flex align-items-center gap-3 p-3 border rounded mb-2">
             {/* Index Number */}
