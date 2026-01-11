@@ -1,12 +1,27 @@
+export interface Vendor {
+  id: number
+  name: string
+  category: string
+  requirements: string[]
+  benefits: string[]
+  report_to: string[]
+  tier_id: number
+  status: string
+  description: string | null
+  general_url: string | null
+  affiliate_url: string | null
+  logo: string | null
+}
+
 export interface Tier {
   id: number
   name: string
   title: string
   subtitle: string
-  description: string
-  estimated_completion_time: string
+  description: string | null
   status: string | null
   order: number
+  has_vendor: number
   tasks: TierTask[]
 }
 
@@ -14,14 +29,16 @@ export interface TierTask {
   id: number
   title: string
   subtitle: string | null
-  description: string
+  description: string | null
   logo?: string | null
   status: import('../../../data/credit-builder').CreditBuilderStatus | null
   url: string | null
   button_title: string | null
   completed_at: string | null
-  estimated_completion_days: string | null
+  estimated_completion_days: number | null
   rejection_reason?: string | null
+  order: number
+  vendor: Vendor | null
 }
 
 export interface TierTaskListResponse {
