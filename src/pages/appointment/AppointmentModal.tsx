@@ -184,8 +184,9 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
                     setLastConflictingAttempt(null);
                     setIsConflictVisible(false);
                 }
-            } catch (error) {
-                console.error("Failed to check availability", error);
+            } catch (error: any) {
+                console.error("Availability check failed", error);
+                // Optional: show toast if needed
             } finally {
                 setIsCheckingAvailability(false);
                 isSystemShiftRef.current = false;
@@ -314,8 +315,8 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
 
             // Sync flatpickr if already initialized
             const dateInput = document.getElementById("event-start-date-modal");
-            if (dateInput && dateInput._flatpickr) {
-                dateInput._flatpickr.setDate(defaultDate);
+            if (dateInput && (dateInput as any)._flatpickr) {
+                (dateInput as any)._flatpickr.setDate(defaultDate);
             }
 
             if (modalInstance) modalInstance.show();
@@ -482,7 +483,7 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
             } else {
                 toast.error(response?.message || `Failed to ${isNewEvent ? 'create' : 'update'} appointment`);
             }
-        } catch (error) {
+        } catch (error: any) {
             if (error.response?.data?.errors) {
                 setFormErrors(error.response.data.errors);
             } else {
@@ -610,16 +611,16 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
                             ) : (
                                 <div className="event-details position-relative">
                                     <div className="mb-4">
-                                        <div className="d-flex align-items-center justify-content-between mb-2">
+                                        <div className="d-flex align-items-center justify-content-between mb-1">
                                             <div className="flex-grow-1">
-                                                <label className="text-muted fs-11 text-uppercase fw-bold mb-1 d-block letter-spacing-1">APPOINTMENT TITLE</label>
-                                                <h4 className="fw-bold mb-0 text-dark" style={{ fontSize: '24px', letterSpacing: '-0.3px' }}>{displayData.title || "No Title"}</h4>
+                                                <label className="uppercase-label mb-1 d-block">APPOINTMENT TITLE</label>
+                                                <h4 className="fw-bold mb-0 text-dark" style={{ fontSize: '22px', letterSpacing: '-0.3px', lineHeight: '1.4' }}>{displayData.title || "No Title"}</h4>
                                             </div>
                                             <div className="flex-shrink-0">
                                                 <button
-                                                    className="btn btn-sm btn-soft-primary d-flex align-items-center px-3 shadow-none fw-bold"
+                                                    className="btn btn-sm btn-soft-primary d-flex align-items-center px-3 fw-bold shadow-none"
                                                     onClick={() => setViewMode(false)}
-                                                    style={{ height: '34px', backgroundColor: '#eef1f6', color: '#1a2a47', border: 'none' }}
+                                                    style={{ height: '34px' }}
                                                 >
                                                     <i className="ri-pencil-fill fs-14 me-1"></i> Edit
                                                 </button>
@@ -627,30 +628,16 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
                                         </div>
                                     </div>
 
-                                    <div className="mb-4 w-100">
-                                        <div className="d-flex align-items-center justify-content-between mb-2">
-                                            <label className="text-muted fs-11 text-uppercase fw-bold mb-0 d-block letter-spacing-1">DESCRIPTION</label>
-                                        </div>
-                                        <div
-                                            className="rounded-3 p-3 border border-light-subtle description-wrapper"
-                                            style={{
-                                                transition: 'all 0.3s ease-in-out',
-                                                backgroundColor: '#F8F9FA',
-                                                width: '100%',
-                                                display: 'block',
-                                                minWidth: '100%'
-                                            }}
-                                        >
+                                    <div className="mb-4">
+                                        <label className="uppercase-label mb-2 d-block">DESCRIPTION</label>
+                                        <div className="description-wrapper">
                                             {(() => {
                                                 const description = displayData.description || "No Description";
-
                                                 const cleanHtml = (html: string) => {
                                                     if (!html) return "";
                                                     return html
                                                         .replace(/width:\s*[^;"]+;?/gi, '')
                                                         .replace(/float:\s*[^;"]+;?/gi, '')
-                                                        .replace(/margin-left:\s*[^;"]+;?/gi, '')
-                                                        .replace(/margin-right:\s*[^;"]+;?/gi, '')
                                                         .replace(/background-color:\s*[^;"]+;?/gi, 'background-color: transparent;')
                                                         .replace(/background:\s*[^;"]+;?/gi, 'background: transparent;');
                                                 };
@@ -658,10 +645,6 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
                                                 const rawText = description
                                                     .replace(/<[^>]*>/g, '')
                                                     .replace(/&nbsp;/g, ' ')
-                                                    .replace(/&amp;/g, '&')
-                                                    .replace(/&lt;/g, '<')
-                                                    .replace(/&gt;/g, '>')
-                                                    .replace(/&quot;/g, '"')
                                                     .replace(/\s+/g, ' ')
                                                     .trim();
 
@@ -670,18 +653,18 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
                                                 return (
                                                     <div className="text-dark fs-14" style={{ lineHeight: "1.8", letterSpacing: "0.2px" }}>
                                                         {!isDescriptionExpanded && rawText.length > limit ? (
-                                                            <div className="description-content">
+                                                            <>
                                                                 {rawText.substring(0, limit)}...
                                                                 <button
                                                                     type="button"
-                                                                    className="btn btn-link p-0 ms-2 fs-11 fw-bold text-primary text-decoration-none shadow-none text-uppercase"
+                                                                    className="see-more-less-btn ms-2"
                                                                     onClick={() => setIsDescriptionExpanded(true)}
                                                                 >
-                                                                    SEE MORE <i className="ri-arrow-right-s-line align-middle ms-1"></i>
+                                                                    SEE MORE <i className="ri-arrow-down-s-line align-middle ms-1"></i>
                                                                 </button>
-                                                            </div>
+                                                            </>
                                                         ) : (
-                                                            <div className="description-content">
+                                                            <>
                                                                 <div
                                                                     className="rich-text-content"
                                                                     dangerouslySetInnerHTML={{ __html: cleanHtml(description) }}
@@ -689,13 +672,13 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
                                                                 {isDescriptionExpanded && rawText.length > limit && (
                                                                     <button
                                                                         type="button"
-                                                                        className="btn btn-link p-0 mt-3 fs-11 fw-bold text-primary text-decoration-none shadow-none text-uppercase d-block"
+                                                                        className="see-more-less-btn d-block mt-2"
                                                                         onClick={() => setIsDescriptionExpanded(false)}
                                                                     >
                                                                         SEE LESS <i className="ri-arrow-up-s-line align-middle ms-1"></i>
                                                                     </button>
                                                                 )}
-                                                            </div>
+                                                            </>
                                                         )}
                                                     </div>
                                                 );
@@ -703,34 +686,33 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
                                         </div>
                                     </div>
 
-                                    <div className="row ps-4 pe-2 mb-2">
-                                        <div className="col-12">
-                                            <div className="row g-4">
-                                                <DetailItem icon="ri-calendar-event-line" label="DATE" value={displayData.date} />
-                                                <DetailItem icon="ri-time-line" label="TIME SLOT" value={`${displayData.timeStart} - ${displayData.timeEnd}`} />
-                                                <DetailItem icon="ri-map-pin-line" label="TIME ZONE" value={displayData.location} />
-                                                <DetailItem icon="ri-user-star-line" label="SCHEDULED BY" value={displayData.scheduledBy} />
-                                            </div>
-                                        </div>
+                                    <div className="row g-2 mb-2">
+                                        <DetailItem icon="ri-calendar-event-line" label="DATE" value={displayData.date} />
+                                        <DetailItem icon="ri-time-line" label="TIME SLOT" value={`${displayData.timeStart} - ${displayData.timeEnd}`} />
+                                        <DetailItem icon="ri-map-pin-line" label="TIME ZONE" value={displayData.location} />
+                                        <DetailItem icon="ri-user-star-line" label="SCHEDULED BY" value={displayData.scheduledBy} />
                                     </div>
 
-                                    <div className="appointment-with-box-full shadow-none mt-4">
+                                    <div className="appointment-with-box-full shadow-none mt-3">
                                         <div className="flex-shrink-0 me-4">
                                             <div className="avatar-circle-custom">
                                                 {displayData.assignedForAvatar ? (
                                                     <img src={displayData.assignedForAvatar} alt="" />
                                                 ) : (
-                                                    <div className="w-100 h-100 d-flex align-items-center justify-content-center text-white" style={{ fontSize: '28px' }}>
+                                                    <div className="w-100 h-100 d-flex align-items-center justify-content-center text-white" style={{ fontSize: '24px' }}>
                                                         <i className="ri-user-line"></i>
                                                     </div>
                                                 )}
                                             </div>
                                         </div>
-                                        <div className="flex-grow-1">
-                                            <p className="text-muted fs-11 text-uppercase fw-bold mb-1 d-block letter-spacing-1" style={{ color: '#4b5563 !important' }}>
+                                        <div className="d-flex align-items-center gap-2">
+                                            <p className="uppercase-label mb-0" style={{ color: '#4b5563' }}>
                                                 APPOINTMENT WITH:
                                             </p>
-                                            <h5 className="mb-0 fs-16 fw-bold" style={{ color: '#3b4b7a' }}>{displayData.assignedFor || "Unassigned"}</h5>
+
+                                            <h5 className="mb-0 fs-16 fw-bold" style={{ color: '#3b4b7a' }}>
+                                                {displayData.assignedFor || "Unassigned"}
+                                            </h5>
                                         </div>
                                     </div>
 
@@ -950,12 +932,12 @@ const DetailItem = ({ icon, label, value, className = '' }: { icon: string, labe
     <div className={`col-md-6 ${className}`}>
         <div className="d-flex align-items-center mb-3">
             <div className="flex-shrink-0 me-3">
-                <div className="detail-item-icon" style={{ width: '36px', height: '36px' }}>
+                <div className="detail-item-icon">
                     <i className={`${icon} fs-18`}></i>
                 </div>
             </div>
             <div className="flex-grow-1">
-                <p className="text-muted mb-0 uppercase-label fs-11" style={{ letterSpacing: '0.8px', fontWeight: 600 }}>{label}</p>
+                <p className="uppercase-label mb-1">{label}</p>
                 <h6 className="mb-0 fs-14 fw-bold text-dark" style={{ letterSpacing: '-0.1px' }}>{value || "N/A"}</h6>
             </div>
         </div>

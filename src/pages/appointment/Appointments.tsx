@@ -110,9 +110,14 @@ export default function Appointments() {
         });
         setEvents(mappedEvents);
       }
-    } catch (error) {
-      console.error("Failed to load appointments", error);
-      toast.error('Failed to load appointments');
+    } catch (error: any) {
+      if (error.response?.data?.errors) {
+        console.error("Failed to load appointments due to specific errors:", error.response.data.errors);
+        toast.error(error.response.data.errors.join(', ') || 'Failed to load appointments');
+      } else {
+        console.error("Failed to load appointments", error);
+        toast.error('Failed to load appointments');
+      }
     } finally {
       setLoading(false);
     }
@@ -193,9 +198,9 @@ export default function Appointments() {
         toast.error(response?.message || 'Failed to update appointment');
         info.revert();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Update failed", error);
-      toast.error(error.response?.data?.message || 'Failed to update appointment');
+      toast.error(error.response?.data?.message || error.message || 'Failed to update appointment');
       info.revert();
     }
   };
@@ -386,27 +391,27 @@ export default function Appointments() {
                             // Force style overrides directly on the DOM
                             const { backgroundColor, borderColor, textColor } = info.event;
                             if (backgroundColor) {
-                              info.el.style.backgroundColor = backgroundColor;
-                              info.el.style.setProperty('background-color', backgroundColor, 'important');
+                              (info.el as HTMLElement).style.backgroundColor = backgroundColor;
+                              (info.el as HTMLElement).style.setProperty('background-color', backgroundColor, 'important');
                             }
                             if (borderColor) {
-                              info.el.style.borderColor = borderColor;
-                              info.el.style.setProperty('border-color', borderColor, 'important');
+                              (info.el as HTMLElement).style.borderColor = borderColor;
+                              (info.el as HTMLElement).style.setProperty('border-color', borderColor, 'important');
                               // Also apply to the dot for list/day views
-                              const dotEl = info.el.querySelector('.fc-daygrid-event-dot');
+                              const dotEl = (info.el as HTMLElement).querySelector('.fc-daygrid-event-dot') as HTMLElement;
                               if (dotEl) {
                                 dotEl.style.borderColor = borderColor;
                                 dotEl.style.setProperty('border-color', borderColor, 'important');
                               }
                             }
                             if (textColor) {
-                              const titleEl = info.el.querySelector('.fc-event-title') || info.el.querySelector('.fc-list-event-title');
+                              const titleEl = (info.el as HTMLElement).querySelector('.fc-event-title') as HTMLElement || (info.el as HTMLElement).querySelector('.fc-list-event-title') as HTMLElement;
                               if (titleEl) {
                                 titleEl.style.color = textColor;
                                 titleEl.style.setProperty('color', textColor, 'important');
                               }
-                              info.el.style.color = textColor;
-                              info.el.style.setProperty('color', textColor, 'important');
+                              (info.el as HTMLElement).style.color = textColor;
+                              (info.el as HTMLElement).style.setProperty('color', textColor, 'important');
                             }
                           }}
                           dateClick={(arg) => handleNewEvent(arg.dateStr)}
@@ -504,7 +509,7 @@ export default function Appointments() {
                   .fc-h-event, 
                   .fc-v-event {
                       padding: 4px 8px !important;
-                      font-size: 12px !important;
+                      font-size: 16px !important;
                       border-radius: 4px !important;
                       box-shadow: none !important;
                       margin-top: 2px !important;
