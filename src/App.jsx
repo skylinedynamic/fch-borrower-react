@@ -14,7 +14,7 @@ import Documents from '../src/pages/documents/Documents.tsx'
 import { ProtectedRoute, GuestRoute, checkSession } from './lib/auth'
 import Profile from '../src/pages/profile/profile.tsx'
 import MyApplication from '../src/pages/myapplication/MyApplication.tsx'
-import Appointmnet from '../src/pages/appointment/appointmnet.tsx'
+import Appointments from '../src/pages/appointment/Appointments.tsx'
 import CreditOverview from '../src/pages/credit-builder/creditoverview/CreditOverview.tsx'
 import VendorApplication from '../src/pages/credit-builder/creditvendorapplication/VendorApplication.tsx'
 import ProgressTracker from '../src/pages/credit-builder/creditprogresstracker/ProgressTracker.tsx'
@@ -54,7 +54,7 @@ export default function App() {
           <Route path="pre-qualification" element={<PreQualification />} />
           <Route path="fund-application" element={<FundApplication />} />
           <Route path="my-applications" element={<MyApplication />} />
-          <Route path="appointment" element={<Appointmnet />} />
+           <Route path="appointment" element={<Appointments />} />
 
           <Route path="credit-builder">
             <Route index element={<CreditOverview />} />
