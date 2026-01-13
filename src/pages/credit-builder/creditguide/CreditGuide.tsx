@@ -55,7 +55,7 @@ export default function CreditGuide() {
   // Calculate overall progress safely
   const totalTasks = tiers ? tiers.reduce((sum, tier) => sum + tier.tasks.length, 0) : 0
   const completedTasks = tiers ? tiers.reduce((sum, tier) => 
-    sum + tier.tasks.filter(t => t.status === CREDIT_BUILDER_STATUS.COMPLETED).length, 0
+    sum + tier.tasks.filter(t => t.status === CREDIT_BUILDER_STATUS.VERIFIED).length, 0
   ) : 0
   
   // Use API state for current tier instead of derived tasks

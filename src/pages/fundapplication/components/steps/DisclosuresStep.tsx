@@ -5,20 +5,17 @@ import FormSkeleton from '../shared/FormSkeleton'
 
 type DisclosuresStepProps = {
   disclosure: DisclosureConsent
-  toggleDisclosure: (key: keyof DisclosureConsent, checked: boolean) => void
+  setDisclosure: (data: DisclosureConsent) => void
+  disclosureItems: { key: keyof DisclosureConsent; label: string; route: string }[]
   onNext: () => void
   onBack: () => void
   loading: boolean
 }
 
-const disclosureItems: { key: keyof DisclosureConsent; label: string; route: string }[] = [
-  { key: 'agreeTerms', label: 'Credit Pull Authorization', route: '/disclosures/terms' },
-  { key: 'creditCheckConsent', label: 'Terms & Conditions Acceptance', route: '/disclosures/credit-check' },
-]
-
 export default function DisclosuresStep({
   disclosure,
-  toggleDisclosure,
+  setDisclosure,
+  disclosureItems,
   onNext,
   onBack,
   loading,
@@ -26,7 +23,7 @@ export default function DisclosuresStep({
   const allRequiredChecked = disclosureItems.every((item) => disclosure[item.key])
 
   if (loading) {
-    return <FormSkeleton fieldCount={2} />
+    return <FormSkeleton fieldCount={disclosureItems.length || 2} />
   }
 
   return (
@@ -40,7 +37,7 @@ export default function DisclosuresStep({
                 className="form-check-input"
                 type="checkbox"
                 checked={disclosure[item.key]}
-                onChange={(e) => toggleDisclosure(item.key, e.target.checked)}
+                onChange={(e) => setDisclosure({ ...disclosure, [item.key]: e.target.checked })}
               />
               <label htmlFor={`disc-${item.key}`} className="form-check-label fw-semibold ms-2">
                 {item.label} <span className="text-danger">*</span>

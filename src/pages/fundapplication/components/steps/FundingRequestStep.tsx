@@ -9,6 +9,7 @@ type FundingRequestStepProps = {
   onNext: () => void
   onBack: () => void
   loading: boolean
+  isValid: boolean
 }
 
 export default function FundingRequestStep({

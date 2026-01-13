@@ -1,15 +1,16 @@
 import React, { useState } from 'react'
 import TierGenericTask from './TierGenericTask'
+import Tier0Task from './Tier0Task'
 import Tier1Task from './Tier1Task'
 import Tier2Task from './Tier2Task'
 import Tier3Task from './Tier3Task'
 import Tier4Task from './Tier4Task'
-import Tier5Task from './Tier5Task'
 import { toast } from 'react-toastify'
 import { useVerifyTierTasks } from '../../../../modules/credit-builder/guide/queries'
 import { Tier, TierTask as TierTaskType } from '../../../../modules/credit-builder/guide/types'
 import { CREDIT_BUILDER_STATUS } from '../../../../data/credit-builder'
 import ConfirmationModal from '../../../../components/GlobalModal/ConfirmationModal'
+import { tierCode } from '../../../../data/tier'
 
 interface TierAccordionProps {
   tier: Tier
@@ -24,7 +25,7 @@ interface TierAccordionProps {
 
 export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, onTaskClick, onCompleteTier, isFirstTier, isLocked }: TierAccordionProps) {
   const completedCount = tier.tasks.filter(t => t.status === CREDIT_BUILDER_STATUS.VERIFIED).length
-  const totalCount = tier.tasks.length
+  const totalCount = tier.task_to_complete ? tier.task_to_complete : tier.tasks.length
   const [selectedTask, setSelectedTask] = useState<TierTaskType | null>(null)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const verifyTierTasksMutation = useVerifyTierTasks()
@@ -100,11 +101,11 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
                     tierDescription: tier.description,
                 }
 
-                if (tier.id === 1) {
-                    return <Tier1Task {...commonProps} />
-                } else if (tier.id === 2) {
+                if (tier.code === tierCode[0].value) {
+                    return <Tier0Task {...commonProps} />
+                } else if (tier.code === tierCode[1].value) {
                     return (
-                        <Tier2Task 
+                        <Tier1Task 
                             key={task.id}
                             task={task}
                             isCurrentTier={isCurrentTier}
@@ -115,12 +116,12 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
                             tierDescription={tier.description}
                         />
                     )
-                } else if (tier.id === 3) {
+                } else if (tier.code === tierCode[2].value) {
+                    return <Tier2Task {...commonProps} />
+                } else if (tier.code === tierCode[3].value) {
                     return <Tier3Task {...commonProps} />
-                } else if (tier.id === 4) {
+                } else if (tier.code === tierCode[4].value) {
                     return <Tier4Task {...commonProps} />
-                } else if (tier.id === 5) {
-                    return <Tier5Task {...commonProps} />
                 } else {
                     return <TierGenericTask {...commonProps} />
                 }

@@ -4,12 +4,13 @@ import StepNavigation from '../shared/StepNavigation'
 import DocumentUploadSection from '../shared/DocumentUploadSection'
 
 type DocumentUploadStepProps = {
+  sections: string[]
   docUploads: Record<string, FileEntry[]>
   docUploading: Record<string, boolean>
   docProgress: Record<string, number>
-  onAddFiles: (key: string, files: FileList | File[]) => void
-  onRemoveFile: (key: string, name: string) => void
-  onDrop: (e: React.DragEvent<HTMLDivElement>, key: string) => void
+  addDocFiles: (key: string, files: FileList | File[]) => void
+  removeDocFile: (key: string, name: string) => void
+  onDocDrop: (e: React.DragEvent<HTMLDivElement>, key: string) => void
   acceptTypes: string
   onNext: () => void
   onBack: () => void
@@ -17,12 +18,13 @@ type DocumentUploadStepProps = {
 }
 
 export default function DocumentUploadStep({
+  sections,
   docUploads,
   docUploading,
   docProgress,
-  onAddFiles,
-  onRemoveFile,
-  onDrop,
+  addDocFiles,
+  removeDocFile,
+  onDocDrop,
   acceptTypes,
   onNext,
   onBack,
@@ -46,7 +48,7 @@ export default function DocumentUploadStep({
     <div className="row g-3">
       <div className="col-12">
         <div className="accordion" id="fundDocsAccordion">
-          {docSections.map((sec, sidx) => (
+          {sections.map((sec, sidx) => (
             <div className="accordion-item" key={sec}>
               <h2 className="accordion-header" id={`fund-heading-${sidx}`}>
                 <button
@@ -78,9 +80,9 @@ export default function DocumentUploadStep({
                     uploads={docUploads[sec] || []}
                     uploading={docUploading[sec] || false}
                     progress={docProgress[sec] || 0}
-                    onAddFiles={onAddFiles}
-                    onRemoveFile={onRemoveFile}
-                    onDrop={onDrop}
+                    onAddFiles={addDocFiles}
+                    onRemoveFile={removeDocFile}
+                    onDrop={onDocDrop}
                     acceptTypes={acceptTypes}
                   />
                 </div>

@@ -11,7 +11,7 @@ export interface TierGenericTaskProps {
   onVerifyClick?: (task: TierTaskType) => void
   tierId?: number
   index?: number
-  tierDescription?: string
+  tierDescription?: string | null
 }
 
 export default function TierGenericTask({ task, isCurrentTier, isFirstTier, onTaskClick, onVerifyClick, index, tierDescription }: TierGenericTaskProps) {

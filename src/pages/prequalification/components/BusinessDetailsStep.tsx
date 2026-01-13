@@ -70,15 +70,15 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
       <div className="col-md-6">
         <label className="form-label">Time in Business <span className="text-danger">*</span></label>
         <CustomDropdown
-          value={business.timeInBusiness}
-          onChange={(value) => setBusiness({ ...business, timeInBusiness: value })}
+          value={business.yearsInBusiness}
+          onChange={(value) => setBusiness({ ...business, yearsInBusiness: value })}
           options={yearsInBusinessOptions}
           optionLabel="label"
           optionValue="value"
-          placeholder="Select time in business"
-          className={`w-100 ${errors.timeInBusiness ? 'is-invalid' : ''}`}
+          placeholder="Select years in business"
+          className={`w-100 ${errors.yearsInBusiness ? 'is-invalid' : ''}`}
         />
-        {errors.timeInBusiness && <div className="invalid-feedback d-block">{errors.timeInBusiness}</div>}
+        {errors.yearsInBusiness && <div className="invalid-feedback d-block">{errors.yearsInBusiness}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">Monthly Revenue <span className="text-danger">*</span></label>
