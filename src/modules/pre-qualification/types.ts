@@ -9,7 +9,7 @@ export type PreQualificationData = {
   business_structure: string | null
   industry_type: string
   state_of_incorporation: string
-  time_in_business: string
+  years_in_business: string
   monthly_revenue: string
   annual_revenue: string
   funding_requested_amount: string | null
@@ -44,7 +44,7 @@ export type BusinessDetails = {
   businessName: string
   industryType: string
   businessStructure: string
-  timeInBusiness: string
+  yearsInBusiness: string
   annualRevenue: string
   monthlyRevenue: string
 }
@@ -77,7 +77,7 @@ export type BusinessInfoRequest = {
   business_structure: string
   monthly_revenue: number
   annual_revenue: number
-  time_in_business: string
+  years_in_business: string
 }
 
 export type FundingInfoRequest = {
@@ -108,7 +108,7 @@ export type StepSubmissionResponse = {
     business_structure: string
     monthly_revenue: string
     annual_revenue: string
-    time_in_business: string
+    years_in_business: string
     funding_requested_amount: string
     funding_urgency: string
     purpose_of_funding: string

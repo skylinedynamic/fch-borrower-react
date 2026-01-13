@@ -15,6 +15,7 @@ export interface Vendor {
 
 export interface Tier {
   id: number
+  code: string
   name: string
   title: string
   subtitle: string
@@ -22,6 +23,7 @@ export interface Tier {
   status: string | null
   order: number
   has_vendor: number
+  task_to_complete: number | null
   tasks: TierTask[]
 }
 

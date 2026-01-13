@@ -70,7 +70,7 @@ export default function PreQualificationDetailsModal({ isOpen, toggle, requestId
               <DetailItem label="Business Name" value={data.business_name} fullWidth />
               <DetailItem label="Industry Type" value={data.industry_type} icon="pi pi-briefcase" />
               <DetailItem label="Business Structure" value={data.business_structure} icon="pi pi-sitemap" />
-              <DetailItem label="Time in Business" value={data.time_in_business} icon="pi pi-clock" />
+              <DetailItem label="Time in Business" value={data.years_in_business} icon="pi pi-clock" />
               <DetailItem label="Monthly Revenue" value={data.monthly_revenue} icon="pi pi-dollar" />
               <DetailItem label="Annual Revenue" value={data.annual_revenue} icon="pi pi-money-bill" />
             </SectionCard>

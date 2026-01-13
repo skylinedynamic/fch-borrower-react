@@ -34,7 +34,7 @@ export default function ReviewStep({ personal, business, support, onEdit, onPrev
         <div className="kv"><div className="label">Business Name</div><div className="value">{business.businessName || '—'}</div></div>
         <div className="kv"><div className="label">Industry</div><div className="value">{business.industryType || '—'}</div></div>
         <div className="kv"><div className="label">Business Structure</div><div className="value">{business.businessStructure || '—'}</div></div>
-        <div className="kv"><div className="label">Time in Business</div><div className="value">{business.timeInBusiness || '—'}</div></div>
+        <div className="kv"><div className="label">Years in Business</div><div className="value">{business.yearsInBusiness || '—'}</div></div>
         <div className="kv"><div className="label">Monthly Revenue</div><div className="value">{business.monthlyRevenue || '—'}</div></div>
         <div className="kv"><div className="label">Annual Revenue</div><div className="value">{business.annualRevenue || '—'}</div></div>
       </div>

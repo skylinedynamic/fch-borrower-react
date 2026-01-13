@@ -9,18 +9,19 @@ type FederalComplianceStepProps = {
   onNext: () => void
   onBack: () => void
   loading: boolean
+  isValid: boolean
 }
 
 const questions: { key: keyof FederalCompliance; label: string }[] = [
-  { key: 'bankruptcy', label: 'Have you or any owner ever declared bankruptcy?' },
-  { key: 'lawsuit', label: 'Are you or any owner currently involved in a lawsuit?' },
-  { key: 'federalLoanDefault', label: 'Have you or any owner ever defaulted on a federal loan (student, SBA, FHA, etc.)?' },
-  { key: 'federalDebtDelinquent', label: 'Are you or any owner currently delinquent on any federal debt?' },
-  { key: 'criminalOffense', label: 'Have you or any owner been arrested or convicted for any criminal offense other than a minor vehicle violation?' },
-  { key: 'paroleProbation', label: 'Are you or any owner on parole or probation?' },
-  { key: 'suspendedDebarred', label: 'Is the business or any owner currently suspended, debarred, or otherwise excluded from participation in federal programs?' },
-  { key: 'judgmentsLiensBusiness', label: 'Is the business presently subject to any judgments or tax liens?' },
-  { key: 'judgmentsLiensOwner', label: 'Is any owner presently subject to any judgments or tax liens?' },
+  { key: 'bankruptcy', label: '1. Has the Business or any Owner ever filed for bankruptcy?' },
+  { key: 'lawsuit', label: '2. Is the Business or any Owner currently involved in any pending lawsuits?' },
+  { key: 'federalLoanDefault', label: '3. Has the Business or any Owner ever defaulted on a Federal Loan (SBA, etc.)?' },
+  { key: 'federalDebtDelinquent', label: '4. Is the Business or any Owner currently delinquent on any Federal Debt?' },
+  { key: 'criminalOffense', label: '5. Has any Owner ever been convicted of a criminal offense?' },
+  { key: 'paroleProbation', label: '6. Is any Owner currently on parole or probation?' },
+  { key: 'suspendedDebarred', label: '7. Is the Business or any Owner currently suspended or debarred from doing business with the Federal Government?' },
+  { key: 'judgmentsLiensBusiness', label: '8. Are there any outstanding judgments or liens against the Business?' },
+  { key: 'judgmentsLiensOwner', label: '9. Are there any outstanding judgments or liens against any Owner?' },
 ]
 
 export default function FederalComplianceStep({
@@ -29,6 +30,7 @@ export default function FederalComplianceStep({
   onNext,
   onBack,
   loading,
+  isValid,
 }: FederalComplianceStepProps) {
   const anyYes = questions.some((q) => federal[q.key] === 'yes')
   const allAnswered = questions.every((q) => federal[q.key] === 'yes' || federal[q.key] === 'no')

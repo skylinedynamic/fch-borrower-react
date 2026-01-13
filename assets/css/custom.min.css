@@ -4907,7 +4907,7 @@
 }
 
 .task-details-modal .task-modal-logo {
-    height: 28px;
+    height: 40px;
 }
 
 .task-details-modal .task-modal-logo-subtitle {
@@ -4953,4 +4953,17 @@
 .dropdown.is-invalid .form-select:focus {
     border-color: #f06548 !important;
     box-shadow: unset !important;
+}
+
+.list-group-item.active {
+    color: #161515 !important;
+    background-color: #eff2f7 !important;
+    border-color: #eff2f7 !important;
+}
+
+.list-group-item-action:not(.active):focus, .list-group-item-action:not(.active):hover {
+    z-index: 1;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    background-color: #0d2d62 !important;
 }

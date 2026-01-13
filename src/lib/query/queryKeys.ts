@@ -47,4 +47,8 @@ export const queryKeys = {
     types: () => [...queryKeys.documents.all, 'types'] as const,
     list: () => [...queryKeys.documents.all, 'list'] as const,
   },
+  fundingApplication: {
+    all: ['fundingApplication'] as const,
+    businessInfo: () => [...queryKeys.fundingApplication.all, 'businessInfo'] as const,
+  },
 } as const

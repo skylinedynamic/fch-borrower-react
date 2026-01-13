@@ -1,6 +1,6 @@
 export type PersonalInfo = {
-  firstName: string
-  lastName: string
+  fullName: string
+  businessName: string
   email: string
   phoneCountry: string
   phoneNumber: string
@@ -15,7 +15,7 @@ export type BusinessDetails = {
   zip: string
   industryType: string
   entityType: string
-  timeInBusiness: string
+  yearsInBusiness: string
   employees: string
 }
 
@@ -131,4 +131,9 @@ export const tabs = [
   'Disclosures and consent',
   'Federal Compliance Disclosures',
   'Attestation and authorization',
+]
+
+export const disclosureItems: { key: keyof DisclosureConsent; label: string; route: string }[] = [
+  { key: 'agreeTerms', label: 'Credit Pull Authorization', route: '/disclosures/terms' },
+  { key: 'creditCheckConsent', label: 'Terms & Conditions Acceptance', route: '/disclosures/credit-check' },
 ]

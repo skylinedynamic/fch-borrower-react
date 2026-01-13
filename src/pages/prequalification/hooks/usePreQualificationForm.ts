@@ -34,7 +34,7 @@ export const usePreQualificationForm = () => {
     businessName: '',
     industryType: '',
     businessStructure: '',
-    timeInBusiness: '',
+    yearsInBusiness: '',
     annualRevenue: '',
     monthlyRevenue: '',
   })
@@ -82,7 +82,7 @@ export const usePreQualificationForm = () => {
         businessName: apiData.business_name || '',
         industryType: apiData.industry_type || '',
         businessStructure: apiData.business_structure || '',
-        timeInBusiness: apiData.time_in_business || '',
+        yearsInBusiness: apiData.years_in_business || '',
         annualRevenue: apiData.annual_revenue || '',
         monthlyRevenue: apiData.monthly_revenue || '',
       })
@@ -115,7 +115,7 @@ export const usePreQualificationForm = () => {
           businessName: apiData.business_name || '',
           industryType: apiData.industry_type || '',
           businessStructure: apiData.business_structure || '',
-          timeInBusiness: apiData.time_in_business || '',
+          yearsInBusiness: apiData.years_in_business || '',
           annualRevenue: apiData.annual_revenue || '',
           monthlyRevenue: apiData.monthly_revenue || '',
         }
@@ -209,7 +209,7 @@ export const usePreQualificationForm = () => {
     const hasEmptyFields = !business.businessName.trim() ||
       !business.industryType.trim() ||
       !business.businessStructure.trim() ||
-      !business.timeInBusiness.trim() ||
+      !business.yearsInBusiness.trim() ||
       !business.monthlyRevenue.trim() ||
       !business.annualRevenue.trim()
 
@@ -217,7 +217,7 @@ export const usePreQualificationForm = () => {
       business.businessName !== initialBusinessRef.current.businessName ||
       business.industryType !== initialBusinessRef.current.industryType ||
       business.businessStructure !== initialBusinessRef.current.businessStructure ||
-      business.timeInBusiness !== initialBusinessRef.current.timeInBusiness ||
+      business.yearsInBusiness !== initialBusinessRef.current.yearsInBusiness ||
       business.monthlyRevenue !== initialBusinessRef.current.monthlyRevenue ||
       business.annualRevenue !== initialBusinessRef.current.annualRevenue
 
@@ -240,7 +240,7 @@ export const usePreQualificationForm = () => {
         business_structure: business.businessStructure,
         monthly_revenue: monthlyRevenue,
         annual_revenue: annualRevenue,
-        time_in_business: business.timeInBusiness
+        years_in_business: business.yearsInBusiness
       })
       setBusinessErrors({})
       setMaxStepReached(Math.max(maxStepReached, 2))
@@ -259,7 +259,7 @@ export const usePreQualificationForm = () => {
           'business_structure': 'businessStructure',
           'monthly_revenue': 'monthlyRevenue',
           'annual_revenue': 'annualRevenue',
-          'time_in_business': 'timeInBusiness'
+          'years_in_business': 'yearsInBusiness'
         }
         Object.keys(apiErrors).forEach(key => {
           const mappedKey = errorKeyMap[key] || key

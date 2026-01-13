@@ -1,6 +1,7 @@
 import React from 'react'
 import { Modal, ModalHeader, ModalBody, Button } from 'reactstrap'
 import { TierTask } from '../../../../modules/credit-builder/guide/types'
+import { CREDIT_BUILDER_STATUS } from '../../../../data/credit-builder'
 
 
 interface TaskDetailsModalProps {
@@ -8,13 +9,18 @@ interface TaskDetailsModalProps {
   toggle: () => void
   task: TierTask | null
   logoSrc?: string | null
+  onVerifyClick?: (task: TierTask) => void
 }
 
-export default function TaskDetailsModal({ isOpen, toggle, task, logoSrc }: TaskDetailsModalProps) {
+export default function TaskDetailsModal({ isOpen, toggle, task, logoSrc, onVerifyClick }: TaskDetailsModalProps) {
   if (!task) return null
+  
+  const isDone = task.status === CREDIT_BUILDER_STATUS.VERIFIED
+  const isProcessing = task.status === CREDIT_BUILDER_STATUS.PROCESSING
+  const isRejected = task.status === CREDIT_BUILDER_STATUS.REJECTED
 
   return (
-    <Modal isOpen={isOpen} toggle={toggle} centered size="md" contentClassName="border-0 overflow-hidden" className="task-details-modal">
+    <Modal isOpen={isOpen} toggle={toggle} centered size="lg" contentClassName="border-0 overflow-hidden" className="task-details-modal">
        {/* Customized Header with Gradient Background */}
        <div className="modal-header border-0 pb-0">
             <div className="w-100">
@@ -43,41 +49,57 @@ export default function TaskDetailsModal({ isOpen, toggle, task, logoSrc }: Task
                 </div>
              </div>
 
-             {/* Alert Box */}
-             <div className="alert alert-warning d-flex align-items-start gap-2 border-0 rounded-3 mb-3 p-3 task-modal-alert">
-                <i className="ri-alert-fill text-warning fs-5 mt-0"></i>
-                <div className="text-dark task-modal-alert-text">
-                   <strong>Important:</strong> Read these instructions carefully before proceeding.
-                </div>
-             </div>
-
              {/* Content - Compact Body Text */}
              <div className="task-content">
-                {/* Demo Content from Image */}
                 <div className="styled-content">
-                    <h6 className="fw-bold mb-1 text-dark task-modal-section-title">Eligibility</h6>
-                    <ul className="mb-3 text-dark ps-3 task-modal-list">
-                        <li className="mb-1">It's recommended that your business is at least 30 days old.</li>
-                        <li className="mb-1">Use your exact business legal name, address, and information when applying.</li>
-                        <li className="mb-1">Orders should be consistent with normal business purchases; do not order luxury items, gift cards, or personal items.</li>
-                    </ul>
+                    {/* Description */}
+                    {task.vendor?.description && (
+                        <div 
+                            className="mb-3 text-dark task-modal-description"
+                            dangerouslySetInnerHTML={{ __html: task.vendor.description }}
+                        />
+                    )}
 
-                    <h6 className="fw-bold mb-1 text-dark task-modal-section-title">Ordering Guidelines</h6>
-                    <ul className="mb-3 text-dark ps-3 task-modal-list">
-                         <li className="mb-1">Place an initial order of at least $70 worth of shipping, packaging, or cleaning supplies.</li>
-                         <li className="mb-1">Always make payments on <span className="fw-bold text-black">time</span> to build a positive payment history.</li>
-                    </ul>
+                     <hr className="my-3 opacity-25" />
 
-                    <h6 className="fw-bold mb-1 text-dark task-modal-section-title">Reporting Timeline</h6>
-                    <ul className="mb-3 text-dark ps-3 task-modal-list">
-                        <li className="mb-1">After making a <span className="fw-bold text-black">purchase</span>, reporting to bureaus typically occurs after two or more on-time payment cycles.</li>
-                    </ul>
+                    <div className="d-flex gap-3 align-items-start flex-wrap">
+                        {/* Eligibility / Requirements */}
+                        {task.vendor?.requirements && task.vendor.requirements.length > 0 && (
+                            <div className="flex-fill">
+                                <h6 className="fw-bold mb-1 text-dark task-modal-section-title">Eligibility</h6>
+                                <ul className="mb-3 text-dark ps-3 task-modal-list">
+                                    {task.vendor.requirements.map((req, idx) => (
+                                        <li key={idx} className="mb-1">{req}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
 
-                    <hr className="my-3 opacity-25" />
-                    
-                    <p className="text-dark fst-italic mb-0 task-modal-footer-note">
-                        Opening an account and making purchases does not guarantee credit reporting. Accounts are reviewed before reporting.
-                    </p>
+                        {/* Benefits */}
+                        {task.vendor?.benefits && task.vendor.benefits.length > 0 && (
+                            <div className="flex-fill">
+                                <h6 className="fw-bold mb-1 text-dark task-modal-section-title">Benefits</h6>
+                                <ul className="mb-3 text-dark ps-3 task-modal-list">
+                                    {task.vendor.benefits.map((benefit, idx) => (
+                                        <li key={idx} className="mb-1">{benefit}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        {/* Reporting To */}
+                        {task.vendor?.report_to && task.vendor.report_to.length > 0 && (
+                             <div className="flex-fill">
+                                <h6 className="fw-bold mb-1 text-dark task-modal-section-title">Reporting Timeline</h6>
+                                <ul className="mb-3 text-dark ps-3 task-modal-list">
+                                    {task.vendor.report_to.map((report, idx) => (
+                                        <li key={idx} className="mb-1">{report}</li>
+                                    ))}
+                                </ul>
+                             </div>
+                        )}
+                    </div>
+             
                 </div>
              </div>
          </div>
@@ -94,16 +116,32 @@ export default function TaskDetailsModal({ isOpen, toggle, task, logoSrc }: Task
                   <i className="ri-arrow-left-line me-1"></i> Back
               </Button>
 
-              <Button 
-                className="px-3 text-dark fw-bold py-1 border-0 text-truncate task-modal-continue-btn" 
-                onClick={() => {
-                    if (task.url) {
-                        window.open(task.url, '_blank')
-                    }
-                }}
-              >
-                  Continue to Website
-              </Button>
+              <div className="d-flex gap-2">
+                 {!isDone && !isProcessing && onVerifyClick && (
+                     <Button 
+                        color="primary"
+                        className="px-3 py-1 border-0 text-truncate"
+                        onClick={() => {
+                            onVerifyClick(task)
+                            toggle()
+                        }}
+                      >
+                          {isRejected ? 'Submit Again' : 'Submit for Verification'}
+                      </Button>
+                 )}
+
+                  <Button 
+                    className="px-3 text-dark fw-bold py-1 border-0 text-truncate task-modal-continue-btn" 
+                    onClick={() => {
+                        const targetUrl = task.vendor?.affiliate_url || task.vendor?.general_url
+                        if (targetUrl) {
+                            window.open(targetUrl, '_blank')
+                        }
+                    }}
+                  >
+                      Continue to Website
+                  </Button>
+              </div>
           </div>
           <div className="text-end text-dark small mt-2 task-modal-important-note">
               IMPORTANT: You must use the link above to proceed.

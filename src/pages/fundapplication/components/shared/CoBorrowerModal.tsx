@@ -1,5 +1,6 @@
-import React from 'react'
 import type { CoBorrower } from '../../types'
+import CustomDropdown from '../shared/CustomDropdown'
+import { countries } from '../../../../data/countries'
 
 type CoBorrowerModalProps = {
   coDraft: CoBorrower
@@ -165,17 +166,14 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
                   <label className="form-label">
                     State <span className="text-danger">*</span>
                   </label>
-                  <select
-                    className="form-select"
+                  <CustomDropdown
                     value={coDraft.state}
-                    onChange={(e) => setCoDraft({ ...coDraft, state: e.target.value })}
-                    required
-                  >
-                    <option value="">Select State</option>
-                    <option value="CA">California</option>
-                    <option value="NY">New York</option>
-                    <option value="IL">Illinois</option>
-                  </select>
+                    onChange={(value) => setCoDraft({ ...coDraft, state: value })}
+                    options={countries.find(c => c.code === 'USA')?.states || []}
+                    optionLabel="name"
+                    optionValue="code"
+                    placeholder="Select State"
+                  />
                 </div>
                 <div className="col-md-6">
                   <label className="form-label">
@@ -202,16 +200,14 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
                 </div>
                 <div className="col-md-6">
                   <label className="form-label">Driver's License State</label>
-                  <select
-                    className="form-select"
+                  <CustomDropdown
                     value={coDraft.driversLicenseState}
-                    onChange={(e) => setCoDraft({ ...coDraft, driversLicenseState: e.target.value })}
-                  >
-                    <option value="">Select State</option>
-                    <option value="CA">California</option>
-                    <option value="NY">New York</option>
-                    <option value="IL">Illinois</option>
-                  </select>
+                    onChange={(value) => setCoDraft({ ...coDraft, driversLicenseState: value })}
+                    options={countries.find(c => c.code === 'USA')?.states || []}
+                    optionLabel="name"
+                    optionValue="code"
+                    placeholder="Select State"
+                  />
                 </div>
               </div>
             </div>

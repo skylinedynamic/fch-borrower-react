@@ -60,7 +60,7 @@ export interface PreQualificationDetail {
   business_name: string
   industry_type: string
   business_structure: string
-  time_in_business: string
+  years_in_business: string
   monthly_revenue: string
   annual_revenue: string
   // Financial Info
