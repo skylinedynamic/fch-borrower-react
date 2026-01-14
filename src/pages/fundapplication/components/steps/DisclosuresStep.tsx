@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import type { DisclosureConsent } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
-import FormSkeleton from '../shared/FormSkeleton'
+import DisclosuresSkeleton from '../../../../components/Loader/DisclosuresSkeleton'
+import { useDisclosuresConsent } from '../../../../modules/funding-application/queries'
 
 type DisclosuresStepProps = {
   disclosure: DisclosureConsent
@@ -20,10 +21,23 @@ export default function DisclosuresStep({
   onBack,
   loading,
 }: DisclosuresStepProps) {
+  const { data: apiData, isLoading: isApiLoading, isSuccess } = useDisclosuresConsent()
+
+  // Pre-fill form from API
+  useEffect(() => {
+    if (isSuccess && apiData) {
+      setDisclosure({
+        ...disclosure,
+        agreeTerms: apiData.credit_pull_authorization,
+        creditCheckConsent: apiData.terms_conditions_acceptance,
+      })
+    }
+  }, [isSuccess, apiData])
+
   const allRequiredChecked = disclosureItems.every((item) => disclosure[item.key])
 
-  if (loading) {
-    return <FormSkeleton fieldCount={disclosureItems.length || 2} />
+  if (loading || isApiLoading) {
+    return <DisclosuresSkeleton count={disclosureItems.length} />
   }
 
   return (
@@ -55,7 +69,7 @@ export default function DisclosuresStep({
         </div>
       ))}
 
-      <StepNavigation onBack={onBack} onNext={onNext} isNextDisabled={!allRequiredChecked} loading={loading} />
+      <StepNavigation onBack={onBack} onNext={onNext} isNextDisabled={!allRequiredChecked} loading={loading || isApiLoading} />
     </form>
   )
 }

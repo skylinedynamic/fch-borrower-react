@@ -50,5 +50,9 @@ export const queryKeys = {
   fundingApplication: {
     all: ['fundingApplication'] as const,
     businessInfo: () => [...queryKeys.fundingApplication.all, 'businessInfo'] as const,
+    ownershipInfo: () => [...queryKeys.fundingApplication.all, 'ownershipInfo'] as const,
+    financialInfo: () => [...queryKeys.fundingApplication.all, 'financialInfo'] as const,
+    disclosuresConsent: () => [...queryKeys.fundingApplication.all, 'disclosuresConsent'] as const,
+    fundingRequest: () => [...queryKeys.fundingApplication.all, 'fundingRequest'] as const,
   },
 } as const

@@ -1,7 +1,12 @@
 import React from 'react'
 import type { FundingRequest } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
-import FormSkeleton from '../shared/FormSkeleton'
+import FormSkeleton from '../../../../components/Loader/FormSkeleton'
+import CustomDropdown from '../shared/CustomDropdown'
+import { purposeOfFundingOptions, fundingTypeOptions, timeframeOptions, collateralOptions } from '../../../../data/profile'
+
+import { useFundingRequest } from '../../../../modules/funding-application/queries'
+import { useEffect } from 'react'
 
 type FundingRequestStepProps = {
   funding: FundingRequest
@@ -9,7 +14,6 @@ type FundingRequestStepProps = {
   onNext: () => void
   onBack: () => void
   loading: boolean
-  isValid: boolean
 }
 
 export default function FundingRequestStep({
@@ -19,9 +23,24 @@ export default function FundingRequestStep({
   onBack,
   loading,
 }: FundingRequestStepProps) {
+  const { data: apiData, isLoading: isApiLoading, isSuccess } = useFundingRequest()
+
+  useEffect(() => {
+    if (isSuccess && apiData) {
+      setFunding({
+        ...funding,
+        requestedAmount: apiData.requested_amount || '',
+        purpose: apiData.purpose_of_funds || '',
+        fundingType: apiData.preferred_funding_type || '',
+        timeframe: apiData.timeframe_needed || '',
+        collateral: apiData.collateral_available || '',
+      })
+    }
+  }, [isSuccess, apiData])
+
   const isValid = !!(funding.requestedAmount && funding.purpose && funding.fundingType)
 
-  if (loading) {
+  if (loading || isApiLoading) {
     return <FormSkeleton fieldCount={5} />
   }
 
@@ -33,52 +52,56 @@ export default function FundingRequestStep({
       </div>
       <div className="col-md-6">
         <label className="form-label">Purpose of Funds <span className="text-danger">*</span></label>
-        <select className="form-select" value={funding.purpose} onChange={(e)=>setFunding({...funding,purpose:e.target.value})}>
-          <option value="">Select purpose of funds</option>
-          <option value="Working Capital">Working Capital</option>
-          <option value="Equipment Purchase">Equipment Purchase</option>
-          <option value="Inventory">Inventory</option>
-          <option value="Marketing">Marketing</option>
-          <option value="Expansion">Expansion</option>
-          <option value="Other">Other</option>
-        </select>
+        <CustomDropdown
+          value={funding.purpose}
+          onChange={(value) => setFunding({ ...funding, purpose: value })}
+          options={purposeOfFundingOptions}
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select purpose of funds"
+          className="w-100"
+        />
       </div>
 
       <div className="col-md-6">
         <label className="form-label">Preferred Funding Type <span className="text-danger">*</span></label>
-        <select className="form-select" value={funding.fundingType} onChange={(e)=>setFunding({...funding,fundingType:e.target.value})}>
-          <option value="">Select preferred funding type</option>
-          <option value="Term Loan">Term Loan</option>
-          <option value="Line of Credit">Line of Credit</option>
-          <option value="Equipment Financing">Equipment Financing</option>
-          <option value="SBA Loan">SBA Loan</option>
-          <option value="Merchant Cash Advance">Merchant Cash Advance</option>
-        </select>
+        <CustomDropdown
+          value={funding.fundingType}
+          onChange={(value) => setFunding({ ...funding, fundingType: value })}
+          options={fundingTypeOptions}
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select preferred funding type"
+          className="w-100"
+        />
       </div>
       <div className="col-md-6">
         <label className="form-label">Timeframe Needed</label>
-        <select className="form-select" value={funding.timeframe} onChange={(e)=>setFunding({...funding,timeframe:e.target.value})}>
-          <option value="">Select timeframe needed</option>
-          <option value="Immediately">Immediately</option>
-          <option value="1-2 Weeks">1-2 Weeks</option>
-          <option value="1 Month">1 Month</option>
-          <option value="Flexible">Flexible</option>
-        </select>
+        <CustomDropdown
+          value={funding.timeframe}
+          onChange={(value) => setFunding({ ...funding, timeframe: value })}
+          options={timeframeOptions}
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select timeframe needed"
+          className="w-100"
+        />
       </div>
 
       <div className="col-md-6">
         <label className="form-label">Collateral Available?</label>
-        <select className="form-select" value={funding.collateral} onChange={(e)=>setFunding({...funding,collateral:e.target.value})}>
-          <option value="">Select collateral</option>
-          <option value="None">None</option>
-          <option value="Business Assets">Business Assets</option>
-          <option value="Real Estate">Real Estate</option>
-          <option value="Equipment">Equipment</option>
-          <option value="Inventory">Inventory</option>
-        </select>
+        <CustomDropdown
+          value={funding.collateral}
+          onChange={(value) => setFunding({ ...funding, collateral: value })}
+          options={collateralOptions}
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select collateral"
+          className="w-100"
+        />
       </div>
 
-      <StepNavigation onBack={onBack} onNext={onNext} isNextDisabled={!isValid} loading={loading} />
+      <StepNavigation onBack={onBack} onNext={onNext} isNextDisabled={!isValid} loading={loading || isApiLoading} />
     </form>
   )
 }

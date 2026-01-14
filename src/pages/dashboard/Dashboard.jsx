@@ -1,12 +1,7 @@
-import React, { useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React from 'react'
+import { Link } from 'react-router-dom'
 
 export default function Dashboard() {
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    navigate('/under-construction/dashboard', { replace: true })
-  }, [navigate])
   return (
     <>
     <div className="page-content">
@@ -136,45 +131,6 @@ export default function Dashboard() {
                     <span className="avatar-title bg-primary-subtle rounded fs-3">
                       <i className="bx bx-wallet text-primary"></i>
                     </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Links */}
-        <div className="row">
-          <div className="col-xl-12">
-            <div className="card">
-              <div className="card-header border-0 align-items-center d-flex">
-                <h4 className="card-title mb-0 flex-grow-1">Quick Links</h4>
-              </div>
-              <div className="card-header p-0 border-0 bg-light-subtle">
-                <div className="row g-0 text-center">
-                  <div className="col-6 col-sm-3">
-                    <div className="p-3 border border-dashed border-start-0">
-                      <button type="button" className="btn btn-soft-primary w-100 mb-2" data-bs-toggle="modal" data-bs-target="#addnewpartner"><i className="ri-add-fill me-1 align-bottom"></i>Create Partner</button>
-                      <p className="text-muted mb-0">Register a new partner</p>
-                    </div>
-                  </div>
-                  <div className="col-6 col-sm-3">
-                    <div className="p-3 border border-dashed border-start-0">
-                      <button type="button" className="btn btn-soft-primary w-100 mb-2" data-bs-toggle="modal" data-bs-target="#addnewClient"><i className="ri-add-fill me-1 align-bottom"></i>Create Client</button>
-                      <p className="text-muted mb-0">Register a new Client</p>
-                    </div>
-                  </div>
-                  <div className="col-6 col-sm-3">
-                    <div className="p-3 border border-dashed border-start-0">
-                      <a href="#" className="btn btn-soft-primary w-100 mb-2"><i className="ri-add-fill me-1 align-bottom"></i>Create Lead</a>
-                      <p className="text-muted mb-0">Add new sales opportunity</p>
-                    </div>
-                  </div>
-                  <div className="col-6 col-sm-3">
-                    <div className="p-3 border border-dashed border-start-0 border-end-0">
-                      <a href="#" className="btn btn-soft-primary w-100 mb-2"><i className="ri-add-fill me-1 align-bottom"></i>Create Invoice</a>
-                      <p className="text-muted mb-0">Generate a new bill</p>
-                    </div>
                   </div>
                 </div>
               </div>

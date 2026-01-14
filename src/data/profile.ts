@@ -80,3 +80,40 @@ export const estimatedBusinessCreditScoreOptions: OptionType[] = [
   { label: 'Medium', value: 'Medium' },
   { label: 'High', value: 'High' }
 ]
+
+export const citizenshipOptions: OptionType[] = [
+  { label: 'US Citizen', value: 'US Citizen' },
+  { label: 'Permanent Resident', value: 'Permanent Resident' },
+  { label: 'Other', value: 'Other' }
+]
+
+export const selfReportedCreditScoreOptions: OptionType[] = [
+  { label: 'Below 600', value: 'Below 600' },
+  { label: '600-649', value: '600-649' },
+  { label: '650-699', value: '650-699' },
+  { label: '700-749', value: '700-749' },
+  { label: '750+', value: '750+' },
+]
+
+export const fundingTypeOptions: OptionType[] = [
+  { label: 'Term Loan', value: 'Term Loan' },
+  { label: 'Line of Credit', value: 'Line of Credit' },
+  { label: 'Equipment Financing', value: 'Equipment Financing' },
+  { label: 'SBA Loan', value: 'SBA Loan' },
+  { label: 'Merchant Cash Advance', value: 'Merchant Cash Advance' },
+]
+
+export const timeframeOptions: OptionType[] = [
+  { label: 'Immediately', value: 'Immediately' },
+  { label: '1-2 Weeks', value: '1-2 Weeks' },
+  { label: '1 Month', value: '1 Month' },
+  { label: 'Flexible', value: 'Flexible' },
+]
+
+export const collateralOptions: OptionType[] = [
+  { label: 'None', value: 'None' },
+  { label: 'Business Assets', value: 'Business Assets' },
+  { label: 'Real Estate', value: 'Real Estate' },
+  { label: 'Equipment', value: 'Equipment' },
+  { label: 'Inventory', value: 'Inventory' },
+]

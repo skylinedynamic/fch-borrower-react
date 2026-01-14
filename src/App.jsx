@@ -50,7 +50,7 @@ export default function App() {
         <Route element={<Layout />}> 
         
           <Route index element={<Dashboard />} />
-          <Route path="under-construction/:feature" element={<UnderConstruction />} />
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="pre-qualification" element={<PreQualification />} />
           <Route path="fund-application" element={<FundApplication />} />
           <Route path="my-applications" element={<MyApplication />} />

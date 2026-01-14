@@ -268,7 +268,6 @@ export default function FundApplication() {
           <FundingRequestStep 
             funding={funding} 
             setFunding={setFunding} 
-            isValid={isStepValid(idx)}
             {...commonProps} 
           />
         )

@@ -19,7 +19,7 @@ import { APPOINTMENT_TYPE_OPTIONS, TIMEZONE_OPTIONS, TIME_SLOTS } from '../../co
 
 // Styles
 import '../../../assets/css/appointment-modal.css';
-import '../../../assets/css/AppointmentStyles.css';
+import '../../../assets/css/appointment-styles.css';
 
 interface AppointmentModalProps {
     onSuccess?: (data?: any) => void;

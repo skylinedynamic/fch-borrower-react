@@ -1,12 +1,13 @@
 import React from 'react'
 import type { PersonalInfo, BusinessDetails } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
-import FormSkeleton from '../shared/FormSkeleton'
+import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 import CustomDropdown from '../shared/CustomDropdown'
 import { entityTypes, industryTypes, yearsInBusinessOptions } from '../../../../data/profile'
 import { countries as countriesData } from '../../../../data/countries'
 import { useState, useMemo, useEffect } from 'react'
 import { useBusinessInfo } from '../../../../modules/funding-application/queries'
+import { formatPhoneNumber } from '../../../../utils/formatters'
 
 type BusinessInformationStepProps = {
   personal: PersonalInfo
@@ -42,7 +43,7 @@ export default function BusinessInformationStep({
         fullName: apiData.full_name || prev.fullName,
         businessName: apiData.business_name || prev.businessName,
         email: apiData.business_email || prev.email,
-        phoneNumber: apiData.business_phone || prev.phoneNumber,
+        phoneNumber: apiData.business_phone_no || prev.phoneNumber,
         phoneCountry: (apiData.country_code === 'USA' || apiData.country === 'United States') ? 'USA (+1)' : 'CAN (+1)',
       }))
       setBusiness((prev) => ({
@@ -53,8 +54,8 @@ export default function BusinessInformationStep({
         state: apiData.business_state || prev.state,
         incorporationState: apiData.business_state || prev.incorporationState,
         zip: apiData.business_postal_code || prev.zip,
-        industryType: apiData.business_industry_type || prev.industryType,
-        entityType: apiData.business_entity_type || prev.entityType,
+        industryType: apiData.industry_type || prev.industryType,
+        entityType: apiData.entity_type || prev.entityType,
         yearsInBusiness: apiData.years_in_business || prev.yearsInBusiness,
         employees: apiData.number_of_employees || prev.employees,
       }))
@@ -149,7 +150,7 @@ export default function BusinessInformationStep({
             className="form-control"
             placeholder="Enter number"
             value={personal.phoneNumber}
-            onChange={(e) => setPersonal((prev) => ({ ...prev, phoneNumber: e.target.value }))}
+            onChange={(e) => setPersonal((prev) => ({ ...prev, phoneNumber: formatPhoneNumber(e.target.value) }))}
           />
         </div>
       </div>
@@ -307,6 +308,7 @@ export default function BusinessInformationStep({
       <StepNavigation
         onNext={onNext}
         isNextDisabled={!canProceed}
+        loading={loading || isApiLoading}
       />
     </form>
   )

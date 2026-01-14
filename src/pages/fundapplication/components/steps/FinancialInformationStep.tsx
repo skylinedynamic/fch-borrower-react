@@ -1,7 +1,12 @@
 import React from 'react'
+import Flatpickr from 'react-flatpickr'
+import 'flatpickr/dist/themes/material_blue.css'
 import type { FinancialInfo } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
-import FormSkeleton from '../shared/FormSkeleton'
+import FormSkeleton from '../../../../components/Loader/FormSkeleton'
+import CustomDropdown from '../shared/CustomDropdown'
+import { selfReportedCreditScoreOptions } from '../../../../data/profile'
+import { useFinancialInfo } from '../../../../modules/funding-application/queries'
 
 type FinancialInformationStepProps = {
   financial: FinancialInfo
@@ -18,11 +23,30 @@ export default function FinancialInformationStep({
   onBack,
   loading,
 }: FinancialInformationStepProps) {
+  const { data: apiData, isLoading: isApiLoading, isSuccess } = useFinancialInfo()
+
+  // Pre-fill form from API
+  React.useEffect(() => {
+    if (isSuccess && apiData) {
+      setFinancial({
+        ...financial,
+        monthlyRevenue: apiData.monthly_revenue || financial.monthlyRevenue,
+        annualRevenue: apiData.annual_revenue || financial.annualRevenue,
+        bankName: apiData.business_bank_name || financial.bankName,
+        checkingStartDate: apiData.business_checking_start_date || financial.checkingStartDate,
+        personalCreditScore: apiData.self_reported_personal_credit_score || financial.personalCreditScore,
+        businessCreditScore: apiData.self_reported_business_credit_score || financial.businessCreditScore,
+        existingDebt: apiData.has_business_debt,
+        debtBalance: apiData.debt_balance || financial.debtBalance,
+      })
+    }
+  }, [isSuccess, apiData])
+
   const baseOk = !!(financial.monthlyRevenue && financial.checkingStartDate && financial.personalCreditScore)
   const debtOk = !financial.existingDebt || !!financial.debtBalance
   const isValid = baseOk && debtOk
 
-  if (loading) {
+  if (loading || isApiLoading) {
     return <FormSkeleton fieldCount={6} />
   }
 
@@ -43,30 +67,45 @@ export default function FinancialInformationStep({
       </div>
       <div className="col-md-6">
         <label className="form-label">Business Checking Start Date <span className="text-danger">*</span></label>
-        <input type="date" className="form-control" value={financial.checkingStartDate} onChange={(e)=>setFinancial({...financial,checkingStartDate:e.target.value})} />
+        <Flatpickr
+          className="form-control"
+          value={financial.checkingStartDate}
+          onChange={(dates, dateStr) => {
+            setFinancial({ ...financial, checkingStartDate: dateStr })
+          }}
+          options={{
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "m-d-Y",
+            maxDate: "today",
+          }}
+          placeholder="Select start date"
+        />
       </div>
 
       <div className="col-md-6">
         <label className="form-label">Self-Reported Personal Credit Score <span className="text-danger">*</span></label>
-        <select className="form-select" value={financial.personalCreditScore} onChange={(e)=>setFinancial({...financial,personalCreditScore:e.target.value})}>
-          <option value="">Select self-reported personal credit score</option>
-          <option value="Below 600">Below 600</option>
-          <option value="600-649">600-649</option>
-          <option value="650-699">650-699</option>
-          <option value="700-749">700-749</option>
-          <option value="750+">750+</option>
-        </select>
+        <CustomDropdown
+          value={financial.personalCreditScore}
+          onChange={(value) => setFinancial({ ...financial, personalCreditScore: value })}
+          options={selfReportedCreditScoreOptions}
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select self-reported personal credit score"
+          className="w-100"
+        />
       </div>
       <div className="col-md-6">
         <label className="form-label">Self-Reported Business Credit Score</label>
-        <select className="form-select" value={financial.businessCreditScore} onChange={(e)=>setFinancial({...financial,businessCreditScore:e.target.value})}>
-          <option value="">Select self-reported business credit score</option>
-          <option value="Below 600">Below 600</option>
-          <option value="600-649">600-649</option>
-          <option value="650-699">650-699</option>
-          <option value="700-749">700-749</option>
-          <option value="750+">750+</option>
-        </select>
+        <CustomDropdown
+          value={financial.businessCreditScore}
+          onChange={(value) => setFinancial({ ...financial, businessCreditScore: value })}
+          options={selfReportedCreditScoreOptions}
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select self-reported business credit score"
+          className="w-100"
+        />
       </div>
 
       <div className="col-md-6 d-flex align-items-center">
@@ -88,7 +127,7 @@ export default function FinancialInformationStep({
         </div>
       )}
 
-      <StepNavigation onBack={onBack} onNext={onNext} isNextDisabled={!isValid} loading={loading} />
+      <StepNavigation onBack={onBack} onNext={onNext} isNextDisabled={!isValid} loading={loading || isApiLoading} />
     </form>
   )
 }

@@ -4967,3 +4967,25 @@
     text-decoration: none !important;
     background-color: #0d2d62 !important;
 }
+
+/* Skeleton Loaders */
+@keyframes skeleton-loading {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.skeleton-line {
+    display: block;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.2s infinite ease-in-out;
+    border-radius: 4px;
+}
+
+.sk-label { height: 16px; margin-bottom: 8px; }
+.sk-input { height: 38px; border-radius: 6px; width: 100%; }
+.sk-btn { height: 38px; width: 100px; border-radius: 6px; }
+.sk-btn-sm { height: 30px; width: 80px; border-radius: 4px; }
+.sk-checkbox { height: 18px; width: 18px; border-radius: 4px; margin-right: 12px; }
+.sk-card { height: 200px; border-radius: 6px; width: 100%; }
+.sk-text-50 { height: 16px; width: 60%; }

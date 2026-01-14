@@ -1,7 +1,7 @@
 import React from 'react'
 import type { FederalCompliance } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
-import FormSkeleton from '../shared/FormSkeleton'
+import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 
 type FederalComplianceStepProps = {
   federal: FederalCompliance

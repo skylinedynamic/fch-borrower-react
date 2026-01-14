@@ -105,7 +105,7 @@ export default function Header() {
               )}
             </button>
 
-            <form className="app-search d-none d-md-block">
+            {/* <form className="app-search d-none d-md-block">
               <div className="position-relative">
                 <input type="text" className="form-control" placeholder="Search..." autoComplete="off" id="search-options" defaultValue="" />
                 <span className="mdi mdi-magnify search-widget-icon"></span>
@@ -125,7 +125,7 @@ export default function Header() {
                   <a href="#" className="btn btn-primary btn-sm">View All Results <i className="ri-arrow-right-line ms-1"></i></a>
                 </div>
               </div>
-            </form>
+            </form> */}
           </div>
 
           <div className="d-flex align-items-center">
@@ -145,13 +145,13 @@ export default function Header() {
               </div>
             </div>
 
-            <div className="ms-1 header-item d-none d-sm-flex">
+            {/* <div className="ms-1 header-item d-none d-sm-flex">
               <button type="button" className="btn btn-icon btn-topbar material-shadow-none btn-ghost-secondary rounded-circle" data-toggle="fullscreen">
                 <i className='bx bx-fullscreen fs-22'></i>
               </button>
-            </div>
+            </div> */}
 
-            <div className="dropdown topbar-head-dropdown ms-1 header-item" id="notificationDropdown">
+            {/* <div className="dropdown topbar-head-dropdown ms-1 header-item" id="notificationDropdown">
               <button type="button" className="btn btn-icon btn-topbar material-shadow-none btn-ghost-secondary rounded-circle" id="page-header-notifications-dropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
                 <i className='bx bx-bell fs-22'></i>
                 <span className="position-absolute topbar-badge fs-10 translate-middle badge rounded-pill bg-danger">3<span className="visually-hidden">unread messages</span></span>
@@ -167,7 +167,7 @@ export default function Header() {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             <div className="dropdown ms-sm-3 header-item topbar-user">
               <button type="button" className="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -180,10 +180,10 @@ export default function Header() {
                 </span>
               </button>
               <div className="dropdown-menu dropdown-menu-end">
-                <a className="dropdown-item" href="#"><i className="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Profile</span></a>
+                {/* <a className="dropdown-item" href="#"><i className="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Profile</span></a>
                 <a className="dropdown-item" href="#"><i className="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Help</span></a>
-                <div className="dropdown-divider"></div>
-                <a className="dropdown-item" href="#"><i className="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Settings</span></a>
+                <div className="dropdown-divider"></div> */}
+                {/* <a className="dropdown-item" href="#"><i className="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Settings</span></a> */}
                 <a className="dropdown-item" href="#" onClick={handleLogout}><i className="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Logout</span></a>
               </div>
             </div>

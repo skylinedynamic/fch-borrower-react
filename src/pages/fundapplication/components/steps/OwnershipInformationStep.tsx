@@ -1,11 +1,15 @@
 import React from 'react'
+import Flatpickr from 'react-flatpickr'
+import 'flatpickr/dist/themes/material_blue.css'
 import type { OwnerInfo, CoBorrower } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
-import FormSkeleton from '../shared/FormSkeleton'
+import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 import CoBorrowerTable from '../shared/CoBorrowerTable'
 import CoBorrowerModal from '../shared/CoBorrowerModal'
 import CustomDropdown from '../shared/CustomDropdown'
 import { countries } from '../../../../data/countries'
+import { useOwnershipInfo } from '../../../../modules/funding-application/queries'
+import { citizenshipOptions } from '../../../../data/profile'
 
 type OwnershipInformationStepProps = {
   owner: OwnerInfo
@@ -38,6 +42,30 @@ export default function OwnershipInformationStep({
 }: OwnershipInformationStepProps) {
   const [availableStates, setAvailableStates] = React.useState<{ name: string; code: string; cities?: string[] }[]>([])
   const [availableCities, setAvailableCities] = React.useState<{ name: string; code: string }[]>([])
+  const [showCityInput, setShowCityInput] = React.useState(false)
+  const [lastCustomCity, setLastCustomCity] = React.useState('')
+
+  const { data: apiData, isLoading: isApiLoading, isSuccess } = useOwnershipInfo()
+
+  // Pre-fill form from API
+  React.useEffect(() => {
+    if (isSuccess && apiData) {
+      setOwner((prev) => ({
+        ...prev,
+        firstName: apiData.first_name || prev.firstName,
+        lastName: apiData.last_name || prev.lastName,
+        dob: apiData.date_of_birth || prev.dob,
+        ssn: apiData.ssn || prev.ssn,
+        citizenship: apiData.citizenship_status || prev.citizenship,
+        streetAddress: apiData.street_address || prev.streetAddress,
+        city: apiData.city || prev.city,
+        state: apiData.state || prev.state,
+        zip: apiData.zip_code || prev.zip,
+        ownershipPct: apiData.ownership || prev.ownershipPct,
+        hasCoBorrower: apiData.has_co_borrower ?? prev.hasCoBorrower,
+      }))
+    }
+  }, [isSuccess, apiData, setOwner])
 
   // Hardcode USA for now as per PersonalInfo pattern or just use countries[0]
   React.useEffect(() => {
@@ -51,12 +79,31 @@ export default function OwnershipInformationStep({
     if (owner.state) {
       const selectedState = availableStates.find((s) => s.name === owner.state || s.code === owner.state)
       if (selectedState && selectedState.cities) {
-        setAvailableCities(selectedState.cities.map((city) => ({ name: city, code: city })))
+        const cities = selectedState.cities.map((city) => ({ name: city, code: city }))
+        cities.push({ name: 'Others', code: 'Others' })
+        setAvailableCities(cities)
+      } else {
+        setAvailableCities([{ name: 'Others', code: 'Others' }])
       }
+    } else {
+      setAvailableCities([])
     }
   }, [owner.state, availableStates])
 
-  if (loading) {
+  // Sync showCityInput with owner.city
+  React.useEffect(() => {
+    if (owner.city && availableCities.length > 0) {
+      const exists = availableCities.find((c) => c.code === owner.city && c.code !== 'Others')
+      if (!exists) {
+        setShowCityInput(true)
+        setLastCustomCity(owner.city)
+      } else {
+        setShowCityInput(false)
+      }
+    }
+  }, [owner.city, availableCities])
+
+  if (loading || isApiLoading) {
     return <FormSkeleton fieldCount={10} />
   }
 
@@ -86,11 +133,20 @@ export default function OwnershipInformationStep({
 
       <div className="col-md-6">
         <label className="form-label">Date of Birth <span className="text-danger">*</span></label>
-        <input
-          type="date"
+        <Flatpickr
           className="form-control"
           value={owner.dob}
-          onChange={(e) => setOwner({ ...owner, dob: e.target.value })}
+          onChange={(dates, dateStr) => {
+            setOwner({ ...owner, dob: dateStr })
+          }}
+          options={{
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "m-d-Y",
+            maxDate: "today",
+            // yearDropdown: true, // Removed due to type error, though supported by flatpickr instance usually
+          }}
+          placeholder="Select date of birth"
         />
       </div>
       <div className="col-md-6">
@@ -106,16 +162,15 @@ export default function OwnershipInformationStep({
 
       <div className="col-md-6">
         <label className="form-label">Citizenship Status <span className="text-danger">*</span></label>
-        <select
-          className="form-select"
+        <CustomDropdown
           value={owner.citizenship}
-          onChange={(e) => setOwner({ ...owner, citizenship: e.target.value })}
-        >
-          <option value="">Select citizenship status</option>
-          <option value="US Citizen">US Citizen</option>
-          <option value="Permanent Resident">Permanent Resident</option>
-          <option value="Other">Other</option>
-        </select>
+          onChange={(value) => setOwner({ ...owner, citizenship: value })}
+          options={citizenshipOptions}
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select citizenship status"
+          className="w-100"
+        />
       </div>
       <div className="col-md-6">
         <label className="form-label">Street Address <span className="text-danger">*</span></label>
@@ -147,17 +202,47 @@ export default function OwnershipInformationStep({
         />
       </div>
 
-      <div className="col-md-6">
+      <div className={showCityInput ? 'col-md-3' : 'col-md-6'}>
         <label className="form-label">City <span className="text-danger">*</span></label>
         <CustomDropdown
-          value={owner.city}
-          onChange={(value) => setOwner({ ...owner, city: value })}
+          value={showCityInput ? 'Others' : owner.city}
+          onChange={(value) => {
+            if (value === 'Others') {
+              setShowCityInput(true)
+              setOwner({ ...owner, city: lastCustomCity })
+            } else {
+              setShowCityInput(false)
+              setOwner({ ...owner, city: value })
+            }
+          }}
           options={availableCities}
           optionLabel="name"
           optionValue="code"
           placeholder="Select city"
+          searchable={true}
+          className="w-100"
         />
       </div>
+
+      {showCityInput && (
+        <div className="col-md-3">
+          <label className="form-label">
+            City Name <span className="text-danger">*</span>
+          </label>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Enter city name"
+            value={owner.city}
+            onChange={(e) => {
+              const val = e.target.value
+              setLastCustomCity(val)
+              setOwner({ ...owner, city: val })
+            }}
+            required
+          />
+        </div>
+      )}
 
       <div className="col-md-6">
         <label className="form-label">Zip Code <span className="text-danger">*</span></label>
@@ -213,7 +298,7 @@ export default function OwnershipInformationStep({
         onBack={onBack}
         onNext={onNext}
         isNextDisabled={!isValid}
-        loading={loading}
+        loading={loading || isApiLoading}
       />
     </form>
 

@@ -1,6 +1,7 @@
 import React from 'react'
 import { docSections, type FileEntry } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
+import DocumentUploadSkeleton from '../../../../components/Loader/DocumentUploadSkeleton'
 import DocumentUploadSection from '../shared/DocumentUploadSection'
 
 type DocumentUploadStepProps = {
@@ -31,17 +32,7 @@ export default function DocumentUploadStep({
   loading,
 }: DocumentUploadStepProps) {
   if (loading) {
-    return (
-      <div className="row g-3">
-        <div className="col-12">
-          <div className="skeleton-line" style={{ height: 200, borderRadius: 6 }}></div>
-        </div>
-        <div className="col-12 d-flex justify-content-between mt-2">
-          <div className="skeleton-line" style={{ height: 38, width: 100, borderRadius: 6 }}></div>
-          <div className="skeleton-line" style={{ height: 38, width: 100, borderRadius: 6 }}></div>
-        </div>
-      </div>
-    )
+    return <DocumentUploadSkeleton />
   }
 
   return (
