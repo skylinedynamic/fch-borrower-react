@@ -2,10 +2,11 @@ import React from 'react'
 import type { FederalCompliance } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
+import { useFederalCompliance } from '../../../../modules/funding-application/queries'
 
 type FederalComplianceStepProps = {
   federal: FederalCompliance
-  setFederal: (data: FederalCompliance) => void
+  setFederal: React.Dispatch<React.SetStateAction<FederalCompliance>>
   onNext: () => void
   onBack: () => void
   loading: boolean
@@ -32,11 +33,31 @@ export default function FederalComplianceStep({
   loading,
   isValid,
 }: FederalComplianceStepProps) {
+  const { data: apiData, isLoading: isApiLoading, isSuccess } = useFederalCompliance()
+
+  React.useEffect(() => {
+    if (isSuccess && apiData) {
+      setFederal((prev) => ({
+        ...prev,
+        bankruptcy: apiData.filed_for_bankruptcy ? 'yes' : 'no',
+        lawsuit: apiData.any_pending_lawsuits ? 'yes' : 'no',
+        federalLoanDefault: apiData.has_federal_loan ? 'yes' : 'no',
+        federalDebtDelinquent: apiData.has_federal_debt ? 'yes' : 'no',
+        criminalOffense: apiData.has_criminal_offense ? 'yes' : 'no',
+        paroleProbation: apiData.has_parole_or_probation ? 'yes' : 'no',
+        suspendedDebarred: apiData.suspended_or_debarred ? 'yes' : 'no',
+        judgmentsLiensBusiness: apiData.any_outstanding_judgments_business ? 'yes' : 'no',
+        judgmentsLiensOwner: apiData.any_outstanding_judgments_owner ? 'yes' : 'no',
+        explanation: apiData.federal_compliance_disclosures_explanation || prev.explanation,
+      }))
+    }
+  }, [isSuccess, apiData, setFederal])
+
   const anyYes = questions.some((q) => federal[q.key] === 'yes')
   const allAnswered = questions.every((q) => federal[q.key] === 'yes' || federal[q.key] === 'no')
   const stepValid = allAnswered && (!anyYes || federal.explanation.trim().length > 0)
 
-  if (loading) {
+  if (loading || isApiLoading) {
     return <FormSkeleton fieldCount={9} />
   }
 

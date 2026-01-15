@@ -84,3 +84,22 @@ export interface FundingRequestResponse {
   message: string
   data: FundingRequestData
 }
+
+export interface FederalComplianceData {
+  filed_for_bankruptcy: boolean
+  any_pending_lawsuits: boolean
+  has_federal_loan: boolean
+  has_federal_debt: boolean
+  has_criminal_offense: boolean
+  has_parole_or_probation: boolean
+  suspended_or_debarred: boolean
+  any_outstanding_judgments_business: boolean
+  any_outstanding_judgments_owner: boolean
+  federal_compliance_disclosures_explanation: string | null
+}
+
+export interface FederalComplianceResponse {
+  status: boolean
+  message: string
+  data: FederalComplianceData
+}

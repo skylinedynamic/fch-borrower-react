@@ -1,5 +1,5 @@
 import { apiClient } from '../../lib/http/apiClient'
-import type { BusinessInfoResponse, BusinessInfoData, OwnershipInfoResponse, OwnershipInfoData, FinancialInfoResponse, FinancialInfoData, DisclosuresConsentResponse, DisclosuresConsentData, FundingRequestResponse, FundingRequestData } from './types'
+import type { BusinessInfoResponse, BusinessInfoData, OwnershipInfoResponse, OwnershipInfoData, FinancialInfoResponse, FinancialInfoData, DisclosuresConsentResponse, DisclosuresConsentData, FundingRequestResponse, FundingRequestData, FederalComplianceResponse, FederalComplianceData } from './types'
 
 export const fetchBusinessInfo = async (): Promise<BusinessInfoData> => {
   const { data } = await apiClient.get<BusinessInfoResponse>('/borrower/funding-application/business-info')
@@ -23,5 +23,10 @@ export const fetchDisclosuresConsent = async (): Promise<DisclosuresConsentData>
 
 export const fetchFundingRequest = async (): Promise<FundingRequestData> => {
   const { data } = await apiClient.get<FundingRequestResponse>('/borrower/funding-application/funding-request')
+  return data.data
+}
+
+export const fetchFederalCompliance = async (): Promise<FederalComplianceData> => {
+  const { data } = await apiClient.get<FederalComplianceResponse>('/borrower/funding-application/federal-compliance-disclosures')
   return data.data
 }

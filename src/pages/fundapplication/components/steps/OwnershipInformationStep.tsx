@@ -56,7 +56,7 @@ export default function OwnershipInformationStep({
         lastName: apiData.last_name || prev.lastName,
         dob: apiData.date_of_birth || prev.dob,
         ssn: apiData.ssn || prev.ssn,
-        citizenship: apiData.citizenship_status || prev.citizenship,
+        citizenship: apiData.citizenship_status || prev.citizenship || citizenshipOptions[0].value,
         streetAddress: apiData.street_address || prev.streetAddress,
         city: apiData.city || prev.city,
         state: apiData.state || prev.state,

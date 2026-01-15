@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { queryKeys } from '../../lib/query'
-import { fetchBusinessInfo, fetchOwnershipInfo, fetchFinancialInfo, fetchDisclosuresConsent, fetchFundingRequest } from './services'
+import { queryKeys } from '../../lib/query/queryKeys'
+import { fetchBusinessInfo, fetchOwnershipInfo, fetchFinancialInfo, fetchDisclosuresConsent, fetchFundingRequest, fetchFederalCompliance } from './services'
 
 export const useBusinessInfo = () => {
   return useQuery({
@@ -38,6 +38,14 @@ export const useFundingRequest = () => {
   return useQuery({
     queryKey: queryKeys.fundingApplication.fundingRequest(),
     queryFn: fetchFundingRequest,
+    staleTime: 1000 * 60 * 5,
+  })
+}
+
+export const useFederalCompliance = () => {
+  return useQuery({
+    queryKey: queryKeys.fundingApplication.federalCompliance(),
+    queryFn: fetchFederalCompliance,
     staleTime: 1000 * 60 * 5,
   })
 }
