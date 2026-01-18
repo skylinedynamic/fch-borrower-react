@@ -6,7 +6,8 @@ import StepNavigation from '../shared/StepNavigation'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 import CustomDropdown from '../shared/CustomDropdown'
 import { selfReportedCreditScoreOptions } from '../../../../data/profile'
-import { useFinancialInfo } from '../../../../modules/funding-application/queries'
+import { useFinancialInfo, useSaveFinancialInfo } from '../../../../modules/funding-application/queries'
+import { toast } from 'react-toastify'
 
 type FinancialInformationStepProps = {
   financial: FinancialInfo
@@ -23,13 +24,17 @@ export default function FinancialInformationStep({
   onBack,
   loading,
 }: FinancialInformationStepProps) {
+  const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({})
+
   const { data: apiData, isLoading: isApiLoading, isSuccess } = useFinancialInfo()
+  const { mutate: saveFinancialInfo, isPending: isSaving } = useSaveFinancialInfo()
 
   // Pre-fill form from API
   React.useEffect(() => {
     if (isSuccess && apiData) {
       setFinancial({
         ...financial,
+        id: apiData.id || null,
         monthlyRevenue: apiData.monthly_revenue || financial.monthlyRevenue,
         annualRevenue: apiData.annual_revenue || financial.annualRevenue,
         bankName: apiData.business_bank_name || financial.bankName,
@@ -40,7 +45,48 @@ export default function FinancialInformationStep({
         debtBalance: apiData.debt_balance || financial.debtBalance,
       })
     }
-  }, [isSuccess, apiData])
+  }, [isSuccess, apiData, setFinancial]) // Added setFinancial to deps
+
+  // Helper to get field error
+  const getFieldError = (fieldName: string): string | undefined => {
+    return validationErrors[fieldName]
+  }
+
+  // Helper to check if field has error
+  const hasError = (fieldName: string): boolean => {
+    return !!validationErrors[fieldName]
+  }
+
+  const handleNext = () => {
+     // Clear previous errors
+     setValidationErrors({})
+ 
+     const payload = {
+       id: financial.id || null,
+       monthly_revenue: financial.monthlyRevenue,
+       annual_revenue: financial.annualRevenue,
+       business_bank_name: financial.bankName,
+       business_checking_start_date: financial.checkingStartDate,
+       self_reported_personal_credit_score: financial.personalCreditScore,
+       self_reported_business_credit_score: financial.businessCreditScore,
+       has_business_debt: financial.existingDebt,
+       debt_balance: financial.debtBalance,
+     }
+ 
+     saveFinancialInfo(payload, {
+       onSuccess: () => {
+         onNext()
+       },
+       onError: (error: any) => {
+         const errors = error.response?.data?.errors
+         if (errors) {
+           setValidationErrors(errors)
+         } else {
+           toast.error(error.response?.data?.message || 'Failed to save financial information. Please try again.')
+         }
+       }
+     })
+   }
 
   const baseOk = !!(financial.monthlyRevenue && financial.checkingStartDate && financial.personalCreditScore)
   const debtOk = !financial.existingDebt || !!financial.debtBalance
@@ -54,21 +100,48 @@ export default function FinancialInformationStep({
     <form className="row g-3">
       <div className="col-md-6">
         <label className="form-label">Monthly Revenue <span className="text-danger">*</span></label>
-        <input type="number" className="form-control" placeholder="Enter monthly revenue" value={financial.monthlyRevenue} onChange={(e)=>setFinancial({...financial,monthlyRevenue:e.target.value})} />
+        <input
+          type="number"
+          className={`form-control ${hasError('monthly_revenue') ? 'is-invalid' : ''}`}
+          placeholder="Enter monthly revenue"
+          value={financial.monthlyRevenue}
+          onChange={(e)=>setFinancial({...financial,monthlyRevenue:e.target.value})}
+        />
+        {hasError('monthly_revenue') && (
+          <div className="invalid-feedback">{getFieldError('monthly_revenue')}</div>
+        )}
       </div>
       <div className="col-md-6">
         <label className="form-label">Annual Revenue</label>
-        <input type="number" className="form-control" placeholder="Enter annual revenue" value={financial.annualRevenue} onChange={(e)=>setFinancial({...financial,annualRevenue:e.target.value})} />
+        <input
+          type="number"
+          className={`form-control ${hasError('annual_revenue') ? 'is-invalid' : ''}`}
+          placeholder="Enter annual revenue"
+          value={financial.annualRevenue}
+          onChange={(e)=>setFinancial({...financial,annualRevenue:e.target.value})}
+        />
+        {hasError('annual_revenue') && (
+          <div className="invalid-feedback">{getFieldError('annual_revenue')}</div>
+        )}
       </div>
 
       <div className="col-md-6">
         <label className="form-label">Business Bank Name</label>
-        <input type="text" className="form-control" placeholder="Enter business bank name" value={financial.bankName} onChange={(e)=>setFinancial({...financial,bankName:e.target.value})} />
+        <input
+          type="text"
+          className={`form-control ${hasError('business_bank_name') ? 'is-invalid' : ''}`}
+          placeholder="Enter business bank name"
+          value={financial.bankName}
+          onChange={(e)=>setFinancial({...financial,bankName:e.target.value})}
+        />
+        {hasError('business_bank_name') && (
+          <div className="invalid-feedback">{getFieldError('business_bank_name')}</div>
+        )}
       </div>
       <div className="col-md-6">
         <label className="form-label">Business Checking Start Date <span className="text-danger">*</span></label>
         <Flatpickr
-          className="form-control"
+          className={`form-control ${hasError('business_checking_start_date') ? 'is-invalid' : ''}`}
           value={financial.checkingStartDate}
           onChange={(dates, dateStr) => {
             setFinancial({ ...financial, checkingStartDate: dateStr })
@@ -81,6 +154,9 @@ export default function FinancialInformationStep({
           }}
           placeholder="Select start date"
         />
+        {hasError('business_checking_start_date') && (
+          <div className="invalid-feedback d-block">{getFieldError('business_checking_start_date')}</div>
+        )}
       </div>
 
       <div className="col-md-6">
@@ -92,8 +168,11 @@ export default function FinancialInformationStep({
           optionLabel="label"
           optionValue="value"
           placeholder="Select self-reported personal credit score"
-          className="w-100"
+          className={`w-100 ${hasError('self_reported_personal_credit_score') ? 'is-invalid' : ''}`}
         />
+        {hasError('self_reported_personal_credit_score') && (
+          <div className="invalid-feedback d-block">{getFieldError('self_reported_personal_credit_score')}</div>
+        )}
       </div>
       <div className="col-md-6">
         <label className="form-label">Self-Reported Business Credit Score</label>
@@ -104,8 +183,11 @@ export default function FinancialInformationStep({
           optionLabel="label"
           optionValue="value"
           placeholder="Select self-reported business credit score"
-          className="w-100"
+          className={`w-100 ${hasError('self_reported_business_credit_score') ? 'is-invalid' : ''}`}
         />
+        {hasError('self_reported_business_credit_score') && (
+          <div className="invalid-feedback d-block">{getFieldError('self_reported_business_credit_score')}</div>
+        )}
       </div>
 
       <div className="col-md-6 d-flex align-items-center">
@@ -123,11 +205,25 @@ export default function FinancialInformationStep({
       {financial.existingDebt && (
         <div className="col-12">
           <label className="form-label">Debt Balance (if yes)</label>
-          <input type="number" className="form-control" placeholder="Enter Debt Balance" value={financial.debtBalance} onChange={(e)=>setFinancial({...financial,debtBalance:e.target.value})} />
+          <input
+            type="number"
+            className={`form-control ${hasError('debt_balance') ? 'is-invalid' : ''}`}
+            placeholder="Enter Debt Balance"
+            value={financial.debtBalance}
+            onChange={(e)=>setFinancial({...financial,debtBalance:e.target.value})}
+          />
+          {hasError('debt_balance') && (
+            <div className="invalid-feedback">{getFieldError('debt_balance')}</div>
+          )}
         </div>
       )}
 
-      <StepNavigation onBack={onBack} onNext={onNext} isNextDisabled={!isValid} loading={loading || isApiLoading} />
+      <StepNavigation
+        onBack={onBack}
+        onNext={handleNext}
+        isNextDisabled={!isValid || isSaving}
+        loading={loading || isApiLoading || isSaving}
+      />
     </form>
   )
 }

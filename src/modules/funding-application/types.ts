@@ -1,4 +1,5 @@
 export interface BusinessInfoData {
+  id: number | null
   full_name: string | null
   business_name: string | null
   business_ein: string | null
@@ -25,12 +26,14 @@ export interface BusinessInfoResponse {
 }
 
 export interface OwnershipInfoData {
+  id: number | null
   first_name: string | null
   last_name: string | null
   date_of_birth: string | null
   ssn: string | null
   citizenship_status: string | null
   street_address: string | null
+  country: string | null
   city: string | null
   state: string | null
   zip_code: string | null
@@ -45,6 +48,7 @@ export interface OwnershipInfoResponse {
 }
 
 export interface FinancialInfoData {
+  id: number | null
   monthly_revenue: string | null
   annual_revenue: string | null
   business_bank_name: string | null

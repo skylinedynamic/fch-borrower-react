@@ -26,6 +26,7 @@ export type OwnerInfo = {
   ssn: string
   citizenship: string
   streetAddress: string
+  country: string
   city: string
   state: string
   zip: string
@@ -52,6 +53,7 @@ export type CoBorrower = {
 }
 
 export type FinancialInfo = {
+  id?: number | null
   monthlyRevenue: string
   annualRevenue: string
   bankName: string

@@ -1,6 +1,37 @@
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '../../lib/query/queryKeys'
-import { fetchBusinessInfo, fetchOwnershipInfo, fetchFinancialInfo, fetchDisclosuresConsent, fetchFundingRequest, fetchFederalCompliance } from './services'
+import { fetchBusinessInfo, saveBusinessInfo, fetchOwnershipInfo, saveOwnershipInfo, fetchFinancialInfo, saveFinancialInfo, fetchDisclosuresConsent, fetchFundingRequest, fetchFederalCompliance } from './services'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+
+export const useSaveBusinessInfo = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: saveBusinessInfo,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.fundingApplication.businessInfo() })
+    },
+  })
+}
+
+export const useSaveOwnershipInfo = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: saveOwnershipInfo,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.fundingApplication.ownershipInfo() })
+    },
+  })
+}
+
+export const useSaveFinancialInfo = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: saveFinancialInfo,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.fundingApplication.financialInfo() })
+    },
+  })
+}
 
 export const useBusinessInfo = () => {
   return useQuery({

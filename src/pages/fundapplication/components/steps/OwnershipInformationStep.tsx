@@ -8,8 +8,9 @@ import CoBorrowerTable from '../shared/CoBorrowerTable'
 import CoBorrowerModal from '../shared/CoBorrowerModal'
 import CustomDropdown from '../shared/CustomDropdown'
 import { countries } from '../../../../data/countries'
-import { useOwnershipInfo } from '../../../../modules/funding-application/queries'
+import { useOwnershipInfo, useSaveOwnershipInfo } from '../../../../modules/funding-application/queries'
 import { citizenshipOptions } from '../../../../data/profile'
+import { toast } from 'react-toastify'
 
 type OwnershipInformationStepProps = {
   owner: OwnerInfo
@@ -44,20 +45,24 @@ export default function OwnershipInformationStep({
   const [availableCities, setAvailableCities] = React.useState<{ name: string; code: string }[]>([])
   const [showCityInput, setShowCityInput] = React.useState(false)
   const [lastCustomCity, setLastCustomCity] = React.useState('')
+  const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({})
 
   const { data: apiData, isLoading: isApiLoading, isSuccess } = useOwnershipInfo()
+  const { mutate: saveOwnershipInfo, isPending: isSaving } = useSaveOwnershipInfo()
 
   // Pre-fill form from API
   React.useEffect(() => {
     if (isSuccess && apiData) {
       setOwner((prev) => ({
         ...prev,
+        id: apiData.id || null,
         firstName: apiData.first_name || prev.firstName,
         lastName: apiData.last_name || prev.lastName,
         dob: apiData.date_of_birth || prev.dob,
         ssn: apiData.ssn || prev.ssn,
         citizenship: apiData.citizenship_status || prev.citizenship || citizenshipOptions[0].value,
         streetAddress: apiData.street_address || prev.streetAddress,
+        country: apiData.country || prev.country || 'United States',
         city: apiData.city || prev.city,
         state: apiData.state || prev.state,
         zip: apiData.zip_code || prev.zip,
@@ -67,13 +72,27 @@ export default function OwnershipInformationStep({
     }
   }, [isSuccess, apiData, setOwner])
 
-  // Hardcode USA for now as per PersonalInfo pattern or just use countries[0]
+  // Helper to get field error
+  const getFieldError = (fieldName: string): string | undefined => {
+    return validationErrors[fieldName]
+  }
+
+  // Helper to check if field has error
+  const hasError = (fieldName: string): boolean => {
+    return !!validationErrors[fieldName]
+  }
+
+  // Update available states when country changes
   React.useEffect(() => {
-    const usa = countries.find((c) => c.code === 'USA')
-    if (usa && usa.states) {
-      setAvailableStates(usa.states.map((s) => ({ name: s.name, code: s.code, cities: s.cities })))
+    if (owner.country) {
+      const selectedCountry = countries.find((c) => c.name === owner.country || c.code === owner.country)
+      if (selectedCountry && selectedCountry.states) {
+        setAvailableStates(selectedCountry.states.map((s) => ({ name: s.name, code: s.code, cities: s.cities })))
+      } else {
+        setAvailableStates([])
+      }
     }
-  }, [])
+  }, [owner.country])
 
   React.useEffect(() => {
     if (owner.state) {
@@ -107,6 +126,41 @@ export default function OwnershipInformationStep({
     return <FormSkeleton fieldCount={10} />
   }
 
+  const handleNext = () => {
+    // Clear previous errors
+    setValidationErrors({})
+
+    const payload = {
+      id: owner.id,
+      first_name: owner.firstName,
+      last_name: owner.lastName,
+      date_of_birth: owner.dob,
+      ssn: owner.ssn,
+      citizenship_status: owner.citizenship,
+      street_address: owner.streetAddress,
+      country: owner.country,
+      city: owner.city,
+      state: owner.state,
+      zip_code: owner.zip,
+      ownership: owner.ownershipPct,
+      has_co_borrower: owner.hasCoBorrower,
+    }
+
+    saveOwnershipInfo(payload, {
+      onSuccess: () => {
+        onNext()
+      },
+      onError: (error: any) => {
+        const errors = error.response?.data?.errors
+        if (errors) {
+          setValidationErrors(errors)
+        } else {
+          toast.error(error.response?.data?.message || 'Failed to save ownership information. Please try again.')
+        }
+      }
+    })
+  }
+
   return (
     <>
       <form className="row g-3">
@@ -114,27 +168,33 @@ export default function OwnershipInformationStep({
         <label className="form-label">First Name <span className="text-danger">*</span></label>
         <input
           type="text"
-          className="form-control"
+          className={`form-control ${hasError('first_name') ? 'is-invalid' : ''}`}
           placeholder="Enter first name"
           value={owner.firstName}
           onChange={(e) => setOwner({ ...owner, firstName: e.target.value })}
         />
+        {hasError('first_name') && (
+          <div className="invalid-feedback">{getFieldError('first_name')}</div>
+        )}
       </div>
       <div className="col-md-6">
         <label className="form-label">Last Name <span className="text-danger">*</span></label>
         <input
           type="text"
-          className="form-control"
+          className={`form-control ${hasError('last_name') ? 'is-invalid' : ''}`}
           placeholder="Enter last name"
           value={owner.lastName}
           onChange={(e) => setOwner({ ...owner, lastName: e.target.value })}
         />
+        {hasError('last_name') && (
+          <div className="invalid-feedback">{getFieldError('last_name')}</div>
+        )}
       </div>
 
       <div className="col-md-6">
         <label className="form-label">Date of Birth <span className="text-danger">*</span></label>
         <Flatpickr
-          className="form-control"
+          className={`form-control ${hasError('date_of_birth') ? 'is-invalid' : ''}`}
           value={owner.dob}
           onChange={(dates, dateStr) => {
             setOwner({ ...owner, dob: dateStr })
@@ -148,16 +208,22 @@ export default function OwnershipInformationStep({
           }}
           placeholder="Select date of birth"
         />
+        {hasError('date_of_birth') && (
+          <div className="invalid-feedback d-block">{getFieldError('date_of_birth')}</div>
+        )}
       </div>
       <div className="col-md-6">
         <label className="form-label">Social Security Number (SSN) <span className="text-danger">*</span></label>
         <input
           type="text"
-          className="form-control"
+          className={`form-control ${hasError('ssn') ? 'is-invalid' : ''}`}
           placeholder="Enter social security number (SSN)"
           value={owner.ssn}
           onChange={(e) => setOwner({ ...owner, ssn: e.target.value })}
         />
+        {hasError('ssn') && (
+          <div className="invalid-feedback">{getFieldError('ssn')}</div>
+        )}
       </div>
 
       <div className="col-md-6">
@@ -169,18 +235,24 @@ export default function OwnershipInformationStep({
           optionLabel="label"
           optionValue="value"
           placeholder="Select citizenship status"
-          className="w-100"
+          className={`w-100 ${hasError('citizenship_status') ? 'is-invalid' : ''}`}
         />
+        {hasError('citizenship_status') && (
+          <div className="invalid-feedback d-block">{getFieldError('citizenship_status')}</div>
+        )}
       </div>
       <div className="col-md-6">
         <label className="form-label">Street Address <span className="text-danger">*</span></label>
         <input
           type="text"
-          className="form-control"
+          className={`form-control ${hasError('street_address') ? 'is-invalid' : ''}`}
           placeholder="Enter street address"
           value={owner.streetAddress}
           onChange={(e) => setOwner({ ...owner, streetAddress: e.target.value })}
         />
+        {hasError('street_address') && (
+          <div className="invalid-feedback">{getFieldError('street_address')}</div>
+        )}
       </div>
 
       <div className="col-md-6">
@@ -199,7 +271,11 @@ export default function OwnershipInformationStep({
           optionLabel="name"
           optionValue="name"
           placeholder="Select state"
+          className={`w-100 ${hasError('state') ? 'is-invalid' : ''}`}
         />
+        {hasError('state') && (
+          <div className="invalid-feedback d-block">{getFieldError('state')}</div>
+        )}
       </div>
 
       <div className={showCityInput ? 'col-md-3' : 'col-md-6'}>
@@ -220,8 +296,11 @@ export default function OwnershipInformationStep({
           optionValue="code"
           placeholder="Select city"
           searchable={true}
-          className="w-100"
+          className={`w-100 ${hasError('city') ? 'is-invalid' : ''}`}
         />
+        {hasError('city') && (
+          <div className="invalid-feedback d-block">{getFieldError('city')}</div>
+        )}
       </div>
 
       {showCityInput && (
@@ -231,7 +310,7 @@ export default function OwnershipInformationStep({
           </label>
           <input
             type="text"
-            className="form-control"
+            className={`form-control ${hasError('city') ? 'is-invalid' : ''}`}
             placeholder="Enter city name"
             value={owner.city}
             onChange={(e) => {
@@ -241,6 +320,9 @@ export default function OwnershipInformationStep({
             }}
             required
           />
+          {hasError('city') && (
+            <div className="invalid-feedback">{getFieldError('city')}</div>
+          )}
         </div>
       )}
 
@@ -248,21 +330,27 @@ export default function OwnershipInformationStep({
         <label className="form-label">Zip Code <span className="text-danger">*</span></label>
         <input
           type="text"
-          className="form-control"
+          className={`form-control ${hasError('zip_code') ? 'is-invalid' : ''}`}
           placeholder="Enter zip code"
           value={owner.zip}
           onChange={(e) => setOwner({ ...owner, zip: e.target.value })}
         />
+        {hasError('zip_code') && (
+          <div className="invalid-feedback">{getFieldError('zip_code')}</div>
+        )}
       </div>
       <div className="col-md-6">
         <label className="form-label">Ownership % <span className="text-danger">*</span></label>
         <input
           type="number"
-          className="form-control"
+          className={`form-control ${hasError('ownership') ? 'is-invalid' : ''}`}
           placeholder="Enter ownership %"
           value={owner.ownershipPct}
           onChange={(e) => setOwner({ ...owner, ownershipPct: e.target.value })}
         />
+        {hasError('ownership') && (
+          <div className="invalid-feedback">{getFieldError('ownership')}</div>
+        )}
       </div>
 
       <div className="col-12 d-flex align-items-center">
@@ -296,12 +384,12 @@ export default function OwnershipInformationStep({
 
       <StepNavigation
         onBack={onBack}
-        onNext={onNext}
-        isNextDisabled={!isValid}
-        loading={loading || isApiLoading}
+        onNext={handleNext}
+        isNextDisabled={!isValid || isSaving}
+        loading={loading || isApiLoading || isSaving}
       />
     </form>
-
+    
     <CoBorrowerModal
       coDraft={coDraft}
       setCoDraft={setCoDraft}
