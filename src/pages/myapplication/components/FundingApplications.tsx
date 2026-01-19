@@ -1,73 +1,93 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { useFundingApplications } from '../../../modules/my-application/queries'
+import type { FundingApplication } from '../../../modules/my-application/types'
+import { TableLoader } from '../../../components/Loader/TableLoader'
+import FundingApplicationDetailsModal from './FundingApplicationDetailsModal'
 
-interface FundingApplicationsProps {
-  loading: boolean
-  rows: Array<{
-    type: string
-    entity: string
-    inc: string
-    date: string
-    amount: string
-    status: string
-  }>
-}
+export default function FundingApplications() {
+  const { data, isLoading } = useFundingApplications()
+  const [selectedApplication, setSelectedApplication] = useState<FundingApplication | null>(null)
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false)
 
-export default function FundingApplications({ loading, rows }: FundingApplicationsProps) {
+  const toggleDetailsModal = () => setDetailsModalOpen(!detailsModalOpen)
+
+  const handleViewDetails = (app: FundingApplication) => {
+    setSelectedApplication(app)
+    setDetailsModalOpen(true)
+  }
+  
   const statusClass = (s: string) =>
     s === 'Submitted' ? 'badge rounded-pill bg-success-subtle text-success' : 'badge rounded-pill bg-warning-subtle text-warning'
 
+  // Map API data to table rows
+  const rows = data?.data || []
+
   return (
-    <div className="card section-card app-card mt-3">
-      <div className="card-header d-flex align-items-center gap-2">
-        <i className="ri-bank-card-line text-warning"></i>
-        <span className="card-title fw-semibold">Funding Applications</span>
-      </div>
-      <div className="card-body">
-        <div className="table-responsive">
-          <table className="table align-middle table-hover table-striped">
-            <thead>
-              <tr>
-                <th className="text-center"></th>
-                <th>Funding Type</th>
-                <th>Entity Type</th>
-                <th>Incorporation</th>
-                <th>Date</th>
-                <th>Requested Amount</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            {loading ? (
+    <>
+      <div className="card section-card app-card mt-3">
+        <div className="card-header d-flex align-items-center gap-2">
+          <i className="ri-bank-card-line text-warning"></i>
+          <span className="card-title fw-semibold">Funding Applications</span>
+        </div>
+        <div className="card-body">
+          <div className="table-responsive">
+            <table className="table align-middle table-hover table-striped">
+              <thead>
+                <tr>
+                  <th>Funding Type</th>
+                  <th>Entity Type</th>
+                  <th>Incorporation</th>
+                  <th>Date</th>
+                  <th>Requested Amount</th>
+                  <th>Status</th>
+                  <th className="text-end">Action</th>
+                </tr>
+              </thead>
               <tbody>
-                {[1, 2, 3, 4].map((i) => (
-                  <tr key={i}>
-                    <td className="text-center"><div className="skeleton-circle small-circle"></div></td>
-                    <td><div className="skeleton-line w-75"></div></td>
-                    <td><div className="skeleton-line w-60"></div></td>
-                    <td><div className="skeleton-line w-50"></div></td>
-                    <td><div className="skeleton-line w-40"></div></td>
-                    <td><div className="skeleton-line w-50"></div></td>
-                    <td><div className="skeleton-line w-30"></div></td>
-                  </tr>
-                ))}
+                {isLoading ? (
+                  <TableLoader rows={5} columns={8} />
+                ) : (
+                  <>
+                    {rows.length > 0 ? (
+                      rows.map((app: FundingApplication) => (
+                        <tr key={app.id}>
+                          <td>{app.preferred_funding_type || 'N/A'}</td>
+                          <td>{app.entity_type || 'N/A'}</td>
+                          <td>{app.business_state || 'N/A'}</td>
+                          <td>{app.business_checking_start_date || 'N/A'}</td>
+                          <td>{app.requested_amount ? `$${parseFloat(app.requested_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A'}</td>
+                          <td><span className={statusClass(app.status || 'Pending')}>{app.status || 'Pending'}</span></td>
+                          <td className="text-end">
+                            <button 
+                              className="btn btn-sm btn-soft-primary btn-icon"
+                              onClick={() => handleViewDetails(app)}
+                              title="View Details"
+                            >
+                              <i className="ri-eye-line"></i>
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={8} className="text-center text-muted py-4">
+                          No funding applications found.
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                )}
               </tbody>
-            ) : (
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={`${r.type}-${r.entity}-${r.date}`}>
-                    <td className="text-center"><input type="checkbox" className="form-check-input" aria-label="Select row" /></td>
-                    <td>{r.type}</td>
-                    <td>{r.entity}</td>
-                    <td>{r.inc}</td>
-                    <td>{r.date}</td>
-                    <td>{r.amount}</td>
-                    <td><span className={statusClass(r.status)}>{r.status}</span></td>
-                  </tr>
-                ))}
-              </tbody>
-            )}
-          </table>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
+
+      <FundingApplicationDetailsModal 
+        isOpen={detailsModalOpen} 
+        toggle={toggleDetailsModal} 
+        application={selectedApplication} 
+      />
+    </>
   )
 }

@@ -206,7 +206,7 @@ export default function Appointments() {
   };
 
   return (
-    <div className="page-content">
+    <div className="page-content borrower-appointments-wrapper">
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="container-fluid">
         <div className="row">
@@ -436,117 +436,7 @@ export default function Appointments() {
               </div>
             </div>
 
-            <style>
-              {`
-                  .fc-prev-button, .fc-next-button {
-                      background-color: #3b4b7a !important;
-                      border-color: #3b4b7a !important;
-                      color: #fff !important;
-                      padding: 2px 8px !important;
-                      height: 32px !important;
-                      display: inline-flex !important;
-                      align-items: center !important;
-                      justify-content: center !important;
-                  }
-                  .fc-prev-button::after {
-                      content: "\\ea64";
-                      font-family: 'remixicon' !important;
-                      font-size: 18px !important;
-                  }
-                  .fc-next-button::after {
-                      content: "\\ea6e";
-                      font-family: 'remixicon' !important;
-                      font-size: 18px !important;
-                  }
-                  .fc-prev-button span, .fc-next-button span {
-                      display: none !important;
-                  }
-                  .fc-today-button {
-                      background-color: #7296f8 !important;
-                      border-color: #7296f8 !important;
-                      color: #fff !important;
-                      font-weight: 600 !important;
-                      padding: 4px 16px !important;
-                      text-transform: capitalize !important;
-                      opacity: 1 !important;
-                  }
-                  .fc-toolbar-title {
-                      font-weight: 700 !important;
-                      text-transform: uppercase !important;
-                      color: #495057 !important;
-                      font-size: 18px !important;
-                      letter-spacing: 0.5px !important;
-                  }
-                  .fc-col-header-cell-cushion {
-                      color: #313a46 !important;
-                      font-weight: 700 !important;
-                      padding: 12px 0 !important;
-                      font-size: 14px !important;
-                      text-decoration: none !important;
-                  }
-                  .fc-daygrid-day-number {
-                      color: #878a99 !important;
-                      font-weight: 500 !important;
-                      padding: 8px !important;
-                      text-decoration: none !important;
-                      font-size: 13px !important;
-                  }
-                  .fc-button-group .fc-button {
-                      background-color: #3b4b7a !important;
-                      border-color: rgba(255,255,255,0.1) !important;
-                      color: #fff !important;
-                      font-weight: 500 !important;
-                      font-size: 13px !important;
-                      padding: 6px 12px !important;
-                  }
-                  .fc-button-group .fc-button-active {
-                      background-color: #2a3557 !important;
-                      border-color: rgba(0,0,0,0.1) !important;
-                  }
-                  .fc-event, 
-                  .fc-daygrid-event, 
-                  .fc-daygrid-block-event, 
-                  .fc-h-event, 
-                  .fc-v-event {
-                      padding: 4px 8px !important;
-                      font-size: 16px !important;
-                      border-radius: 4px !important;
-                      box-shadow: none !important;
-                      margin-top: 2px !important;
-                      margin-bottom: 2px !important;
-                      min-height: 28px !important;
-                      border-width: 1px !important;
-                  }
-                  .fc-event-main {
-                      padding: 2px 4px !important;
-                      color: inherit !important;
-                      display: flex !important;
-                      align-items: center !important;
-                  }
-                  .fc-event-title, .fc-event-main-frame {
-                      font-weight: 600 !important;
-                      white-space: nowrap !important;
-                      overflow: hidden !important;
-                      text-overflow: ellipsis !important;
-                  }
-                  .fc-daygrid-event-dot {
-                      border-color: inherit !important;
-                  }
-                  .fc-event:hover {
-                      opacity: 0.85 !important;
-                      transform: translateY(-1px);
-                      transition: all 0.2s ease;
-                  }
-                  .upcoming-event-card:hover {
-                      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-                      transform: translateY(-2px);
-                      border-color: #405189 !important;
-                  }
-                  .cursor-pointer {
-                      cursor: pointer !important;
-                  }
-              `}
-            </style>
+            
           </div>
         </div>
         <AppointmentModal ref={appointmentModalRef} onSuccess={loadAppointments} />

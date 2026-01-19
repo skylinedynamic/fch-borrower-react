@@ -5,8 +5,9 @@ import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 import CustomDropdown from '../shared/CustomDropdown'
 import { purposeOfFundingOptions, fundingTypeOptions, timeframeOptions, collateralOptions } from '../../../../data/profile'
 
-import { useFundingRequest } from '../../../../modules/funding-application/queries'
-import { useEffect } from 'react'
+import { useFundingRequest, useSaveFundingRequest } from '../../../../modules/funding-application/queries'
+import { useEffect, useState } from 'react'
+import { toast } from 'react-toastify'
 
 type FundingRequestStepProps = {
   funding: FundingRequest
@@ -24,9 +25,13 @@ export default function FundingRequestStep({
   loading,
 }: FundingRequestStepProps) {
   const { data: apiData, isLoading: isApiLoading, isSuccess } = useFundingRequest()
+  const saveMutation = useSaveFundingRequest()
+  const [fundingRequestId, setFundingRequestId] = useState<number | null>(null)
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (isSuccess && apiData) {
+      setFundingRequestId(apiData.id || null)
       setFunding({
         ...funding,
         requestedAmount: apiData.requested_amount || '',
@@ -38,6 +43,46 @@ export default function FundingRequestStep({
     }
   }, [isSuccess, apiData])
 
+  // Helper to get field error
+  const getFieldError = (fieldName: string): string | undefined => {
+    return validationErrors[fieldName]
+  }
+
+  // Helper to check if field has error
+  const hasError = (fieldName: string): boolean => {
+    return !!validationErrors[fieldName]
+  }
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+
+    // Clear previous errors
+    setValidationErrors({})
+
+    const payload = {
+      id: fundingRequestId,
+      requested_amount: funding.requestedAmount || null,
+      purpose_of_funds: funding.purpose || null,
+      preferred_funding_type: funding.fundingType || null,
+      timeframe_needed: funding.timeframe || null,
+      collateral_available: funding.collateral || null,
+    }
+
+    try {
+      await saveMutation.mutateAsync(payload)
+      // toast.success('Funding request saved successfully')
+      onNext()
+    } catch (error: any) {
+      console.error('Error saving funding request:', error)
+      const errors = error.response?.data?.errors
+      if (errors) {
+        setValidationErrors(errors)
+      } else {
+        toast.error(error?.response?.data?.message || 'Failed to save funding request')
+      }
+    }
+  }
+
   const isValid = !!(funding.requestedAmount && funding.purpose && funding.fundingType)
 
   if (loading || isApiLoading) {
@@ -45,10 +90,19 @@ export default function FundingRequestStep({
   }
 
   return (
-    <form className="row g-3">
+    <form className="row g-3" onSubmit={handleSubmit}>
       <div className="col-md-6">
         <label className="form-label">Requested Amount <span className="text-danger">*</span></label>
-        <input type="number" className="form-control" placeholder="Enter requested amount" value={funding.requestedAmount} onChange={(e)=>setFunding({...funding,requestedAmount:e.target.value})} />
+        <input 
+          type="number" 
+          className={`form-control ${hasError('requested_amount') ? 'is-invalid' : ''}`} 
+          placeholder="Enter requested amount" 
+          value={funding.requestedAmount} 
+          onChange={(e)=>setFunding({...funding,requestedAmount:e.target.value})} 
+        />
+        {hasError('requested_amount') && (
+          <div className="invalid-feedback">{getFieldError('requested_amount')}</div>
+        )}
       </div>
       <div className="col-md-6">
         <label className="form-label">Purpose of Funds <span className="text-danger">*</span></label>
@@ -59,8 +113,11 @@ export default function FundingRequestStep({
           optionLabel="label"
           optionValue="value"
           placeholder="Select purpose of funds"
-          className="w-100"
+          className={`w-100 ${hasError('purpose_of_funds') ? 'is-invalid' : ''}`}
         />
+        {hasError('purpose_of_funds') && (
+          <div className="invalid-feedback d-block">{getFieldError('purpose_of_funds')}</div>
+        )}
       </div>
 
       <div className="col-md-6">
@@ -72,8 +129,11 @@ export default function FundingRequestStep({
           optionLabel="label"
           optionValue="value"
           placeholder="Select preferred funding type"
-          className="w-100"
+          className={`w-100 ${hasError('preferred_funding_type') ? 'is-invalid' : ''}`}
         />
+        {hasError('preferred_funding_type') && (
+          <div className="invalid-feedback d-block">{getFieldError('preferred_funding_type')}</div>
+        )}
       </div>
       <div className="col-md-6">
         <label className="form-label">Timeframe Needed</label>
@@ -84,8 +144,11 @@ export default function FundingRequestStep({
           optionLabel="label"
           optionValue="value"
           placeholder="Select timeframe needed"
-          className="w-100"
+          className={`w-100 ${hasError('timeframe_needed') ? 'is-invalid' : ''}`}
         />
+        {hasError('timeframe_needed') && (
+          <div className="invalid-feedback d-block">{getFieldError('timeframe_needed')}</div>
+        )}
       </div>
 
       <div className="col-md-6">
@@ -97,11 +160,19 @@ export default function FundingRequestStep({
           optionLabel="label"
           optionValue="value"
           placeholder="Select collateral"
-          className="w-100"
+          className={`w-100 ${hasError('collateral_available') ? 'is-invalid' : ''}`}
         />
+        {hasError('collateral_available') && (
+          <div className="invalid-feedback d-block">{getFieldError('collateral_available')}</div>
+        )}
       </div>
 
-      <StepNavigation onBack={onBack} onNext={onNext} isNextDisabled={!isValid} loading={loading || isApiLoading} />
+      <StepNavigation 
+        onBack={onBack} 
+        onNext={handleSubmit} 
+        isNextDisabled={!isValid} 
+        loading={loading || isApiLoading || saveMutation.isPending} 
+      />
     </form>
   )
 }

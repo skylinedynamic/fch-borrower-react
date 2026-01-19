@@ -66,6 +66,7 @@ export interface FinancialInfoResponse {
 }
 
 export interface DisclosuresConsentData {
+  id: number | null
   credit_pull_authorization: boolean
   terms_conditions_acceptance: boolean
 }
@@ -76,6 +77,7 @@ export interface DisclosuresConsentResponse {
   data: DisclosuresConsentData
 }
 export interface FundingRequestData {
+  id: number | null
   requested_amount: string | null
   purpose_of_funds: string | null
   preferred_funding_type: string | null
@@ -90,15 +92,16 @@ export interface FundingRequestResponse {
 }
 
 export interface FederalComplianceData {
-  filed_for_bankruptcy: boolean
-  any_pending_lawsuits: boolean
-  has_federal_loan: boolean
-  has_federal_debt: boolean
-  has_criminal_offense: boolean
-  has_parole_or_probation: boolean
-  suspended_or_debarred: boolean
-  any_outstanding_judgments_business: boolean
-  any_outstanding_judgments_owner: boolean
+  id: number | null
+  filed_for_bankruptcy: boolean | null
+  any_pending_lawsuits: boolean | null
+  has_federal_loan: boolean | null
+  has_federal_debt: boolean | null
+  has_criminal_offense: boolean | null
+  has_parole_or_probation: boolean | null
+  suspended_or_debarred: boolean | null
+  any_outstanding_judgments_business: boolean | null
+  any_outstanding_judgments_owner: boolean | null
   federal_compliance_disclosures_explanation: string | null
 }
 
@@ -106,4 +109,15 @@ export interface FederalComplianceResponse {
   status: boolean
   message: string
   data: FederalComplianceData
+}
+
+export interface AttestationData {
+  id: number | null
+  attestation_authorization: boolean
+}
+
+export interface AttestationResponse {
+  status: boolean
+  message: string
+  data: AttestationData
 }

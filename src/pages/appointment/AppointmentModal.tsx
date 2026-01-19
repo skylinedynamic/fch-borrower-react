@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState, useImperativeHandle, forwardRef } f
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import Modal from 'bootstrap/js/dist/modal';
-import $ from 'jquery';
 import { toast } from 'react-toastify';
 import { Dropdown } from 'primereact/dropdown';
 import { Skeleton } from 'primereact/skeleton';
@@ -557,7 +556,7 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
     }));
 
     return (
-        <div className="modal fade" id="appointmentModal" ref={eventModalRef} tabIndex="-1" aria-hidden="true">
+        <div className="modal fade borrower-appointments-wrapper" id="appointmentModal" ref={eventModalRef} tabIndex="-1" aria-hidden="true">
             <div className="modal-dialog modal-dialog-centered modal-lg">
                 <div className="modal-content border-0 shadow-lg">
                     <div className="modal-header p-3 px-4" style={{ backgroundColor: '#f3f6f9', borderBottom: '1px solid #e9ebec' }}>

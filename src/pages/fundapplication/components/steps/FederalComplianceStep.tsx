@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import type { FederalCompliance } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
-import { useFederalCompliance } from '../../../../modules/funding-application/queries'
+import { useFederalCompliance, useSaveFederalCompliance } from '../../../../modules/funding-application/queries'
+import { toast } from 'react-toastify'
 
 type FederalComplianceStepProps = {
   federal: FederalCompliance
@@ -13,16 +14,16 @@ type FederalComplianceStepProps = {
   isValid: boolean
 }
 
-const questions: { key: keyof FederalCompliance; label: string }[] = [
-  { key: 'bankruptcy', label: '1. Has the Business or any Owner ever filed for bankruptcy?' },
-  { key: 'lawsuit', label: '2. Is the Business or any Owner currently involved in any pending lawsuits?' },
-  { key: 'federalLoanDefault', label: '3. Has the Business or any Owner ever defaulted on a Federal Loan (SBA, etc.)?' },
-  { key: 'federalDebtDelinquent', label: '4. Is the Business or any Owner currently delinquent on any Federal Debt?' },
-  { key: 'criminalOffense', label: '5. Has any Owner ever been convicted of a criminal offense?' },
-  { key: 'paroleProbation', label: '6. Is any Owner currently on parole or probation?' },
-  { key: 'suspendedDebarred', label: '7. Is the Business or any Owner currently suspended or debarred from doing business with the Federal Government?' },
-  { key: 'judgmentsLiensBusiness', label: '8. Are there any outstanding judgments or liens against the Business?' },
-  { key: 'judgmentsLiensOwner', label: '9. Are there any outstanding judgments or liens against any Owner?' },
+const questions: { key: keyof FederalCompliance; label: string; apiField: string }[] = [
+  { key: 'bankruptcy', label: '1. Has the Business or any Owner ever filed for bankruptcy?', apiField: 'filed_for_bankruptcy' },
+  { key: 'lawsuit', label: '2. Is the Business or any Owner currently involved in any pending lawsuits?', apiField: 'any_pending_lawsuits' },
+  { key: 'federalLoanDefault', label: '3. Has the Business or any Owner ever defaulted on a Federal Loan (SBA, etc.)?', apiField: 'has_federal_loan' },
+  { key: 'federalDebtDelinquent', label: '4. Is the Business or any Owner currently delinquent on any Federal Debt?', apiField: 'has_federal_debt' },
+  { key: 'criminalOffense', label: '5. Has any Owner ever been convicted of a criminal offense?', apiField: 'has_criminal_offense' },
+  { key: 'paroleProbation', label: '6. Is any Owner currently on parole or probation?', apiField: 'has_parole_or_probation' },
+  { key: 'suspendedDebarred', label: '7. Is the Business or any Owner currently suspended or debarred from doing business with the Federal Government?', apiField: 'suspended_or_debarred' },
+  { key: 'judgmentsLiensBusiness', label: '8. Are there any outstanding judgments or liens against the Business?', apiField: 'any_outstanding_judgments_business' },
+  { key: 'judgmentsLiensOwner', label: '9. Are there any outstanding judgments or liens against any Owner?', apiField: 'any_outstanding_judgments_owner' },
 ]
 
 export default function FederalComplianceStep({
@@ -34,24 +35,79 @@ export default function FederalComplianceStep({
   isValid,
 }: FederalComplianceStepProps) {
   const { data: apiData, isLoading: isApiLoading, isSuccess } = useFederalCompliance()
+  const { mutate: saveCompliance, isPending: isSaving } = useSaveFederalCompliance()
+  const [complianceId, setComplianceId] = useState<number | null>(null)
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
   React.useEffect(() => {
     if (isSuccess && apiData) {
+      setComplianceId(apiData.id || null)
+
+      const mapVal = (val: boolean | null | undefined) => {
+        if (val === true) return 'yes'
+        if (val === false) return 'no'
+        return ''
+      }
+
       setFederal((prev) => ({
         ...prev,
-        bankruptcy: apiData.filed_for_bankruptcy ? 'yes' : 'no',
-        lawsuit: apiData.any_pending_lawsuits ? 'yes' : 'no',
-        federalLoanDefault: apiData.has_federal_loan ? 'yes' : 'no',
-        federalDebtDelinquent: apiData.has_federal_debt ? 'yes' : 'no',
-        criminalOffense: apiData.has_criminal_offense ? 'yes' : 'no',
-        paroleProbation: apiData.has_parole_or_probation ? 'yes' : 'no',
-        suspendedDebarred: apiData.suspended_or_debarred ? 'yes' : 'no',
-        judgmentsLiensBusiness: apiData.any_outstanding_judgments_business ? 'yes' : 'no',
-        judgmentsLiensOwner: apiData.any_outstanding_judgments_owner ? 'yes' : 'no',
+        bankruptcy: mapVal(apiData.filed_for_bankruptcy),
+        lawsuit: mapVal(apiData.any_pending_lawsuits),
+        federalLoanDefault: mapVal(apiData.has_federal_loan),
+        federalDebtDelinquent: mapVal(apiData.has_federal_debt),
+        criminalOffense: mapVal(apiData.has_criminal_offense),
+        paroleProbation: mapVal(apiData.has_parole_or_probation),
+        suspendedDebarred: mapVal(apiData.suspended_or_debarred),
+        judgmentsLiensBusiness: mapVal(apiData.any_outstanding_judgments_business),
+        judgmentsLiensOwner: mapVal(apiData.any_outstanding_judgments_owner),
         explanation: apiData.federal_compliance_disclosures_explanation || prev.explanation,
       }))
     }
   }, [isSuccess, apiData, setFederal])
+
+  const handleNext = () => {
+    setValidationErrors({})
+
+    const mapPayloadVal = (val: string): boolean | null => {
+       if (val === 'yes') return true
+       if (val === 'no') return false
+       return null
+    }
+
+    const payload = {
+       id: complianceId,
+       filed_for_bankruptcy: mapPayloadVal(federal.bankruptcy),
+       any_pending_lawsuits: mapPayloadVal(federal.lawsuit),
+       has_federal_loan: mapPayloadVal(federal.federalLoanDefault),
+       has_federal_debt: mapPayloadVal(federal.federalDebtDelinquent),
+       has_criminal_offense: mapPayloadVal(federal.criminalOffense),
+       has_parole_or_probation: mapPayloadVal(federal.paroleProbation),
+       suspended_or_debarred: mapPayloadVal(federal.suspendedDebarred),
+       any_outstanding_judgments_business: mapPayloadVal(federal.judgmentsLiensBusiness),
+       any_outstanding_judgments_owner: mapPayloadVal(federal.judgmentsLiensOwner),
+       federal_compliance_disclosures_explanation: federal.explanation,
+    }
+
+    saveCompliance(payload, {
+       onSuccess: () => {
+          onNext()
+       },
+       onError: (error: any) => {
+          console.error('Error saving federal compliance:', error)
+          const errors = error.response?.data?.errors
+          if (errors) {
+             setValidationErrors(errors)
+             toast.error('Please resolve validation errors')
+          } else {
+             toast.error(error.response?.data?.message || 'Failed to save federal compliance')
+          }
+       }
+    })
+  }
+
+  const getApiError = (apiField: string) => {
+     return validationErrors[apiField]
+  }
 
   const anyYes = questions.some((q) => federal[q.key] === 'yes')
   const allAnswered = questions.every((q) => federal[q.key] === 'yes' || federal[q.key] === 'no')
@@ -66,12 +122,15 @@ export default function FederalComplianceStep({
       <div className="col-12">
         <div className="list-group">
           {questions.map((q) => (
-            <div className="list-group-item" key={q.key as string}>
+            <div className={`list-group-item ${getApiError(q.apiField) ? 'border-danger' : ''}`} key={q.key as string}>
               <div className="row align-items-center">
                 <div className="col-9 text-start">
                   <span className="fw-medium d-block">
                     {q.label} <span className="text-danger">*</span>
                   </span>
+                  {getApiError(q.apiField) && (
+                     <div className="text-danger small mt-1">{getApiError(q.apiField)}</div>
+                  )}
                 </div>
                 <div className="col-3 text-end">
                   <div className="btn-group" role="group" aria-label={`Select answer for ${q.label}`}>
@@ -112,20 +171,28 @@ export default function FederalComplianceStep({
           </div>
           <div className="card-body">
             <textarea
-              className="form-control"
+              className={`form-control ${validationErrors['federal_compliance_disclosures_explanation'] ? 'is-invalid' : ''}`}
               rows={4}
               placeholder="If yes to any of the above, explain"
               value={federal.explanation}
               onChange={(e) => setFederal({ ...federal, explanation: e.target.value })}
             />
-            {anyYes && !federal.explanation.trim() && (
+            {validationErrors['federal_compliance_disclosures_explanation'] && (
+               <div className="invalid-feedback">{validationErrors['federal_compliance_disclosures_explanation']}</div>
+            )}
+            {anyYes && !federal.explanation.trim() && !validationErrors['federal_compliance_disclosures_explanation'] && (
               <div className="form-text text-danger mt-1">Explanation is required when any answer is Yes.</div>
             )}
           </div>
         </div>
       </div>
 
-      <StepNavigation onBack={onBack} onNext={onNext} isNextDisabled={!stepValid} loading={loading} />
+      <StepNavigation 
+         onBack={onBack} 
+         onNext={handleNext} 
+         isNextDisabled={!stepValid || isSaving} 
+         loading={loading || isSaving} 
+      />
     </form>
   )
 }

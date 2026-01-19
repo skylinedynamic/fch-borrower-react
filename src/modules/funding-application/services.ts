@@ -1,5 +1,5 @@
 import { apiClient } from '../../lib/http/apiClient'
-import type { BusinessInfoResponse, BusinessInfoData, OwnershipInfoResponse, OwnershipInfoData, FinancialInfoResponse, FinancialInfoData, DisclosuresConsentResponse, DisclosuresConsentData, FundingRequestResponse, FundingRequestData, FederalComplianceResponse, FederalComplianceData } from './types'
+import type { BusinessInfoResponse, BusinessInfoData, OwnershipInfoResponse, OwnershipInfoData, FinancialInfoResponse, FinancialInfoData, DisclosuresConsentResponse, DisclosuresConsentData, FundingRequestResponse, FundingRequestData, FederalComplianceResponse, FederalComplianceData, AttestationData, AttestationResponse } from './types'
 
 export type BusinessInfoPayload = {
   id: number | null
@@ -47,6 +47,40 @@ export type OwnershipInfoPayload = {
   has_co_borrower: boolean
 }
 
+export type FundingRequestPayload = {
+  id: number | null
+  requested_amount: string | null
+  purpose_of_funds: string | null
+  preferred_funding_type: string | null
+  timeframe_needed: string | null
+  collateral_available: string | null
+}
+
+export type DisclosuresConsentPayload = {
+  id: number | null
+  credit_pull_authorization: boolean
+  terms_conditions_acceptance: boolean
+}
+
+export type FederalCompliancePayload = {
+  id: number | null
+  filed_for_bankruptcy: boolean | null
+  any_pending_lawsuits: boolean | null
+  has_federal_loan: boolean | null
+  has_federal_debt: boolean | null
+  has_criminal_offense: boolean | null
+  has_parole_or_probation: boolean | null
+  suspended_or_debarred: boolean | null
+  any_outstanding_judgments_business: boolean | null
+  any_outstanding_judgments_owner: boolean | null
+  federal_compliance_disclosures_explanation: string | null
+}
+
+export type AttestationPayload = {
+  id: number | null
+  attestation_authorization: boolean
+}
+
 
 export const fetchBusinessInfo = async (): Promise<BusinessInfoData> => {
   const { data } = await apiClient.get<BusinessInfoResponse>('/borrower/funding-application/business-info')
@@ -88,7 +122,32 @@ export const fetchFundingRequest = async (): Promise<FundingRequestData> => {
   return data.data
 }
 
+export const saveFundingRequest = async (payload: FundingRequestPayload): Promise<FundingRequestData> => {
+  const { data } = await apiClient.post<FundingRequestResponse>('/borrower/funding-application/funding-request', payload)
+  return data.data
+}
+
+export const saveDisclosuresConsent = async (payload: DisclosuresConsentPayload): Promise<DisclosuresConsentData> => {
+  const { data } = await apiClient.post<DisclosuresConsentResponse>('/borrower/funding-application/disclosures-and-consent', payload)
+  return data.data
+}
+
 export const fetchFederalCompliance = async (): Promise<FederalComplianceData> => {
   const { data } = await apiClient.get<FederalComplianceResponse>('/borrower/funding-application/federal-compliance-disclosures')
+  return data.data
+}
+
+export const saveFederalCompliance = async (payload: FederalCompliancePayload): Promise<FederalComplianceData> => {
+   const { data } = await apiClient.post<FederalComplianceResponse>('/borrower/funding-application/federal-compliance-disclosures', payload)
+   return data.data
+}
+
+export const fetchAttestation = async (): Promise<AttestationData> => {
+   const { data } = await apiClient.get<AttestationResponse>('/borrower/funding-application/attestation-authorization')
+   return data.data
+}
+
+export const saveAttestation = async (payload: AttestationPayload): Promise<AttestationData> => {
+  const { data } = await apiClient.post<AttestationResponse>('/borrower/funding-application/attestation-authorization', payload)
   return data.data
 }

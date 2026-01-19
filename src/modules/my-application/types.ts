@@ -81,3 +81,67 @@ export interface PreQualificationDetailResponse {
   message: string
   data: PreQualificationDetail
 }
+
+export interface FundingApplication {
+  id: number
+  borrower_id: number
+  status: string
+  full_name: string
+  business_name: string
+  business_email: string
+  business_phone_no: string
+  business_country: string
+  business_country_code: string
+  business_address: string
+  business_city: string
+  business_state: string
+  business_postal_code: string
+  industry_type: string
+  entity_type: string
+  years_in_business: string
+  number_of_employees: string
+  first_name: string
+  last_name: string
+  date_of_birth: string
+  ssn: string
+  citizenship_status: string
+  street_address: string
+  country: string
+  city: string
+  state: string
+  zip_code: string
+  ownership: string
+  has_co_borrower: boolean
+  monthly_revenue: string
+  annual_revenue: string
+  business_bank_name: string
+  business_checking_start_date: string
+  self_reported_personal_credit_score: string
+  self_reported_business_credit_score: string
+  has_business_debt: boolean
+  debt_balance: string
+  requested_amount: string
+  purpose_of_funds: string
+  preferred_funding_type: string
+  timeframe_needed: string
+  collateral_available: string
+  credit_pull_authorization: boolean
+  terms_conditions_acceptance: boolean
+  filed_for_bankruptcy: boolean | null
+  any_pending_lawsuits: boolean | null
+  has_federal_loan: boolean | null
+  has_federal_debt: boolean | null
+  has_criminal_offense: boolean | null
+  has_parole_or_probation: boolean | null
+  suspended_or_debarred: boolean | null
+  any_outstanding_judgments_business: boolean | null
+  any_outstanding_judgments_owner: boolean | null
+  federal_compliance_disclosures_explanation: string | null
+  attestation_authorization: boolean
+}
+
+export interface FundingApplicationResponse {
+  status: boolean
+  message: string
+  data: FundingApplication[]
+}

@@ -151,7 +151,7 @@ export default function Sidebar() {
                 <li className="nav-item">
                   <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/guide"><i className="ri-arrow-right-s-line"></i> <span>Step-By-Step Guide</span></NavLink>
                 </li>
-                <li className="nav-item">
+                {/* <li className="nav-item">
                   <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/vendor-application"><i className="ri-arrow-right-s-line"></i> <span>Vendor Application</span></NavLink>
                 </li>
                 <li className="nav-item">
@@ -159,7 +159,7 @@ export default function Sidebar() {
                 </li>
                 <li className="nav-item">
                   <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/resources"><i className="ri-arrow-right-s-line"></i> <span>Resources</span></NavLink>
-                </li>
+                </li> */}
               </ul>
             </li>
             <li className="nav-item">

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { fetchPreQualificationRequests, fetchAdvisor, fetchPreQualificationDetail } from './services'
+import { fetchPreQualificationRequests, fetchAdvisor, fetchPreQualificationDetail, fetchFundingApplications } from './services'
 
 export const usePreQualificationRequests = (page: number = 1) => {
   return useQuery({
@@ -22,5 +22,13 @@ export const usePreQualificationDetail = (id: number | string) => {
     queryKey: ['pre-qualification-detail', id],
     queryFn: () => fetchPreQualificationDetail(id),
     enabled: !!id,
+  })
+}
+
+export const useFundingApplications = () => {
+  return useQuery({
+    queryKey: ['funding-applications'],
+    queryFn: fetchFundingApplications,
+    staleTime: 0,
   })
 }
