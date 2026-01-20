@@ -1,479 +1,339 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { Tag } from 'primereact/tag';
+import { Button } from 'primereact/button';
+
+// --- Mock Data Constants ---
+const KPI_DATA = [
+    {
+        title: 'Total Partners',
+        value: '559',
+        change: '+16.24 %',
+        isPositive: true,
+        iconClass: 'las la-handshake',
+        iconBg: 'bg-success-subtle',
+        iconColor: 'text-success',
+        linkText: 'View all partners',
+        linkTo: '/partners'
+    },
+    {
+        title: 'Total Clients',
+        value: '894',
+        change: '-3.57 %',
+        isPositive: false,
+        iconClass: 'las la-user-friends',
+        iconBg: 'bg-info-subtle',
+        iconColor: 'text-info',
+        linkText: 'View all clients',
+        linkTo: '#'
+    },
+    {
+        title: 'Total Leads',
+        value: '183',
+        change: '+29.08 %',
+        isPositive: true,
+        iconClass: 'las la-chart-pie',
+        iconBg: 'bg-warning-subtle',
+        iconColor: 'text-warning',
+        linkText: 'View all Leads',
+        linkTo: '#'
+    },
+    {
+        title: 'My Commission',
+        value: '$165.89k',
+        change: '+0.00 %',
+        isPositive: true, // Defaulting to positive/neutral for 0
+        iconClass: 'bx bx-wallet',
+        iconBg: 'bg-primary-subtle',
+        iconColor: 'text-primary',
+        linkText: 'Withdraw money',
+        linkTo: '#'
+    }
+];
+
+const FUNDING_APPS_DATA = [
+    { id: 1, client: 'Vertex Tech Solutions', amount: 250000, date: 'Oct 10, 2025', status: 'Processing' },
+    { id: 2, client: 'Evergreen E-Commerce', amount: 120000, date: 'Oct 12, 2025', status: 'Processing' },
+    { id: 3, client: 'Aurora Logistics Ltd.', amount: 375000, date: 'Oct 15, 2025', status: 'Processing' },
+    { id: 4, client: 'Aurora Logistics Ltd.', amount: 375000, date: 'Oct 15, 2025', status: 'Processing' },
+    { id: 5, client: 'Aurora Logistics Ltd.', amount: 375000, date: 'Oct 15, 2025', status: 'Processing' },
+    { id: 6, client: 'Blue Ridge Construction', amount: 200000, date: 'Oct 17, 2025', status: 'Funded' },
+    { id: 7, client: 'Atlas Bakery Co.', amount: 80000, date: 'Oct 19, 2025', status: 'Processing' },
+];
+
+const PREQUAL_DATA = [
+    { id: 1, client: 'Vertex Tech Solutions', amount: 250000, date: 'Oct 10, 2025', status: 'New' },
+    { id: 2, client: 'Evergreen E-Commerce', amount: 120000, date: 'Oct 12, 2025', status: 'New' },
+    { id: 3, client: 'Aurora Logistics Ltd.', amount: 375000, date: 'Oct 15, 2025', status: 'New' },
+    { id: 4, client: 'Blue Ridge Construction', amount: 200000, date: 'Oct 17, 2025', status: 'Qualified' },
+    { id: 5, client: 'Atlas Bakery Co.', amount: 80000, date: 'Oct 19, 2025', status: 'New' },
+];
+
+const MEETINGS_DATA = [
+    { id: 1, date: '25', day: 'Tue', time: '12:00am - 03:30pm', title: 'Meeting for campaign with sales team' },
+    { id: 2, date: '20', day: 'Wed', time: '02:00pm - 03:45pm', title: 'Adding a new event with attachments' },
+    { id: 3, date: '17', day: 'Wed', time: '04:30pm - 07:15pm', title: 'Create new project Bundling Product' },
+    { id: 4, date: '12', day: 'Tue', time: '10:30am - 01:15pm', title: 'Weekly closed sales won checking with sales team' },
+];
 
 export default function Dashboard() {
-  return (
-    <>
-    <div className="page-content">
-      <div className="container-fluid">
-        {/* Welcome header */}
-        <div className="row mb-3 pb-1">
-          <div className="col-12">
-            <div className="d-flex align-items-lg-center flex-lg-row flex-column">
-              <div className="flex-grow-1">
-                <h4 className="fs-16 mb-1">Welcome, Craig!</h4>
-                <p className="text-muted mb-0">Here's what's happening with your business.</p>
-              </div>
-              <div className="mt-3 mt-lg-0">
-                <form onSubmit={(e) => e.preventDefault()}>
-                  <div className="row g-3 mb-0 align-items-center">
-                    {/* Intentionally left blank to mirror template spacing */}
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
+    // --- Templates for DataTable ---
+    const formatCurrency = (value) => {
+        return value.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 });
+    };
 
-        {/* KPI Cards */}
-        <div className="row">
-          <div className="col-xl-3 col-md-6">
-            <div className="card card-animate">
-              <div className="card-body">
-                <div className="d-flex align-items-center">
-                  <div className="flex-grow-1 overflow-hidden">
-                    <p className="text-uppercase fw-medium text-muted text-truncate mb-0">Total Partners</p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <h5 className="text-success fs-14 mb-0">
-                      <i className="ri-arrow-right-up-line fs-13 align-middle"></i> +16.24 %
-                    </h5>
-                  </div>
-                </div>
-                <div className="d-flex align-items-end justify-content-between mt-4">
-                  <div>
-                    <h4 className="fs-22 fw-semibold ff-secondary mb-4"><span className="counter-value" data-target="559">559</span></h4>
-                    <Link to="/partners" className="text-decoration-underline">View all partners</Link>
-                  </div>
-                  <div className="avatar-sm flex-shrink-0">
-                    <span className="avatar-title bg-success-subtle rounded fs-3">
-                      <i className="las la-handshake text-success"></i>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+    const amountBodyTemplate = (rowData) => {
+        return formatCurrency(rowData.amount);
+    };
 
-          <div className="col-xl-3 col-md-6">
-            <div className="card card-animate">
-              <div className="card-body">
-                <div className="d-flex align-items-center">
-                  <div className="flex-grow-1 overflow-hidden">
-                    <p className="text-uppercase fw-medium text-muted text-truncate mb-0">Total Clients</p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <h5 className="text-danger fs-14 mb-0">
-                      <i className="ri-arrow-right-down-line fs-13 align-middle"></i> -3.57 %
-                    </h5>
-                  </div>
-                </div>
-                <div className="d-flex align-items-end justify-content-between mt-4">
-                  <div>
-                    <h4 className="fs-22 fw-semibold ff-secondary mb-4"><span className="counter-value" data-target="894">894</span></h4>
-                    <a href="#" className="text-decoration-underline">View all clients</a>
-                  </div>
-                  <div className="avatar-sm flex-shrink-0">
-                    <span className="avatar-title bg-info-subtle rounded fs-3">
-                      <i className="las la-user-friends text-info"></i>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+    const statusBodyTemplate = (rowData) => {
+        const getSeverity = (status) => {
+            switch (status) {
+                case 'Funded': return 'success';
+                case 'Qualified': return 'success';
+                case 'Processing': return 'warning';
+                case 'New': return 'info';
+                default: return null;
+            }
+        };
 
-          <div className="col-xl-3 col-md-6">
-            <div className="card card-animate">
-              <div className="card-body">
-                <div className="d-flex align-items-center">
-                  <div className="flex-grow-1 overflow-hidden">
-                    <p className="text-uppercase fw-medium text-muted text-truncate mb-0">Total Leads</p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <h5 className="text-success fs-14 mb-0">
-                      <i className="ri-arrow-right-up-line fs-13 align-middle"></i> +29.08 %
-                    </h5>
-                  </div>
-                </div>
-                <div className="d-flex align-items-end justify-content-between mt-4">
-                  <div>
-                    <h4 className="fs-22 fw-semibold ff-secondary mb-4"><span className="counter-value" data-target="183">183</span></h4>
-                    <a href="#" className="text-decoration-underline">View all Leads</a>
-                  </div>
-                  <div className="avatar-sm flex-shrink-0">
-                    <span className="avatar-title bg-warning-subtle rounded fs-3">
-                      <i className="las la-chart-pie text-warning"></i>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        return <Tag value={rowData.status} severity={getSeverity(rowData.status)}></Tag>;
+    };
 
-          <div className="col-xl-3 col-md-6">
-            <div className="card card-animate">
-              <div className="card-body">
-                <div className="d-flex align-items-center">
-                  <div className="flex-grow-1 overflow-hidden">
-                    <p className="text-uppercase fw-medium text-muted text-truncate mb-0"> My Commission</p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <h5 className="text-muted fs-14 mb-0">+0.00 %</h5>
-                  </div>
-                </div>
-                <div className="d-flex align-items-end justify-content-between mt-4">
-                  <div>
-                    <h4 className="fs-22 fw-semibold ff-secondary mb-4">$<span className="counter-value" data-target="165.89">165.89</span>k</h4>
-                    <a href="#" className="text-decoration-underline">Withdraw money</a>
-                  </div>
-                  <div className="avatar-sm flex-shrink-0">
-                    <span className="avatar-title bg-primary-subtle rounded fs-3">
-                      <i className="bx bx-wallet text-primary"></i>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+    const dateBodyTemplate = (rowData) => {
+        return <span className="text-muted">{rowData.date}</span>;
+    };
 
-        {/* Upcoming Meetings */}
-        <div className="row">
-          <div className="col-xl-6">
-            <div className="card">
-              <div className="card-header align-items-center d-flex">
-                <h4 className="card-title mb-0 flex-grow-1">Upcoming Meetings</h4>
-              </div>
-              <div className="card-body pt-0">
-                <ul className="list-group list-group-flush border-dashed">
-                  <li className="list-group-item ps-0">
-                    <div className="row align-items-center g-3">
-                      <div className="col-auto">
-                        <div className="avatar-sm p-1 py-2 h-auto bg-light rounded-3 material-shadow">
-                          <div className="text-center">
-                            <h5 className="mb-0">25</h5>
-                            <div className="text-muted">Tue</div>
-                          </div>
+    return (
+        <div className="page-content">
+            <div className="container-fluid">
+                
+                {/* --- Header Section --- */}
+                <div className="row mb-4">
+                    <div className="col-12">
+                        <div className="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h4 className="fs-18 fw-bold mb-1 text-dark">Welcome back, Craig! 👋</h4>
+                                <p className="text-muted mb-0 fs-13">Here's what's happening with your business today.</p>
+                            </div>
+                            <div className="d-none d-sm-block">
+                                <div className="d-flex align-items-center gap-2 text-muted fw-medium fs-13 bg-light px-3 py-2 rounded">
+                                    <i className="ri-calendar-line"></i>
+                                    {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                </div>
+                            </div>
                         </div>
-                      </div>
-                      <div className="col">
-                        <h5 className="text-muted mt-0 mb-1 fs-13">12:00am - 03:30pm</h5>
-                        <a href="#" className="text-reset fs-14 mb-0">Meeting for campaign with sales team</a>
-                      </div>
                     </div>
-                  </li>
-                  <li className="list-group-item ps-0">
-                    <div className="row align-items-center g-3">
-                      <div className="col-auto">
-                        <div className="avatar-sm p-1 py-2 h-auto bg-light rounded-3 material-shadow">
-                          <div className="text-center">
-                            <h5 className="mb-0">20</h5>
-                            <div className="text-muted">Wed</div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="col">
-                        <h5 className="text-muted mt-0 mb-1 fs-13">02:00pm - 03:45pm</h5>
-                        <a href="#" className="text-reset fs-14 mb-0">Adding a new event with attachments</a>
-                      </div>
-                    </div>
-                  </li>
-                  <li className="list-group-item ps-0">
-                    <div className="row align-items-center g-3">
-                      <div className="col-auto">
-                        <div className="avatar-sm p-1 py-2 h-auto bg-light rounded-3 material-shadow">
-                          <div className="text-center">
-                            <h5 className="mb-0">17</h5>
-                            <div className="text-muted">Wed</div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="col">
-                        <h5 className="text-muted mt-0 mb-1 fs-13">04:30pm - 07:15pm</h5>
-                        <a href="#" className="text-reset fs-14 mb-0">Create new project Bundling Product</a>
-                      </div>
-                    </div>
-                  </li>
-                  <li className="list-group-item ps-0">
-                    <div className="row align-items-center g-3">
-                      <div className="col-auto">
-                        <div className="avatar-sm p-1 py-2 h-auto bg-light rounded-3 material-shadow">
-                          <div className="text-center">
-                            <h5 className="mb-0">12</h5>
-                            <div className="text-muted">Tue</div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="col">
-                        <h5 className="text-muted mt-0 mb-1 fs-13">10:30am - 01:15pm</h5>
-                        <a href="#" className="text-reset fs-14 mb-0">Weekly closed sales won checking with sales team</a>
-                      </div>
-                    </div>
-                  </li>
-                </ul>
-                <div className="align-items-center mt-2 row g-3 text-center text-sm-start">
-                  <div className="col-sm">
-                    <div className="text-muted">Showing <span className="fw-semibold">4</span> of <span className="fw-semibold">125</span> Results</div>
-                  </div>
-                  <div className="col-sm-auto">
-                    <ul className="pagination pagination-separated pagination-sm justify-content-center justify-content-sm-start mb-0">
-                      <li className="page-item disabled"><a href="#" className="page-link">←</a></li>
-                      <li className="page-item"><a href="#" className="page-link">1</a></li>
-                      <li className="page-item active"><a href="#" className="page-link">2</a></li>
-                      <li className="page-item"><a href="#" className="page-link">3</a></li>
-                      <li className="page-item"><a href="#" className="page-link">→</a></li>
-                    </ul>
-                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Latest Funding Applications */}
-          <div className="col-xxl-6 col-lg-6">
-            <div className="card">
-              <div className="card-header align-items-center d-flex">
-                <h4 className="card-title mb-0 flex-grow-1">Latest Funding Applications</h4>
-                <div className="mt-3 mt-lg-0">
-                  <form onSubmit={(e) => e.preventDefault()}>
-                    <div className="row g-3 mb-0 align-items-center">
-                      <div className="col-sm-auto">
+                {/* --- KPI Cards --- */}
+                <div className="row">
+                    {KPI_DATA.map((kpi, index) => (
+                        <div className="col-xl-3 col-md-6" key={index}>
+                            <div className="card card-animate border-0 shadow-sm h-100">
+                                <div className="card-body">
+                                    <div className="d-flex align-items-center mb-3">
+                                        <div className="flex-grow-1">
+                                            <p className="text-uppercase fw-semibold fs-12 text-muted mb-0">{kpi.title}</p>
+                                        </div>
+                                        <div className={`flex-shrink-0 badge ${kpi.isPositive ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'} fs-11`}>
+                                            <i className={`${kpi.isPositive ? 'ri-arrow-up-line' : 'ri-arrow-down-line'} align-bottom`}></i> {kpi.change}
+                                        </div>
+                                    </div>
+                                    <div className="d-flex align-items-end justify-content-between">
+                                        <div>
+                                            <h4 className="fs-24 fw-bold text-dark mb-4"><span className="counter-value">{kpi.value}</span></h4>
+                                            <Link to={kpi.linkTo} className="text-decoration-none text-primary fs-13 fw-medium">
+                                                {kpi.linkText} <i className="ri-arrow-right-line align-middle ms-1"></i>
+                                            </Link>
+                                        </div>
+                                        <div className="avatar-sm flex-shrink-0">
+                                            <span className={`avatar-title ${kpi.iconBg} rounded-3 fs-2`}>
+                                                <i className={`${kpi.iconClass} ${kpi.iconColor}`}></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* --- Metrics & Meetings Grid --- */}
+                <div className="row mt-2">
+                    
+                    {/* Upcoming Meetings - Left Column on Large Screens */}
+                    <div className="col-xl-4">
+                        <div className="card h-100 border-0 shadow-sm">
+                            <div className="card-header bg-transparent border-bottom-0 d-flex align-items-center justify-content-between py-3">
+                                <h5 className="card-title mb-0 text-dark fw-bold">Upcoming Meetings</h5>
+                                <Link to="#" className="text-primary fs-12 fw-medium">View All</Link>
+                            </div>
+                            <div className="card-body pt-0">
+                                <div className="vstack gap-3">
+                                    {MEETINGS_DATA.map((meeting, idx) => (
+                                        <div className="d-flex align-items-center p-3 rounded-3 bg-light-subtle border" key={idx}>
+                                            <div className="flex-shrink-0 text-center me-3">
+                                                <div className="avatar-sm bg-white rounded-3 shadow-sm d-flex flex-column align-items-center justify-content-center border">
+                                                    <span className="text-dark fw-bold fs-16 lh-1">{meeting.date}</span>
+                                                    <span className="text-muted fs-10 text-uppercase">{meeting.day}</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex-grow-1 overflow-hidden">
+                                                <h6 className="fs-14 mb-1 text-truncate text-dark fw-semibold">{meeting.title}</h6>
+                                                <p className="text-muted fs-12 mb-0"><i className="ri-time-line align-bottom me-1"></i>{meeting.time}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-4 text-center">
+                                    <Button label="Schedule Meeting" icon="ri-calendar-event-line" className="p-button-outlined p-button-sm w-100 rounded-3" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Tables - Right Column on Large Screens */}
+                    <div className="col-xl-8">
+                        {/* Latest Funding Applications */}
+                        <div className="card border-0 shadow-sm mb-4">
+                            <div className="card-header bg-transparent border-bottom-0 d-flex align-items-center justify-content-between py-3">
+                                <h5 className="card-title mb-0 text-dark fw-bold">Latest Funding Applications</h5>
+                                <Link to="#" className="text-primary fs-12 fw-medium">See all applications</Link>
+                            </div>
+                            <div className="card-body p-0">
+                                <DataTable value={fundingAppsData} paginator rows={5} className="p-datatable-sm p-datatable-gridlines-none" stripedRows tableStyle={{ minWidth: '50rem' }}>
+                                    <Column field="client" header="Client Name" className="fw-medium text-dark"></Column>
+                                    <Column field="amount" header="Request Amount" body={amountBodyTemplate}></Column>
+                                    <Column field="date" header="Submission Date" body={dateBodyTemplate}></Column>
+                                    <Column field="status" header="Status" body={statusBodyTemplate}></Column>
+                                    <Column body={() => (
+                                        <Button icon="ri-more-2-fill" rounded text severity="secondary" aria-label="Options" />
+                                    )} style={{ width: '3rem' }}></Column>
+                                </DataTable>
+                            </div>
+                        </div>
+
+                        {/* Latest Prequalification Requests */}
+                        <div className="card border-0 shadow-sm">
+                            <div className="card-header bg-transparent border-bottom-0 d-flex align-items-center justify-content-between py-3">
+                                <h5 className="card-title mb-0 text-dark fw-bold">Latest Prequalification Requests</h5>
+                                <Link to="#" className="text-primary fs-12 fw-medium">See all requests</Link>
+                            </div>
+                            <div className="card-body p-0">
+                                <DataTable value={PREQUAL_DATA} paginator rows={5} className="p-datatable-sm p-datatable-gridlines-none" stripedRows tableStyle={{ minWidth: '50rem' }}>
+                                    <Column field="client" header="Client Name" className="fw-medium text-dark"></Column>
+                                    <Column field="amount" header="Request Amount" body={amountBodyTemplate}></Column>
+                                    <Column field="date" header="Submission Date" body={dateBodyTemplate}></Column>
+                                    <Column field="status" header="Status" body={statusBodyTemplate}></Column>
+                                    <Column body={() => (
+                                        <Button icon="ri-more-2-fill" rounded text severity="secondary" aria-label="Options" />
+                                    )} style={{ width: '3rem' }}></Column>
+                                </DataTable>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+             {/* Modals from template: Add Partner */}
+            <div className="modal fade" id="addnewpartner" tabIndex="-1" aria-labelledby="addnewpartnerLabel" aria-modal="true">
+            <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content">
+                <div className="modal-header">
+                    <h5 className="modal-title" id="addnewpartnerLabel">Add Partner</h5>
+                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div className="modal-body">
+                    <form onSubmit={(e) => e.preventDefault()}>
+                    <div className="row g-3">
+                        <div className="col-12">
                         <div>
-                          <a href="#" className="text-decoration-underline">View All</a>
+                            <label htmlFor="partnerName" className="form-label">Partner Name <span className="text-danger">*</span></label>
+                            <input type="text" className="form-control" id="partnerName" placeholder="Enter partner name" required />
                         </div>
-                      </div>
-                    </div>
-                  </form>
-                </div>
-              </div>
-              <div className="card-body">
-                <div className="table-responsive table-card">
-                  <table className="table table-borderless table-hover table-nowrap align-middle mb-0">
-                    <thead className="table-light">
-                      <tr className="text-muted">
-                        <th scope="col">Client Name</th>
-                        <th scope="col">Request Amount</th>
-                        <th scope="col">Submission Date</th>
-                        <th scope="col">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>Vertex Tech Solutions</td>
-                        <td>$250,000</td>
-                        <td>Oct 10, 2025</td>
-                        <td><span className="badge bg-warning-subtle text-warning p-2">Processing</span></td>
-                      </tr>
-                      <tr>
-                        <td>Evergreen E‑Commerce</td>
-                        <td>$120,000</td>
-                        <td>Oct 12, 2025</td>
-                        <td><span className="badge bg-warning-subtle text-warning p-2">Processing</span></td>
-                      </tr>
-                      <tr>
-                        <td>Aurora Logistics Ltd.</td>
-                        <td>$375,000</td>
-                        <td>Oct 15, 2025</td>
-                        <td><span className="badge bg-warning-subtle text-warning p-2">Processing</span></td>
-                      </tr>
-                      <tr>
-                        <td>Aurora Logistics Ltd.</td>
-                        <td>$375,000</td>
-                        <td>Oct 15, 2025</td>
-                        <td><span className="badge bg-warning-subtle text-warning p-2">Processing</span></td>
-                      </tr>
-                      <tr>
-                        <td>Aurora Logistics Ltd.</td>
-                        <td>$375,000</td>
-                        <td>Oct 15, 2025</td>
-                        <td><span className="badge bg-warning-subtle text-warning p-2">Processing</span></td>
-                      </tr>
-                      <tr>
-                        <td>Blue Ridge Construction</td>
-                        <td>$200,000</td>
-                        <td>Oct 17, 2025</td>
-                        <td><span className="badge bg-success-subtle text-success p-2">Funded</span></td>
-                      </tr>
-                      <tr>
-                        <td>Atlas Bakery Co.</td>
-                        <td>$80,000</td>
-                        <td>Oct 19, 2025</td>
-                        <td><span className="badge bg-warning-subtle text-warning p-2">Processing</span></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Latest Prequalification Requests */}
-        <div className="row">
-          <div className="col-xl-12">
-            <div className="card">
-              <div className="card-header align-items-center d-flex">
-                <h4 className="card-title mb-0 flex-grow-1">Latest Prequalification Requests</h4>
-                <div className="mt-3 mt-lg-0">
-                  <form onSubmit={(e) => e.preventDefault()}>
-                    <div className="row g-3 mb-0 align-items-center">
-                      <div className="col-sm-auto">
+                        </div>
+                        <div className="col-12">
                         <div>
-                          <a href="#" className="text-decoration-underline">View All</a>
+                            <label htmlFor="companyName" className="form-label">Company Name <span className="text-danger">*</span></label>
+                            <input type="text" className="form-control" id="companyName" placeholder="Enter company name" required />
                         </div>
-                      </div>
+                        </div>
+                        <div className="col-12">
+                        <div>
+                            <label htmlFor="partnerEmail" className="form-label">Email Address <span className="text-danger">*</span></label>
+                            <input type="email" className="form-control" id="partnerEmail" placeholder="name@company.com" required />
+                        </div>
+                        </div>
+                        <div className="col-12">
+                        <div>
+                            <label htmlFor="partnerPhone" className="form-label">Phone Number <span className="text-danger">*</span></label>
+                            <input type="text" className="form-control" id="partnerPhone" placeholder="+(1) 234 567 8000" required />
+                        </div>
+                        </div>
+                        <div className="col-lg-12">
+                        <div className="hstack gap-2 justify-content-between">
+                            <Link to="#" className="text-decoration-underline">View full form</Link>
+                            <button type="submit" data-bs-dismiss="modal" data-toast data-toast-text="Successfyll added Partner" data-toast-gravity="bottom" data-toast-position="right" data-toast-duration="3000" data-toast-close="close" className="btn btn-primary">Submit</button>
+                        </div>
+                        </div>
                     </div>
-                  </form>
+                    </form>
                 </div>
-              </div>
-              <div className="card-body">
-                <div className="table-responsive table-card">
-                  <table className="table table-borderless table-hover table-nowrap align-middle mb-0">
-                    <thead className="table-light">
-                      <tr className="text-muted">
-                        <th scope="col">Client Name</th>
-                        <th scope="col">Request Amount</th>
-                        <th scope="col">Submission Date</th>
-                        <th scope="col">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>Vertex Tech Solutions</td>
-                        <td>$250,000</td>
-                        <td>Oct 10, 2025</td>
-                        <td><span className="badge bg-warning-subtle text-warning p-2">New</span></td>
-                      </tr>
-                      <tr>
-                        <td>Evergreen E‑Commerce</td>
-                        <td>$120,000</td>
-                        <td>Oct 12, 2025</td>
-                        <td><span className="badge bg-warning-subtle text-warning p-2">New</span></td>
-                      </tr>
-                      <tr>
-                        <td>Aurora Logistics Ltd.</td>
-                        <td>$375,000</td>
-                        <td>Oct 15, 2025</td>
-                        <td><span className="badge bg-warning-subtle text-warning p-2">New</span></td>
-                      </tr>
-                      <tr>
-                        <td>Blue Ridge Construction</td>
-                        <td>$200,000</td>
-                        <td>Oct 17, 2025</td>
-                        <td><span className="badge bg-success-subtle text-success p-2">Qualified</span></td>
-                      </tr>
-                      <tr>
-                        <td>Atlas Bakery Co.</td>
-                        <td>$80,000</td>
-                        <td>Oct 19, 2025</td>
-                        <td><span className="badge bg-warning-subtle text-warning p-2">New</span></td>
-                      </tr>
-                    </tbody>
-                  </table>
                 </div>
-              </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
+            </div>
 
-    {/* Modals from template: Add Partner */}
-    <div className="modal fade" id="addnewpartner" tabIndex="-1" aria-labelledby="addnewpartnerLabel" aria-modal="true">
-      <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content">
-          <div className="modal-header">
-            <h5 className="modal-title" id="addnewpartnerLabel">Add Partner</h5>
-            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div className="modal-body">
-            <form onSubmit={(e) => e.preventDefault()}>
-              <div className="row g-3">
-                <div className="col-12">
-                  <div>
-                    <label htmlFor="partnerName" className="form-label">Partner Name <span className="text-danger">*</span></label>
-                    <input type="text" className="form-control" id="partnerName" placeholder="Enter partner name" required />
-                  </div>
+            {/* Modals from template: Add Client */}
+            <div className="modal fade" id="addnewClient" tabIndex="-1" aria-labelledby="addnewClientLabel" aria-modal="true">
+            <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content">
+                <div className="modal-header">
+                    <h5 className="modal-title" id="addnewClientLabel">Add Client</h5>
+                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div className="col-12">
-                  <div>
-                    <label htmlFor="companyName" className="form-label">Company Name <span className="text-danger">*</span></label>
-                    <input type="text" className="form-control" id="companyName" placeholder="Enter company name" required />
-                  </div>
+                <div className="modal-body">
+                    <form onSubmit={(e) => e.preventDefault()}>
+                    <div className="row g-3">
+                        <div className="col-12">
+                        <div>
+                            <label htmlFor="partnerName" className="form-label">Name <span className="text-danger">*</span></label>
+                            <input type="text" className="form-control" id="partnerName" placeholder="Enter partner name" required />
+                        </div>
+                        </div>
+                        <div className="col-12">
+                        <div>
+                            <label htmlFor="partnerEmail" className="form-label">Email Address <span className="text-danger">*</span></label>
+                            <input type="email" className="form-control" id="partnerEmail" placeholder="name@company.com" required />
+                        </div>
+                        </div>
+                        <div className="col-12">
+                        <div>
+                            <label htmlFor="partnerPhone" className="form-label">Phone Number <span className="text-danger">*</span></label>
+                            <input type="text" className="form-control" id="partnerPhone" placeholder="+(1) 234 567 8000" required />
+                        </div>
+                        </div>
+                        <div className="col-12">
+                        <div>
+                            <label htmlFor="companyName" className="form-label">Company Name <span className="text-danger">*</span></label>
+                            <input type="text" className="form-control" id="companyName" placeholder="Enter company name" required />
+                        </div>
+                        </div>
+                        <div className="col-lg-12">
+                        <div className="hstack gap-2 justify-content-between">
+                            <Link to="#" className="text-decoration-underline">View full form</Link>
+                            <button type="submit" data-bs-dismiss="modal" data-toast data-toast-text="Successfyll added Partner" data-toast-gravity="bottom" data-toast-position="right" data-toast-duration="3000" data-toast-close="close" className="btn btn-primary">Submit</button>
+                        </div>
+                        </div>
+                    </div>
+                    </form>
                 </div>
-                <div className="col-12">
-                  <div>
-                    <label htmlFor="partnerEmail" className="form-label">Email Address <span className="text-danger">*</span></label>
-                    <input type="email" className="form-control" id="partnerEmail" placeholder="name@company.com" required />
-                  </div>
                 </div>
-                <div className="col-12">
-                  <div>
-                    <label htmlFor="partnerPhone" className="form-label">Phone Number <span className="text-danger">*</span></label>
-                    <input type="text" className="form-control" id="partnerPhone" placeholder="+(1) 234 567 8000" required />
-                  </div>
-                </div>
-                <div className="col-lg-12">
-                  <div className="hstack gap-2 justify-content-between">
-                    <Link to="#" className="text-decoration-underline">View full form</Link>
-                    <button type="submit" data-bs-dismiss="modal" data-toast data-toast-text="Successfyll added Partner" data-toast-gravity="bottom" data-toast-position="right" data-toast-duration="3000" data-toast-close="close" className="btn btn-primary">Submit</button>
-                  </div>
-                </div>
-              </div>
-            </form>
-          </div>
+            </div>
+            </div>
         </div>
-      </div>
-    </div>
-
-    {/* Modals from template: Add Client */}
-    <div className="modal fade" id="addnewClient" tabIndex="-1" aria-labelledby="addnewClientLabel" aria-modal="true">
-      <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content">
-          <div className="modal-header">
-            <h5 className="modal-title" id="addnewClientLabel">Add Client</h5>
-            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div className="modal-body">
-            <form onSubmit={(e) => e.preventDefault()}>
-              <div className="row g-3">
-                <div className="col-12">
-                  <div>
-                    <label htmlFor="partnerName" className="form-label">Name <span className="text-danger">*</span></label>
-                    <input type="text" className="form-control" id="partnerName" placeholder="Enter partner name" required />
-                  </div>
-                </div>
-                <div className="col-12">
-                  <div>
-                    <label htmlFor="partnerEmail" className="form-label">Email Address <span className="text-danger">*</span></label>
-                    <input type="email" className="form-control" id="partnerEmail" placeholder="name@company.com" required />
-                  </div>
-                </div>
-                <div className="col-12">
-                  <div>
-                    <label htmlFor="partnerPhone" className="form-label">Phone Number <span className="text-danger">*</span></label>
-                    <input type="text" className="form-control" id="partnerPhone" placeholder="+(1) 234 567 8000" required />
-                  </div>
-                </div>
-                <div className="col-12">
-                  <div>
-                    <label htmlFor="companyName" className="form-label">Company Name <span className="text-danger">*</span></label>
-                    <input type="text" className="form-control" id="companyName" placeholder="Enter company name" required />
-                  </div>
-                </div>
-                <div className="col-lg-12">
-                  <div className="hstack gap-2 justify-content-between">
-                    <Link to="#" className="text-decoration-underline">View full form</Link>
-                    <button type="submit" data-bs-dismiss="modal" data-toast data-toast-text="Successfyll added Partner" data-toast-gravity="bottom" data-toast-position="right" data-toast-duration="3000" data-toast-close="close" className="btn btn-primary">Submit</button>
-                  </div>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-    </>
-  )
+    );
 }

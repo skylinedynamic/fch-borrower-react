@@ -84,6 +84,7 @@ export default function FundApplication() {
     ssn: '',
     citizenship: '',
     streetAddress: '',
+    country: 'United States',
     city: '',
     state: '',
     zip: '',

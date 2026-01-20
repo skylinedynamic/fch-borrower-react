@@ -20,7 +20,14 @@ export default function StepNavigation({ onBack, onNext, isNextDisabled, isLastS
       )}
       {onNext && (
         <button type="button" className="btn btn-primary" disabled={isNextDisabled || loading} onClick={onNext}>
-          {isLastStep ? 'Submit' : (
+          {loading ? (
+            <>
+              <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+              Submitting...
+            </>
+          ) : isLastStep ? (
+            'Submit'
+          ) : (
             <>
               Next <i className="ri-arrow-right-line ms-1"></i>
             </>

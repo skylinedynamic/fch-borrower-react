@@ -45,7 +45,7 @@ export default function FundingApplications() {
               </thead>
               <tbody>
                 {isLoading ? (
-                  <TableLoader rows={5} columns={8} />
+                  <TableLoader rows={5} columns={7} />
                 ) : (
                   <>
                     {rows.length > 0 ? (
