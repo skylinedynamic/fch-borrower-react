@@ -109,7 +109,7 @@ export default function Dashboard() {
     return (
         <div className="page-content">
             <div className="container-fluid">
-                
+
                 {/* --- Header Section --- */}
                 <div className="row mb-4">
                     <div className="col-12">
@@ -163,7 +163,7 @@ export default function Dashboard() {
 
                 {/* --- Metrics & Meetings Grid --- */}
                 <div className="row mt-2">
-                    
+
                     {/* Upcoming Meetings - Left Column on Large Screens */}
                     <div className="col-xl-4">
                         <div className="card h-100 border-0 shadow-sm">
@@ -204,7 +204,7 @@ export default function Dashboard() {
                                 <Link to="#" className="text-primary fs-12 fw-medium">See all applications</Link>
                             </div>
                             <div className="card-body p-0">
-                                <DataTable value={fundingAppsData} paginator rows={5} className="p-datatable-sm p-datatable-gridlines-none" stripedRows tableStyle={{ minWidth: '50rem' }}>
+                                <DataTable value={FUNDING_APPS_DATA} paginator rows={5} className="p-datatable-sm p-datatable-gridlines-none" stripedRows tableStyle={{ minWidth: '50rem' }}>
                                     <Column field="client" header="Client Name" className="fw-medium text-dark"></Column>
                                     <Column field="amount" header="Request Amount" body={amountBodyTemplate}></Column>
                                     <Column field="date" header="Submission Date" body={dateBodyTemplate}></Column>
@@ -239,100 +239,100 @@ export default function Dashboard() {
 
             </div>
 
-             {/* Modals from template: Add Partner */}
+            {/* Modals from template: Add Partner */}
             <div className="modal fade" id="addnewpartner" tabIndex="-1" aria-labelledby="addnewpartnerLabel" aria-modal="true">
-            <div className="modal-dialog modal-dialog-centered">
-                <div className="modal-content">
-                <div className="modal-header">
-                    <h5 className="modal-title" id="addnewpartnerLabel">Add Partner</h5>
-                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div className="modal-body">
-                    <form onSubmit={(e) => e.preventDefault()}>
-                    <div className="row g-3">
-                        <div className="col-12">
-                        <div>
-                            <label htmlFor="partnerName" className="form-label">Partner Name <span className="text-danger">*</span></label>
-                            <input type="text" className="form-control" id="partnerName" placeholder="Enter partner name" required />
+                <div className="modal-dialog modal-dialog-centered">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h5 className="modal-title" id="addnewpartnerLabel">Add Partner</h5>
+                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        </div>
-                        <div className="col-12">
-                        <div>
-                            <label htmlFor="companyName" className="form-label">Company Name <span className="text-danger">*</span></label>
-                            <input type="text" className="form-control" id="companyName" placeholder="Enter company name" required />
-                        </div>
-                        </div>
-                        <div className="col-12">
-                        <div>
-                            <label htmlFor="partnerEmail" className="form-label">Email Address <span className="text-danger">*</span></label>
-                            <input type="email" className="form-control" id="partnerEmail" placeholder="name@company.com" required />
-                        </div>
-                        </div>
-                        <div className="col-12">
-                        <div>
-                            <label htmlFor="partnerPhone" className="form-label">Phone Number <span className="text-danger">*</span></label>
-                            <input type="text" className="form-control" id="partnerPhone" placeholder="+(1) 234 567 8000" required />
-                        </div>
-                        </div>
-                        <div className="col-lg-12">
-                        <div className="hstack gap-2 justify-content-between">
-                            <Link to="#" className="text-decoration-underline">View full form</Link>
-                            <button type="submit" data-bs-dismiss="modal" data-toast data-toast-text="Successfyll added Partner" data-toast-gravity="bottom" data-toast-position="right" data-toast-duration="3000" data-toast-close="close" className="btn btn-primary">Submit</button>
-                        </div>
+                        <div className="modal-body">
+                            <form onSubmit={(e) => e.preventDefault()}>
+                                <div className="row g-3">
+                                    <div className="col-12">
+                                        <div>
+                                            <label htmlFor="partnerName" className="form-label">Partner Name <span className="text-danger">*</span></label>
+                                            <input type="text" className="form-control" id="partnerName" placeholder="Enter partner name" required />
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div>
+                                            <label htmlFor="companyName" className="form-label">Company Name <span className="text-danger">*</span></label>
+                                            <input type="text" className="form-control" id="companyName" placeholder="Enter company name" required />
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div>
+                                            <label htmlFor="partnerEmail" className="form-label">Email Address <span className="text-danger">*</span></label>
+                                            <input type="email" className="form-control" id="partnerEmail" placeholder="name@company.com" required />
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div>
+                                            <label htmlFor="partnerPhone" className="form-label">Phone Number <span className="text-danger">*</span></label>
+                                            <input type="text" className="form-control" id="partnerPhone" placeholder="+(1) 234 567 8000" required />
+                                        </div>
+                                    </div>
+                                    <div className="col-lg-12">
+                                        <div className="hstack gap-2 justify-content-between">
+                                            <Link to="#" className="text-decoration-underline">View full form</Link>
+                                            <button type="submit" data-bs-dismiss="modal" data-toast data-toast-text="Successfyll added Partner" data-toast-gravity="bottom" data-toast-position="right" data-toast-duration="3000" data-toast-close="close" className="btn btn-primary">Submit</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                    </form>
                 </div>
-                </div>
-            </div>
             </div>
 
             {/* Modals from template: Add Client */}
             <div className="modal fade" id="addnewClient" tabIndex="-1" aria-labelledby="addnewClientLabel" aria-modal="true">
-            <div className="modal-dialog modal-dialog-centered">
-                <div className="modal-content">
-                <div className="modal-header">
-                    <h5 className="modal-title" id="addnewClientLabel">Add Client</h5>
-                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div className="modal-body">
-                    <form onSubmit={(e) => e.preventDefault()}>
-                    <div className="row g-3">
-                        <div className="col-12">
-                        <div>
-                            <label htmlFor="partnerName" className="form-label">Name <span className="text-danger">*</span></label>
-                            <input type="text" className="form-control" id="partnerName" placeholder="Enter partner name" required />
+                <div className="modal-dialog modal-dialog-centered">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h5 className="modal-title" id="addnewClientLabel">Add Client</h5>
+                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        </div>
-                        <div className="col-12">
-                        <div>
-                            <label htmlFor="partnerEmail" className="form-label">Email Address <span className="text-danger">*</span></label>
-                            <input type="email" className="form-control" id="partnerEmail" placeholder="name@company.com" required />
-                        </div>
-                        </div>
-                        <div className="col-12">
-                        <div>
-                            <label htmlFor="partnerPhone" className="form-label">Phone Number <span className="text-danger">*</span></label>
-                            <input type="text" className="form-control" id="partnerPhone" placeholder="+(1) 234 567 8000" required />
-                        </div>
-                        </div>
-                        <div className="col-12">
-                        <div>
-                            <label htmlFor="companyName" className="form-label">Company Name <span className="text-danger">*</span></label>
-                            <input type="text" className="form-control" id="companyName" placeholder="Enter company name" required />
-                        </div>
-                        </div>
-                        <div className="col-lg-12">
-                        <div className="hstack gap-2 justify-content-between">
-                            <Link to="#" className="text-decoration-underline">View full form</Link>
-                            <button type="submit" data-bs-dismiss="modal" data-toast data-toast-text="Successfyll added Partner" data-toast-gravity="bottom" data-toast-position="right" data-toast-duration="3000" data-toast-close="close" className="btn btn-primary">Submit</button>
-                        </div>
+                        <div className="modal-body">
+                            <form onSubmit={(e) => e.preventDefault()}>
+                                <div className="row g-3">
+                                    <div className="col-12">
+                                        <div>
+                                            <label htmlFor="partnerName" className="form-label">Name <span className="text-danger">*</span></label>
+                                            <input type="text" className="form-control" id="partnerName" placeholder="Enter partner name" required />
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div>
+                                            <label htmlFor="partnerEmail" className="form-label">Email Address <span className="text-danger">*</span></label>
+                                            <input type="email" className="form-control" id="partnerEmail" placeholder="name@company.com" required />
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div>
+                                            <label htmlFor="partnerPhone" className="form-label">Phone Number <span className="text-danger">*</span></label>
+                                            <input type="text" className="form-control" id="partnerPhone" placeholder="+(1) 234 567 8000" required />
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div>
+                                            <label htmlFor="companyName" className="form-label">Company Name <span className="text-danger">*</span></label>
+                                            <input type="text" className="form-control" id="companyName" placeholder="Enter company name" required />
+                                        </div>
+                                    </div>
+                                    <div className="col-lg-12">
+                                        <div className="hstack gap-2 justify-content-between">
+                                            <Link to="#" className="text-decoration-underline">View full form</Link>
+                                            <button type="submit" data-bs-dismiss="modal" data-toast data-toast-text="Successfyll added Partner" data-toast-gravity="bottom" data-toast-position="right" data-toast-duration="3000" data-toast-close="close" className="btn btn-primary">Submit</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                    </form>
                 </div>
-                </div>
-            </div>
             </div>
         </div>
     );
