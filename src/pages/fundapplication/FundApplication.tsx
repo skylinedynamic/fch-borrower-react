@@ -90,6 +90,7 @@ export default function FundApplication() {
     zip: '',
     ownershipPct: '',
     hasCoBorrower: false,
+    phoneNumber: '',
   })
   const [financial, setFinancial] = useState<FinancialInfo>({
     monthlyRevenue: '',
