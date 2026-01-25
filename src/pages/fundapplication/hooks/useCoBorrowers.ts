@@ -12,6 +12,7 @@ export const useCoBorrowers = () => {
     mobilePhone: '',
     homePhone: '',
     streetAddress: '',
+    country: 'United States',
     city: '',
     state: '',
     zip: '',

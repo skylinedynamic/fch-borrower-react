@@ -39,6 +39,7 @@ export interface OwnershipInfoData {
   zip_code: string | null
   ownership: string | null
   has_co_borrower: boolean
+  phone_number: string | null
 }
 
 export interface OwnershipInfoResponse {

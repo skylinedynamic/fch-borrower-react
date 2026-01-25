@@ -11,6 +11,7 @@ import { countries } from '../../../../data/countries'
 import { useOwnershipInfo, useSaveOwnershipInfo } from '../../../../modules/funding-application/queries'
 import { citizenshipOptions } from '../../../../data/profile'
 import { toast } from 'react-toastify'
+import { formatPhoneNumber } from '../../../../utils/formatters'
 
 type OwnershipInformationStepProps = {
   owner: OwnerInfo
@@ -68,6 +69,7 @@ export default function OwnershipInformationStep({
         zip: apiData.zip_code || prev.zip,
         ownershipPct: apiData.ownership || prev.ownershipPct,
         hasCoBorrower: apiData.has_co_borrower ?? prev.hasCoBorrower,
+        phoneNumber: apiData.phone_number || prev.phoneNumber,
       }))
     }
   }, [isSuccess, apiData, setOwner])
@@ -144,6 +146,25 @@ export default function OwnershipInformationStep({
       zip_code: owner.zip,
       ownership: owner.ownershipPct,
       has_co_borrower: owner.hasCoBorrower,
+      phone_number: owner.phoneNumber,
+      phone_country_code: countries.find(c => c.name === owner.country)?.phone_code || '+1',
+      co_borrowers: coBorrowers.map(cb => ({
+        first_name: cb.firstName,
+        last_name: cb.lastName,
+        role: cb.role,
+        ownership: cb.ownershipPct,
+        email: cb.email,
+        mobile_phone: cb.mobilePhone,
+        home_phone: cb.homePhone,
+        street_address: cb.streetAddress,
+        city: cb.city,
+        state: cb.state,
+        zip_code: cb.zip,
+        ssn: cb.ssn,
+        date_of_birth: cb.dob,
+        drivers_license_number: cb.driversLicenseNumber,
+        drivers_license_state: cb.driversLicenseState,
+      }))
     }
 
     saveOwnershipInfo(payload, {
@@ -227,6 +248,27 @@ export default function OwnershipInformationStep({
       </div>
 
       <div className="col-md-6">
+        <label className="form-label">Phone Number <span className="text-danger">*</span></label>
+        <div className="input-group">
+          <span className="input-group-text bg-light border">
+            <span className="me-1">{countries.find(c => c.name === owner.country)?.code || 'US'}</span>
+            <span className="text-muted">{countries.find(c => c.name === owner.country)?.phone_code || '+1'}</span>
+          </span>
+          <input
+            type="tel"
+            className={`form-control ${hasError('phone_number') ? 'is-invalid' : ''}`}
+            placeholder="(123) 456-7890"
+            value={owner.phoneNumber}
+            onChange={(e) => setOwner({ ...owner, phoneNumber: formatPhoneNumber(e.target.value) })}
+            maxLength={14}
+          />
+          {hasError('phone_number') && (
+            <div className="invalid-feedback">{getFieldError('phone_number')}</div>
+          )}
+        </div>
+      </div>
+
+      <div className="col-md-6">
         <label className="form-label">Citizenship Status <span className="text-danger">*</span></label>
         <CustomDropdown
           value={owner.citizenship}
@@ -252,6 +294,26 @@ export default function OwnershipInformationStep({
         />
         {hasError('street_address') && (
           <div className="invalid-feedback">{getFieldError('street_address')}</div>
+        )}
+      </div>
+
+      <div className="col-md-6">
+        <label className="form-label">Country <span className="text-danger">*</span></label>
+        <CustomDropdown
+          value={owner.country}
+          onChange={(value) => {
+            // Reset state and city when country changes
+            setOwner({ ...owner, country: value, state: '', city: '' })
+          }}
+          options={countries}
+          optionLabel="name"
+          optionValue="name"
+          placeholder="Select country"
+          searchable={false}
+          className={`w-100 ${hasError('country') ? 'is-invalid' : ''}`}
+        />
+        {hasError('country') && (
+          <div className="invalid-feedback d-block">{getFieldError('country')}</div>
         )}
       </div>
 

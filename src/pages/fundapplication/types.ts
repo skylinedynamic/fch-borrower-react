@@ -32,6 +32,7 @@ export type OwnerInfo = {
   zip: string
   ownershipPct: string
   hasCoBorrower: boolean
+  phoneNumber: string
 }
 
 export type CoBorrower = {
@@ -43,6 +44,7 @@ export type CoBorrower = {
   mobilePhone: string
   homePhone: string
   streetAddress: string
+  country: string
   city: string
   state: string
   zip: string
