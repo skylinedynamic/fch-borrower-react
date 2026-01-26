@@ -1,87 +1,186 @@
-import React from 'react'
-import { docSections, type FileEntry } from '../../types'
+import React, { useState, useEffect } from 'react'
+import { toast } from 'react-toastify'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from '../../../../lib/query'
 import StepNavigation from '../shared/StepNavigation'
-import DocumentUploadSkeleton from '../../../../components/Loader/DocumentUploadSkeleton'
-import DocumentUploadSection from '../shared/DocumentUploadSection'
+import { FileManagerModal } from '../../../../components/FileManagerModal/FileManagerModal'
+import { DocumentSection } from '../../../documents/components/DocumentSection'
+import { submitFileSelection } from '../../../../modules/filemanager/services'
+import type { FileSystemItem } from '../../../../modules/filemanager/types'
+import { useDocumentTypes, useBorrowerDocuments, useDeleteDocument, type BorrowerDocument } from '../../../../modules/documents'
+import { getUser } from '../../../../lib/auth/auth'
+import DeleteConfirmationModal from '../../../../components/GlobalModal/DeleteConfirmModal'
 
 type DocumentUploadStepProps = {
-  sections: string[]
-  docUploads: Record<string, FileEntry[]>
-  docUploading: Record<string, boolean>
-  docProgress: Record<string, number>
-  addDocFiles: (key: string, files: FileList | File[]) => void
-  removeDocFile: (key: string, name: string) => void
-  onDocDrop: (e: React.DragEvent<HTMLDivElement>, key: string) => void
-  acceptTypes: string
   onNext: () => void
   onBack: () => void
   loading: boolean
 }
 
 export default function DocumentUploadStep({
-  sections,
-  docUploads,
-  docUploading,
-  docProgress,
-  addDocFiles,
-  removeDocFile,
-  onDocDrop,
-  acceptTypes,
   onNext,
   onBack,
   loading,
 }: DocumentUploadStepProps) {
-  if (loading) {
-    return <DocumentUploadSkeleton />
+  const [sections, setSections] = useState<string[]>([])
+  const [uploads, setUploads] = useState<Record<string, FileSystemItem[]>>({})
+  const [uploadingSections, setUploadingSections] = useState<Record<string, boolean>>({})
+  const [showFileManager, setShowFileManager] = useState(false)
+  const [currentSection, setCurrentSection] = useState<string>('')
+  const [openSection, setOpenSection] = useState<string | null>(null)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [documentToDelete, setDocumentToDelete] = useState<{ id: number; name: string } | null>(null)
+  
+  const queryClient = useQueryClient()
+
+  // Fetch document types and documents
+  const { data: types, isLoading: typesLoading } = useDocumentTypes()
+  const { data: documentsData, isLoading: docsLoading } = useBorrowerDocuments()
+  const deleteDocumentMutation = useDeleteDocument()
+
+  // Map BorrowerDocument to FileSystemItem for display
+  const mapDocumentToFileItem = (doc: BorrowerDocument): FileSystemItem => ({
+    name: doc.file_name,
+    path: doc.file_path,
+    url: doc.url,
+    isDirectory: false,
+    size: 0,
+    updatedAt: new Date().toISOString(),
+    documentId: doc.id,
+  })
+
+  useEffect(() => {
+    if (types && documentsData) {
+      const sectionNames = types.sort((a, b) => a.sort_order - b.sort_order).map(t => t.name)
+      setSections(sectionNames)
+
+      // Map document_type_id to section name and populate uploads
+      const uploadsMap: Record<string, FileSystemItem[]> = {}
+      sectionNames.forEach(sec => {
+        uploadsMap[sec] = []
+      })
+
+      // Populate uploads based on API data
+      types.forEach(docType => {
+        const docsForType = documentsData[docType.id.toString()] || []
+        uploadsMap[docType.name] = docsForType.map(mapDocumentToFileItem)
+      })
+
+      setUploads(uploadsMap)
+      
+      // Open first section by default
+      if (sectionNames.length > 0 && openSection === null) {
+        setOpenSection(sectionNames[0])
+      }
+    }
+  }, [types, documentsData, openSection])
+
+  const toggleFileManager = (section?: string) => {
+    if (section) {
+      setCurrentSection(section)
+    }
+    setShowFileManager(!showFileManager)
+  }
+
+  const handleFileSelection = async (selectedFiles: FileSystemItem[]) => {
+    if (currentSection && types) {
+      const docType = types.find(t => t.name === currentSection)
+      if (docType) {
+        setUploadingSections(prev => ({ ...prev, [currentSection]: true }))
+        try {
+          const filePaths = selectedFiles.map(f => f.path)
+          
+          await submitFileSelection(filePaths, '/borrower/documents/upload', {
+            document_type_id: docType.id
+          })
+
+          await queryClient.invalidateQueries({ queryKey: queryKeys.documents.list() })
+          toast.success(`${selectedFiles.length} file(s) attached to ${currentSection}`)
+        } catch (error) {
+          console.error('Failed to attach files', error)
+          toast.error('Failed to attach files')
+        } finally {
+          setUploadingSections(prev => ({ ...prev, [currentSection]: false }))
+        }
+      }
+    }
+  }
+
+  const handleRemoveFile = (section: string, documentId: number) => {
+    const file = uploads[section]?.find(f => f.documentId === documentId)
+    if (file) {
+      setDocumentToDelete({ id: documentId, name: file.name })
+      setShowDeleteModal(true)
+    }
+  }
+
+  const confirmDelete = async () => {
+    if (!documentToDelete) return
+
+    deleteDocumentMutation.mutate(documentToDelete.id, {
+      onSuccess: (response) => {
+        toast.success(response.message || 'Document deleted successfully')
+        setShowDeleteModal(false)
+        setDocumentToDelete(null)
+      },
+      onError: (error) => {
+        console.error('Failed to delete document', error)
+        toast.error('Failed to delete document')
+      }
+    })
+  }
+
+  const toggleSection = (section: string) => {
+    setOpenSection(prev => (prev === section ? null : section))
+  }
+
+  if (loading || typesLoading || docsLoading) {
+    return (
+      <div className="text-center py-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="row g-3">
+      <FileManagerModal
+        isOpen={showFileManager}
+        toggle={() => toggleFileManager()}
+        section={currentSection}
+        selectionMode={true}
+        onSelectFiles={handleFileSelection}
+        entityType="borrowers"
+        entityId={getUser()?.entity_id}
+      />
+
+      <DeleteConfirmationModal
+        show={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        loading={deleteDocumentMutation.isPending}
+        text={`Are you sure you want to delete "${documentToDelete?.name}"? This action cannot be undone.`}
+      />
+
       <div className="col-12">
         <div className="accordion" id="fundDocsAccordion">
-          {sections.map((sec, sidx) => (
-            <div className="accordion-item" key={sec}>
-              <h2 className="accordion-header" id={`fund-heading-${sidx}`}>
-                <button
-                  className={`accordion-button ${sidx === 0 ? '' : 'collapsed'}`}
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target={`#fund-collapse-${sidx}`}
-                  aria-expanded={sidx === 0 ? 'true' : 'false'}
-                  aria-controls={`fund-collapse-${sidx}`}
-                >
-                  <span className="status-icon" style={{ marginRight: 10 }}>
-                    {(docUploads[sec] || []).length ? (
-                      <i className="ri-check-fill text-success fs-5 fw-bold"></i>
-                    ) : null}
-                  </span>
-                  <span>{sec}</span>
-                </button>
-              </h2>
-              <div
-                id={`fund-collapse-${sidx}`}
-                className={`accordion-collapse collapse ${sidx === 0 ? 'show' : ''}`}
-                aria-labelledby={`fund-heading-${sidx}`}
-                data-bs-parent="#fundDocsAccordion"
-              >
-                <div className="accordion-body">
-                  <DocumentUploadSection
-                    sectionKey={sec}
-                    sectionIndex={sidx}
-                    uploads={docUploads[sec] || []}
-                    uploading={docUploading[sec] || false}
-                    progress={docProgress[sec] || 0}
-                    onAddFiles={addDocFiles}
-                    onRemoveFile={removeDocFile}
-                    onDrop={onDocDrop}
-                    acceptTypes={acceptTypes}
-                  />
-                </div>
-              </div>
-            </div>
+          {sections.map((sec) => (
+            <DocumentSection
+              key={sec}
+              section={sec}
+              files={uploads[sec] || []}
+              isOpen={openSection === sec}
+              isUploading={uploadingSections[sec] || false}
+              onToggle={() => toggleSection(sec)}
+              onOpenFileManager={toggleFileManager}
+              onRemoveFile={handleRemoveFile}
+            />
           ))}
         </div>
       </div>
+
       <StepNavigation onBack={onBack} onNext={onNext} loading={loading} />
     </div>
   )

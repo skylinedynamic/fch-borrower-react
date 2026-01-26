@@ -377,7 +377,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
                 </div>
                 <div className="col-md-6">
                   <label className="form-label">
-                    Driver's License Number <span className="text-danger">*</span>
+                    Driver's License Number 
                   </label>
                   <input
                     type="text"
@@ -390,7 +390,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
                 </div>
                 <div className="col-md-6">
                   <label className="form-label">
-                    Driver's License State <span className="text-danger">*</span>
+                    Driver's License State
                   </label>
                   <CustomDropdown
                     value={coDraft.driversLicenseState}

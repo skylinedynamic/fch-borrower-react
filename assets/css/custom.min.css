@@ -1887,14 +1887,6 @@
   border: none;
 }
 
-.coborrower-table thead.coborrower-thead tr th:first-child {
-  border-top-left-radius: 10px;
-}
-
-.coborrower-table thead.coborrower-thead tr th:last-child {
-  border-top-right-radius: 10px;
-}
-
 .coborrower-row {
   background: #f3f7fb;
 }
@@ -4989,3 +4981,9 @@
 .sk-checkbox { height: 18px; width: 18px; border-radius: 4px; margin-right: 12px; }
 .sk-card { height: 200px; border-radius: 6px; width: 100%; }
 .sk-text-50 { height: 16px; width: 60%; }
+
+
+.input-group>:not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback){
+  border-top-left-radius: .25rem !important;
+    border-bottom-left-radius: .25rem !important;
+}

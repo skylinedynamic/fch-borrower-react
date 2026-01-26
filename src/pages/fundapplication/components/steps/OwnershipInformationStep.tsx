@@ -17,11 +17,13 @@ type OwnershipInformationStepProps = {
   owner: OwnerInfo
   setOwner: React.Dispatch<React.SetStateAction<OwnerInfo>>
   coBorrowers: CoBorrower[]
+  setCoBorrowers: React.Dispatch<React.SetStateAction<CoBorrower[]>>
   onShowCoModal: () => void
   onDeleteCoBorrower: (idx: number) => void
   coDraft: CoBorrower
   setCoDraft: (data: CoBorrower) => void
   onAddCoBorrower: (e: React.FormEvent) => void
+  onEditCoBorrower: (idx: number) => void
   onNext: () => void
   onBack: () => void
   loading: boolean
@@ -32,11 +34,13 @@ export default function OwnershipInformationStep({
   owner,
   setOwner,
   coBorrowers,
+  setCoBorrowers,
   onShowCoModal,
   onDeleteCoBorrower,
   coDraft,
   setCoDraft,
   onAddCoBorrower,
+  onEditCoBorrower,
   onNext,
   onBack,
   loading,
@@ -71,6 +75,28 @@ export default function OwnershipInformationStep({
         hasCoBorrower: apiData.has_co_borrower ?? prev.hasCoBorrower,
         phoneNumber: apiData.phone_number || prev.phoneNumber,
       }))
+
+      if (apiData.co_borrowers && apiData.co_borrowers.length > 0) {
+        setCoBorrowers(apiData.co_borrowers.map((cb: any) => ({
+          id: cb.id,
+          firstName: cb.first_name,
+          lastName: cb.last_name,
+          role: cb.role,
+          ownershipPct: cb.ownership,
+          email: cb.email,
+          mobilePhone: cb.mobile_phone,
+          homePhone: cb.home_phone,
+          streetAddress: cb.street_address,
+          country: 'United States', // Assuming default or needs mapping if API provides it different
+          city: cb.city,
+          state: cb.state,
+          zip: cb.zip_code,
+          ssn: cb.ssn,
+          dob: cb.date_of_birth,
+          driversLicenseNumber: cb.drivers_license_number,
+          driversLicenseState: cb.drivers_license_state,
+        })))
+      }
     }
   }, [isSuccess, apiData, setOwner])
 
@@ -124,6 +150,23 @@ export default function OwnershipInformationStep({
     }
   }, [owner.city, availableCities])
 
+  // Uncheck hasCoBorrower if modal is closed without adding anyone
+  React.useEffect(() => {
+    const modalEl = document.getElementById('coBorrowerModal')
+    if (modalEl) {
+      const handleHidden = () => {
+        // If no co-borrowers have been added, uncheck the box
+        if (coBorrowers.length === 0) {
+          setOwner((prev) => ({ ...prev, hasCoBorrower: false }))
+        }
+      }
+      modalEl.addEventListener('hidden.bs.modal', handleHidden)
+      return () => {
+        modalEl.removeEventListener('hidden.bs.modal', handleHidden)
+      }
+    }
+  }, [coBorrowers, setOwner])
+
   if (loading || isApiLoading) {
     return <FormSkeleton fieldCount={10} />
   }
@@ -149,6 +192,7 @@ export default function OwnershipInformationStep({
       phone_number: owner.phoneNumber,
       phone_country_code: countries.find(c => c.name === owner.country)?.phone_code || '+1',
       co_borrowers: coBorrowers.map(cb => ({
+        id: cb.id,
         first_name: cb.firstName,
         last_name: cb.lastName,
         role: cb.role,
@@ -439,6 +483,7 @@ export default function OwnershipInformationStep({
           <CoBorrowerTable
             coBorrowers={coBorrowers}
             onDelete={onDeleteCoBorrower}
+            onEdit={onEditCoBorrower}
             onAdd={onShowCoModal}
           />
         </div>

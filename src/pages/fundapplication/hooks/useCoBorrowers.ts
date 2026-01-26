@@ -24,6 +24,7 @@ export const useCoBorrowers = () => {
 
   const [coBorrowers, setCoBorrowers] = useState<CoBorrower[]>([])
   const [coDraft, setCoDraft] = useState<CoBorrower>(emptyCoDraft)
+  const [editIndex, setEditIndex] = useState<number | null>(null)
 
   const showCoModal = () => {
     const el = typeof document !== 'undefined' ? document.getElementById('coBorrowerModal') : null
@@ -37,13 +38,30 @@ export const useCoBorrowers = () => {
     if (el && bs?.Modal) bs.Modal.getInstance(el)?.hide()
   }
 
+  const editCoBorrower = (idx: number) => {
+    setEditIndex(idx)
+    setCoDraft(coBorrowers[idx])
+    showCoModal()
+  }
+
   const submitCoBorrower = (e: React.FormEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setCoBorrowers((prev) => [...prev, coDraft])
+    
+    if (editIndex !== null) {
+      setCoBorrowers((prev) => {
+        const updated = [...prev]
+        updated[editIndex] = coDraft
+        return updated
+      })
+    } else {
+      setCoBorrowers((prev) => [...prev, coDraft])
+    }
+    
     setCoDraft(emptyCoDraft)
+    setEditIndex(null)
     hideCoModal()
-    toast.success('Co-borrower added')
+    toast.success(editIndex !== null ? 'Co-borrower updated' : 'Co-borrower added')
   }
 
   const deleteCoBorrower = (idx: number) => {
@@ -52,11 +70,13 @@ export const useCoBorrowers = () => {
 
   return {
     coBorrowers,
+    setCoBorrowers,
     coDraft,
     setCoDraft,
     showCoModal,
     submitCoBorrower,
     deleteCoBorrower,
+    editCoBorrower,
     emptyCoDraft,
   }
 }

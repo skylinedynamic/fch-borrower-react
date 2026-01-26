@@ -36,6 +36,7 @@ export type OwnerInfo = {
 }
 
 export type CoBorrower = {
+  id?: number | null
   firstName: string
   lastName: string
   role: string

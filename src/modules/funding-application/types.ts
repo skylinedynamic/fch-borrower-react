@@ -40,6 +40,26 @@ export interface OwnershipInfoData {
   ownership: string | null
   has_co_borrower: boolean
   phone_number: string | null
+  co_borrowers?: CoBorrowerApiData[]
+}
+
+export interface CoBorrowerApiData {
+  id: number
+  first_name: string
+  last_name: string
+  role: string
+  ownership: string
+  email: string
+  mobile_phone: string
+  home_phone: string
+  date_of_birth: string
+  ssn: string
+  street_address: string
+  city: string
+  state: string
+  zip_code: string
+  drivers_license_number: string
+  drivers_license_state: string
 }
 
 export interface OwnershipInfoResponse {

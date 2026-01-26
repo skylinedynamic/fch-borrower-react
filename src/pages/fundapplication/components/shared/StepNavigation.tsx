@@ -29,7 +29,7 @@ export default function StepNavigation({ onBack, onNext, isNextDisabled, isLastS
             'Submit'
           ) : (
             <>
-              Next <i className="ri-arrow-right-line ms-1"></i>
+              Save & Next <i className="ri-arrow-right-line ms-1"></i>
             </>
           )}
         </button>

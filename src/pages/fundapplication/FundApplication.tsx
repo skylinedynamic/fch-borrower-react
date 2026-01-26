@@ -14,7 +14,6 @@ import AttestationStep from './components/steps/AttestationStep'
 
 // Hooks
 import { useCoBorrowers } from './hooks/useCoBorrowers'
-import { useDocumentUpload } from './hooks/useDocumentUpload'
 
 // Types & Utils
 import {
@@ -39,23 +38,15 @@ export default function FundApplication() {
   // Hooks
   const {
     coBorrowers,
+    setCoBorrowers,
     coDraft,
     setCoDraft,
     showCoModal,
     submitCoBorrower,
     deleteCoBorrower,
+    editCoBorrower,
     emptyCoDraft,
   } = useCoBorrowers()
-
-  const {
-    docUploads,
-    docUploading,
-    docProgress,
-    addDocFiles,
-    removeDocFile,
-    onDocDrop,
-    acceptTypes,
-  } = useDocumentUpload(docSections)
 
   // Form State
   const [personal, setPersonal] = useState<PersonalInfo>({
@@ -206,9 +197,8 @@ export default function FundApplication() {
   }
 
   const isStepComplete = (idx: number): boolean => {
-    if (idx === 4) {
-      return Object.values(docUploads).some((list) => (list || []).length > 0)
-    }
+    // Document upload step is optional/always valid
+    if (idx === 4) return true
     return isStepValid(idx)
   }
 
@@ -248,11 +238,13 @@ export default function FundApplication() {
             owner={owner}
             setOwner={setOwner}
             coBorrowers={coBorrowers}
+            setCoBorrowers={setCoBorrowers}
             onDeleteCoBorrower={deleteCoBorrower}
             onShowCoModal={showCoModal}
             coDraft={coDraft}
             setCoDraft={setCoDraft}
             onAddCoBorrower={submitCoBorrower}
+            onEditCoBorrower={editCoBorrower}
             isValid={isStepValid(1)}
             {...commonProps}
           />
@@ -276,14 +268,6 @@ export default function FundApplication() {
       case 4:
         return (
           <DocumentUploadStep
-            sections={docSections}
-            docUploads={docUploads}
-            docUploading={docUploading}
-            docProgress={docProgress}
-            addDocFiles={addDocFiles}
-            removeDocFile={removeDocFile}
-            onDocDrop={onDocDrop}
-            acceptTypes={acceptTypes}
             {...commonProps}
           />
         )
