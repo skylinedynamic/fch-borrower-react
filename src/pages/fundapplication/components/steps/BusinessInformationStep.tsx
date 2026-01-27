@@ -7,6 +7,7 @@ import { entityTypes, industryTypes, yearsInBusinessOptions } from '../../../../
 import { countries as countriesData } from '../../../../data/countries'
 import { useBusinessInfo, useSaveBusinessInfo } from '../../../../modules/funding-application/queries'
 import { formatPhoneNumber } from '../../../../utils/formatters'
+import { getCountryCodeByName, getPhoneCodeByName, formatCountryDisplay, getCountryCodeFromDisplay } from '../../../../utils/countryHelpers'
 import { toast } from 'react-toastify'
 
 interface BusinessInformationStepProps {
@@ -44,8 +45,8 @@ export default function BusinessInformationStep({
   const handleSave = useCallback(async (): Promise<boolean> => {
     setValidationErrors({})
 
-    const countryName = personal.phoneCountry.includes('USA') ? 'United States' : 'Canada'
-    const selectedCountry = countriesData.find((c) => c.name === countryName)
+    const countryCode = getCountryCodeFromDisplay(personal.phoneCountry)
+    const selectedCountry = countriesData.find((c) => c.code === countryCode)
 
     const payload = {
       id: businessInfoId,
@@ -93,13 +94,30 @@ export default function BusinessInformationStep({
   useEffect(() => {
     if (isSuccess && apiData) {
       setBusinessInfoId(apiData.id || null)
+
+      // Derive phone display string
+      let phoneDisplay = 'USA (+1)' // default
+      if (apiData.business_country) {
+        const code = getCountryCodeByName(apiData.business_country)
+        const phoneCode = apiData.business_country_code || getPhoneCodeByName(apiData.business_country)
+
+        if (code && phoneCode) {
+          phoneDisplay = formatCountryDisplay(code, phoneCode)
+        }
+      } else if (apiData.country_code || apiData.country) {
+        // Fallback to old property names if business_country is missing
+        const code = apiData.country_code || (apiData.country === 'United States' ? 'USA' : 'CAN')
+        const phoneCode = '+1' // Assuming +1 for default fallback logic as before
+        phoneDisplay = formatCountryDisplay(code, phoneCode)
+      }
+
       setPersonal((prev) => ({
         ...prev,
         fullName: apiData.full_name || prev.fullName,
         businessName: apiData.business_name || prev.businessName,
         email: apiData.business_email || prev.email,
         phoneNumber: apiData.business_phone_no || prev.phoneNumber,
-        phoneCountry: apiData.country_code === 'USA' || apiData.country === 'United States' ? 'USA (+1)' : 'CAN (+1)',
+        phoneCountry: phoneDisplay,
       }))
       setBusiness((prev) => ({
         ...prev,
@@ -129,8 +147,8 @@ export default function BusinessInformationStep({
 
   // Update available states when country changes
   useEffect(() => {
-    const countryName = personal.phoneCountry.includes('USA') ? 'United States' : 'Canada'
-    const selectedCountry = countriesData.find((c) => c.name === countryName)
+    const countryCode = getCountryCodeFromDisplay(personal.phoneCountry)
+    const selectedCountry = countriesData.find((c) => c.code === countryCode)
     if (selectedCountry) {
       setAvailableStates(selectedCountry.states)
     } else {

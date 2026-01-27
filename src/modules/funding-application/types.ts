@@ -5,6 +5,8 @@ export interface BusinessInfoData {
   business_ein: string | null
   business_phone_no: string | null
   business_address: string | null
+  business_country: string | null
+  business_country_code: string | null
   business_email: string | null
   duns_number: string | null
   country: string | null

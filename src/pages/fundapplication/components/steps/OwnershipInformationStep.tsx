@@ -12,6 +12,7 @@ import { useOwnershipInfo, useSaveOwnershipInfo } from '../../../../modules/fund
 import { citizenshipOptions } from '../../../../data/profile'
 import { toast } from 'react-toastify'
 import { formatPhoneNumber } from '../../../../utils/formatters'
+import { getCountryCodeByName, getPhoneCodeByName, getCountryNameByCode, getDefaultCountry } from '../../../../utils/countryHelpers'
 
 interface OwnershipInformationStepProps {
   owner: OwnerInfo
@@ -76,7 +77,7 @@ export default function OwnershipInformationStep({
       ownership: owner.ownershipPct,
       has_co_borrower: owner.hasCoBorrower,
       phone_number: owner.phoneNumber,
-      phone_country_code: countries.find((c) => c.name === owner.country)?.phone_code || '+1',
+      phone_country_code: getPhoneCodeByName(owner.country) || '+1',
       co_borrowers: coBorrowers.map((cb) => ({
         id: cb.id,
         first_name: cb.firstName,
@@ -133,7 +134,7 @@ export default function OwnershipInformationStep({
         ssn: apiData.ssn || prev.ssn,
         citizenship: apiData.citizenship_status || prev.citizenship || citizenshipOptions[0].value,
         streetAddress: apiData.street_address || prev.streetAddress,
-        country: apiData.country || prev.country || 'United States',
+        country: apiData.country || prev.country || getDefaultCountry().name,
         city: apiData.city || prev.city,
         state: apiData.state || prev.state,
         zip: apiData.zip_code || prev.zip,
@@ -154,7 +155,7 @@ export default function OwnershipInformationStep({
             mobilePhone: cb.mobile_phone,
             homePhone: cb.home_phone,
             streetAddress: cb.street_address,
-            country: 'United States',
+            country: getDefaultCountry().name,
             city: cb.city,
             state: cb.state,
             zip: cb.zip_code,
@@ -181,7 +182,11 @@ export default function OwnershipInformationStep({
   // Update available states when country changes
   useEffect(() => {
     if (owner.country) {
-      const selectedCountry = countries.find((c) => c.name === owner.country || c.code === owner.country)
+      // Use helper to verify name, or if owner.country is code (unlikely given Dropdown value='name')
+      // Original: const selectedCountry = countries.find((c) => c.name === owner.country || c.code === owner.country)
+      const code = getCountryCodeByName(owner.country)
+      const selectedCountry = countries.find((c) => c.code === code)
+
       if (selectedCountry && selectedCountry.states) {
         setAvailableStates(selectedCountry.states.map((s) => ({ name: s.name, code: s.code, cities: s.cities })))
       } else {
@@ -316,8 +321,8 @@ export default function OwnershipInformationStep({
           </label>
           <div className="input-group">
             <span className="input-group-text bg-light border">
-              <span className="me-1">{countries.find((c) => c.name === owner.country)?.code || 'US'}</span>
-              <span className="text-muted">{countries.find((c) => c.name === owner.country)?.phone_code || '+1'}</span>
+              <span className="me-1">{getCountryCodeByName(owner.country) || 'US'}</span>
+              <span className="text-muted">{getPhoneCodeByName(owner.country) || '+1'}</span>
             </span>
             <input
               type="tel"
