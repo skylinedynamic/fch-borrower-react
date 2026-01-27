@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '../../lib/query/queryKeys'
-import { fetchBusinessInfo, saveBusinessInfo, fetchOwnershipInfo, saveOwnershipInfo, fetchFinancialInfo, saveFinancialInfo, fetchDisclosuresConsent, saveDisclosuresConsent, fetchFundingRequest, saveFundingRequest, fetchFederalCompliance, saveFederalCompliance, saveAttestation, fetchAttestation } from './services'
+import { fetchBusinessInfo, saveBusinessInfo, fetchOwnershipInfo, saveOwnershipInfo, fetchFinancialInfo, saveFinancialInfo, fetchDisclosuresConsent, saveDisclosuresConsent, fetchFundingRequest, saveFundingRequest, fetchFederalCompliance, saveFederalCompliance, saveAttestation, fetchAttestation, fetchFundingApplicationDocuments, deleteFundingApplicationDocument, uploadFundingApplicationDocuments } from './services'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import type { FundingRequestData, FundingApplicationDocument } from './types'
 
 export const useSaveBusinessInfo = () => {
   const queryClient = useQueryClient()
@@ -111,11 +112,12 @@ export const useDisclosuresConsent = () => {
   })
 }
 
-export const useFundingRequest = () => {
-  return useQuery({
+export const useFundingRequest = (options?: { enabled?: boolean }) => {
+  return useQuery<FundingRequestData>({
     queryKey: queryKeys.fundingApplication.fundingRequest(),
     queryFn: fetchFundingRequest,
     staleTime: 1000 * 60 * 5,
+    enabled: options?.enabled,
   })
 }
 
@@ -124,5 +126,34 @@ export const useFederalCompliance = () => {
     queryKey: queryKeys.fundingApplication.federalCompliance(),
     queryFn: fetchFederalCompliance,
     staleTime: 1000 * 60 * 5,
+  })
+}
+
+export const useFundingApplicationDocuments = (id: number | null, options?: { enabled?: boolean }) => {
+  return useQuery<FundingApplicationDocument[]>({
+    queryKey: queryKeys.fundingApplication.documents(id),
+    queryFn: () => fetchFundingApplicationDocuments(id!),
+    staleTime: 1000 * 60 * 5,
+    enabled: options?.enabled !== undefined ? options.enabled && !!id : !!id,
+  })
+}
+
+export const useDeleteFundingApplicationDocument = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteFundingApplicationDocument,
+    onSuccess: () => {
+      // We'll invalidate in the component since we need the fundingRequestId
+    },
+  })
+}
+
+export const useUploadFundingApplicationDocuments = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: uploadFundingApplicationDocuments,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.fundingApplication.documents(variables.funding_application_id) })
+    },
   })
 }

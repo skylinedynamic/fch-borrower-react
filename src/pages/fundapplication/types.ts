@@ -20,6 +20,7 @@ export type BusinessDetails = {
 }
 
 export type OwnerInfo = {
+  id?: number | null
   firstName: string
   lastName: string
   dob: string

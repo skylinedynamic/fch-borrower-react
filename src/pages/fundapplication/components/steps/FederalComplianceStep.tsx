@@ -1,17 +1,18 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import type { FederalCompliance } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 import { useFederalCompliance, useSaveFederalCompliance } from '../../../../modules/funding-application/queries'
 import { toast } from 'react-toastify'
 
-type FederalComplianceStepProps = {
+interface FederalComplianceStepProps {
   federal: FederalCompliance
   setFederal: React.Dispatch<React.SetStateAction<FederalCompliance>>
   onNext: () => void
   onBack: () => void
   loading: boolean
   isValid: boolean
+  onRegisterSave?: (fn: (() => Promise<boolean>) | null) => void
 }
 
 const questions: { key: keyof FederalCompliance; label: string; apiField: string }[] = [
@@ -33,13 +34,66 @@ export default function FederalComplianceStep({
   onBack,
   loading,
   isValid,
+  onRegisterSave,
 }: FederalComplianceStepProps) {
   const { data: apiData, isLoading: isApiLoading, isSuccess } = useFederalCompliance()
-  const { mutate: saveCompliance, isPending: isSaving } = useSaveFederalCompliance()
+  const { mutateAsync: saveCompliance, isPending: isSaving } = useSaveFederalCompliance()
   const [complianceId, setComplianceId] = useState<number | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
-  React.useEffect(() => {
+  // Helper to map boolean values to payload format
+  const mapPayloadVal = (val: string): boolean | null => {
+    if (val === 'yes') return true
+    if (val === 'no') return false
+    return null
+  }
+
+  // Memoized save handler
+  const handleSave = useCallback(async (): Promise<boolean> => {
+    setValidationErrors({})
+
+    const payload = {
+      id: complianceId,
+      filed_for_bankruptcy: mapPayloadVal(federal.bankruptcy),
+      any_pending_lawsuits: mapPayloadVal(federal.lawsuit),
+      has_federal_loan: mapPayloadVal(federal.federalLoanDefault),
+      has_federal_debt: mapPayloadVal(federal.federalDebtDelinquent),
+      has_criminal_offense: mapPayloadVal(federal.criminalOffense),
+      has_parole_or_probation: mapPayloadVal(federal.paroleProbation),
+      suspended_or_debarred: mapPayloadVal(federal.suspendedDebarred),
+      any_outstanding_judgments_business: mapPayloadVal(federal.judgmentsLiensBusiness),
+      any_outstanding_judgments_owner: mapPayloadVal(federal.judgmentsLiensOwner),
+      federal_compliance_disclosures_explanation: federal.explanation,
+    }
+
+    try {
+      await saveCompliance(payload)
+      return true
+    } catch (error: any) {
+      console.error('Error saving federal compliance:', error)
+      const errors = error.response?.data?.errors
+      if (errors) {
+        setValidationErrors(errors)
+        toast.error('Please resolve validation errors')
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to save federal compliance')
+      }
+      return false
+    }
+  }, [complianceId, federal, saveCompliance])
+
+  // Register save function
+  useEffect(() => {
+    if (onRegisterSave) {
+      onRegisterSave(handleSave)
+    }
+    return () => {
+      if (onRegisterSave) onRegisterSave(null)
+    }
+  }, [onRegisterSave, handleSave])
+
+  // Pre-fill form from API
+  useEffect(() => {
     if (isSuccess && apiData) {
       setComplianceId(apiData.id || null)
 
@@ -65,48 +119,15 @@ export default function FederalComplianceStep({
     }
   }, [isSuccess, apiData, setFederal])
 
-  const handleNext = () => {
-    setValidationErrors({})
-
-    const mapPayloadVal = (val: string): boolean | null => {
-       if (val === 'yes') return true
-       if (val === 'no') return false
-       return null
+  const handleNext = async () => {
+    const success = await handleSave()
+    if (success) {
+      onNext()
     }
-
-    const payload = {
-       id: complianceId,
-       filed_for_bankruptcy: mapPayloadVal(federal.bankruptcy),
-       any_pending_lawsuits: mapPayloadVal(federal.lawsuit),
-       has_federal_loan: mapPayloadVal(federal.federalLoanDefault),
-       has_federal_debt: mapPayloadVal(federal.federalDebtDelinquent),
-       has_criminal_offense: mapPayloadVal(federal.criminalOffense),
-       has_parole_or_probation: mapPayloadVal(federal.paroleProbation),
-       suspended_or_debarred: mapPayloadVal(federal.suspendedDebarred),
-       any_outstanding_judgments_business: mapPayloadVal(federal.judgmentsLiensBusiness),
-       any_outstanding_judgments_owner: mapPayloadVal(federal.judgmentsLiensOwner),
-       federal_compliance_disclosures_explanation: federal.explanation,
-    }
-
-    saveCompliance(payload, {
-       onSuccess: () => {
-          onNext()
-       },
-       onError: (error: any) => {
-          console.error('Error saving federal compliance:', error)
-          const errors = error.response?.data?.errors
-          if (errors) {
-             setValidationErrors(errors)
-             toast.error('Please resolve validation errors')
-          } else {
-             toast.error(error.response?.data?.message || 'Failed to save federal compliance')
-          }
-       }
-    })
   }
 
-  const getApiError = (apiField: string) => {
-     return validationErrors[apiField]
+  const getApiError = (apiField: string): string | undefined => {
+    return validationErrors[apiField]
   }
 
   const anyYes = questions.some((q) => federal[q.key] === 'yes')
@@ -128,9 +149,7 @@ export default function FederalComplianceStep({
                   <span className="fw-medium d-block">
                     {q.label} <span className="text-danger">*</span>
                   </span>
-                  {getApiError(q.apiField) && (
-                     <div className="text-danger small mt-1">{getApiError(q.apiField)}</div>
-                  )}
+                  {getApiError(q.apiField) && <div className="text-danger small mt-1">{getApiError(q.apiField)}</div>}
                 </div>
                 <div className="col-3 text-end">
                   <div className="btn-group" role="group" aria-label={`Select answer for ${q.label}`}>
@@ -178,7 +197,7 @@ export default function FederalComplianceStep({
               onChange={(e) => setFederal({ ...federal, explanation: e.target.value })}
             />
             {validationErrors['federal_compliance_disclosures_explanation'] && (
-               <div className="invalid-feedback">{validationErrors['federal_compliance_disclosures_explanation']}</div>
+              <div className="invalid-feedback">{validationErrors['federal_compliance_disclosures_explanation']}</div>
             )}
             {anyYes && !federal.explanation.trim() && !validationErrors['federal_compliance_disclosures_explanation'] && (
               <div className="form-text text-danger mt-1">Explanation is required when any answer is Yes.</div>
@@ -187,12 +206,7 @@ export default function FederalComplianceStep({
         </div>
       </div>
 
-      <StepNavigation 
-         onBack={onBack} 
-         onNext={handleNext} 
-         isNextDisabled={!stepValid || isSaving} 
-         loading={loading || isSaving} 
-      />
+      <StepNavigation onBack={onBack} onNext={handleNext} isNextDisabled={!stepValid || isSaving} loading={loading || isSaving} />
     </form>
   )
 }

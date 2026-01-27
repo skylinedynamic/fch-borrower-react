@@ -27,6 +27,29 @@ export default function DeleteConfirmationModal({
         backdrop: 'static',
         keyboard: false,
       })
+      
+      // Prevent Bootstrap from adding classes to body that break layout
+      modalRef.current.addEventListener('show.bs.modal', () => {
+        // Remove body classes that Bootstrap adds which can break layout
+        setTimeout(() => {
+          document.body.classList.remove('modal-open')
+          document.body.style.overflow = ''
+          document.body.style.paddingRight = ''
+        }, 10)
+      })
+      
+      modalRef.current.addEventListener('shown.bs.modal', () => {
+        // Ensure backdrop is properly positioned
+        const backdrop = document.querySelector('.modal-backdrop')
+        if (backdrop instanceof HTMLElement) {
+          backdrop.style.position = 'fixed'
+          backdrop.style.top = '0'
+          backdrop.style.left = '0'
+          backdrop.style.width = '100vw'
+          backdrop.style.height = '100vh'
+          backdrop.style.zIndex = '1050'
+        }
+      })
     }
   }, [])
 
@@ -34,10 +57,16 @@ export default function DeleteConfirmationModal({
   useEffect(() => {
     const modal = modalInstanceRef.current
     if (!modal) return
+    
     if (show) {
       modal.show()
     } else {
       modal.hide()
+      // Clean up any remaining backdrop
+      setTimeout(() => {
+        const backdrops = document.querySelectorAll('.modal-backdrop')
+        backdrops.forEach(el => el.remove())
+      }, 300)
     }
   }, [show])
 
@@ -52,6 +81,15 @@ export default function DeleteConfirmationModal({
         } catch (_) { }
       }
       modalInstanceRef.current = null
+      
+      // Clean up any remaining backdrops and restore body
+      setTimeout(() => {
+        const backdrops = document.querySelectorAll('.modal-backdrop')
+        backdrops.forEach(el => el.remove())
+        document.body.classList.remove('modal-open')
+        document.body.style.overflow = ''
+        document.body.style.paddingRight = ''
+      }, 100)
     }
   }, [])
 
@@ -61,6 +99,7 @@ export default function DeleteConfirmationModal({
       ref={modalRef}
       tabIndex={-1}
       aria-hidden="true"
+      style={{ zIndex: 1055 }}
     >
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">

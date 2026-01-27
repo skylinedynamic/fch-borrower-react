@@ -1,5 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-toastify'
 
 // Components
@@ -14,10 +13,10 @@ import AttestationStep from './components/steps/AttestationStep'
 
 // Hooks
 import { useCoBorrowers } from './hooks/useCoBorrowers'
+import { useFundingRequest, useFundingApplicationDocuments } from '../../modules/funding-application/queries'
 
 // Types & Utils
 import {
-  docSections,
   tabs,
   disclosureItems,
   type PersonalInfo,
@@ -30,12 +29,42 @@ import {
   type Attestation,
 } from './types'
 
-export default function FundApplication() {
-  const navigate = useNavigate()
-  const [active, setActive] = useState<number>(0)
-  const [loading, setLoading] = useState(true)
+// Constants
+const STEP_INDICES = {
+  BUSINESS_INFO: 0,
+  OWNERSHIP_INFO: 1,
+  FINANCIAL_INFO: 2,
+  FUNDING_REQUEST: 3,
+  DOCUMENT_UPLOAD: 4,
+  DISCLOSURES: 5,
+  FEDERAL_COMPLIANCE: 6,
+  ATTESTATION: 7,
+} as const
 
-  // Hooks
+const INITIAL_LOADING_DELAY_MS = 700
+
+// Federal compliance question keys for validation
+const FEDERAL_COMPLIANCE_KEYS: (keyof FederalCompliance)[] = [
+  'bankruptcy',
+  'lawsuit',
+  'federalLoanDefault',
+  'federalDebtDelinquent',
+  'criminalOffense',
+  'paroleProbation',
+  'suspendedDebarred',
+  'judgmentsLiensBusiness',
+  'judgmentsLiensOwner',
+]
+
+export default function FundApplication() {
+  const [activeStep, setActiveStep] = useState<number>(STEP_INDICES.BUSINESS_INFO)
+  const [loading, setLoading] = useState(true)
+  const [isNavigatingSave, setIsNavigatingSave] = useState(false)
+  const [mobileOpenIdx, setMobileOpenIdx] = useState<number | null>(STEP_INDICES.BUSINESS_INFO)
+
+  const activeStepSaveRef = React.useRef<(() => Promise<boolean>) | null>(null)
+
+  // Co-borrower hook
   const {
     coBorrowers,
     setCoBorrowers,
@@ -45,7 +74,6 @@ export default function FundApplication() {
     submitCoBorrower,
     deleteCoBorrower,
     editCoBorrower,
-    emptyCoDraft,
   } = useCoBorrowers()
 
   // Form State
@@ -56,6 +84,7 @@ export default function FundApplication() {
     phoneCountry: 'USA (+1)',
     phoneNumber: '',
   })
+
   const [business, setBusiness] = useState<BusinessDetails>({
     businessName: '',
     businessAddress: '',
@@ -68,6 +97,7 @@ export default function FundApplication() {
     yearsInBusiness: '',
     employees: '',
   })
+
   const [owner, setOwner] = useState<OwnerInfo>({
     firstName: '',
     lastName: '',
@@ -83,6 +113,7 @@ export default function FundApplication() {
     hasCoBorrower: false,
     phoneNumber: '',
   })
+
   const [financial, setFinancial] = useState<FinancialInfo>({
     monthlyRevenue: '',
     annualRevenue: '',
@@ -93,6 +124,7 @@ export default function FundApplication() {
     existingDebt: false,
     debtBalance: '',
   })
+
   const [funding, setFunding] = useState<FundingRequest>({
     requestedAmount: '',
     purpose: '',
@@ -100,6 +132,7 @@ export default function FundApplication() {
     timeframe: '',
     collateral: '',
   })
+
   const [federal, setFederal] = useState<FederalCompliance>({
     legalBusinessName: '',
     ein: '',
@@ -119,6 +152,7 @@ export default function FundApplication() {
     judgmentsLiensOwner: '',
     explanation: '',
   })
+
   const [disclosure, setDisclosure] = useState<DisclosureConsent>({
     agreeTerms: false,
     creditCheckConsent: false,
@@ -126,113 +160,205 @@ export default function FundApplication() {
     authorizeVerification: false,
     marketingOptIn: false,
   })
+
   const [attestation, setAttestation] = useState<Attestation>({ certify: false })
 
-  const [mobileOpenIdx, setMobileOpenIdx] = useState<number | null>(0)
+  // Fetch funding request and documents (tab-wise lazy loading)
+  const { data: fundingData } = useFundingRequest({ enabled: activeStep >= STEP_INDICES.FUNDING_REQUEST })
+  const fundingRequestId = fundingData?.id ?? null
+  const { data: documentsData } = useFundingApplicationDocuments(fundingRequestId, {
+    enabled: activeStep >= STEP_INDICES.DOCUMENT_UPLOAD,
+  })
+
+  // Initial loading effect
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 700)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setLoading(false), INITIAL_LOADING_DELAY_MS)
+    return () => clearTimeout(timer)
   }, [])
 
-  const canProceed = useMemo(() => {
-    if (active !== 0) return true
-    return (
+  // Sync mobile accordion with active step
+  useEffect(() => {
+    setMobileOpenIdx(activeStep)
+  }, [activeStep])
+
+  // Callback for steps to register their save function
+  const registerSave = useCallback((fn: (() => Promise<boolean>) | null) => {
+    activeStepSaveRef.current = fn
+  }, [])
+
+  // Validation: Check if business info step can proceed
+  const canProceedFromBusinessInfo = useMemo((): boolean => {
+    return Boolean(
       personal.fullName &&
-      personal.businessName &&
-      personal.email &&
-      personal.phoneNumber &&
-      business.businessName &&
-      business.businessAddress &&
-      business.city &&
-      business.state &&
-      business.incorporationState &&
-      business.zip &&
-      business.industryType &&
-      business.entityType &&
-      business.yearsInBusiness
+        personal.businessName &&
+        personal.email &&
+        personal.phoneNumber &&
+        business.businessName &&
+        business.businessAddress &&
+        business.city &&
+        business.state &&
+        business.incorporationState &&
+        business.zip &&
+        business.industryType &&
+        business.entityType &&
+        business.yearsInBusiness
     )
-  }, [active, personal, business])
+  }, [personal, business])
 
-  const isStepValid = (idx: number): boolean => {
-    if (idx === 0) return !!canProceed
-    if (idx === 1)
-      return !!(
-        owner.firstName &&
-        owner.lastName &&
-        owner.dob &&
-        owner.ssn &&
-        owner.citizenship &&
-        owner.streetAddress &&
-        owner.city &&
-        owner.state &&
-        owner.zip &&
-        owner.ownershipPct
-      )
-    if (idx === 2) {
-      const baseOk = !!(financial.monthlyRevenue && financial.checkingStartDate && financial.personalCreditScore)
-      const debtOk = !financial.existingDebt || !!financial.debtBalance
-      return !!(baseOk && debtOk)
-    }
-    if (idx === 3) return !!(funding.requestedAmount && funding.purpose && funding.fundingType)
-    if (idx === 4) return true
-    if (idx === 5) return disclosureItems.every((item) => disclosure[item.key])
-    if (idx === 6) {
-      const keys: (keyof FederalCompliance)[] = [
-        'bankruptcy',
-        'lawsuit',
-        'federalLoanDefault',
-        'federalDebtDelinquent',
-        'criminalOffense',
-        'paroleProbation',
-        'suspendedDebarred',
-        'judgmentsLiensBusiness',
-        'judgmentsLiensOwner',
-      ]
-      const anyYes = keys.some((k) => federal[k] === 'yes')
-      const allAnswered = keys.every((k) => federal[k] === 'yes' || federal[k] === 'no')
-      return !!(allAnswered && (!anyYes || federal.explanation.trim().length > 0))
-    }
-    if (idx === 7) return !!attestation.certify
-    return false
-  }
+  // Validation: Check if a specific step is valid
+  const isStepValid = useCallback(
+    (stepIndex: number): boolean => {
+      switch (stepIndex) {
+        case STEP_INDICES.BUSINESS_INFO:
+          return canProceedFromBusinessInfo
 
-  const isStepComplete = (idx: number): boolean => {
-    // Document upload step is optional/always valid
-    if (idx === 4) return true
-    return isStepValid(idx)
-  }
+        case STEP_INDICES.OWNERSHIP_INFO:
+          return Boolean(
+            owner.firstName &&
+              owner.lastName &&
+              owner.dob &&
+              owner.ssn &&
+              owner.citizenship &&
+              owner.streetAddress &&
+              owner.city &&
+              owner.state &&
+              owner.zip &&
+              owner.ownershipPct
+          )
 
+        case STEP_INDICES.FINANCIAL_INFO: {
+          const baseFieldsValid = Boolean(
+            financial.monthlyRevenue && financial.checkingStartDate && financial.personalCreditScore
+          )
+          const debtFieldValid = !financial.existingDebt || Boolean(financial.debtBalance)
+          return baseFieldsValid && debtFieldValid
+        }
+
+        case STEP_INDICES.FUNDING_REQUEST:
+          return Boolean(funding.requestedAmount && funding.purpose && funding.fundingType)
+
+        case STEP_INDICES.DOCUMENT_UPLOAD:
+          // Document upload is optional (never blocks navigation)
+          return true
+
+        case STEP_INDICES.DISCLOSURES:
+          return disclosureItems.every((item) => disclosure[item.key])
+
+        case STEP_INDICES.FEDERAL_COMPLIANCE: {
+          const anyYes = FEDERAL_COMPLIANCE_KEYS.some((key) => federal[key] === 'yes')
+          const allAnswered = FEDERAL_COMPLIANCE_KEYS.every((key) => federal[key] === 'yes' || federal[key] === 'no')
+          return allAnswered && (!anyYes || federal.explanation.trim().length > 0)
+        }
+
+        case STEP_INDICES.ATTESTATION:
+          return Boolean(attestation.certify)
+
+        default:
+          return false
+      }
+    },
+    [canProceedFromBusinessInfo, owner, financial, funding, disclosure, federal, attestation]
+  )
+
+  // Check if a step is complete (for progress display)
+  const isStepComplete = useCallback(
+    (stepIndex: number): boolean => {
+      // Document upload shows checkmark ONLY if user passed the tab AND has files
+      if (stepIndex === STEP_INDICES.DOCUMENT_UPLOAD) {
+        return activeStep > STEP_INDICES.DOCUMENT_UPLOAD && Boolean(documentsData && documentsData.length > 0)
+      }
+      return isStepValid(stepIndex)
+    },
+    [activeStep, documentsData, isStepValid]
+  )
+
+  // Progress calculations
   const stepsTotal = tabs.length
-  const completedCount = tabs.reduce((acc, _label, i) => acc + (isStepComplete(i) ? 1 : 0), 0)
+  const completedCount = tabs.reduce((acc, _, index) => acc + (isStepComplete(index) ? 1 : 0), 0)
   const progressPct = Math.round((completedCount / stepsTotal) * 100)
-  const firstInvalidIdx = tabs.findIndex((_, i) => !isStepValid(i))
+  const firstInvalidIdx = tabs.findIndex((_, index) => !isStepValid(index))
   const maxAllowedIdx = firstInvalidIdx === -1 ? stepsTotal - 1 : firstInvalidIdx
 
-  useEffect(() => {
-    setMobileOpenIdx(active)
-  }, [active])
+  // Handle tab switching with auto-save
+  const handleTabSwitch = useCallback(
+    async (targetIndex: number) => {
+      if (targetIndex === activeStep) return
+      if (targetIndex > maxAllowedIdx) return
 
-  const renderStep = (idx: number): React.ReactNode => {
-    const commonProps = {
+      // If navigating backwards, do not save
+      if (targetIndex < activeStep) {
+        setActiveStep(targetIndex)
+        return
+      }
+
+      // If current step has a save function, execute it
+      if (activeStepSaveRef.current) {
+        setIsNavigatingSave(true)
+        try {
+          const success = await activeStepSaveRef.current()
+          if (!success) {
+            // Save failed (validation or API error), do not switch
+            return
+          }
+        } catch (error) {
+          console.error('Auto-save failed', error)
+          return
+        } finally {
+          setIsNavigatingSave(false)
+        }
+      }
+
+      setActiveStep(targetIndex)
+    },
+    [activeStep, maxAllowedIdx]
+  )
+
+  // Handle mobile accordion click
+  const handleMobileTabClick = useCallback(
+    (targetIndex: number) => {
+      if (targetIndex > maxAllowedIdx) return
+
+      // Toggle accordion if clicking the same tab
+      if (mobileOpenIdx === targetIndex) {
+        setMobileOpenIdx(null)
+        return
+      }
+
+      // Switch to the new tab
+      handleTabSwitch(targetIndex)
+    },
+    [mobileOpenIdx, maxAllowedIdx, handleTabSwitch]
+  )
+
+  // Common props for step components
+  const commonStepProps = useMemo(
+    () => ({
       loading,
-      onNext: () => setActive(active + 1),
-      onBack: () => setActive(active - 1),
-    }
+      onNext: () => setActiveStep(activeStep + 1),
+      onBack: () => handleTabSwitch(activeStep - 1),
+      onRegisterSave: registerSave,
+    }),
+    [loading, activeStep, handleTabSwitch, registerSave]
+  )
 
-    switch (idx) {
-      case 0:
+  // Render the current step content
+  const renderStep = (stepIndex: number): React.ReactNode => {
+    switch (stepIndex) {
+      case STEP_INDICES.BUSINESS_INFO:
         return (
           <BusinessInformationStep
             personal={personal}
             setPersonal={setPersonal}
             business={business}
             setBusiness={setBusiness}
-            canProceed={!!canProceed}
-            onNext={() => setActive(1)}
+            canProceed={canProceedFromBusinessInfo}
+            onNext={() => setActiveStep(STEP_INDICES.OWNERSHIP_INFO)}
             loading={loading}
+            onRegisterSave={registerSave}
           />
         )
-      case 1:
+
+      case STEP_INDICES.OWNERSHIP_INFO:
         return (
           <OwnershipInformationStep
             owner={owner}
@@ -245,101 +371,117 @@ export default function FundApplication() {
             setCoDraft={setCoDraft}
             onAddCoBorrower={submitCoBorrower}
             onEditCoBorrower={editCoBorrower}
-            isValid={isStepValid(1)}
-            {...commonProps}
+            isValid={isStepValid(STEP_INDICES.OWNERSHIP_INFO)}
+            {...commonStepProps}
           />
         )
-      case 2:
-        return (
-          <FinancialInformationStep
-            financial={financial}
-            setFinancial={setFinancial}
-            {...commonProps}
-          />
-        )
-      case 3:
-        return (
-          <FundingRequestStep 
-            funding={funding} 
-            setFunding={setFunding} 
-            {...commonProps} 
-          />
-        )
-      case 4:
-        return (
-          <DocumentUploadStep
-            {...commonProps}
-          />
-        )
-      case 5:
+
+      case STEP_INDICES.FINANCIAL_INFO:
+        return <FinancialInformationStep financial={financial} setFinancial={setFinancial} {...commonStepProps} />
+
+      case STEP_INDICES.FUNDING_REQUEST:
+        return <FundingRequestStep funding={funding} setFunding={setFunding} {...commonStepProps} />
+
+      case STEP_INDICES.DOCUMENT_UPLOAD:
+        return <DocumentUploadStep {...commonStepProps} />
+
+      case STEP_INDICES.DISCLOSURES:
         return (
           <DisclosuresStep
             disclosure={disclosure}
             setDisclosure={setDisclosure}
             disclosureItems={disclosureItems}
-            {...commonProps}
+            {...commonStepProps}
           />
         )
-      case 6:
+
+      case STEP_INDICES.FEDERAL_COMPLIANCE:
         return (
           <FederalComplianceStep
             federal={federal}
             setFederal={setFederal}
-            isValid={isStepValid(6)}
-            {...commonProps}
+            isValid={isStepValid(STEP_INDICES.FEDERAL_COMPLIANCE)}
+            {...commonStepProps}
           />
         )
-      case 7:
+
+      case STEP_INDICES.ATTESTATION:
         return (
           <AttestationStep
             attestation={attestation}
             setAttestation={setAttestation}
-            onBack={() => setActive(6)}
+            onBack={() => setActiveStep(STEP_INDICES.FEDERAL_COMPLIANCE)}
             onSubmit={() => toast.success('Application submitted!')}
             loading={loading}
           />
         )
+
       default:
         return null
     }
   }
 
+  // Render step badge (number or checkmark)
+  const renderStepBadge = (stepIndex: number, isCompleted: boolean) => (
+    <span className={`sidebar-step-badge ${isCompleted ? 'completed' : ''}`}>
+      {isCompleted ? <i className="ri-check-line"></i> : stepIndex + 1}
+    </span>
+  )
+
+  // Render progress header
+  const renderProgressHeader = (className?: string) => (
+    <div className={className}>
+      <div className="d-flex align-items-center">
+        <i className="ri-checkbox-circle-line text-success me-2"></i>
+        <span className="fw-semibold fs-15">Application Progress</span>
+        <span className="ms-auto progress-badge">{progressPct}%</span>
+      </div>
+      <div className="small text-muted">
+        Completed {completedCount} of {stepsTotal} steps
+      </div>
+      <progress className="progress-micro" value={completedCount} max={stepsTotal}></progress>
+    </div>
+  )
+
   return (
     <div className="page-content fundapplication-page">
       <div className="container-fluid min-vh-70 pt-2">
+        {/* Page Header */}
         <div className="text-center mb-4">
           <h4 className="mb-1">Start Your Business Funding Application</h4>
-          <div className="text-muted">Apply now to unlock working capital, equipment financing, SBA loans, or credit-building options tailored to your goals.</div>
+          <div className="text-muted">
+            Apply now to unlock working capital, equipment financing, SBA loans, or credit-building options tailored to
+            your goals.
+          </div>
         </div>
 
         <div className="row">
+          {/* Desktop Sidebar */}
           <div className="col-xl-3 col-lg-4 mb-3 d-none d-lg-block">
             <div className="card">
               <div className="card-body p-0 position-relative">
-                <div className="px-2 py-2 border-bottom">
-                  <div className="d-flex align-items-center">
-                    <i className="ri-checkbox-circle-line text-success me-2"></i>
-                    <span className="fw-semibold fs-15">Application Progress</span>
-                    <span className="ms-auto progress-badge">{progressPct}%</span>
-                  </div>
-                  <div className="small text-muted">Completed {completedCount} of {stepsTotal} steps</div>
-                  <progress className="progress-micro" value={completedCount} max={stepsTotal}></progress>
-                </div>
+                {renderProgressHeader('px-2 py-2 border-bottom')}
+
                 <ul className="side-tabs list-unstyled m-0">
                   {tabs.map((label, idx) => {
                     const isCompleted = isStepComplete(idx)
-                    const isActive = active===idx
+                    const isActive = activeStep === idx
+                    const isDisabled = idx > maxAllowedIdx || isNavigatingSave
+
                     return (
                       <li key={label} className="sidebar-li">
                         <button
                           type="button"
-                          className={`side-tab d-flex align-items-center w-100 text-start py-2 px-3 sidebar-step-btn ${isActive?'active-step':''} ${idx>maxAllowedIdx ? 'disabled' : ''}`}
-                          disabled={idx>maxAllowedIdx}
-                          onClick={() => { if (idx<=maxAllowedIdx) setActive(idx) }}
+                          className={`side-tab d-flex align-items-center w-100 text-start py-2 px-3 sidebar-step-btn ${isActive ? 'active-step' : ''} ${idx > maxAllowedIdx ? 'disabled' : ''}`}
+                          disabled={isDisabled}
+                          onClick={() => handleTabSwitch(idx)}
                         >
-                          <span className={`sidebar-step-badge ${isCompleted?'completed':''}`}>{isCompleted ? <i className="ri-check-line"></i> : (idx+1)}</span>
+                          {renderStepBadge(idx, isCompleted)}
                           <span className="fw-semibold sidebar-step-label">{label}</span>
-                          <span className={`sidebar-step-notch ${isActive?'show':''}`}></span>
+                          {isActive && <span className="sidebar-step-notch show"></span>}
+                          {isActive && isNavigatingSave && (
+                            <span className="ms-auto spinner-border spinner-border-sm text-primary"></span>
+                          )}
                         </button>
                       </li>
                     )
@@ -349,59 +491,48 @@ export default function FundApplication() {
             </div>
           </div>
 
+          {/* Desktop Content */}
           <div className="col-xl-9 col-lg-8 d-none d-lg-block">
             <div className="card">
               <div className="card-header d-flex align-items-center">
-                <span className="fw-semibold fs-15">Step {active+1} of {stepsTotal}: {tabs[active]}</span>
+                <span className="fw-semibold fs-15">
+                  Step {activeStep + 1} of {stepsTotal}: {tabs[activeStep]}
+                </span>
                 <span className="ms-auto badge bg-primary">{progressPct}%</span>
               </div>
-              <div className="card-body">
-                {renderStep(active)}
-
-              </div>
+              <div className="card-body">{renderStep(activeStep)}</div>
             </div>
           </div>
+
+          {/* Mobile Accordion */}
           <div className="col-12 d-block d-lg-none">
             <div className="card">
               <div className="card-body p-0">
-                <div className="px-3 py-2 border-bottom progress-section">
-                  <div className="d-flex align-items-center">
-                    <i className="ri-checkbox-circle-line text-success me-2"></i>
-                    <span className="fw-semibold progress-title">Application Progress</span>
-                    <span className="ms-auto progress-badge">{progressPct}%</span>
-                  </div>
-                  <div className="progress-subtitle text-muted">Completed {completedCount} of {stepsTotal} steps</div>
-                  <progress className="progress-micro" value={completedCount} max={stepsTotal}></progress>
-                </div>
+                {renderProgressHeader('px-3 py-2 border-bottom progress-section')}
+
                 <ul className="list-unstyled m-0">
                   {tabs.map((label, idx) => {
                     const isCompleted = isStepComplete(idx)
-                    const isActive = active===idx
+                    const isActive = activeStep === idx
+                    const isDisabled = idx > maxAllowedIdx || isNavigatingSave
+                    const isOpen = mobileOpenIdx === idx
+
                     return (
                       <li key={label} className="border-bottom">
                         <button
                           type="button"
-                          className={`w-100 d-flex align-items-center text-start p-3 side-tab sidebar-step-btn ${isActive?'active-step':''} ${idx>maxAllowedIdx ? 'disabled' : ''}`}
-                          disabled={idx>maxAllowedIdx}
-                          onClick={() => {
-                            if (idx>maxAllowedIdx) return
-                            if (mobileOpenIdx === idx) {
-                              setMobileOpenIdx(null)
-                              return
-                            }
-                            setActive(idx)
-                            setMobileOpenIdx(idx)
-                          }}
+                          className={`w-100 d-flex align-items-center text-start p-3 side-tab sidebar-step-btn ${isActive ? 'active-step' : ''} ${idx > maxAllowedIdx ? 'disabled' : ''}`}
+                          disabled={isDisabled}
+                          onClick={() => handleMobileTabClick(idx)}
                         >
-                          <span className={`sidebar-step-badge ${isCompleted?'completed':''}`}>{isCompleted ? <i className="ri-check-line"></i> : (idx+1)}</span>
+                          {renderStepBadge(idx, isCompleted)}
                           <span className="align-middle fw-semibold">{label}</span>
-                          <i className={`ri-arrow-${mobileOpenIdx===idx?'up':'down'}-s-line ms-auto`}></i>
+                          {isActive && isNavigatingSave && (
+                            <span className="ms-2 spinner-border spinner-border-sm text-primary"></span>
+                          )}
+                          <i className={`ri-arrow-${isOpen ? 'up' : 'down'}-s-line ms-auto`}></i>
                         </button>
-                        {mobileOpenIdx === idx && (
-                          <div className="p-3">
-                            {renderStep(idx)}
-                          </div>
-                        )}
+                        {isOpen && <div className="p-3">{renderStep(idx)}</div>}
                       </li>
                     )
                   })}
@@ -411,7 +542,6 @@ export default function FundApplication() {
           </div>
         </div>
       </div>
-
     </div>
   )
 }

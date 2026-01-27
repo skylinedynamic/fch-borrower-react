@@ -142,3 +142,24 @@ export interface AttestationResponse {
   message: string
   data: AttestationData
 }
+
+export interface FundingApplicationDocument {
+  id: number
+  funding_application_id: number
+  borrower_id: number
+  borrower_doc_type_id: number
+  name: string
+  path: string
+  url: string
+  original_name: string
+  extension: string
+  mime: string
+  size: number
+  created_at: string
+}
+
+export interface FundingApplicationDocumentsResponse {
+  status: boolean
+  message: string
+  data: FundingApplicationDocument[]
+}

@@ -7,7 +7,7 @@ import { useSaveAttestation, useAttestation } from '../../../../modules/funding-
 import { toast } from 'react-toastify'
 import ConfirmationModal from '../../../../components/GlobalModal/ConfirmationModal'
 
-type AttestationStepProps = {
+interface AttestationStepProps {
   attestation: Attestation
   setAttestation: (data: Attestation) => void
   onSubmit: () => void
@@ -18,7 +18,7 @@ type AttestationStepProps = {
 export default function AttestationStep({
   attestation,
   setAttestation,
-  onSubmit, // Note: This prop might be redundant if we handle navigation after API success here, but keeping for now or using as 'onNext' equivalent
+  onSubmit,
   onBack,
   loading,
 }: AttestationStepProps) {
@@ -26,7 +26,7 @@ export default function AttestationStep({
   const [showModal, setShowModal] = useState(false)
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const [attestationId, setAttestationId] = useState<number | null>(null)
-  
+
   const { data: apiData, isLoading: isApiLoading, isSuccess } = useAttestation()
   const { mutate: saveAttestation, isPending: isSaving } = useSaveAttestation()
 
@@ -41,33 +41,33 @@ export default function AttestationStep({
   }, [isSuccess, apiData, setAttestation])
 
   const handleConfirm = () => {
-     setValidationErrors({})
-     const payload = {
-       id: attestationId,
-       attestation_authorization: attestation.certify
-     }
+    setValidationErrors({})
+    const payload = {
+      id: attestationId,
+      attestation_authorization: attestation.certify,
+    }
 
-     saveAttestation(payload, {
-        onSuccess: () => {
-           setShowModal(false)
-           toast.success('Application submitted successfully!')
-           navigate('/my-applications')
-        },
-        onError: (error: any) => {
-           setShowModal(false)
-           console.error('Error submitting application:', error)
-           const errors = error.response?.data?.errors
-           if (errors) {
-              setValidationErrors(errors)
-              toast.error('Please resolve validation errors')
-           } else {
-              toast.error(error.response?.data?.message || 'Failed to submit application')
-           }
+    saveAttestation(payload, {
+      onSuccess: () => {
+        setShowModal(false)
+        toast.success('Application submitted successfully!')
+        navigate('/my-applications')
+      },
+      onError: (error: any) => {
+        setShowModal(false)
+        console.error('Error submitting application:', error)
+        const errors = error.response?.data?.errors
+        if (errors) {
+          setValidationErrors(errors)
+          toast.error('Please resolve validation errors')
+        } else {
+          toast.error(error.response?.data?.message || 'Failed to submit application')
         }
-     })
+      },
+    })
   }
 
-  const getApiError = (field: string) => validationErrors[field]
+  const getApiError = (field: string): string | undefined => validationErrors[field]
 
   if (loading || isApiLoading) {
     return <FormSkeleton fieldCount={1} />
@@ -81,10 +81,10 @@ export default function AttestationStep({
             <div className="card-body">
               <p className="mb-3">
                 By signing below, I certify that all information provided in this application is true, complete, and
-                accurate to the best of my knowledge. I understand that providing false information may be a violation of
-                federal law (18 U.S.C. § 1001) and subject to criminal penalties. I authorize Four Corner Holdings, LLC
-                and its partners to obtain credit reports, verify the information provided, and share it with funding
-                partners as necessary.
+                accurate to the best of my knowledge. I understand that providing false information may be a violation
+                of federal law (18 U.S.C. § 1001) and subject to criminal penalties. I authorize Four Corner Holdings,
+                LLC and its partners to obtain credit reports, verify the information provided, and share it with
+                funding partners as necessary.
               </p>
               <div className="form-check">
                 <input
@@ -104,12 +104,12 @@ export default function AttestationStep({
             </div>
           </div>
         </div>
-        <StepNavigation 
-           onBack={onBack} 
-           onNext={() => setShowModal(true)} 
-           isNextDisabled={!attestation.certify || isSaving} 
-           isLastStep 
-           loading={loading || isSaving || isApiLoading} 
+        <StepNavigation
+          onBack={onBack}
+          onNext={() => setShowModal(true)}
+          isNextDisabled={!attestation.certify || isSaving}
+          isLastStep
+          loading={loading || isSaving || isApiLoading}
         />
       </form>
 

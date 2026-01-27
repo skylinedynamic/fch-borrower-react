@@ -80,7 +80,7 @@ export const DocumentSection: React.FC<DocumentSectionProps> = ({
           onClick={onToggle}
           aria-expanded={isOpen}
         >
-          <span className="status-icon">
+          <span className="status-icon me-2">
             {files.length ? <i className="ri-check-fill text-success"></i> : null}
           </span>
           <span>{section}</span>

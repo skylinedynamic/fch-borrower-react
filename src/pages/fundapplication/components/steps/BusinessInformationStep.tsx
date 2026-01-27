@@ -1,16 +1,15 @@
-import React from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import type { PersonalInfo, BusinessDetails } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 import CustomDropdown from '../shared/CustomDropdown'
 import { entityTypes, industryTypes, yearsInBusinessOptions } from '../../../../data/profile'
 import { countries as countriesData } from '../../../../data/countries'
-import { useState, useMemo, useEffect } from 'react'
 import { useBusinessInfo, useSaveBusinessInfo } from '../../../../modules/funding-application/queries'
 import { formatPhoneNumber } from '../../../../utils/formatters'
 import { toast } from 'react-toastify'
 
-type BusinessInformationStepProps = {
+interface BusinessInformationStepProps {
   personal: PersonalInfo
   setPersonal: React.Dispatch<React.SetStateAction<PersonalInfo>>
   business: BusinessDetails
@@ -18,6 +17,7 @@ type BusinessInformationStepProps = {
   canProceed: boolean
   onNext: () => void
   loading: boolean
+  onRegisterSave?: (fn: (() => Promise<boolean>) | null) => void
 }
 
 export default function BusinessInformationStep({
@@ -28,6 +28,7 @@ export default function BusinessInformationStep({
   canProceed,
   onNext,
   loading,
+  onRegisterSave,
 }: BusinessInformationStepProps) {
   const [availableStates, setAvailableStates] = useState<{ name: string; code: string; cities?: string[] }[]>([])
   const [availableCities, setAvailableCities] = useState<{ name: string; code: string }[]>([])
@@ -37,7 +38,56 @@ export default function BusinessInformationStep({
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
   const { data: apiData, isLoading: isApiLoading, isSuccess } = useBusinessInfo()
-  const { mutate: saveBusinessInfo, isPending: isSaving } = useSaveBusinessInfo()
+  const { mutateAsync: saveBusinessInfo, isPending: isSaving } = useSaveBusinessInfo()
+
+  // Memoized save handler
+  const handleSave = useCallback(async (): Promise<boolean> => {
+    setValidationErrors({})
+
+    const countryName = personal.phoneCountry.includes('USA') ? 'United States' : 'Canada'
+    const selectedCountry = countriesData.find((c) => c.name === countryName)
+
+    const payload = {
+      id: businessInfoId,
+      full_name: personal.fullName,
+      business_name: personal.businessName,
+      business_email: personal.email,
+      business_phone_no: personal.phoneNumber,
+      business_country: selectedCountry?.name || null,
+      business_country_code: selectedCountry?.phone_code || null,
+      business_address: business.businessAddress,
+      business_city: business.city,
+      business_state: business.state,
+      business_postal_code: business.zip,
+      industry_type: business.industryType,
+      entity_type: business.entityType,
+      years_in_business: business.yearsInBusiness,
+      number_of_employees: business.employees ? parseInt(business.employees) : null,
+    }
+
+    try {
+      await saveBusinessInfo(payload)
+      return true
+    } catch (error: any) {
+      const errors = error.response?.data?.errors
+      if (errors) {
+        setValidationErrors(errors)
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to save business information. Please try again.')
+      }
+      return false
+    }
+  }, [businessInfoId, personal, business, saveBusinessInfo])
+
+  // Register save function
+  useEffect(() => {
+    if (onRegisterSave) {
+      onRegisterSave(handleSave)
+    }
+    return () => {
+      if (onRegisterSave) onRegisterSave(null)
+    }
+  }, [onRegisterSave, handleSave])
 
   // Pre-fill form from API
   useEffect(() => {
@@ -49,7 +99,7 @@ export default function BusinessInformationStep({
         businessName: apiData.business_name || prev.businessName,
         email: apiData.business_email || prev.email,
         phoneNumber: apiData.business_phone_no || prev.phoneNumber,
-        phoneCountry: (apiData.country_code === 'USA' || apiData.country === 'United States') ? 'USA (+1)' : 'CAN (+1)',
+        phoneCountry: apiData.country_code === 'USA' || apiData.country === 'United States' ? 'USA (+1)' : 'CAN (+1)',
       }))
       setBusiness((prev) => ({
         ...prev,
@@ -79,7 +129,6 @@ export default function BusinessInformationStep({
 
   // Update available states when country changes
   useEffect(() => {
-    // Determine country from personal.phoneCountry or pre-filled data
     const countryName = personal.phoneCountry.includes('USA') ? 'United States' : 'Canada'
     const selectedCountry = countriesData.find((c) => c.name === countryName)
     if (selectedCountry) {
@@ -122,50 +171,19 @@ export default function BusinessInformationStep({
     return <FormSkeleton fieldCount={14} />
   }
 
-  const handleNext = () => {
-    // Clear previous errors
-    setValidationErrors({})
-
-    const countryName = personal.phoneCountry.includes('USA') ? 'United States' : 'Canada'
-    const selectedCountry = countriesData.find((c) => c.name === countryName)
-
-    const payload = {
-      id: businessInfoId,
-      full_name: personal.fullName,
-      business_name: personal.businessName,
-      business_email: personal.email,
-      business_phone_no: personal.phoneNumber,
-      business_country: selectedCountry?.name || null,
-      business_country_code: selectedCountry?.phone_code || null,
-      business_address: business.businessAddress,
-      business_city: business.city,
-      business_state: business.state,
-      business_postal_code: business.zip,
-      industry_type: business.industryType,
-      entity_type: business.entityType,
-      years_in_business: business.yearsInBusiness,
-      number_of_employees: business.employees ? parseInt(business.employees) : null,
+  const handleNext = async () => {
+    const success = await handleSave()
+    if (success) {
+      onNext()
     }
-
-    saveBusinessInfo(payload, {
-      onSuccess: () => {
-        onNext()
-      },
-      onError: (error: any) => {
-        const errors = error.response?.data?.errors
-        if (errors) {
-          setValidationErrors(errors)
-        } else {
-          toast.error(error.response?.data?.message || 'Failed to save business information. Please try again.')
-        }
-      }
-    })
   }
 
   return (
     <form className="row g-3">
       <div className="col-md-6">
-        <label className="form-label">Full Name <span className="text-danger">*</span></label>
+        <label className="form-label">
+          Full Name <span className="text-danger">*</span>
+        </label>
         <input
           type="text"
           className={`form-control ${hasError('full_name') ? 'is-invalid' : ''}`}
@@ -173,12 +191,12 @@ export default function BusinessInformationStep({
           value={personal.fullName}
           onChange={(e) => setPersonal((prev) => ({ ...prev, fullName: e.target.value }))}
         />
-        {hasError('full_name') && (
-          <div className="invalid-feedback">{getFieldError('full_name')}</div>
-        )}
+        {hasError('full_name') && <div className="invalid-feedback">{getFieldError('full_name')}</div>}
       </div>
       <div className="col-md-6">
-        <label className="form-label">Business Name <span className="text-danger">*</span></label>
+        <label className="form-label">
+          Business Name <span className="text-danger">*</span>
+        </label>
         <input
           type="text"
           className={`form-control ${hasError('business_name') ? 'is-invalid' : ''}`}
@@ -186,12 +204,12 @@ export default function BusinessInformationStep({
           value={personal.businessName}
           onChange={(e) => setPersonal((prev) => ({ ...prev, businessName: e.target.value }))}
         />
-        {hasError('business_name') && (
-          <div className="invalid-feedback">{getFieldError('business_name')}</div>
-        )}
+        {hasError('business_name') && <div className="invalid-feedback">{getFieldError('business_name')}</div>}
       </div>
       <div className="col-md-6">
-        <label className="form-label">Email <span className="text-danger">*</span></label>
+        <label className="form-label">
+          Email <span className="text-danger">*</span>
+        </label>
         <input
           type="email"
           className={`form-control ${hasError('business_email') ? 'is-invalid' : ''}`}
@@ -199,12 +217,12 @@ export default function BusinessInformationStep({
           value={personal.email}
           onChange={(e) => setPersonal((prev) => ({ ...prev, email: e.target.value }))}
         />
-        {hasError('business_email') && (
-          <div className="invalid-feedback">{getFieldError('business_email')}</div>
-        )}
+        {hasError('business_email') && <div className="invalid-feedback">{getFieldError('business_email')}</div>}
       </div>
       <div className="col-md-6">
-        <label className="form-label">Mobile Phone <span className="text-danger">*</span></label>
+        <label className="form-label">
+          Mobile Phone <span className="text-danger">*</span>
+        </label>
         <div className="input-group">
           <span className="input-group-text bg-light border" style={{ width: '120px' }}>
             {personal.phoneCountry}
@@ -216,14 +234,14 @@ export default function BusinessInformationStep({
             value={personal.phoneNumber}
             onChange={(e) => setPersonal((prev) => ({ ...prev, phoneNumber: formatPhoneNumber(e.target.value) }))}
           />
-          {hasError('business_phone_no') && (
-            <div className="invalid-feedback">{getFieldError('business_phone_no')}</div>
-          )}
+          {hasError('business_phone_no') && <div className="invalid-feedback">{getFieldError('business_phone_no')}</div>}
         </div>
       </div>
 
       <div className="col-md-6">
-        <label className="form-label">Business Street Address <span className="text-danger">*</span></label>
+        <label className="form-label">
+          Business Street Address <span className="text-danger">*</span>
+        </label>
         <input
           type="text"
           className={`form-control ${hasError('business_address') ? 'is-invalid' : ''}`}
@@ -231,9 +249,7 @@ export default function BusinessInformationStep({
           value={business.businessAddress}
           onChange={(e) => setBusiness((prev) => ({ ...prev, businessAddress: e.target.value }))}
         />
-        {hasError('business_address') && (
-          <div className="invalid-feedback">{getFieldError('business_address')}</div>
-        )}
+        {hasError('business_address') && <div className="invalid-feedback">{getFieldError('business_address')}</div>}
       </div>
 
       <div className={showCityInput ? 'col-md-3' : 'col-md-6'}>
@@ -259,9 +275,7 @@ export default function BusinessInformationStep({
           className={`w-100 ${hasError('business_city') ? 'is-invalid' : ''}`}
           disabled={!business.state}
         />
-        {hasError('business_city') && (
-          <div className="invalid-feedback d-block">{getFieldError('business_city')}</div>
-        )}
+        {hasError('business_city') && <div className="invalid-feedback d-block">{getFieldError('business_city')}</div>}
       </div>
 
       {showCityInput && (
@@ -281,9 +295,7 @@ export default function BusinessInformationStep({
             }}
             required
           />
-          {hasError('business_city') && (
-            <div className="invalid-feedback">{getFieldError('business_city')}</div>
-          )}
+          {hasError('business_city') && <div className="invalid-feedback">{getFieldError('business_city')}</div>}
         </div>
       )}
 
@@ -299,27 +311,27 @@ export default function BusinessInformationStep({
             if (selectedStateObj && selectedStateObj.cities && selectedStateObj.cities.length > 0) {
               defaultCity = selectedStateObj.cities[0]
             }
-            setBusiness((prev) => ({ 
-              ...prev, 
-              state: value, 
+            setBusiness((prev) => ({
+              ...prev,
+              state: value,
               incorporationState: value,
-              city: defaultCity 
+              city: defaultCity,
             }))
           }}
           options={availableStates}
           optionLabel="name"
-          optionValue="name" // Switched to name to match BusinessDetails.tsx and pre-filled data
+          optionValue="name"
           searchable={true}
           placeholder="Select state"
           className={`w-100 ${hasError('business_state') ? 'is-invalid' : ''}`}
         />
-        {hasError('business_state') && (
-          <div className="invalid-feedback d-block">{getFieldError('business_state')}</div>
-        )}
+        {hasError('business_state') && <div className="invalid-feedback d-block">{getFieldError('business_state')}</div>}
       </div>
 
       <div className="col-md-6">
-        <label className="form-label">Zip Code <span className="text-danger">*</span></label>
+        <label className="form-label">
+          Zip Code <span className="text-danger">*</span>
+        </label>
         <input
           type="text"
           className={`form-control ${hasError('business_postal_code') ? 'is-invalid' : ''}`}
@@ -346,9 +358,7 @@ export default function BusinessInformationStep({
           placeholder="Select industry type"
           className={`w-100 ${hasError('industry_type') ? 'is-invalid' : ''}`}
         />
-        {hasError('industry_type') && (
-          <div className="invalid-feedback d-block">{getFieldError('industry_type')}</div>
-        )}
+        {hasError('industry_type') && <div className="invalid-feedback d-block">{getFieldError('industry_type')}</div>}
       </div>
       <div className="col-md-6">
         <label className="form-label">
@@ -363,9 +373,7 @@ export default function BusinessInformationStep({
           placeholder="Select entity type"
           className={`w-100 ${hasError('entity_type') ? 'is-invalid' : ''}`}
         />
-        {hasError('entity_type') && (
-          <div className="invalid-feedback d-block">{getFieldError('entity_type')}</div>
-        )}
+        {hasError('entity_type') && <div className="invalid-feedback d-block">{getFieldError('entity_type')}</div>}
       </div>
 
       <div className="col-md-6">
@@ -399,11 +407,7 @@ export default function BusinessInformationStep({
         )}
       </div>
 
-      <StepNavigation
-        onNext={handleNext}
-        isNextDisabled={!canProceed || isSaving}
-        loading={loading || isApiLoading || isSaving}
-      />
+      <StepNavigation onNext={handleNext} isNextDisabled={!canProceed || isSaving} loading={loading || isApiLoading || isSaving} />
     </form>
   )
 }

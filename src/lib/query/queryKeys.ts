@@ -55,5 +55,6 @@ export const queryKeys = {
     disclosuresConsent: () => [...queryKeys.fundingApplication.all, 'disclosuresConsent'] as const,
     fundingRequest: () => [...queryKeys.fundingApplication.all, 'fundingRequest'] as const,
     federalCompliance: () => [...queryKeys.fundingApplication.all, 'federalCompliance'] as const,
+    documents: (id: number | null) => [...queryKeys.fundingApplication.all, 'documents', id] as const,
   },
 } as const

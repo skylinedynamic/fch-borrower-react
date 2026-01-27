@@ -1,20 +1,19 @@
-import React from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import type { FundingRequest } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 import CustomDropdown from '../shared/CustomDropdown'
 import { purposeOfFundingOptions, fundingTypeOptions, timeframeOptions, collateralOptions } from '../../../../data/profile'
-
 import { useFundingRequest, useSaveFundingRequest } from '../../../../modules/funding-application/queries'
-import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 
-type FundingRequestStepProps = {
+interface FundingRequestStepProps {
   funding: FundingRequest
   setFunding: (data: FundingRequest) => void
   onNext: () => void
   onBack: () => void
   loading: boolean
+  onRegisterSave?: (fn: (() => Promise<boolean>) | null) => void
 }
 
 export default function FundingRequestStep({
@@ -23,12 +22,52 @@ export default function FundingRequestStep({
   onNext,
   onBack,
   loading,
+  onRegisterSave,
 }: FundingRequestStepProps) {
   const { data: apiData, isLoading: isApiLoading, isSuccess } = useFundingRequest()
   const saveMutation = useSaveFundingRequest()
   const [fundingRequestId, setFundingRequestId] = useState<number | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
+  // Memoized save handler
+  const handleSave = useCallback(async (): Promise<boolean> => {
+    setValidationErrors({})
+
+    const payload = {
+      id: fundingRequestId,
+      requested_amount: funding.requestedAmount || null,
+      purpose_of_funds: funding.purpose || null,
+      preferred_funding_type: funding.fundingType || null,
+      timeframe_needed: funding.timeframe || null,
+      collateral_available: funding.collateral || null,
+    }
+
+    try {
+      await saveMutation.mutateAsync(payload)
+      return true
+    } catch (error: any) {
+      console.error('Error saving funding request:', error)
+      const errors = error.response?.data?.errors
+      if (errors) {
+        setValidationErrors(errors)
+      } else {
+        toast.error(error?.response?.data?.message || 'Failed to save funding request')
+      }
+      return false
+    }
+  }, [fundingRequestId, funding, saveMutation])
+
+  // Register save function
+  useEffect(() => {
+    if (onRegisterSave) {
+      onRegisterSave(handleSave)
+    }
+    return () => {
+      if (onRegisterSave) onRegisterSave(null)
+    }
+  }, [onRegisterSave, handleSave])
+
+  // Pre-fill form from API
   useEffect(() => {
     if (isSuccess && apiData) {
       setFundingRequestId(apiData.id || null)
@@ -56,30 +95,9 @@ export default function FundingRequestStep({
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
 
-    // Clear previous errors
-    setValidationErrors({})
-
-    const payload = {
-      id: fundingRequestId,
-      requested_amount: funding.requestedAmount || null,
-      purpose_of_funds: funding.purpose || null,
-      preferred_funding_type: funding.fundingType || null,
-      timeframe_needed: funding.timeframe || null,
-      collateral_available: funding.collateral || null,
-    }
-
-    try {
-      await saveMutation.mutateAsync(payload)
-      // toast.success('Funding request saved successfully')
+    const success = await handleSave()
+    if (success) {
       onNext()
-    } catch (error: any) {
-      console.error('Error saving funding request:', error)
-      const errors = error.response?.data?.errors
-      if (errors) {
-        setValidationErrors(errors)
-      } else {
-        toast.error(error?.response?.data?.message || 'Failed to save funding request')
-      }
     }
   }
 
@@ -92,20 +110,22 @@ export default function FundingRequestStep({
   return (
     <form className="row g-3" onSubmit={handleSubmit}>
       <div className="col-md-6">
-        <label className="form-label">Requested Amount <span className="text-danger">*</span></label>
-        <input 
-          type="number" 
-          className={`form-control ${hasError('requested_amount') ? 'is-invalid' : ''}`} 
-          placeholder="Enter requested amount" 
-          value={funding.requestedAmount} 
-          onChange={(e)=>setFunding({...funding,requestedAmount:e.target.value})} 
+        <label className="form-label">
+          Requested Amount <span className="text-danger">*</span>
+        </label>
+        <input
+          type="number"
+          className={`form-control ${hasError('requested_amount') ? 'is-invalid' : ''}`}
+          placeholder="Enter requested amount"
+          value={funding.requestedAmount}
+          onChange={(e) => setFunding({ ...funding, requestedAmount: e.target.value })}
         />
-        {hasError('requested_amount') && (
-          <div className="invalid-feedback">{getFieldError('requested_amount')}</div>
-        )}
+        {hasError('requested_amount') && <div className="invalid-feedback">{getFieldError('requested_amount')}</div>}
       </div>
       <div className="col-md-6">
-        <label className="form-label">Purpose of Funds <span className="text-danger">*</span></label>
+        <label className="form-label">
+          Purpose of Funds <span className="text-danger">*</span>
+        </label>
         <CustomDropdown
           value={funding.purpose}
           onChange={(value) => setFunding({ ...funding, purpose: value })}
@@ -121,7 +141,9 @@ export default function FundingRequestStep({
       </div>
 
       <div className="col-md-6">
-        <label className="form-label">Preferred Funding Type <span className="text-danger">*</span></label>
+        <label className="form-label">
+          Preferred Funding Type <span className="text-danger">*</span>
+        </label>
         <CustomDropdown
           value={funding.fundingType}
           onChange={(value) => setFunding({ ...funding, fundingType: value })}
@@ -167,11 +189,11 @@ export default function FundingRequestStep({
         )}
       </div>
 
-      <StepNavigation 
-        onBack={onBack} 
-        onNext={handleSubmit} 
-        isNextDisabled={!isValid} 
-        loading={loading || isApiLoading || saveMutation.isPending} 
+      <StepNavigation
+        onBack={onBack}
+        onNext={handleSubmit}
+        isNextDisabled={!isValid}
+        loading={loading || isApiLoading || saveMutation.isPending}
       />
     </form>
   )

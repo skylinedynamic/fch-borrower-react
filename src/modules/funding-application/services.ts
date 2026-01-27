@@ -1,5 +1,5 @@
 import { apiClient } from '../../lib/http/apiClient'
-import type { BusinessInfoResponse, BusinessInfoData, OwnershipInfoResponse, OwnershipInfoData, FinancialInfoResponse, FinancialInfoData, DisclosuresConsentResponse, DisclosuresConsentData, FundingRequestResponse, FundingRequestData, FederalComplianceResponse, FederalComplianceData, AttestationData, AttestationResponse } from './types'
+import type { BusinessInfoResponse, BusinessInfoData, OwnershipInfoResponse, OwnershipInfoData, FinancialInfoResponse, FinancialInfoData, DisclosuresConsentResponse, DisclosuresConsentData, FundingRequestResponse, FundingRequestData, FederalComplianceResponse, FederalComplianceData, AttestationData, AttestationResponse, FundingApplicationDocument, FundingApplicationDocumentsResponse } from './types'
 
 export type BusinessInfoPayload = {
   id: number | null
@@ -150,4 +150,23 @@ export const fetchAttestation = async (): Promise<AttestationData> => {
 export const saveAttestation = async (payload: AttestationPayload): Promise<AttestationData> => {
   const { data } = await apiClient.post<AttestationResponse>('/borrower/funding-application/attestation-authorization', payload)
   return data.data
+}
+
+export const fetchFundingApplicationDocuments = async (id: number): Promise<FundingApplicationDocument[]> => {
+  const { data } = await apiClient.get<FundingApplicationDocumentsResponse>(`/borrower/funding-application/documents/${id}`)
+  return data.data
+}
+
+export const deleteFundingApplicationDocument = async (documentId: number): Promise<{ message: string }> => {
+  const { data } = await apiClient.delete(`/borrower/funding-application/documents/${documentId}`)
+  return data
+}
+
+export const uploadFundingApplicationDocuments = async (payload: {
+  funding_application_id: number
+  document_type_id: number
+  files: string[]
+}): Promise<{ message: string }> => {
+  const { data } = await apiClient.post('/borrower/funding-application/documents/upload', payload)
+  return data
 }

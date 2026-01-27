@@ -7,45 +7,69 @@ import { FileManagerModal } from '../../../../components/FileManagerModal/FileMa
 import { DocumentSection } from '../../../documents/components/DocumentSection'
 import { submitFileSelection } from '../../../../modules/filemanager/services'
 import type { FileSystemItem } from '../../../../modules/filemanager/types'
-import { useDocumentTypes, useBorrowerDocuments, useDeleteDocument, type BorrowerDocument } from '../../../../modules/documents'
+import { useDocumentTypes } from '../../../../modules/documents'
 import { getUser } from '../../../../lib/auth/auth'
 import DeleteConfirmationModal from '../../../../components/GlobalModal/DeleteConfirmModal'
+import { useFundingRequest, useFundingApplicationDocuments, useDeleteFundingApplicationDocument, useUploadFundingApplicationDocuments } from '../../../../modules/funding-application/queries'
+import type { FundingApplicationDocument } from '../../../../modules/funding-application/types'
+import DocumentUploadSkeleton from '../../../../components/Loader/DocumentUploadSkeleton'
 
 type DocumentUploadStepProps = {
   onNext: () => void
   onBack: () => void
   loading: boolean
+  onRegisterSave?: (fn: (() => Promise<boolean>) | null) => void
 }
 
 export default function DocumentUploadStep({
   onNext,
   onBack,
   loading,
+  onRegisterSave,
 }: DocumentUploadStepProps) {
   const [sections, setSections] = useState<string[]>([])
   const [uploads, setUploads] = useState<Record<string, FileSystemItem[]>>({})
+
+  // Register null save function (this step has no auto-save)
+  useEffect(() => {
+    if (onRegisterSave) {
+      onRegisterSave(null)
+    }
+  }, [onRegisterSave])
+
   const [uploadingSections, setUploadingSections] = useState<Record<string, boolean>>({})
   const [showFileManager, setShowFileManager] = useState(false)
   const [currentSection, setCurrentSection] = useState<string>('')
   const [openSection, setOpenSection] = useState<string | null>(null)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [documentToDelete, setDocumentToDelete] = useState<{ id: number; name: string } | null>(null)
+  const [fundingRequestId, setFundingRequestId] = useState<number | null>(null)
   
   const queryClient = useQueryClient()
 
-  // Fetch document types and documents
-  const { data: types, isLoading: typesLoading } = useDocumentTypes()
-  const { data: documentsData, isLoading: docsLoading } = useBorrowerDocuments()
-  const deleteDocumentMutation = useDeleteDocument()
+  // Fetch funding request to get ID
+  const { data: fundingData } = useFundingRequest()
+  
+  useEffect(() => {
+    if (fundingData?.id) {
+        setFundingRequestId(fundingData.id)
+    }
+  }, [fundingData])
 
-  // Map BorrowerDocument to FileSystemItem for display
-  const mapDocumentToFileItem = (doc: BorrowerDocument): FileSystemItem => ({
-    name: doc.file_name,
-    path: doc.file_path,
+  // Fetch document types and funding documents
+  const { data: types, isLoading: typesLoading } = useDocumentTypes()
+  const { data: documentsData, isLoading: docsLoading } = useFundingApplicationDocuments(fundingRequestId)
+  const deleteDocumentMutation = useDeleteFundingApplicationDocument()
+  const uploadDocumentsMutation = useUploadFundingApplicationDocuments()
+
+  // Map FundingApplicationDocument to FileSystemItem for display
+  const mapDocumentToFileItem = (doc: FundingApplicationDocument): FileSystemItem => ({
+    name: doc.name, // Use 'name' as per API response
+    path: doc.path,
     url: doc.url,
     isDirectory: false,
-    size: 0,
-    updatedAt: new Date().toISOString(),
+    size: doc.size,
+    updatedAt: doc.created_at,
     documentId: doc.id,
   })
 
@@ -60,9 +84,10 @@ export default function DocumentUploadStep({
         uploadsMap[sec] = []
       })
 
-      // Populate uploads based on API data
+      // Populate uploads based on API data (array of documents)
+      // We need to match borrower_doc_type_id with docType.id
       types.forEach(docType => {
-        const docsForType = documentsData[docType.id.toString()] || []
+        const docsForType = (documentsData || []).filter((d: FundingApplicationDocument) => d.borrower_doc_type_id === docType.id)
         uploadsMap[docType.name] = docsForType.map(mapDocumentToFileItem)
       })
 
@@ -83,18 +108,19 @@ export default function DocumentUploadStep({
   }
 
   const handleFileSelection = async (selectedFiles: FileSystemItem[]) => {
-    if (currentSection && types) {
+    if (currentSection && types && fundingRequestId) {
       const docType = types.find(t => t.name === currentSection)
       if (docType) {
         setUploadingSections(prev => ({ ...prev, [currentSection]: true }))
         try {
           const filePaths = selectedFiles.map(f => f.path)
           
-          await submitFileSelection(filePaths, '/borrower/documents/upload', {
-            document_type_id: docType.id
+          await uploadDocumentsMutation.mutateAsync({
+            funding_application_id: fundingRequestId,
+            document_type_id: docType.id,
+            files: filePaths,
           })
 
-          await queryClient.invalidateQueries({ queryKey: queryKeys.documents.list() })
           toast.success(`${selectedFiles.length} file(s) attached to ${currentSection}`)
         } catch (error) {
           console.error('Failed to attach files', error)
@@ -122,9 +148,10 @@ export default function DocumentUploadStep({
         toast.success(response.message || 'Document deleted successfully')
         setShowDeleteModal(false)
         setDocumentToDelete(null)
+        // Invalidate fetching docs
+        queryClient.invalidateQueries({ queryKey: queryKeys.fundingApplication.documents(fundingRequestId) })
       },
       onError: (error) => {
-        console.error('Failed to delete document', error)
         toast.error('Failed to delete document')
       }
     })
@@ -135,17 +162,11 @@ export default function DocumentUploadStep({
   }
 
   if (loading || typesLoading || docsLoading) {
-    return (
-      <div className="text-center py-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    )
+    return <DocumentUploadSkeleton />
   }
 
   return (
-    <div className="row g-3">
+    <>
       <FileManagerModal
         isOpen={showFileManager}
         toggle={() => toggleFileManager()}
@@ -164,24 +185,26 @@ export default function DocumentUploadStep({
         text={`Are you sure you want to delete "${documentToDelete?.name}"? This action cannot be undone.`}
       />
 
-      <div className="col-12">
-        <div className="accordion" id="fundDocsAccordion">
-          {sections.map((sec) => (
-            <DocumentSection
-              key={sec}
-              section={sec}
-              files={uploads[sec] || []}
-              isOpen={openSection === sec}
-              isUploading={uploadingSections[sec] || false}
-              onToggle={() => toggleSection(sec)}
-              onOpenFileManager={toggleFileManager}
-              onRemoveFile={handleRemoveFile}
-            />
-          ))}
+      <div className="row g-3" style={{ position: 'relative' }}>
+        <div className="col-12">
+          <div className="accordion" id="fundDocsAccordion">
+            {sections.map((sec) => (
+              <DocumentSection
+                key={sec}
+                section={sec}
+                files={uploads[sec] || []}
+                isOpen={openSection === sec}
+                isUploading={uploadingSections[sec] || false}
+                onToggle={() => toggleSection(sec)}
+                onOpenFileManager={toggleFileManager}
+                onRemoveFile={handleRemoveFile}
+              />
+            ))}
+          </div>
         </div>
-      </div>
 
-      <StepNavigation onBack={onBack} onNext={onNext} loading={loading} />
-    </div>
+        <StepNavigation onBack={onBack} onNext={onNext} loading={loading} />
+      </div>
+    </>  
   )
 }
