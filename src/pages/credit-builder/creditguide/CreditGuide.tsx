@@ -101,7 +101,7 @@ export default function CreditGuide() {
             </div>
           </div>
 
-          <div className="col-xl-9">
+          <div className="col-xl-12">
             <div className="card mb-3">
               <div className="card-body">
                 {isLoadingProgress || !progressData ? (
@@ -163,10 +163,10 @@ export default function CreditGuide() {
             </div>
           </div>
 
-          <div className="col-xl-3">
+          {/* <div className="col-xl-3">
             <ActivityLog />
             <RecommendedActions />
-          </div>
+          </div> */}
         </div>
       </div>
       

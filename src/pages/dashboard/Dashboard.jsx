@@ -4,6 +4,8 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Tag } from 'primereact/tag';
 import { Button } from 'primereact/button';
+import { useUnpaidInvoiceContext } from '../../contexts/UnpaidInvoiceContext';
+import { useNavigate } from 'react-router-dom';
 
 // --- Mock Data Constants ---
 const KPI_DATA = [
@@ -79,6 +81,9 @@ const MEETINGS_DATA = [
 ];
 
 export default function Dashboard() {
+    const { hasUnpaidInvoices, unpaidInvoices } = useUnpaidInvoiceContext();
+    const navigate = useNavigate();
+    
     // --- Templates for DataTable ---
     const formatCurrency = (value) => {
         return value.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 });
@@ -127,6 +132,66 @@ export default function Dashboard() {
                         </div>
                     </div>
                 </div>
+
+                {/* --- Unpaid Invoices Section ---  */}
+                {hasUnpaidInvoices && (
+                    <div className="row mb-4">
+                        <div className="col-12">
+                            <div className="card border-0 shadow-sm border-start border-danger border-3">
+                                <div className="card-body p-4">
+                                    <div className="d-flex align-items-start">
+                                        <div className="flex-shrink-0">
+                                            <div className="avatar-md bg-danger-subtle rounded d-flex align-items-center justify-content-center">
+                                                <i className="ri-error-warning-line text-danger fs-2"></i>
+                                            </div>
+                                        </div>
+                                        <div className="flex-grow-1 ms-3">
+                                            <h5 className="fw-semibold mb-2">Payment Required</h5>
+                                            <p className="text-muted mb-3">
+                                                You have <strong className="text-danger">{unpaidInvoices.length}</strong> unpaid {unpaidInvoices.length > 1 ? 'invoices' : 'invoice'} totaling{' '}
+                                                <strong className="text-danger">
+                                                    ${unpaidInvoices.reduce((sum, inv) => {
+                                                        const amt = typeof inv.payment_amount === 'string' ? parseFloat(inv.payment_amount) : inv.payment_amount;
+                                                        return sum + amt;
+                                                    }, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                </strong>. Please settle your account to unlock all features.
+                                            </p>
+                                            
+                                            {/* Invoice List */}
+                                            <div className="list-group list-group-flush mb-3">
+                                                {unpaidInvoices.map((invoice, idx) => {
+                                                    const amount = typeof invoice.payment_amount === 'string' ? parseFloat(invoice.payment_amount) : invoice.payment_amount;
+                                                    return (
+                                                        <div key={idx} className="list-group-item px-0 py-3 border-top">
+                                                            <div className="d-flex justify-content-between align-items-center">
+                                                                <div>
+                                                                    <h6 className="mb-1 fw-semibold">{invoice.invoice_id}</h6>
+                                                                    <p className="text-muted mb-0 fs-13">{invoice.customer_name}</p>
+                                                                </div>
+                                                                <div className="text-end">
+                                                                    <div className="fw-bold text-dark mb-1">${amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+                                                                    <span className="badge bg-warning-subtle text-warning">{invoice.status}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            <button 
+                                                className="btn btn-danger"
+                                                onClick={() => navigate('/invoices')}
+                                            >
+                                                <i className="ri-secure-payment-line me-2"></i>
+                                                View & Pay Invoices
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* --- KPI Cards --- */}
                 <div className="row">
@@ -203,7 +268,7 @@ export default function Dashboard() {
                                 <h5 className="card-title mb-0 text-dark fw-bold">Latest Funding Applications</h5>
                                 <Link to="#" className="text-primary fs-12 fw-medium">See all applications</Link>
                             </div>
-                            <div className="card-body p-0">
+                            <div className="card-body">
                                 <DataTable value={FUNDING_APPS_DATA} paginator rows={5} className="p-datatable-sm p-datatable-gridlines-none" stripedRows tableStyle={{ minWidth: '50rem' }}>
                                     <Column field="client" header="Client Name" className="fw-medium text-dark"></Column>
                                     <Column field="amount" header="Request Amount" body={amountBodyTemplate}></Column>
@@ -222,7 +287,7 @@ export default function Dashboard() {
                                 <h5 className="card-title mb-0 text-dark fw-bold">Latest Prequalification Requests</h5>
                                 <Link to="#" className="text-primary fs-12 fw-medium">See all requests</Link>
                             </div>
-                            <div className="card-body p-0">
+                            <div className="card-body">
                                 <DataTable value={PREQUAL_DATA} paginator rows={5} className="p-datatable-sm p-datatable-gridlines-none" stripedRows tableStyle={{ minWidth: '50rem' }}>
                                     <Column field="client" header="Client Name" className="fw-medium text-dark"></Column>
                                     <Column field="amount" header="Request Amount" body={amountBodyTemplate}></Column>

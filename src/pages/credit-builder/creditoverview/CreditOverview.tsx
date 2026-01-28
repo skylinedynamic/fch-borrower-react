@@ -28,15 +28,15 @@ export default function CreditOverview() {
               </div>
             </div>
           </div>
-          <div className="col-xl-9">
+          <div className="col-xl-12">
             <CreditProgress />
             <TaskStatusCards />
             <VideoPlayerSection />
           </div>
-          <div className="col-xl-3">
+          {/* <div className="col-xl-3">
             <ActivityLog />
             <RecommendedActions />
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

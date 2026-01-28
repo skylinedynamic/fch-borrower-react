@@ -14,6 +14,7 @@ import Documents from '../src/pages/documents/Documents.tsx'
 import { ProtectedRoute, GuestRoute, checkSession } from './lib/auth'
 import Profile from '../src/pages/profile/profile.tsx'
 import MyApplication from '../src/pages/myapplication/MyApplication.tsx'
+import Invoices from '../src/pages/invoices/Invoices.jsx'
 import Appointments from '../src/pages/appointment/Appointments.tsx'
 import CreditOverview from '../src/pages/credit-builder/creditoverview/CreditOverview.tsx'
 import VendorApplication from '../src/pages/credit-builder/creditvendorapplication/VendorApplication.tsx'
@@ -22,6 +23,8 @@ import CreditResources from '../src/pages/credit-builder/creditresources/CreditR
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import ProfileCompleteCheckModal from './components/ProfileCompleteCheckModal/ProfileCompleteCheckModal'
+import { UnpaidInvoiceProvider } from './contexts/UnpaidInvoiceContext'
+import { UnpaidInvoiceGuard } from './lib/auth/UnpaidInvoiceGuard'
 
 
 export default function App() {
@@ -30,7 +33,7 @@ export default function App() {
   }, [])
 
   return (
-    <>
+    <UnpaidInvoiceProvider>
       <ToastContainer position="top-right" autoClose={3000} />
       <Routes>
         <Route element={<GuestRoute />}>
@@ -51,26 +54,27 @@ export default function App() {
         
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="pre-qualification" element={<PreQualification />} />
-          <Route path="fund-application" element={<FundApplication />} />
-          <Route path="my-applications" element={<MyApplication />} />
-           <Route path="appointment" element={<Appointments />} />
+          <Route path="pre-qualification" element={<UnpaidInvoiceGuard><PreQualification /></UnpaidInvoiceGuard>} />
+          <Route path="fund-application" element={<UnpaidInvoiceGuard><FundApplication /></UnpaidInvoiceGuard>} />
+          <Route path="my-applications" element={<UnpaidInvoiceGuard><MyApplication /></UnpaidInvoiceGuard>} />
+          <Route path="invoices" element={<Invoices />} />
+           <Route path="appointment" element={<UnpaidInvoiceGuard><Appointments /></UnpaidInvoiceGuard>} />
 
           <Route path="credit-builder">
-            <Route index element={<CreditOverview />} />
-            <Route path="overview" element={<CreditOverview />} />
-            <Route path="guide" element={<CreditGuide />} />
-            <Route path="vendor-application" element={<VendorApplication />} />
-            <Route path="progress-tracker" element={<ProgressTracker />} />
-            <Route path="resources" element={<CreditResources />} />
+            <Route index element={<UnpaidInvoiceGuard><CreditOverview /></UnpaidInvoiceGuard>} />
+            <Route path="overview" element={<UnpaidInvoiceGuard><CreditOverview /></UnpaidInvoiceGuard>} />
+            <Route path="guide" element={<UnpaidInvoiceGuard><CreditGuide /></UnpaidInvoiceGuard>} />
+            <Route path="vendor-application" element={<UnpaidInvoiceGuard><VendorApplication /></UnpaidInvoiceGuard>} />
+            <Route path="progress-tracker" element={<UnpaidInvoiceGuard><ProgressTracker /></UnpaidInvoiceGuard>} />
+            <Route path="resources" element={<UnpaidInvoiceGuard><CreditResources /></UnpaidInvoiceGuard>} />
           </Route>
 
-          <Route path="documents" element={<Documents />} />
-          <Route path="profile" element={<Profile />} />
+          <Route path="documents" element={<UnpaidInvoiceGuard><Documents /></UnpaidInvoiceGuard>} />
+          <Route path="profile" element={<UnpaidInvoiceGuard><Profile /></UnpaidInvoiceGuard>} />
 
         </Route>
       </Route>
     </Routes>
-    </>
+    </UnpaidInvoiceProvider>
   )
 }
