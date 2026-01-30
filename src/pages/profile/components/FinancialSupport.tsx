@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { SaveFinancialInfoRequest, ValidationErrors } from '../../../modules/profile/types'
-import CustomDropdown from './CustomDropdown'
+import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { countries as countriesData } from '../../../data/countries'
 import { yearsInBusinessOptions } from '../../../data/profile'
 import { useFinancialInfo, useSaveFinancialInfo } from '../../../modules/profile/queries'
@@ -103,25 +103,25 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           />
           {errors.years_in_business && <div className="invalid-feedback d-block">{errors.years_in_business}</div>}
         </div>
-        
+
         <div className="col-md-6">
           <label className="form-label">Monthly Revenue <span className="text-danger">*</span></label>
-          <input 
-            type="text" 
-            placeholder="$20,000" 
-            value={data.monthly_revenue} 
-            onChange={(e) => onChange({ ...data, monthly_revenue: e.target.value })} 
+          <input
+            type="text"
+            placeholder="$20,000"
+            value={data.monthly_revenue}
+            onChange={(e) => onChange({ ...data, monthly_revenue: e.target.value })}
             className={`form-control ${errors.monthly_revenue ? 'is-invalid' : ''}`}
           />
           {errors.monthly_revenue && <div className="invalid-feedback">{errors.monthly_revenue}</div>}
         </div>
         <div className="col-md-6">
           <label className="form-label">Annual Revenue <span className="text-danger">*</span></label>
-          <input 
-            type="text" 
-            placeholder="$30,000" 
-            value={data.annual_revenue} 
-            onChange={(e) => onChange({ ...data, annual_revenue: e.target.value })} 
+          <input
+            type="text"
+            placeholder="$30,000"
+            value={data.annual_revenue}
+            onChange={(e) => onChange({ ...data, annual_revenue: e.target.value })}
             className={`form-control ${errors.annual_revenue ? 'is-invalid' : ''}`}
           />
           {errors.annual_revenue && <div className="invalid-feedback">{errors.annual_revenue}</div>}

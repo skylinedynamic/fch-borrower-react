@@ -138,13 +138,13 @@ export const fetchFederalCompliance = async (): Promise<FederalComplianceData> =
 }
 
 export const saveFederalCompliance = async (payload: FederalCompliancePayload): Promise<FederalComplianceData> => {
-   const { data } = await apiClient.post<FederalComplianceResponse>('/borrower/funding-application/federal-compliance-disclosures', payload)
-   return data.data
+  const { data } = await apiClient.post<FederalComplianceResponse>('/borrower/funding-application/federal-compliance-disclosures', payload)
+  return data.data
 }
 
 export const fetchAttestation = async (): Promise<AttestationData> => {
-   const { data } = await apiClient.get<AttestationResponse>('/borrower/funding-application/attestation-authorization')
-   return data.data
+  const { data } = await apiClient.get<AttestationResponse>('/borrower/funding-application/attestation-authorization')
+  return data.data
 }
 
 export const saveAttestation = async (payload: AttestationPayload): Promise<AttestationData> => {

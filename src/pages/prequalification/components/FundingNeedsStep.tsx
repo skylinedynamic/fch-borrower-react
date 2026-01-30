@@ -1,7 +1,7 @@
 import React from 'react'
 import type { FinancialSupport } from '../../../modules/pre-qualification'
 import { formatCurrency } from '../../../utils/formatters'
-import CustomDropdown from '../../profile/components/CustomDropdown'
+import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { fundingUrgencyOptions, purposeOfFundingOptions, personalCreditScoreOptions, estimatedBusinessCreditScoreOptions } from '../../../data/profile'
 
 interface FundingNeedsStepProps {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import type { CoBorrower } from '../../types'
-import CustomDropdown from '../shared/CustomDropdown'
+import CustomDropdown from '../../../../components/Common/CustomDropdown'
 import { countries } from '../../../../data/countries'
 import { formatPhoneNumber } from '../../../../utils/formatters'
 import Flatpickr from 'react-flatpickr'
@@ -20,7 +20,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
   const [showCityInput, setShowCityInput] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [validating, setValidating] = useState(false)
-  
+
   // Update available states when country changes
   useEffect(() => {
     if (coDraft.country) {
@@ -193,7 +193,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
                   <label className="form-label">
                     Mobile Phone <span className="text-danger">*</span>
                   </label>
-                   <div className="input-group">
+                  <div className="input-group">
                     <span className="input-group-text bg-light border">
                       <span className="me-1">{countries.find(c => c.name === coDraft.country)?.code || 'US'}</span>
                       <span className="text-muted">{countries.find(c => c.name === coDraft.country)?.phone_code || '+1'}</span>
@@ -211,7 +211,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
                 </div>
                 <div className="col-md-6">
                   <label className="form-label">Home Phone</label>
-                   <div className="input-group">
+                  <div className="input-group">
                     <span className="input-group-text bg-light border">
                       <span className="me-1">{countries.find(c => c.name === coDraft.country)?.code || 'US'}</span>
                       <span className="text-muted">{countries.find(c => c.name === coDraft.country)?.phone_code || '+1'}</span>
@@ -286,7 +286,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
                   <CustomDropdown
                     value={coDraft.country}
                     onChange={(value) => {
-                       setCoDraft({ ...coDraft, country: value, state: '', city: '' })
+                      setCoDraft({ ...coDraft, country: value, state: '', city: '' })
                     }}
                     options={countries}
                     optionLabel="name"
@@ -327,7 +327,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
                   <CustomDropdown
                     value={showCityInput ? 'Others' : coDraft.city}
                     onChange={(value) => {
-                       if (value === 'Others') {
+                      if (value === 'Others') {
                         setShowCityInput(true)
                         setCoDraft({ ...coDraft, city: '' })
                       } else {
@@ -377,7 +377,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
                 </div>
                 <div className="col-md-6">
                   <label className="form-label">
-                    Driver's License Number 
+                    Driver's License Number
                   </label>
                   <input
                     type="text"
@@ -386,7 +386,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
                     value={coDraft.driversLicenseNumber}
                     onChange={(e) => setCoDraft({ ...coDraft, driversLicenseNumber: e.target.value })}
                   />
-                   {hasError('drivers_license_number') && <div className="invalid-feedback">{getError('drivers_license_number')}</div>}
+                  {hasError('drivers_license_number') && <div className="invalid-feedback">{getError('drivers_license_number')}</div>}
                 </div>
                 <div className="col-md-6">
                   <label className="form-label">

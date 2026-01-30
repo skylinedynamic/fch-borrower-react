@@ -33,8 +33,8 @@ export default function Header() {
   }
 
   const avatarSrc = user?.image || avatarDefault
-  const displayName = user?.name 
-  const displayRole = user?.role 
+  const displayName = user?.name
+  const displayRole = user?.role
 
   const toggleSidebar = () => {
     const w = window.innerWidth
@@ -50,7 +50,7 @@ export default function Header() {
     setIsSidebarCollapsed(next === 'sm')
     try {
       sessionStorage.setItem('data-sidebar-size', next)
-    } catch (e) {}
+    } catch (e) { }
   }
 
   useEffect(() => {
@@ -184,6 +184,10 @@ export default function Header() {
                 <a className="dropdown-item" href="#"><i className="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Help</span></a>
                 <div className="dropdown-divider"></div> */}
                 {/* <a className="dropdown-item" href="#"><i className="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Settings</span></a> */}
+                <a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); navigate('/change-password'); }}>
+                  <i className="mdi mdi-lock-reset text-muted fs-16 align-middle me-1"></i>
+                  <span className="align-middle">Change Password</span>
+                </a>
                 <a className="dropdown-item" href="#" onClick={handleLogout}><i className="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Logout</span></a>
               </div>
             </div>

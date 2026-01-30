@@ -190,18 +190,18 @@ export default function FundApplication() {
   const canProceedFromBusinessInfo = useMemo((): boolean => {
     return Boolean(
       personal.fullName &&
-        personal.businessName &&
-        personal.email &&
-        personal.phoneNumber &&
-        business.businessName &&
-        business.businessAddress &&
-        business.city &&
-        business.state &&
-        business.incorporationState &&
-        business.zip &&
-        business.industryType &&
-        business.entityType &&
-        business.yearsInBusiness
+      personal.businessName &&
+      personal.email &&
+      personal.phoneNumber &&
+      business.businessName &&
+      business.businessAddress &&
+      business.city &&
+      business.state &&
+      business.incorporationState &&
+      business.zip &&
+      business.industryType &&
+      business.entityType &&
+      business.yearsInBusiness
     )
   }, [personal, business])
 
@@ -215,15 +215,15 @@ export default function FundApplication() {
         case STEP_INDICES.OWNERSHIP_INFO:
           return Boolean(
             owner.firstName &&
-              owner.lastName &&
-              owner.dob &&
-              owner.ssn &&
-              owner.citizenship &&
-              owner.streetAddress &&
-              owner.city &&
-              owner.state &&
-              owner.zip &&
-              owner.ownershipPct
+            owner.lastName &&
+            owner.dob &&
+            owner.ssn &&
+            owner.citizenship &&
+            owner.streetAddress &&
+            owner.city &&
+            owner.state &&
+            owner.zip &&
+            owner.ownershipPct
           )
 
         case STEP_INDICES.FINANCIAL_INFO: {
@@ -498,7 +498,6 @@ export default function FundApplication() {
                 <span className="fw-semibold fs-15">
                   Step {activeStep + 1} of {stepsTotal}: {tabs[activeStep]}
                 </span>
-                <span className="ms-auto badge bg-primary">{progressPct}%</span>
               </div>
               <div className="card-body">{renderStep(activeStep)}</div>
             </div>

@@ -7,6 +7,7 @@ interface UnpaidInvoiceContextType {
     hasUnpaidInvoices: boolean;
     unpaidInvoices: UnpaidInvoice[];
     isLoading: boolean;
+    isFetched: boolean;
     refetch: () => void;
 }
 
@@ -20,7 +21,7 @@ export const UnpaidInvoiceProvider: React.FC<{ children: React.ReactNode }> = ({
         setEnabled(isAuthenticated());
     }, []);
 
-    const { data, isLoading, refetch } = useUnpaidInvoices(enabled);
+    const { data, isLoading, isFetched, refetch } = useUnpaidInvoices(enabled);
 
     const hasUnpaidInvoices = (data?.status && data?.data && data.data.length > 0) || false;
     const unpaidInvoices = data?.data || [];
@@ -31,6 +32,7 @@ export const UnpaidInvoiceProvider: React.FC<{ children: React.ReactNode }> = ({
                 hasUnpaidInvoices,
                 unpaidInvoices,
                 isLoading,
+                isFetched,
                 refetch,
             }}
         >
@@ -46,3 +48,4 @@ export const useUnpaidInvoiceContext = () => {
     }
     return context;
 };
+

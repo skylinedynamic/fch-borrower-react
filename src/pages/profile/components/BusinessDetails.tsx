@@ -1,5 +1,5 @@
 import React from 'react'
-import CustomDropdown from './CustomDropdown'
+import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { SaveBusinessDetailsRequest, ValidationErrors } from '../../../modules/profile/types'
 import { countries as countriesData } from '../../../data/countries'
 import { entityTypes, industryTypes } from '../../../data/profile'
@@ -21,8 +21,8 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
   const { data: apiData, isLoading, isSuccess } = useBusinessDetails()
   const { mutate: saveBusiness, isPending } = useSaveBusinessDetails()
   const [errors, setErrors] = useState<ValidationErrors>({})
-  const [availableCities, setAvailableCities] = useState<{name: string, code: string}[]>([])
-  const [availableStates, setAvailableStates] = useState<{name: string, code: string, cities?: string[]}[]>([])
+  const [availableCities, setAvailableCities] = useState<{ name: string, code: string }[]>([])
+  const [availableStates, setAvailableStates] = useState<{ name: string, code: string, cities?: string[] }[]>([])
   const [showCityInput, setShowCityInput] = useState(false)
 
   const handleSave = () => {
@@ -71,8 +71,8 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
     }
   }, [isSuccess, apiData])
 
-   // Update available states when country changes
-   useEffect(() => {
+  // Update available states when country changes
+  useEffect(() => {
     if (data.business_country) {
       const selectedCountry = countriesData.find(c => c.name === data.business_country)
       if (selectedCountry) {
@@ -85,21 +85,21 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
     }
   }, [data.business_country])
 
-   // Update available cities when state changes
+  // Update available cities when state changes
   useEffect(() => {
     if (data.business_state) {
-        // Find state in availableStates instead of assuming US
-        const selectedState = availableStates.find(s => s.name === data.business_state)
-        
-        if (selectedState && selectedState.cities) {
-            const cities = selectedState.cities.map(city => ({ name: city, code: city }))
-            cities.push({ name: 'Others', code: 'Others' })
-            setAvailableCities(cities)
-        } else {
-             setAvailableCities([{ name: 'Others', code: 'Others' }])
-        }
+      // Find state in availableStates instead of assuming US
+      const selectedState = availableStates.find(s => s.name === data.business_state)
+
+      if (selectedState && selectedState.cities) {
+        const cities = selectedState.cities.map(city => ({ name: city, code: city }))
+        cities.push({ name: 'Others', code: 'Others' })
+        setAvailableCities(cities)
+      } else {
+        setAvailableCities([{ name: 'Others', code: 'Others' }])
+      }
     } else {
-        setAvailableCities([])
+      setAvailableCities([])
     }
   }, [data.business_state, availableStates])
 
@@ -129,22 +129,22 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
       <form className="row g-3">
         <div className="col-md-6">
           <label className="form-label">Legal Business Name <span className="text-danger">*</span></label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Enter business name"
-            value={data.business_name} 
-            onChange={(e) => onChange({ ...data, business_name: e.target.value })} 
+            value={data.business_name}
+            onChange={(e) => onChange({ ...data, business_name: e.target.value })}
             className={`form-control ${errors.business_name ? 'is-invalid' : ''}`}
           />
           {errors.business_name && <div className="invalid-feedback">{errors.business_name}</div>}
         </div>
         <div className="col-md-6">
           <label className="form-label">Business EIN <span className="text-danger">*</span></label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="XX-XXXXXXX"
-            value={data.business_ein} 
-            onChange={(e) => onChange({ ...data, business_ein: e.target.value })} 
+            value={data.business_ein}
+            onChange={(e) => onChange({ ...data, business_ein: e.target.value })}
             className={`form-control ${errors.business_ein ? 'is-invalid' : ''}`}
           />
           {errors.business_ein && <div className="invalid-feedback">{errors.business_ein}</div>}
@@ -156,47 +156,47 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               <span className="me-1">{selectedCountry?.code || 'US'}</span>
               <span className="text-muted">{selectedCountry?.phone_code || '+1'}</span>
             </span>
-            <input 
-              type="tel" 
+            <input
+              type="tel"
               className={`form-control ${errors.business_phone ? 'is-invalid' : ''}`}
-              placeholder="(123) 456-7890" 
+              placeholder="(123) 456-7890"
               value={data.business_phone}
               onChange={(e) => onChange({ ...data, business_phone: formatPhoneNumber(e.target.value) })}
               maxLength={14}
-              required 
+              required
             />
             {errors.business_phone && <div className="invalid-feedback">{errors.business_phone}</div>}
           </div>
         </div>
         <div className="col-md-6">
           <label className="form-label">Business Email <span className="text-danger">*</span></label>
-          <input 
-            type="email" 
+          <input
+            type="email"
             placeholder="Enter business email"
-            value={data.business_email} 
-            onChange={(e) => onChange({ ...data, business_email: e.target.value })} 
+            value={data.business_email}
+            onChange={(e) => onChange({ ...data, business_email: e.target.value })}
             className={`form-control ${errors.business_email ? 'is-invalid' : ''}`}
           />
           {errors.business_email && <div className="invalid-feedback">{errors.business_email}</div>}
         </div>
         <div className="col-md-6">
           <label className="form-label">DUNS Number</label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Enter DUNS number"
-            value={data.duns_number} 
-            onChange={(e) => onChange({ ...data, duns_number: e.target.value })} 
+            value={data.duns_number}
+            onChange={(e) => onChange({ ...data, duns_number: e.target.value })}
             className={`form-control ${errors.duns_number ? 'is-invalid' : ''}`}
           />
           {errors.duns_number && <div className="invalid-feedback">{errors.duns_number}</div>}
         </div>
         <div className="col-md-6">
           <label className="form-label">Business Address <span className="text-danger">*</span></label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Enter business address"
-            value={data.business_address} 
-            onChange={(e) => onChange({ ...data, business_address: e.target.value })} 
+            value={data.business_address}
+            onChange={(e) => onChange({ ...data, business_address: e.target.value })}
             className={`form-control ${errors.business_address ? 'is-invalid' : ''}`}
           />
           {errors.business_address && <div className="invalid-feedback">{errors.business_address}</div>}
@@ -208,8 +208,8 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
             value={data.business_country}
             onChange={(value) => {
               const selectedCountryObj = countriesData.find(c => c.name === value)
-              onChange({ 
-                ...data, 
+              onChange({
+                ...data,
                 business_country: value,
                 business_country_code: selectedCountryObj ? selectedCountryObj.phone_code : '',
                 business_state: '', // Reset state when country changes
@@ -233,12 +233,12 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
           <CustomDropdown
             value={data.business_state}
             onChange={(value) => {
-                const selectedStateObj = availableStates.find(s => s.name === value)
-                let defaultCity = ''
-                if (selectedStateObj && selectedStateObj.cities && selectedStateObj.cities.length > 0) {
-                    defaultCity = selectedStateObj.cities[0]
-                }
-                onChange({ ...data, business_state: value, business_city: defaultCity })
+              const selectedStateObj = availableStates.find(s => s.name === value)
+              let defaultCity = ''
+              if (selectedStateObj && selectedStateObj.cities && selectedStateObj.cities.length > 0) {
+                defaultCity = selectedStateObj.cities[0]
+              }
+              onChange({ ...data, business_state: value, business_city: defaultCity })
             }}
             options={availableStates}
             optionLabel="name"
@@ -253,16 +253,16 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
 
         <div className={showCityInput ? "col-md-3" : "col-md-6"}>
           <label className="form-label">City <span className="text-danger">*</span></label>
-           <CustomDropdown
+          <CustomDropdown
             value={showCityInput ? 'Others' : data.business_city}
             onChange={(value) => {
-                if (value === 'Others') {
-                    setShowCityInput(true)
-                    onChange({ ...data, business_city: '' })
-                } else {
-                    setShowCityInput(false)
-                    onChange({ ...data, business_city: value })
-                }
+              if (value === 'Others') {
+                setShowCityInput(true)
+                onChange({ ...data, business_city: '' })
+              } else {
+                setShowCityInput(false)
+                onChange({ ...data, business_city: value })
+              }
             }}
             options={availableCities}
             optionLabel="name"
@@ -278,30 +278,30 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
         </div>
 
         {showCityInput && (
-            <div className="col-md-3">
-                <label className="form-label">City Name <span className="text-danger">*</span></label>
-                    <input 
-                        type="text" 
-                        className={`form-control ${errors.business_city ? 'is-invalid' : ''}`}
-                        placeholder="Enter city name" 
-                        value={data.business_city}
-                        onChange={(e) => onChange({ ...data, business_city: e.target.value })}
-                        required 
-                    />
-                    {errors.business_city && (
-                        <div className="invalid-feedback">{errors.business_city}</div>
-                    )}
-            </div>
+          <div className="col-md-3">
+            <label className="form-label">City Name <span className="text-danger">*</span></label>
+            <input
+              type="text"
+              className={`form-control ${errors.business_city ? 'is-invalid' : ''}`}
+              placeholder="Enter city name"
+              value={data.business_city}
+              onChange={(e) => onChange({ ...data, business_city: e.target.value })}
+              required
+            />
+            {errors.business_city && (
+              <div className="invalid-feedback">{errors.business_city}</div>
+            )}
+          </div>
         )}
 
-      
+
         <div className="col-md-6">
           <label className="form-label">Zip Code <span className="text-danger">*</span></label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Enter zip code"
-            value={data.business_zip_code} 
-            onChange={(e) => onChange({ ...data, business_zip_code: e.target.value })} 
+            value={data.business_zip_code}
+            onChange={(e) => onChange({ ...data, business_zip_code: e.target.value })}
             className={`form-control ${errors.business_zip_code ? 'is-invalid' : ''}`}
           />
           {errors.business_zip_code && <div className="invalid-feedback">{errors.business_zip_code}</div>}
@@ -321,11 +321,11 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
         </div>
         <div className="col-md-6">
           <label className="form-label">Business Website</label>
-          <input 
-            type="url" 
+          <input
+            type="url"
             placeholder="https://example.com"
-            value={data.business_website} 
-            onChange={(e) => onChange({ ...data, business_website: e.target.value })} 
+            value={data.business_website}
+            onChange={(e) => onChange({ ...data, business_website: e.target.value })}
             className={`form-control ${errors.business_website ? 'is-invalid' : ''}`}
           />
           {errors.business_website && <div className="invalid-feedback">{errors.business_website}</div>}

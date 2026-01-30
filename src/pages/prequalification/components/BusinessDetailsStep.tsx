@@ -1,6 +1,6 @@
 import React from 'react'
 import type { BusinessDetails, FinancialSupport } from '../../../modules/pre-qualification'
-import CustomDropdown from '../../profile/components/CustomDropdown'
+import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { entityTypes, industryTypes, yearsInBusinessOptions } from '../../../data/profile'
 import { formatCurrency } from '../../../utils/formatters'
 
