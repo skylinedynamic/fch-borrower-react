@@ -50,3 +50,12 @@ export const formatCurrency = (value: string): string => {
 export const unformatCurrency = (value: string): string => {
   return value.replace(/\D/g, '')
 }
+
+/**
+ * Formats the SSN input to ensure only digits and max 9 characters
+ * @param value The raw input string
+ * @returns The formatted string
+ */
+export const formatSSN = (value: string): string => {
+  return value.replace(/\D/g, '').slice(0, 9)
+}

@@ -291,23 +291,15 @@ export default function FundApplication() {
         return
       }
 
-      // If current step has a save function, execute it
-      if (activeStepSaveRef.current) {
-        setIsNavigatingSave(true)
-        try {
-          const success = await activeStepSaveRef.current()
-          if (!success) {
-            // Save failed (validation or API error), do not switch
-            return
-          }
-        } catch (error) {
-          console.error('Auto-save failed', error)
-          return
-        } finally {
-          setIsNavigatingSave(false)
-        }
+      // If navigating forward, simulate a click on the "Save & Next" button
+      // This ensures validation and submission flow is exactly the same as clicking the button
+      const btn = document.getElementById('btn-save-next')
+      if (btn) {
+        btn.click()
+        return // Let the button handler manage the step transition
       }
 
+      // Fallback (or if no button exists, e.g. read-only step)
       setActiveStep(targetIndex)
     },
     [activeStep, maxAllowedIdx]

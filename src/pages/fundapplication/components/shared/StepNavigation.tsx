@@ -19,7 +19,7 @@ export default function StepNavigation({ onBack, onNext, isNextDisabled, isLastS
         <div></div>
       )}
       {onNext && (
-        <button type="button" className="btn btn-primary" disabled={isNextDisabled || loading} onClick={onNext}>
+        <button id="btn-save-next" type="button" className="btn btn-primary" disabled={isNextDisabled || loading} onClick={onNext}>
           {loading ? (
             <>
               <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>

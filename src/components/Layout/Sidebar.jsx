@@ -5,14 +5,15 @@ import { logout } from '../../modules/auth/services'
 import faviconImg from '../../../assets/images/Favicon.png'
 import logoImg from '../../../assets/images/logo.png'
 import avatarDefault from '../../../assets/images/users/avatar-1.jpg'
-import { useUnpaidInvoiceContext } from '../../contexts/UnpaidInvoiceContext'
-
 export default function Sidebar() {
   const navigate = useNavigate()
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 992 : false)
   const [open, setOpen] = useState(false)
   const location = useLocation()
-  const { hasUnpaidInvoices } = useUnpaidInvoiceContext()
+
+  const { pathname } = location
+  
+  // Cleaned up unused context
   const [creditOpen, setCreditOpen] = useState(() => {
     const path = typeof window !== 'undefined' ? window.location.pathname : ''
     return path.includes('/credit-builder')
@@ -116,35 +117,26 @@ export default function Sidebar() {
             </li>
             <li className="nav-item">
               <NavLink 
-                className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}${hasUnpaidInvoices ? ' disabled opacity-50' : ''}`} 
+                className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}`} 
                 to="/pre-qualification"
-                onClick={(e) => hasUnpaidInvoices && e.preventDefault()}
-                style={hasUnpaidInvoices ? { pointerEvents: 'none', opacity: 0.5 } : {}}
               >
                 <i className="ri-clipboard-line"></i> <span>Pre Qualification</span>
-                {hasUnpaidInvoices && <i className="ri-lock-line ms-auto"></i>}
               </NavLink>
             </li>
             <li className="nav-item">
               <NavLink 
-                className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}${hasUnpaidInvoices ? ' disabled opacity-50' : ''}`} 
+                className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}`} 
                 to="/fund-application"
-                onClick={(e) => hasUnpaidInvoices && e.preventDefault()}
-                style={hasUnpaidInvoices ? { pointerEvents: 'none', opacity: 0.5 } : {}}
               >
                 <i className="ri-hand-coin-line"></i> <span>Fund Application</span>
-                {hasUnpaidInvoices && <i className="ri-lock-line ms-auto"></i>}
               </NavLink>
             </li>
             <li className="nav-item">
               <NavLink 
-                className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}${hasUnpaidInvoices ? ' disabled opacity-50' : ''}`} 
+                className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}`} 
                 to="/my-applications"
-                onClick={(e) => hasUnpaidInvoices && e.preventDefault()}
-                style={hasUnpaidInvoices ? { pointerEvents: 'none', opacity: 0.5 } : {}}
               >
                 <i className="ri-file-list-line"></i> <span>My Applications</span>
-                {hasUnpaidInvoices && <i className="ri-lock-line ms-auto"></i>}
               </NavLink>
             </li>
             <li className="nav-item">
@@ -154,44 +146,32 @@ export default function Sidebar() {
             </li>
             <li className="nav-item">
               <NavLink 
-                className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}${hasUnpaidInvoices ? ' disabled opacity-50' : ''}`} 
+                className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}`} 
                 to="/documents"
-                onClick={(e) => hasUnpaidInvoices && e.preventDefault()}
-                style={hasUnpaidInvoices ? { pointerEvents: 'none', opacity: 0.5 } : {}}
               >
                 <i className="ri-file-2-line"></i> <span>Documents</span>
-                {hasUnpaidInvoices && <i className="ri-lock-line ms-auto"></i>}
               </NavLink>
             </li>
             <li className="nav-item">
               <NavLink 
-                className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}${hasUnpaidInvoices ? ' disabled opacity-50' : ''}`} 
+                className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}`} 
                 to="/appointment"
-                onClick={(e) => hasUnpaidInvoices && e.preventDefault()}
-                style={hasUnpaidInvoices ? { pointerEvents: 'none', opacity: 0.5 } : {}}
               >
                 <i className="ri-calendar-2-line"></i> <span>Appointment</span>
-                {hasUnpaidInvoices && <i className="ri-lock-line ms-auto"></i>}
               </NavLink>
             </li>
             <li className="nav-item">
               <button 
                 type="button" 
-                className={`nav-link menu-link btn material-shadow-none w-100 text-start${hasUnpaidInvoices ? ' disabled opacity-50' : ''}`}
+                className={`nav-link menu-link btn material-shadow-none w-100 text-start`}
                 onClick={(e) => {
-                  if (hasUnpaidInvoices) {
-                    e.preventDefault();
-                    return;
-                  }
                   setCreditOpen((s) => !s);
                 }} 
                 aria-expanded={creditOpen} 
                 aria-controls="creditBuilderMenu"
-                style={hasUnpaidInvoices ? { pointerEvents: 'none', opacity: 0.5 } : {}}
               >
                 <i className="ri-building-2-line"></i> <span>Credit Builder</span>
-                {hasUnpaidInvoices && <i className="ri-lock-line ms-auto"></i>}
-                {!hasUnpaidInvoices && <i className={`ri-arrow-down-s-line float-end submenu-caret ${creditOpen ? 'open' : ''}`}></i>}
+                <i className={`ri-arrow-down-s-line float-end submenu-caret ${creditOpen ? 'open' : ''}`}></i>
               </button>
               <ul id="creditBuilderMenu" className={`navbar-nav ms-3 mt-1 submenu-collapse ${creditOpen ? 'open' : ''}`}>
                 <li className="nav-item">
@@ -213,13 +193,10 @@ export default function Sidebar() {
             </li>
             <li className="nav-item">
               <NavLink 
-                className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}${hasUnpaidInvoices ? ' disabled opacity-50' : ''}`} 
+                className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}`} 
                 to="/profile"
-                onClick={(e) => hasUnpaidInvoices && e.preventDefault()}
-                style={hasUnpaidInvoices ? { pointerEvents: 'none', opacity: 0.5 } : {}}
               >
                 <i className="ri-account-circle-line"></i> <span>Profile</span>
-                {hasUnpaidInvoices && <i className="ri-lock-line ms-auto"></i>}
               </NavLink>
             </li>
             <li className="nav-item">

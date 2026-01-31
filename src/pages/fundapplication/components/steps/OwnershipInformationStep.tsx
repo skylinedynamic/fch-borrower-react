@@ -11,7 +11,7 @@ import { countries } from '../../../../data/countries'
 import { useOwnershipInfo, useSaveOwnershipInfo } from '../../../../modules/funding-application/queries'
 import { citizenshipOptions } from '../../../../data/profile'
 import { toast } from 'react-toastify'
-import { formatPhoneNumber } from '../../../../utils/formatters'
+import { formatPhoneNumber, formatSSN } from '../../../../utils/formatters'
 import { getCountryCodeByName, getPhoneCodeByName, getCountryNameByCode, getDefaultCountry } from '../../../../utils/countryHelpers'
 
 interface OwnershipInformationStepProps {
@@ -310,7 +310,7 @@ export default function OwnershipInformationStep({
             className={`form-control ${hasError('ssn') ? 'is-invalid' : ''}`}
             placeholder="Enter social security number (SSN)"
             value={owner.ssn}
-            onChange={(e) => setOwner({ ...owner, ssn: e.target.value })}
+            onChange={(e) => setOwner({ ...owner, ssn: formatSSN(e.target.value) })}
           />
           {hasError('ssn') && <div className="invalid-feedback">{getFieldError('ssn')}</div>}
         </div>

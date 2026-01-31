@@ -24,8 +24,6 @@ import CreditResources from '../src/pages/credit-builder/creditresources/CreditR
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import ProfileCompleteCheckModal from './components/ProfileCompleteCheckModal/ProfileCompleteCheckModal'
-import { UnpaidInvoiceProvider } from './contexts/UnpaidInvoiceContext'
-import { UnpaidInvoiceGuard } from './lib/auth/UnpaidInvoiceGuard'
 
 
 export default function App() {
@@ -44,41 +42,34 @@ export default function App() {
           <Route path="reset-password" element={<ResetPassword />} />
         </Route>
 
-        <Route element={
-          <>
-            <ProfileCompleteCheckModal />
-            <ProtectedRoute />
-          </>
-        }>
+        <Route element={<ProtectedRoute />}>
           <Route element={
-            <UnpaidInvoiceProvider>
+            <>
+              <ProfileCompleteCheckModal />
               <Layout />
-            </UnpaidInvoiceProvider>
+            </>
           }>
             <Route index element={<Dashboard />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="invoices" element={<Invoices />} />
             <Route path="change-password" element={<ChangePassword />} />
 
-            {/* Routes Restricted for Unpaid Invoices */}
-            <Route element={<UnpaidInvoiceGuard><Outlet /></UnpaidInvoiceGuard>}>
-              <Route path="pre-qualification" element={<PreQualification />} />
-              <Route path="fund-application" element={<FundApplication />} />
-              <Route path="my-applications" element={<MyApplication />} />
-              <Route path="appointment" element={<Appointments />} />
+            <Route path="pre-qualification" element={<PreQualification />} />
+            <Route path="fund-application" element={<FundApplication />} />
+            <Route path="my-applications" element={<MyApplication />} />
+            <Route path="appointment" element={<Appointments />} />
 
-              <Route path="credit-builder">
-                <Route index element={<CreditOverview />} />
-                <Route path="overview" element={<CreditOverview />} />
-                <Route path="guide" element={<CreditGuide />} />
-                <Route path="vendor-application" element={<VendorApplication />} />
-                <Route path="progress-tracker" element={<ProgressTracker />} />
-                <Route path="resources" element={<CreditResources />} />
-              </Route>
-
-              <Route path="documents" element={<Documents />} />
-              <Route path="profile" element={<Profile />} />
+            <Route path="credit-builder">
+              <Route index element={<CreditOverview />} />
+              <Route path="overview" element={<CreditOverview />} />
+              <Route path="guide" element={<CreditGuide />} />
+              <Route path="vendor-application" element={<VendorApplication />} />
+              <Route path="progress-tracker" element={<ProgressTracker />} />
+              <Route path="resources" element={<CreditResources />} />
             </Route>
+
+            <Route path="documents" element={<Documents />} />
+            <Route path="profile" element={<Profile />} />
           </Route>
         </Route>
       </Routes>

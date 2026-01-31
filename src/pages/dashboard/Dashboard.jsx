@@ -4,9 +4,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Tag } from 'primereact/tag';
 import { Button } from 'primereact/button';
-import { useUnpaidInvoiceContext } from '../../contexts/UnpaidInvoiceContext';
 import { useNavigate } from 'react-router-dom';
-import UnpaidInvoicesAlert from './UnpaidInvoicesAlert';
 
 // --- Mock Data Constants ---
 const KPI_DATA = [
@@ -82,7 +80,6 @@ const MEETINGS_DATA = [
 ];
 
 export default function Dashboard() {
-    const { hasUnpaidInvoices, unpaidInvoices } = useUnpaidInvoiceContext();
     const navigate = useNavigate();
 
     // --- Templates for DataTable ---
@@ -134,8 +131,7 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* --- Unpaid Invoices Section ---  */}
-                {hasUnpaidInvoices && <UnpaidInvoicesAlert unpaidInvoices={unpaidInvoices} />}
+                {/* --- Unpaid Invoices Section Removed ---  */}
 
                 {/* --- KPI Cards --- */}
                 <div className="row">
