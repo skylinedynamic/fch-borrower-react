@@ -1,19 +1,26 @@
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, Stripe } from '@stripe/stripe-js';
+import { fetchSettings } from '../modules/settings/services';
 
-// Using a singleton pattern to only load Stripe once
-let stripePromise: Promise<any> | null = null;
+let stripePromise: Promise<Stripe | null> | null = null;
 
-export const getStripe = () => {
-    if (!stripePromise) {
-        // You should verify the environment variable name matches your Vite config.
-        // Usually VITE_STRIPE_PUBLISHABLE_KEY or REACT_APP_STRIPE_PUBLISHABLE_KEY
-        const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''; // Fallback for safety
-        if (key) {
-            stripePromise = loadStripe(key);
-        } else {
-            console.warn('Stripe publishable key is missing in environment variables');
-            // Retaining null/re-returning promise might fail silently or throw in components
-        }
+export const getStripe = async () => {
+  if (!stripePromise) {
+    try {
+      const response = await fetchSettings();
+      const settings = response.data?.data || response.data || {};
+      const mode = settings.payment_mode || 'sandbox';
+      const publicKey = settings[`stripe_key_${mode}`];
+      
+      if (!publicKey) {
+        console.error(`Stripe public key not found for mode: ${mode}`);
+        return null;
+      }
+      
+      stripePromise = loadStripe(publicKey);
+    } catch (error) {
+      console.error('Error initializing Stripe:', error);
+      return null;
     }
-    return stripePromise;
+  }
+  return stripePromise;
 };

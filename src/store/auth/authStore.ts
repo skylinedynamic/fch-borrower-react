@@ -10,6 +10,17 @@ export type AuthUser = {
   permissions?: string[]
   entity_type?: string
   entity_id?: string | number
+  is_host?: number
+  subscription_status?: string
+  subscription_end_date?: string | null
+  subscription_start_date?: string | null
+  next_installment_date?: string | null
+  next_platform_fee_date?: string | null
+  platform_fee_start_date?: string | null
+  first_payment_date?: string | null
+  enrollment_completed_at?: string | null
+  enrollment_type?: string
+  phase?: string
   [key: string]: unknown
 }
 

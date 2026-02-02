@@ -1,4 +1,6 @@
 export * from './auth'
+export * from './authApi'
+export * from './subscriptionUtils'
 
 export * from './rbac'
 export { default as ProtectedRoute } from './ProtectedRoute'

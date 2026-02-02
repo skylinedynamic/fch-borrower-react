@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { Modal, ModalHeader, ModalBody } from 'reactstrap'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { fetchProfileCompletion } from '../../modules/profile/services'
+import { useAuthStore } from '../../store/auth'
+import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils'
 
 const ProfileCompleteCheckModal = () => {
   const [modal_backdrop, setmodal_backdrop] = useState(false)
@@ -9,8 +11,16 @@ const ProfileCompleteCheckModal = () => {
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
   const location = useLocation()
+  const user = useAuthStore((state) => state.user)
+  const isRestricted = isSubscriptionRestricted(user)
 
   useEffect(() => {
+    // If restricted, never show the modal
+    if (isRestricted) {
+      setmodal_backdrop(false)
+      return
+    }
+
     const checkProfileCompletion = async () => {
       try {
         const response = await fetchProfileCompletion()
@@ -31,7 +41,7 @@ const ProfileCompleteCheckModal = () => {
     }
 
     checkProfileCompletion()
-  }, [location.pathname]) // Re-check on route change
+  }, [location.pathname, isRestricted]) // Re-check on route change or status change
 
   const getIncompleteSections = () => {
     if (!completionData) return []

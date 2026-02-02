@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
 import { clearAuth } from '../../lib/auth'
 import { logout } from '../../modules/auth/services'
+import { useAuthStore } from '../../store/auth'
+import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils'
 import faviconImg from '../../../assets/images/Favicon.png'
 import logoImg from '../../../assets/images/logo.png'
 import avatarDefault from '../../../assets/images/users/avatar-1.jpg'
@@ -12,6 +14,9 @@ export default function Sidebar() {
   const location = useLocation()
 
   const { pathname } = location
+  
+  const user = useAuthStore((state) => state.user)
+  const isRestricted = isSubscriptionRestricted(user)
   
   // Cleaned up unused context
   const [creditOpen, setCreditOpen] = useState(() => {
@@ -60,6 +65,20 @@ export default function Sidebar() {
     }
   }
 
+  // Helper for rendering nav links
+  const LinkItem = ({ to, label, icon, restricted, end }) => (
+    <li className="nav-item">
+      <NavLink 
+        end={end}
+        className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}`} 
+        to={to}
+        onClick={(e) => restricted && e.preventDefault()}
+      >
+        <i className={icon}></i> <span>{label} {restricted && <i className="ri-lock-line align-middle ms-1"></i>}</span>
+      </NavLink>
+    </li>
+  )
+
   return (
     <div className={menuClass}>
       <div className="navbar-brand-box py-2">
@@ -89,7 +108,7 @@ export default function Sidebar() {
           <span className="d-flex align-items-center gap-2">
             <img className="rounded header-profile-user" src={avatarDefault} alt="Header Avatar" />
             <span className="text-start">
-              <span className="d-block fw-medium sidebar-user-name-text">Anna Adame</span>
+              <span className="d-block fw-medium sidebar-user-name-text">{user?.name || 'User'}</span>
               <span className="d-block fs-14 sidebar-user-name-sub-text"><i className="ri ri-circle-fill fs-10 text-success align-baseline"></i> <span className="align-middle">Online</span></span>
             </span>
           </span>
@@ -110,67 +129,29 @@ export default function Sidebar() {
         <div className="container-fluid">
           <div id="two-column-menu"></div>
           <ul className="navbar-nav partner-sidebar" id="navbar-nav">
-            <li className="nav-item">
-              <NavLink end className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/">
-                <i className="ri-dashboard-2-line"></i> <span>Dashboard</span>
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink 
-                className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}`} 
-                to="/pre-qualification"
-              >
-                <i className="ri-clipboard-line"></i> <span>Pre Qualification</span>
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink 
-                className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}`} 
-                to="/fund-application"
-              >
-                <i className="ri-hand-coin-line"></i> <span>Fund Application</span>
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink 
-                className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}`} 
-                to="/my-applications"
-              >
-                <i className="ri-file-list-line"></i> <span>My Applications</span>
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className={({ isActive }) => isActive ? 'nav-link menu-link active' : 'nav-link menu-link'} to="/invoices">
-                <i className="ri-article-line"></i> <span>Invoices</span>
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink 
-                className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}`} 
-                to="/documents"
-              >
-                <i className="ri-file-2-line"></i> <span>Documents</span>
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink 
-                className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}`} 
-                to="/appointment"
-              >
-                <i className="ri-calendar-2-line"></i> <span>Appointment</span>
-              </NavLink>
-            </li>
+            <LinkItem to="/" label="Dashboard" icon="ri-dashboard-2-line" end />
+            
+            <LinkItem to="/pre-qualification" label="Pre Qualification" icon="ri-clipboard-line" restricted={isRestricted} />
+            <LinkItem to="/fund-application" label="Fund Application" icon="ri-hand-coin-line" restricted={isRestricted} />
+            <LinkItem to="/my-applications" label="My Applications" icon="ri-file-list-line" restricted={isRestricted} />
+            
+            <LinkItem to="/invoices" label="Invoices" icon="ri-article-line" />
+            
+            <LinkItem to="/documents" label="Documents" icon="ri-file-2-line" restricted={isRestricted} />
+            <LinkItem to="/appointment" label="Appointment" icon="ri-calendar-2-line" restricted={isRestricted} />
+
             <li className="nav-item">
               <button 
                 type="button" 
                 className={`nav-link menu-link btn material-shadow-none w-100 text-start`}
                 onClick={(e) => {
+                  if (isRestricted) return;
                   setCreditOpen((s) => !s);
                 }} 
                 aria-expanded={creditOpen} 
                 aria-controls="creditBuilderMenu"
               >
-                <i className="ri-building-2-line"></i> <span>Credit Builder</span>
+                <i className="ri-building-2-line"></i> <span>Credit Builder {isRestricted && <i className="ri-lock-line align-middle ms-1"></i>}</span>
                 <i className={`ri-arrow-down-s-line float-end submenu-caret ${creditOpen ? 'open' : ''}`}></i>
               </button>
               <ul id="creditBuilderMenu" className={`navbar-nav ms-3 mt-1 submenu-collapse ${creditOpen ? 'open' : ''}`}>
@@ -180,25 +161,11 @@ export default function Sidebar() {
                 <li className="nav-item">
                   <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/guide"><i className="ri-arrow-right-s-line"></i> <span>Step-By-Step Guide</span></NavLink>
                 </li>
-                {/* <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/vendor-application"><i className="ri-arrow-right-s-line"></i> <span>Vendor Application</span></NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/progress-tracker"><i className="ri-arrow-right-s-line"></i> <span>Progress Tracker</span></NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/resources"><i className="ri-arrow-right-s-line"></i> <span>Resources</span></NavLink>
-                </li> */}
               </ul>
             </li>
-            <li className="nav-item">
-              <NavLink 
-                className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}`} 
-                to="/profile"
-              >
-                <i className="ri-account-circle-line"></i> <span>Profile</span>
-              </NavLink>
-            </li>
+
+            <LinkItem to="/profile" label="Profile" icon="ri-account-circle-line" restricted={isRestricted} />
+
             <li className="nav-item">
               <a className="nav-link menu-link" href="#" onClick={handleLogout}>
                 <i className="ri-logout-circle-r-line"></i> <span>Logout</span>

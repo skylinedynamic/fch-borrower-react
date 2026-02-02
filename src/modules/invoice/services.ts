@@ -30,9 +30,9 @@ export const fetchInvoiceStats = async (params: InvoiceParams = {}): Promise<Inv
     }
 };
 
-export const processInvoicePayment = async (payload: PaymentPayload): Promise<PaymentResponse> => {
-    const { data } = await apiClient.post<PaymentResponse>(`${BASE_URL}/payment`, payload);
-    return data;
+export const processInvoicePayment = async (payload: any) => {
+    const response = await apiClient.post('/borrower/process-payment', payload);
+    return response.data;
 };
 
 export const fetchUnpaidInvoices = async (): Promise<UnpaidInvoiceResponse> => {

@@ -80,3 +80,19 @@ export function checkSession(): void {
     clearAuth()
   }
 }
+
+export async function refreshUser(): Promise<void> {
+    if (!isAuthenticated()) return
+
+    try {
+        const { getUserDetails } = await import('./authApi')
+        const response = await getUserDetails()
+        if (response?.status && response?.data?.user) {
+            // Update store, keep existing token
+            const { token, rememberMe } = getAuthState()
+            setAuth(token, response.data.user, rememberMe)
+        }
+    } catch (error) {
+        console.error("Failed to refresh user details", error)
+    }
+}
