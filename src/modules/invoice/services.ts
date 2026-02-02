@@ -4,24 +4,22 @@ import { InvoiceResponse, InvoiceStatsResponse, InvoiceParams, PaymentPayload, P
 const BASE_URL = '/borrower/invoice';
 
 export const fetchInvoices = async (params: InvoiceParams = {}): Promise<InvoiceResponse> => {
-    const { data } = await apiClient.get<InvoiceResponse>(BASE_URL, { params });
-    // Ensure the response has the expected structure even if backend varies
-    return data;
+    const { data } = await apiClient.post<InvoiceResponse>(BASE_URL, params);
+    // Add status: true if not present but data exists, for frontend compatibility
+    return {
+        ...data,
+        status: data.status ?? (Array.isArray(data.data) ? true : false)
+    };
 };
 
 export const fetchInvoiceStats = async (params: InvoiceParams = {}): Promise<InvoiceStatsResponse> => {
-    // Assuming a stats endpoint exists or using the same base if it returns stats in meta (unlikely based on InvoiceStats usage)
-    // Using a likely pattern or mock for now as per user request to "call this api for invoice data" which covered the list.
-    // If there is no specific stats endpoint provided, we'll try /stats or similar.
-    // However, to prevent 404s if it doesn't exist, and since the user only gave ONE endpoint,
-    // we might need to be careful. But Invoices.jsx calls it.
-    // Let's assume there is a stats endpoint or return a mock structure to prevent crashing.
     try {
-        const { data } = await apiClient.get<InvoiceStatsResponse>(`${BASE_URL}/stats`, { params });
+        const { data } = await apiClient.post<InvoiceStatsResponse>(`${BASE_URL}/stats`, params);
         return data;
     } catch (e) {
         console.warn('Failed to fetch invoice stats, using placeholders', e);
         return {
+            status: false,
             data: {
                 invoices_sent: 0,
                 paid_invoices: 0,

@@ -106,7 +106,9 @@ export default function Invoices() {
             };
 
             const response = await fetchInvoices(payload);
-            if (response.status) {
+            
+            // The service now ensures response.status is true if data exists
+            if (response.status || (response.data && Array.isArray(response.data))) {
                 setInvoices(response.data || []);
                 setTotalRecords(response.meta?.total || 0);
             } else {

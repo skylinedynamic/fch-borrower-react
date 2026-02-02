@@ -30,6 +30,8 @@ export interface InvoiceStatsData {
 }
 
 export interface InvoiceStatsResponse {
+    status: boolean;
+    message?: string;
     data: InvoiceStatsData;
 }
 
