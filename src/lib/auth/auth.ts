@@ -1,5 +1,6 @@
 // Auth utilities backed by Zustand store with persist
 import { getAuthState, setAuthState, clearAuthState, AuthUser } from '../../store/auth'
+import { getUserDetails } from './authApi'
 
 const COOKIE_NAME = 'auth_session_active'
 
@@ -85,7 +86,6 @@ export async function refreshUser(): Promise<void> {
     if (!isAuthenticated()) return
 
     try {
-        const { getUserDetails } = await import('./authApi')
         const response = await getUserDetails()
         if (response?.status && response?.data?.user) {
             // Update store, keep existing token

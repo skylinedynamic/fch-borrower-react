@@ -65,11 +65,18 @@ const CheckoutForm = ({ amount, invoice, onPaymentSuccess, onCancel, loading }) 
 
       if (response.status) {
         toast.success("Payment completed successfully!");
-        // Refresh user details to unlock features
-        await refreshUser();
-        onPaymentSuccess(response.data?.id || response.data?.payment_intent_id);
-        // Force reload to ensure all states (like subscription restrictions) are fresh
-        window.location.reload();
+        
+        // Refresh user details to update subscription status and unlock features
+        await refreshUser().then(() => {
+          if (onPaymentSuccess) {
+            onPaymentSuccess(response.data?.payment_intent_id || response.data?.id);
+          }
+                        
+          // Small delay before reloading to allow the user to see the success state
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        });
       } else {
         toast.error(response.message || "Payment failed");
       }

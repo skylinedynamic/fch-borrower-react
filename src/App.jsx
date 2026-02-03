@@ -29,9 +29,18 @@ import ProfileCompleteCheckModal from './components/ProfileCompleteCheckModal/Pr
 
 export default function App() {
   useEffect(() => {
-    checkSession()
-    refreshUser()
-  }, [])
+    // Check session immediately on app load
+    checkSession();
+    // Refresh user details to ensure permissions/subscription are up to date
+    refreshUser();
+
+    // Set up periodic session validation (every 5 minutes)
+    const intervalId = setInterval(() => {
+      checkSession();
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
     <>
