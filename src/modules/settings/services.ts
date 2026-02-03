@@ -8,8 +8,3 @@ export const fetchSettings = async (): Promise<SettingsResponse> => {
     const { data } = await apiClient.get(BASE_PATH);
     return data;
 };
-
-// export const updateSettings = async (payload: UpdateSettingsPayload): Promise<SettingsData> => {
-//     const { data } = await apiClient.post(BASE_PATH, payload);
-//     return data;
-// };
