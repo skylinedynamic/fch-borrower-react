@@ -78,7 +78,6 @@ export default function InvoiceTable({
 
     const actionBodyTemplate = (rowData) => {
         const isNotPaid = rowData.status !== STATUS_PAID;
-        const isNotHost = user?.is_host === 0;
         return (
             <div className="d-flex align-items-center gap-2">
                 <button 
@@ -92,7 +91,7 @@ export default function InvoiceTable({
                 >
                     <i className="ri-file-pdf-line fs-14"></i>
                 </button>
-                {isNotPaid && isNotHost && (
+                {isNotPaid  && (
                    <button 
                         className="btn btn-primary btn-sm waves-effect waves-light fw-medium border-0"
                         onClick={(e) => { 
