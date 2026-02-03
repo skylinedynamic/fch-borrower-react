@@ -14,7 +14,7 @@ export default function ProtectedRoute() {
   const isRestricted = isSubscriptionRestricted(user)
 
   if (isRestricted) {
-    const allowedPaths = ['/dashboard', '/invoices']
+    const allowedPaths = ['/dashboard', '/invoices', '/payments']
     const isAllowed = location.pathname === '/' || allowedPaths.some(path => location.pathname.startsWith(path))
     
     if (!isAllowed) {

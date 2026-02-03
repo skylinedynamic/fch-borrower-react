@@ -18,54 +18,56 @@ export function isSubscriptionRestricted(user: AuthUser | null | undefined): boo
     // If user is not loaded/missing, default to NOT restricted to avoid UI flashes/race conditions
     if (!user) return false;
 
-    // Hosts are never restricted
-    if (user.is_host === 1) return false;
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const endDate = toDate(user.subscription_end_date);
     const nextInstallmentDate = toDate(user.next_installment_date);
-    const nextPlatformFeeDate = toDate(user.next_platform_fee_date);
-    const phase = user.phase;
-    const enrollmentType = user.enrollment_type;
 
-    // Subscription inactive → restricted
-    // Case-insensitive comparison
-    const status = (user.subscription_status || '').toLowerCase();
-    const activeStatus = SUBSCRIPTION_STATUS_TYPES.ACTIVE.toLowerCase();
+    // Diagnostic logging - help find why "Unpaid" isn't locking
+    const subStatus = String(user.subscription_status || '').toLowerCase().trim();
+    const generalStatus = String(user.status || '').toLowerCase().trim();
+    const activeStatus = (SUBSCRIPTION_STATUS_TYPES.ACTIVE || 'Active').toLowerCase().trim();
     
-    if (status !== activeStatus) {
+    console.log('--- Lock System Diagnostic ---', {
+        userId: user.id || user.entity_id,
+        subStatus,
+        generalStatus,
+        activeStatus,
+        nextInstallmentDate: user.next_installment_date,
+        today: today.toISOString().split('T')[0],
+        isHost: user.is_host
+    });
+
+    // 1. Subscription status check: Locked if not "Active"
+    // We check BOTH subscription_status and general status
+    // If ANY of them indicate the user is not active, we lock.
+    
+    // Explicit check for known inactive status keywords
+    const inactiveKeywords = ['unpaid', 'suspended', 'delinquent', 'canceled', 'inactive'];
+    
+    if (inactiveKeywords.includes(subStatus) || inactiveKeywords.includes(generalStatus)) {
+        console.log(`Result: Locked (Found inactive status: "${subStatus || generalStatus}")`);
         return true;
     }
 
-    // If not Fixed enrollment (meaning it's installment based)
-    // and we are in enrollment phase, check next installment
-    if (enrollmentType !== 'Fixed enrollment') {
-        if (phase === 'enrollment') {
-            if (nextInstallmentDate && today >= nextInstallmentDate) {
-                return true;
-            }
-        }
+    // Strict "Active" check: If a status is present but is NOT the active keyword
+    if (subStatus && subStatus !== activeStatus) {
+        console.log(`Result: Locked (subStatus "${subStatus}" is not "${activeStatus}")`);
+        return true;
+    }
+    
+    if (generalStatus && generalStatus !== activeStatus) {
+        console.log(`Result: Locked (generalStatus "${generalStatus}" is not "${activeStatus}")`);
+        return true;
     }
 
-    // Subscription ended → platform fee may apply
-    if (endDate && today >= endDate) {
-        // Platform fee due today or past → restricted
-        if (nextPlatformFeeDate && today >= nextPlatformFeeDate) {
-            return true;
-        }
-        // Package ended, platform fee not yet due → ok
-        return false;
+    // 2. Installment date check: Locked if next_installment_date < today
+    if (nextInstallmentDate && nextInstallmentDate < today) {
+        console.log('Result: Locked (next_installment_date is past)');
+        return true;
     }
 
-    // Platform fee phase logic
-    if (phase === 'platform_fee') {
-        if (nextPlatformFeeDate && today >= nextPlatformFeeDate) {
-            return true;
-        }
-    }
-
-    // Default → not restricted
+    console.log('Result: Not Restricted (Allowed)');
     return false;
 }
