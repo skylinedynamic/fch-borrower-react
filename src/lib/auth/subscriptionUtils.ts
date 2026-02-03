@@ -22,7 +22,7 @@ export function isSubscriptionRestricted(user: AuthUser | null | undefined): boo
 
     const nextInstallmentDate = toDate(user.next_installment_date);
 
-    const subStatus = String(user.subscription_status || '').toLowerCase().trim();
+    const subStatus = String(user.subscription_status).toLowerCase().trim();
     const activeStatus = (SUBSCRIPTION_STATUS_TYPES.ACTIVE || 'Active').toLowerCase().trim();
 
     if (subStatus && subStatus !== activeStatus) {
