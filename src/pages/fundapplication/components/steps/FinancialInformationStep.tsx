@@ -5,7 +5,7 @@ import type { FinancialInfo } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 import CustomDropdown from '../../../../components/Common/CustomDropdown'
-import { selfReportedCreditScoreOptions } from '../../../../data/profile'
+import { selfReportedCreditScoreOptions, selfReportedBusinessCreditScoreOptions } from '../../../../data/profile'
 import { useFinancialInfo, useSaveFinancialInfo } from '../../../../modules/funding-application/queries'
 import { toast } from 'react-toastify'
 
@@ -197,7 +197,7 @@ export default function FinancialInformationStep({
         <CustomDropdown
           value={financial.businessCreditScore}
           onChange={(value) => setFinancial({ ...financial, businessCreditScore: value })}
-          options={selfReportedCreditScoreOptions}
+          options={selfReportedBusinessCreditScoreOptions}
           optionLabel="label"
           optionValue="value"
           placeholder="Select self-reported business credit score"

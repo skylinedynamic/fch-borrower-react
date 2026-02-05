@@ -14,10 +14,10 @@ export default function Sidebar() {
   const location = useLocation()
 
   const { pathname } = location
-  
+
   const user = useAuthStore((state) => state.user)
   const isRestricted = isSubscriptionRestricted(user)
-  
+
   // Cleaned up unused context
   const [creditOpen, setCreditOpen] = useState(() => {
     const path = typeof window !== 'undefined' ? window.location.pathname : ''
@@ -68,9 +68,9 @@ export default function Sidebar() {
   // Helper for rendering nav links
   const LinkItem = ({ to, label, icon, restricted, end }) => (
     <li className="nav-item">
-      <NavLink 
+      <NavLink
         end={end}
-        className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}`} 
+        className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}`}
         to={to}
         onClick={(e) => restricted && e.preventDefault()}
       >
@@ -130,37 +130,37 @@ export default function Sidebar() {
           <div id="two-column-menu"></div>
           <ul className="navbar-nav partner-sidebar" id="navbar-nav">
             <LinkItem to="/" label="Dashboard" icon="ri-dashboard-2-line" end />
-            
+
             <LinkItem to="/pre-qualification" label="Pre Qualification" icon="ri-clipboard-line" restricted={isRestricted} />
             <LinkItem to="/fund-application" label="Fund Application" icon="ri-hand-coin-line" restricted={isRestricted} />
             <LinkItem to="/my-applications" label="My Applications" icon="ri-file-list-line" restricted={isRestricted} />
-            
+
             <LinkItem to="/invoices" label="Invoices" icon="ri-article-line" />
             <LinkItem to="/payments" label="Payments" icon="ri-money-dollar-box-line" />
-            
+
             <LinkItem to="/documents" label="Documents" icon="ri-file-2-line" restricted={isRestricted} />
             <LinkItem to="/appointment" label="Appointment" icon="ri-calendar-2-line" restricted={isRestricted} />
 
             <li className="nav-item">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className={`nav-link menu-link btn material-shadow-none w-100 text-start`}
                 onClick={(e) => {
                   if (isRestricted) return;
                   setCreditOpen((s) => !s);
-                }} 
-                aria-expanded={creditOpen} 
+                }}
+                aria-expanded={creditOpen}
                 aria-controls="creditBuilderMenu"
               >
                 <i className="ri-building-2-line"></i> <span>Credit Builder {isRestricted && <i className="ri-lock-line align-middle ms-1"></i>}</span>
                 <i className={`ri-arrow-down-s-line float-end submenu-caret ${creditOpen ? 'open' : ''}`}></i>
               </button>
-              <ul id="creditBuilderMenu" className={`navbar-nav ms-3 mt-1 submenu-collapse ${creditOpen ? 'open' : ''}`}>
+              <ul id="creditBuilderMenu" className={`navbar-nav ms-3 submenu-collapse ${creditOpen ? 'open' : ''}`}>
                 <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/overview"><i className="ri-arrow-right-s-line"></i> <span>Overview</span></NavLink>
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/overview"><i className="ri-subtract-line"></i> <span>Overview</span></NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/guide"><i className="ri-arrow-right-s-line"></i> <span>Step-By-Step Guide</span></NavLink>
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/guide"><i className="ri-subtract-line"></i> <span>Step-By-Step Guide</span></NavLink>
                 </li>
               </ul>
             </li>

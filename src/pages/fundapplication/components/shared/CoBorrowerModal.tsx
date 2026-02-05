@@ -172,7 +172,13 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
                     className={`form-control ${hasError('ownership') ? 'is-invalid' : ''}`}
                     placeholder="Enter Ownership %"
                     value={coDraft.ownershipPct}
-                    onChange={(e) => setCoDraft({ ...coDraft, ownershipPct: e.target.value })}
+                    onChange={(e) => {
+                      let val = e.target.value
+                      if (val !== '' && Number(val) > 100) val = '100'
+                      setCoDraft({ ...coDraft, ownershipPct: val })
+                    }}
+                    min="1"
+                    max="100"
                   />
                   {hasError('ownership') && <div className="invalid-feedback">{getError('ownership')}</div>}
                 </div>

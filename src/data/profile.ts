@@ -95,6 +95,16 @@ export const selfReportedCreditScoreOptions: OptionType[] = [
   { label: '750+', value: '750+' },
 ]
 
+export const selfReportedBusinessCreditScoreOptions: OptionType[] = [
+  { label: 'Not established yet', value: 'Not established yet' },
+  { label: 'Not sure', value: 'Not sure' },
+  { label: '0-49', value: '0-49' },
+  { label: '50-64', value: '50-64' },
+  { label: '65-74', value: '65-74' },
+  { label: '75-79', value: '75-79' },
+  { label: '80-100', value: '80-100' },
+]
+
 export const fundingTypeOptions: OptionType[] = [
   { label: 'Term Loan', value: 'Term Loan' },
   { label: 'Line of Credit', value: 'Line of Credit' },
