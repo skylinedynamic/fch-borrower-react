@@ -15,7 +15,7 @@ export default function FundingApplications() {
     setSelectedApplication(app)
     setDetailsModalOpen(true)
   }
-  
+
   const statusClass = (s: string) =>
     s === 'Submitted' ? 'badge rounded-pill bg-success-subtle text-success' : 'badge rounded-pill bg-warning-subtle text-warning'
 
@@ -36,7 +36,7 @@ export default function FundingApplications() {
                 <tr>
                   <th>Funding Type</th>
                   <th>Entity Type</th>
-                  <th>Incorporation</th>
+                  <th>Industry</th>
                   <th>Date</th>
                   <th>Requested Amount</th>
                   <th>Status</th>
@@ -51,14 +51,14 @@ export default function FundingApplications() {
                     {rows.length > 0 ? (
                       rows.map((app: FundingApplication) => (
                         <tr key={app.id}>
-                          <td>{app.preferred_funding_type || 'N/A'}</td>
+                          <td>{app.purpose_of_funds || 'N/A'}</td>
                           <td>{app.entity_type || 'N/A'}</td>
-                          <td>{app.business_state || 'N/A'}</td>
-                          <td>{app.business_checking_start_date || 'N/A'}</td>
+                          <td>{app.industry_type || 'N/A'}</td>
+                          <td>{app.date || 'N/A'}</td>
                           <td>{app.requested_amount ? `$${parseFloat(app.requested_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A'}</td>
                           <td><span className={statusClass(app.status || 'Pending')}>{app.status || 'Pending'}</span></td>
                           <td className="text-end">
-                            <button 
+                            <button
                               className="btn btn-sm btn-soft-primary btn-icon"
                               onClick={() => handleViewDetails(app)}
                               title="View Details"
@@ -83,10 +83,10 @@ export default function FundingApplications() {
         </div>
       </div>
 
-      <FundingApplicationDetailsModal 
-        isOpen={detailsModalOpen} 
-        toggle={toggleDetailsModal} 
-        application={selectedApplication} 
+      <FundingApplicationDetailsModal
+        isOpen={detailsModalOpen}
+        toggle={toggleDetailsModal}
+        application={selectedApplication}
       />
     </>
   )
