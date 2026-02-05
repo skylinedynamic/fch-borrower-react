@@ -5,6 +5,8 @@ import { Column } from 'primereact/column';
 import { Tag } from 'primereact/tag';
 import { Button } from 'primereact/button';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/auth';
+import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils';
 
 // --- Mock Data Constants ---
 const KPI_DATA = [
@@ -81,6 +83,8 @@ const MEETINGS_DATA = [
 
 export default function Dashboard() {
     const navigate = useNavigate();
+    const user = useAuthStore((state) => state.user);
+    const isRestricted = isSubscriptionRestricted(user);
 
     // --- Templates for DataTable ---
     const formatCurrency = (value) => {
@@ -131,7 +135,38 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* --- Unpaid Invoices Section Removed ---  */}
+                {/* --- Unpaid Invoices Section --- */}
+                {isRestricted && (
+                    <div className="row mb-4">
+                        <div className="col-12">
+                            <div className="card bg-danger-subtle border-0 shadow-sm border-start border-danger border-3">
+                                <div className="card-body p-4">
+                                    <div className="d-flex align-items-center">
+                                        <div className="flex-shrink-0 me-3">
+                                            <div className="avatar-sm">
+                                                <div className="avatar-title bg-danger text-white rounded-circle fs-20">
+                                                    <i className="ri-error-warning-fill"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex-grow-1">
+                                            <h5 className="fs-16 fw-bold text-danger mb-1">Currently you have pending invoice</h5>
+                                            <p className="text-muted mb-0 fs-14">Please pay your invoice. Click here to go to the invoice and complete the payment.</p>
+                                        </div>
+                                        <div className="flex-shrink-0 ms-3">
+                                            <Button 
+                                                label="View & Pay Invoices" 
+                                                icon="ri-bill-line" 
+                                                className="p-button-danger rounded-3" 
+                                                onClick={() => navigate('/invoices')}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* --- KPI Cards --- */}
                 <div className="row">
