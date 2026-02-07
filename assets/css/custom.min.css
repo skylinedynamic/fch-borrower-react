@@ -5583,3 +5583,29 @@
 .dropdown-menu:not(.dropup) {
   margin-top: 4px !important;
 }
+/* Premium Dashboard Styles */
+.dashboard-card {
+    border: 1px solid rgba(226, 232, 240, 0.6);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+    border-radius: 16px;
+    background: #ffffff;
+    transition: all 0.3s ease;
+}
+.dashboard-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+}
+.bg-soft-primary { background-color: rgba(59, 130, 246, 0.1) !important; color: #3b82f6 !important; }
+.bg-soft-success { background-color: rgba(16, 185, 129, 0.1) !important; color: #10b981 !important; }
+.bg-soft-warning { background-color: rgba(245, 158, 11, 0.1) !important; color: #f59e0b !important; }
+.bg-soft-info { background-color: rgba(6, 182, 212, 0.1) !important; color: #06b6d4 !important; }
+.bg-soft-danger { background-color: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; }
+.p-progressbar {
+    background: #f1f5f9;
+    border-radius: 8px;
+}
+.p-progressbar-value {
+    background: #f59e0b;
+    border-radius: 8px;
+}
+

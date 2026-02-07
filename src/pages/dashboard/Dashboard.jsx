@@ -1,57 +1,54 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Tag } from 'primereact/tag';
 import { Button } from 'primereact/button';
-import { useNavigate } from 'react-router-dom';
+import { ProgressBar } from 'primereact/progressbar';
+import { Chart } from 'primereact/chart';
 import { useAuthStore } from '../../store/auth';
 import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils';
 
 // --- Mock Data Constants ---
 const KPI_DATA = [
     {
-        title: 'Total Partners',
+        title: 'Funding Applications',
         value: '559',
         change: '+16.24 %',
         isPositive: true,
         iconClass: 'las la-handshake',
-        iconBg: 'bg-success-subtle',
+        iconBg: 'bg-soft-success',
         iconColor: 'text-success',
-        linkText: 'View all partners',
         linkTo: '/partners'
     },
     {
-        title: 'Total Clients',
-        value: '894',
-        change: '-3.57 %',
-        isPositive: false,
-        iconClass: 'las la-user-friends',
-        iconBg: 'bg-info-subtle',
-        iconColor: 'text-info',
-        linkText: 'View all clients',
-        linkTo: '#'
-    },
-    {
-        title: 'Total Leads',
-        value: '183',
+        title: 'Total Requested',
+        value: '$183K',
         change: '+29.08 %',
         isPositive: true,
         iconClass: 'las la-chart-pie',
-        iconBg: 'bg-warning-subtle',
+        iconBg: 'bg-soft-warning',
         iconColor: 'text-warning',
-        linkText: 'View all Leads',
         linkTo: '#'
     },
     {
-        title: 'My Commission',
+        title: 'Total Funded',
         value: '$165.89k',
         change: '+0.00 %',
-        isPositive: true, // Defaulting to positive/neutral for 0
+        isPositive: true,
         iconClass: 'bx bx-wallet',
-        iconBg: 'bg-primary-subtle',
+        iconBg: 'bg-soft-primary',
         iconColor: 'text-primary',
-        linkText: 'Withdraw money',
+        linkTo: '#'
+    },
+    {
+        title: 'Active Partners',
+        value: '124',
+        change: '+5.2 %',
+        isPositive: true,
+        iconClass: 'las la-user-friends',
+        iconBg: 'bg-soft-info',
+        iconColor: 'text-info',
         linkTo: '#'
     }
 ];
@@ -60,25 +57,20 @@ const FUNDING_APPS_DATA = [
     { id: 1, client: 'Vertex Tech Solutions', amount: 250000, date: 'Oct 10, 2025', status: 'Processing' },
     { id: 2, client: 'Evergreen E-Commerce', amount: 120000, date: 'Oct 12, 2025', status: 'Processing' },
     { id: 3, client: 'Aurora Logistics Ltd.', amount: 375000, date: 'Oct 15, 2025', status: 'Processing' },
-    { id: 4, client: 'Aurora Logistics Ltd.', amount: 375000, date: 'Oct 15, 2025', status: 'Processing' },
-    { id: 5, client: 'Aurora Logistics Ltd.', amount: 375000, date: 'Oct 15, 2025', status: 'Processing' },
     { id: 6, client: 'Blue Ridge Construction', amount: 200000, date: 'Oct 17, 2025', status: 'Funded' },
-    { id: 7, client: 'Atlas Bakery Co.', amount: 80000, date: 'Oct 19, 2025', status: 'Processing' },
 ];
 
-const PREQUAL_DATA = [
-    { id: 1, client: 'Vertex Tech Solutions', amount: 250000, date: 'Oct 10, 2025', status: 'New' },
-    { id: 2, client: 'Evergreen E-Commerce', amount: 120000, date: 'Oct 12, 2025', status: 'New' },
-    { id: 3, client: 'Aurora Logistics Ltd.', amount: 375000, date: 'Oct 15, 2025', status: 'New' },
-    { id: 4, client: 'Blue Ridge Construction', amount: 200000, date: 'Oct 17, 2025', status: 'Qualified' },
-    { id: 5, client: 'Atlas Bakery Co.', amount: 80000, date: 'Oct 19, 2025', status: 'New' },
+const INVOICES_DATA = [
+    { id: 'INV-1001', client: 'Alpha Corp', amount: 1500, date: 'Nov 01, 2025', status: 'Unpaid' },
+    { id: 'INV-1002', client: 'Beta Ltd', amount: 2300, date: 'Oct 28, 2025', status: 'Paid' },
+    { id: 'INV-1003', client: 'Gamma Inc', amount: 850, date: 'Oct 25, 2025', status: 'Paid' },
+    { id: 'INV-1004', client: 'Delta Group', amount: 4500, date: 'Oct 22, 2025', status: 'Unpaid' },
 ];
 
 const MEETINGS_DATA = [
-    { id: 1, date: '25', day: 'Tue', time: '12:00am - 03:30pm', title: 'Meeting for campaign with sales team' },
-    { id: 2, date: '20', day: 'Wed', time: '02:00pm - 03:45pm', title: 'Adding a new event with attachments' },
-    { id: 3, date: '17', day: 'Wed', time: '04:30pm - 07:15pm', title: 'Create new project Bundling Product' },
-    { id: 4, date: '12', day: 'Tue', time: '10:30am - 01:15pm', title: 'Weekly closed sales won checking with sales team' },
+    { id: 1, date: '25', day: 'Tue', time: '10:00 AM', title: 'Strategy Review', type: 'Google Meet' },
+    { id: 2, date: '27', day: 'Thu', time: '02:00 PM', title: 'Client Onboarding', type: 'Zoom' },
+    { id: 3, date: '30', day: 'Sun', time: '11:30 AM', title: 'Monthly Wrap-up', type: 'In Person' },
 ];
 
 export default function Dashboard() {
@@ -86,56 +78,46 @@ export default function Dashboard() {
     const user = useAuthStore((state) => state.user);
     const isRestricted = isSubscriptionRestricted(user);
 
-    // --- Templates for DataTable ---
-    const formatCurrency = (value) => {
-        return value.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 });
-    };
-
-    const amountBodyTemplate = (rowData) => {
-        return formatCurrency(rowData.amount);
-    };
-
-    const statusBodyTemplate = (rowData) => {
-        const getSeverity = (status) => {
-            switch (status) {
-                case 'Funded': return 'success';
-                case 'Qualified': return 'success';
-                case 'Processing': return 'warning';
-                case 'New': return 'info';
-                default: return null;
+    // Credit Score Mock Data
+    const creditScore = 740;
+    const creditScoreData = {
+        labels: ['Score', 'Remaining'],
+        datasets: [
+            {
+                data: [creditScore, 850 - creditScore],
+                backgroundColor: ['#4aa3ff', '#f0f0f0'],
+                hoverBackgroundColor: ['#4aa3ff', '#f0f0f0'],
+                borderWidth: 0
             }
-        };
-
-        return <Tag value={rowData.status} severity={getSeverity(rowData.status)}></Tag>;
+        ]
+    };
+    const creditScoreOptions = {
+        cutout: '80%',
+        plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false }
+        }
     };
 
-    const dateBodyTemplate = (rowData) => {
-        return <span className="text-muted">{rowData.date}</span>;
+    // Tier Mock Data
+    const currentTier = 'Platinum';
+    const nextTier = 'Diamond';
+    const tierProgress = 75;
+
+    // Table Templates
+    const formatCurrency = (value) => value.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 });
+    const amountBodyTemplate = (rowData) => <span className="fw-semibold text-dark">{formatCurrency(rowData.amount)}</span>;
+    const statusBodyTemplate = (rowData) => {
+        const severity = rowData.status === 'Funded' || rowData.status === 'Paid' ? 'success' : rowData.status === 'Unpaid' ? 'danger' : 'warning';
+        return <Tag value={rowData.status} severity={severity} className="px-2 py-1 rounded-pill fw-medium fs-11 text-uppercase"></Tag>;
     };
+    const dateBodyTemplate = (rowData) => <span className="text-muted fs-13">{rowData.date}</span>;
 
     return (
         <div className="page-content">
             <div className="container-fluid">
 
                 {/* --- Header Section --- */}
-                <div className="row mb-4">
-                    <div className="col-12">
-                        <div className="d-flex align-items-center justify-content-between">
-                            <div>
-                                <h4 className="fs-18 fw-bold mb-1 text-dark">Welcome back, Craig! 👋</h4>
-                                <p className="text-muted mb-0 fs-13">Here's what's happening with your business today.</p>
-                            </div>
-                            <div className="d-none d-sm-block">
-                                <div className="d-flex align-items-center gap-2 text-muted fw-medium fs-13 bg-light px-3 py-2 rounded">
-                                    <i className="ri-calendar-line"></i>
-                                    {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* --- Unpaid Invoices Section --- */}
                 {isRestricted && (
                     <div className="row mb-4">
                         <div className="col-12">
@@ -154,10 +136,10 @@ export default function Dashboard() {
                                             <p className="text-muted mb-0 fs-14">Please pay your invoice. Click here to go to the invoice and complete the payment.</p>
                                         </div>
                                         <div className="flex-shrink-0 ms-3">
-                                            <Button 
-                                                label="View & Pay Invoices" 
-                                                icon="ri-bill-line" 
-                                                className="p-button-danger rounded-3" 
+                                            <Button
+                                                label="View & Pay Invoices"
+                                                icon="ri-bill-line"
+                                                className="p-button-danger rounded-3"
                                                 onClick={() => navigate('/invoices')}
                                             />
                                         </div>
@@ -167,33 +149,44 @@ export default function Dashboard() {
                         </div>
                     </div>
                 )}
+                <div className="row mb-3 pb-1">
+                    <div className="col-12">
+                        <div className="d-flex align-items-lg-center flex-lg-row flex-column justify-content-between">
+                            <div className="flex-grow-1">
+                                <h4 className="fs-18 fw-bold mb-1 text-dark">Dashboard Overview</h4>
+                                <p className="text-muted mb-0 fs-13">Welcome back, {user?.name || 'User'}! Here's your daily summary.</p>
+                            </div>
+                            <div className="mt-3 mt-lg-0">
+                                <div className="d-flex align-items-center gap-2">
+                                    <Button label="Add New Application" icon="ri-add-line" className="btn btn-primary btn-sm rounded-pill shadow-sm" onClick={() => navigate('/fund-application')} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 {/* --- KPI Cards --- */}
                 <div className="row">
                     {KPI_DATA.map((kpi, index) => (
                         <div className="col-xl-3 col-md-6" key={index}>
-                            <div className="card card-animate border-0 shadow-sm h-100">
-                                <div className="card-body">
-                                    <div className="d-flex align-items-center mb-3">
+                            <div className="card dashboard-card card-animate border-0 shadow-sm h-100">
+                                <div className="card-body p-4">
+                                    <div className="d-flex justify-content-between">
                                         <div className="flex-grow-1">
-                                            <p className="text-uppercase fw-semibold fs-12 text-muted mb-0">{kpi.title}</p>
+                                            <p className="text-uppercase fw-semibold fs-11 text-muted mb-2">{kpi.title}</p>
+                                            <h4 className="mb-0 fs-22 fw-bold text-dark"><span className="counter-value">{kpi.value}</span></h4>
                                         </div>
-                                        <div className={`flex-shrink-0 badge ${kpi.isPositive ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'} fs-11`}>
-                                            <i className={`${kpi.isPositive ? 'ri-arrow-up-line' : 'ri-arrow-down-line'} align-bottom`}></i> {kpi.change}
-                                        </div>
-                                    </div>
-                                    <div className="d-flex align-items-end justify-content-between">
-                                        <div>
-                                            <h4 className="fs-24 fw-bold text-dark mb-4"><span className="counter-value">{kpi.value}</span></h4>
-                                            <Link to={kpi.linkTo} className="text-decoration-none text-primary fs-13 fw-medium">
-                                                {kpi.linkText} <i className="ri-arrow-right-line align-middle ms-1"></i>
-                                            </Link>
-                                        </div>
-                                        <div className="avatar-sm flex-shrink-0">
-                                            <span className={`avatar-title ${kpi.iconBg} rounded-3 fs-2`}>
+                                        <div className={`avatar-sm flex-shrink-0`}>
+                                            <span className={`avatar-title ${kpi.iconBg} rounded-3 fs-3`}>
                                                 <i className={`${kpi.iconClass} ${kpi.iconColor}`}></i>
                                             </span>
                                         </div>
+                                    </div>
+                                    <div className="mt-3 pt-1">
+                                        <span className={`badge ${kpi.isPositive ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'} rounded-pill fs-11 px-2 py-1 float-end`}>
+                                            {kpi.change}
+                                        </span>
+                                        <Link to={kpi.linkTo} className="text-decoration-underline text-muted fs-12">View Details</Link>
                                     </div>
                                 </div>
                             </div>
@@ -201,178 +194,144 @@ export default function Dashboard() {
                     ))}
                 </div>
 
-                {/* --- Metrics & Meetings Grid --- */}
-                <div className="row mt-2">
+                <div className="row mt-3">
+                    {/* --- Left Column (Main Content) --- */}
+                    <div className="col-xl-9">
 
-                    {/* Upcoming Meetings - Left Column on Large Screens */}
-                    <div className="col-xl-4">
-                        <div className="card h-100 border-0 shadow-sm">
-                            <div className="card-header bg-transparent border-bottom-0 d-flex align-items-center justify-content-between py-3">
-                                <h5 className="card-title mb-0 text-dark fw-bold">Upcoming Meetings</h5>
-                                <Link to="#" className="text-primary fs-12 fw-medium">View All</Link>
+                        {/* Credit & Tier Section */}
+                        <div className="row mb-4">
+                            <div className="col-md-6">
+                                <div className="card dashboard-card border-0 shadow-sm h-100">
+                                    <div className="card-header bg-transparent border-0 pb-0">
+                                        <h5 className="card-title mb-0 fw-bold fs-16 text-dark">Credit Score</h5>
+                                    </div>
+                                    <div className="card-body d-flex align-items-center justify-content-between p-4">
+                                        <div className="text-center position-relative" style={{ width: '120px', height: '120px' }}>
+                                            <Chart type="doughnut" data={creditScoreData} options={creditScoreOptions} className="w-100 h-100" />
+                                            <div className="position-absolute top-50 start-50 translate-middle text-center">
+                                                <h4 className="mb-0 fw-bold text-primary">{creditScore}</h4>
+                                                <small className="text-muted fs-10">Excellent</small>
+                                            </div>
+                                        </div>
+                                        <div className="flex-grow-1 ms-4">
+                                            <p className="text-muted mb-2 fs-13">Your credit score is doing great! You qualify for lower interest rates.</p>
+                                            <div className="d-flex gap-2">
+                                                <Button label="View Report" className="p-button-outlined p-button-sm rounded-pill fs-12 py-1" size="small" />
+                                                <Button label="Boost Score" className="p-button-secondary p-button-text p-button-sm rounded-pill fs-12 py-1" size="small" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-md-6">
+                                <div className="card dashboard-card border-0 shadow-sm h-100">
+                                    <div className="card-header bg-transparent border-0 pb-0">
+                                        <h5 className="card-title mb-0 fw-bold fs-16 text-dark">Current Tier Status</h5>
+                                    </div>
+                                    <div className="card-body p-4 d-flex flex-column justify-content-center">
+                                        <div className="d-flex justify-content-between align-items-end mb-2">
+                                            <div>
+                                                <span className="text-muted fs-13">Current Tier</span>
+                                                <h4 className="fw-bold text-warning mb-0"><i className="ri-vip-crown-fill me-1"></i> {currentTier}</h4>
+                                            </div>
+                                            <div className="text-end">
+                                                <span className="text-muted fs-12">Next: {nextTier}</span>
+                                                <br />
+                                                <span className="fw-bold text-dark fs-14">{tierProgress}%</span>
+                                            </div>
+                                        </div>
+                                        <ProgressBar value={tierProgress} showValue={false} style={{ height: '8px' }} color="#f59e0b" className="mb-3 rounded-pill" />
+                                        <p className="text-muted fs-13 mb-0">Earnings needed to upgrade: <span className="fw-bold text-dark">$12,500</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Recent Invoices & Applications Tabs or Stacked */}
+
+                        {/* Latest Invoices */}
+                        <div className="card dashboard-card border-0 shadow-sm mb-4">
+                            <div className="card-header bg-transparent border-0 d-flex align-items-center justify-content-between py-3">
+                                <h5 className="card-title mb-0 fw-bold fs-16 text-dark">Latest Invoices</h5>
+                                <Button label="View All Invoices" icon="ri-arrow-right-line" iconPos="right" className="p-button-text p-button-sm fs-12 text-primary" onClick={() => navigate('/invoices')} />
+                            </div>
+                            <div className="card-body p-0">
+                                <DataTable value={INVOICES_DATA} className="p-datatable-sm custom-table" responsiveLayout="scroll">
+                                    <Column field="id" header="Invoice ID" className="ps-4 fw-medium text-primary"></Column>
+                                    <Column field="client" header="Client" className="fw-semibold text-dark"></Column>
+                                    <Column field="date" header="Date" body={dateBodyTemplate}></Column>
+                                    <Column field="amount" header="Amount" body={amountBodyTemplate}></Column>
+                                    <Column field="status" header="Status" body={statusBodyTemplate}></Column>
+                                    <Column body={() => <Button icon="ri-download-line" rounded text severity="secondary" className="p-0" />} className="text-center" style={{ width: '3rem' }}></Column>
+                                </DataTable>
+                            </div>
+                        </div>
+
+                        {/* Recent Funding Applications */}
+                        <div className="card dashboard-card border-0 shadow-sm mb-4">
+                            <div className="card-header bg-transparent border-0 d-flex align-items-center justify-content-between py-3">
+                                <h5 className="card-title mb-0 fw-bold fs-16 text-dark">Recent Applications</h5>
+                                <Button label="View All" icon="ri-arrow-right-line" iconPos="right" className="p-button-text p-button-sm fs-12 text-primary" onClick={() => navigate('/my-applications')} />
+                            </div>
+                            <div className="card-body p-0">
+                                <DataTable value={FUNDING_APPS_DATA} className="p-datatable-sm custom-table" responsiveLayout="scroll">
+                                    <Column field="client" header="Applicant" className="ps-4 fw-semibold text-dark"></Column>
+                                    <Column field="amount" header="Requested" body={amountBodyTemplate}></Column>
+                                    <Column field="date" header="Submitted" body={dateBodyTemplate}></Column>
+                                    <Column field="status" header="Status" body={statusBodyTemplate}></Column>
+                                    <Column body={() => <Button icon="ri-eye-line" rounded text severity="secondary" className="p-0" />} className="text-center" style={{ width: '3rem' }}></Column>
+                                </DataTable>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {/* --- Right Column (Sidebar Widgets) --- */}
+                    <div className="col-xl-3">
+
+                        {/* Upcoming Meetings/Tasks */}
+                        <div className="card dashboard-card border-0 shadow-sm mb-4">
+                            <div className="card-header bg-transparent border-0 py-3">
+                                <h5 className="card-title mb-0 fw-bold fs-16 text-dark">Upcoming Meetings</h5>
                             </div>
                             <div className="card-body pt-0">
                                 <div className="vstack gap-3">
                                     {MEETINGS_DATA.map((meeting, idx) => (
-                                        <div className="d-flex align-items-center p-3 rounded-3 bg-light-subtle border" key={idx}>
+                                        <div className="d-flex align-items-center p-3 rounded-3 bg-light-subtle border border-light" key={idx}>
                                             <div className="flex-shrink-0 text-center me-3">
                                                 <div className="avatar-sm bg-white rounded-3 shadow-sm d-flex flex-column align-items-center justify-content-center border">
-                                                    <span className="text-dark fw-bold fs-16 lh-1">{meeting.date}</span>
-                                                    <span className="text-muted fs-10 text-uppercase">{meeting.day}</span>
+                                                    <span className="text-dark fw-bold fs-14 lh-1">{meeting.date}</span>
+                                                    <small className="text-muted fs-9 text-uppercase">{meeting.day}</small>
                                                 </div>
                                             </div>
                                             <div className="flex-grow-1 overflow-hidden">
-                                                <h6 className="fs-14 mb-1 text-truncate text-dark fw-semibold">{meeting.title}</h6>
-                                                <p className="text-muted fs-12 mb-0"><i className="ri-time-line align-bottom me-1"></i>{meeting.time}</p>
+                                                <h6 className="fs-13 mb-1 text-truncate text-dark fw-semibold">{meeting.title}</h6>
+                                                <p className="text-muted fs-11 mb-0"><i className="ri-time-line align-bottom me-1"></i>{meeting.time}</p>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
-                                <div className="mt-4 text-center">
-                                    <Button label="Schedule Meeting" icon="ri-calendar-event-line" className="p-button-outlined p-button-sm w-100 rounded-3" />
+                                <Button label="Schedule Meeting" icon="ri-calendar-event-line" className="p-button-outlined p-button-sm w-100 mt-3 rounded-pill" />
+                            </div>
+                        </div>
+
+                        {/* Quick Support / Contact */}
+                        <div className="card dashboard-card bg-primary-subtle border-0 shadow-sm">
+                            <div className="card-body p-4 text-center">
+                                <div className="avatar-sm mx-auto mb-3">
+                                    <div className="avatar-title bg-primary text-white rounded-circle fs-20">
+                                        <i className="ri-customer-service-2-line"></i>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Tables - Right Column on Large Screens */}
-                    <div className="col-xl-8">
-                        {/* Latest Funding Applications */}
-                        <div className="card border-0 shadow-sm mb-4">
-                            <div className="card-header bg-transparent border-bottom-0 d-flex align-items-center justify-content-between py-3">
-                                <h5 className="card-title mb-0 text-dark fw-bold">Latest Funding Applications</h5>
-                                <Link to="#" className="text-primary fs-12 fw-medium">See all applications</Link>
-                            </div>
-                            <div className="card-body">
-                                <DataTable value={FUNDING_APPS_DATA} paginator rows={5} className="p-datatable-sm p-datatable-gridlines-none" stripedRows tableStyle={{ minWidth: '50rem' }}>
-                                    <Column field="client" header="Client Name" className="fw-medium text-dark"></Column>
-                                    <Column field="amount" header="Request Amount" body={amountBodyTemplate}></Column>
-                                    <Column field="date" header="Submission Date" body={dateBodyTemplate}></Column>
-                                    <Column field="status" header="Status" body={statusBodyTemplate}></Column>
-                                    <Column body={() => (
-                                        <Button icon="ri-more-2-fill" rounded text severity="secondary" aria-label="Options" />
-                                    )} style={{ width: '3rem' }}></Column>
-                                </DataTable>
+                                <h5 className="fs-15 fw-bold text-dark mb-2">Need Help?</h5>
+                                <p className="text-muted fs-13 mb-3">Contact our support team for any queries regarding your applications.</p>
+                                <Button label="Contact Support" className="p-button-primary p-button-sm rounded-pill w-100" />
                             </div>
                         </div>
 
-                        {/* Latest Prequalification Requests */}
-                        <div className="card border-0 shadow-sm">
-                            <div className="card-header bg-transparent border-bottom-0 d-flex align-items-center justify-content-between py-3">
-                                <h5 className="card-title mb-0 text-dark fw-bold">Latest Prequalification Requests</h5>
-                                <Link to="#" className="text-primary fs-12 fw-medium">See all requests</Link>
-                            </div>
-                            <div className="card-body">
-                                <DataTable value={PREQUAL_DATA} paginator rows={5} className="p-datatable-sm p-datatable-gridlines-none" stripedRows tableStyle={{ minWidth: '50rem' }}>
-                                    <Column field="client" header="Client Name" className="fw-medium text-dark"></Column>
-                                    <Column field="amount" header="Request Amount" body={amountBodyTemplate}></Column>
-                                    <Column field="date" header="Submission Date" body={dateBodyTemplate}></Column>
-                                    <Column field="status" header="Status" body={statusBodyTemplate}></Column>
-                                    <Column body={() => (
-                                        <Button icon="ri-more-2-fill" rounded text severity="secondary" aria-label="Options" />
-                                    )} style={{ width: '3rem' }}></Column>
-                                </DataTable>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
-            </div>
-
-            {/* Modals from template: Add Partner */}
-            <div className="modal fade" id="addnewpartner" tabIndex="-1" aria-labelledby="addnewpartnerLabel" aria-modal="true">
-                <div className="modal-dialog modal-dialog-centered">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title" id="addnewpartnerLabel">Add Partner</h5>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div className="modal-body">
-                            <form onSubmit={(e) => e.preventDefault()}>
-                                <div className="row g-3">
-                                    <div className="col-12">
-                                        <div>
-                                            <label htmlFor="partnerName" className="form-label">Partner Name <span className="text-danger">*</span></label>
-                                            <input type="text" className="form-control" id="partnerName" placeholder="Enter partner name" required />
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div>
-                                            <label htmlFor="companyName" className="form-label">Company Name <span className="text-danger">*</span></label>
-                                            <input type="text" className="form-control" id="companyName" placeholder="Enter company name" required />
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div>
-                                            <label htmlFor="partnerEmail" className="form-label">Email Address <span className="text-danger">*</span></label>
-                                            <input type="email" className="form-control" id="partnerEmail" placeholder="name@company.com" required />
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div>
-                                            <label htmlFor="partnerPhone" className="form-label">Phone Number <span className="text-danger">*</span></label>
-                                            <input type="text" className="form-control" id="partnerPhone" placeholder="+(1) 234 567 8000" required />
-                                        </div>
-                                    </div>
-                                    <div className="col-lg-12">
-                                        <div className="hstack gap-2 justify-content-between">
-                                            <Link to="#" className="text-decoration-underline">View full form</Link>
-                                            <button type="submit" data-bs-dismiss="modal" data-toast data-toast-text="Successfyll added Partner" data-toast-gravity="bottom" data-toast-position="right" data-toast-duration="3000" data-toast-close="close" className="btn btn-primary">Submit</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Modals from template: Add Client */}
-            <div className="modal fade" id="addnewClient" tabIndex="-1" aria-labelledby="addnewClientLabel" aria-modal="true">
-                <div className="modal-dialog modal-dialog-centered">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title" id="addnewClientLabel">Add Client</h5>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div className="modal-body">
-                            <form onSubmit={(e) => e.preventDefault()}>
-                                <div className="row g-3">
-                                    <div className="col-12">
-                                        <div>
-                                            <label htmlFor="partnerName" className="form-label">Name <span className="text-danger">*</span></label>
-                                            <input type="text" className="form-control" id="partnerName" placeholder="Enter partner name" required />
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div>
-                                            <label htmlFor="partnerEmail" className="form-label">Email Address <span className="text-danger">*</span></label>
-                                            <input type="email" className="form-control" id="partnerEmail" placeholder="name@company.com" required />
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div>
-                                            <label htmlFor="partnerPhone" className="form-label">Phone Number <span className="text-danger">*</span></label>
-                                            <input type="text" className="form-control" id="partnerPhone" placeholder="+(1) 234 567 8000" required />
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div>
-                                            <label htmlFor="companyName" className="form-label">Company Name <span className="text-danger">*</span></label>
-                                            <input type="text" className="form-control" id="companyName" placeholder="Enter company name" required />
-                                        </div>
-                                    </div>
-                                    <div className="col-lg-12">
-                                        <div className="hstack gap-2 justify-content-between">
-                                            <Link to="#" className="text-decoration-underline">View full form</Link>
-                                            <button type="submit" data-bs-dismiss="modal" data-toast data-toast-text="Successfyll added Partner" data-toast-gravity="bottom" data-toast-position="right" data-toast-duration="3000" data-toast-close="close" className="btn btn-primary">Submit</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     );
