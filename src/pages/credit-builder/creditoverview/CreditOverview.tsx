@@ -30,7 +30,7 @@ export default function CreditOverview() {
           </div>
           <div className="col-xl-12">
             <CreditProgress />
-            <TaskStatusCards />
+            {/* <TaskStatusCards /> */}
             <VideoPlayerSection />
           </div>
           {/* <div className="col-xl-3">
