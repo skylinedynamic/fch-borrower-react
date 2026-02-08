@@ -1516,12 +1516,12 @@
 .myapplications-page .app-card {
   border: 1px solid var(--vz-border-color);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-  border-radius: 0.75rem;
+  border-radius: 0.25rem;
   overflow: hidden;
 }
 
 .myapplications-page .app-card .card-header {
-  background: linear-gradient(90deg, #f6f8fc, #ffffff);
+  /* background: linear-gradient(90deg, #f6f8fc, #ffffff); */
   border-bottom: 1px solid var(--vz-border-color);
   padding-top: 0.75rem;
   padding-bottom: 0.5rem;
@@ -5583,29 +5583,95 @@
 .dropdown-menu:not(.dropup) {
   margin-top: 4px !important;
 }
+
 /* Premium Dashboard Styles */
 .dashboard-card {
-    border: 1px solid rgba(226, 232, 240, 0.6);
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
-    border-radius: 16px;
-    background: #ffffff;
-    transition: all 0.3s ease;
-}
-.dashboard-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
-}
-.bg-soft-primary { background-color: rgba(59, 130, 246, 0.1) !important; color: #3b82f6 !important; }
-.bg-soft-success { background-color: rgba(16, 185, 129, 0.1) !important; color: #10b981 !important; }
-.bg-soft-warning { background-color: rgba(245, 158, 11, 0.1) !important; color: #f59e0b !important; }
-.bg-soft-info { background-color: rgba(6, 182, 212, 0.1) !important; color: #06b6d4 !important; }
-.bg-soft-danger { background-color: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; }
-.p-progressbar {
-    background: #f1f5f9;
-    border-radius: 8px;
-}
-.p-progressbar-value {
-    background: #f59e0b;
-    border-radius: 8px;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+  border-radius: .25rem;
+  background: #ffffff;
+  transition: all 0.3s ease;
 }
 
+.dashboard-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+}
+
+.bg-soft-primary {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  color: #3b82f6 !important;
+}
+
+.bg-soft-success {
+  background-color: rgba(16, 185, 129, 0.1) !important;
+  color: #10b981 !important;
+}
+
+.bg-soft-warning {
+  background-color: rgba(245, 158, 11, 0.1) !important;
+  color: #f59e0b !important;
+}
+
+.bg-soft-info {
+  background-color: rgba(6, 182, 212, 0.1) !important;
+  color: #06b6d4 !important;
+}
+
+.bg-soft-danger {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+}
+
+.p-progressbar {
+  background: #f1f5f9;
+  border-radius: 8px;
+}
+
+.p-progressbar-value {
+  background: #f59e0b;
+  border-radius: 8px;
+}
+
+/* Smart Table Styles */
+.smart-table .p-datatable-thead>tr>th {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  font-weight: 700 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  padding: 1rem 1.25rem !important;
+}
+
+.smart-table .p-datatable-tbody>tr {
+  transition: background-color 0.2s ease;
+}
+
+.smart-table .p-datatable-tbody>tr:hover {
+  background-color: #f1f5f9 !important;
+}
+
+.smart-table .p-datatable-tbody>tr>td {
+  border-bottom: 1px solid #f1f5f9 !important;
+  padding: 1.25rem !important;
+  vertical-align: middle !important;
+}
+
+.smart-table .p-tag {
+  font-family: inherit !important;
+}
+
+.avatar-xs {
+  height: 2.2rem;
+  width: 2.2rem;
+}
+
+.avatar-title {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
