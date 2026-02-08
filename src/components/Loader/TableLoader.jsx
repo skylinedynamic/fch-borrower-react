@@ -1,7 +1,6 @@
 import React from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import './SkeletonLoader.css';
 
 export default function TableLoader({ rows = 10, columns = 6, showHeader = true }) {
 
