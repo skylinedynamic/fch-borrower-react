@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { DataTable } from '../../../components/Table/DataTableWrapper';
+import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dropdown } from 'primereact/dropdown';
 import { INVOICE_STATUS_COLORS, INVOICE_STATUS_OPTIONS, STATUS_PAID } from '../../../data/invoiceConfig';
 import InvoicePaymentModal from './InvoicePaymentModal';
 import InvoicePreviewModal from './InvoicePreviewModal';
-import { useAuthStore } from '../../../store/auth';
+import { useAuthStore } from '../../../store/auth/authStore';
+import TableLoader from '../../../components/Loader/TableLoader';
 
 export default function InvoiceTable({ 
     data, 
@@ -19,12 +20,16 @@ export default function InvoiceTable({
     filters,
     sortField,
     sortOrder,
-    onRefresh // Add onRefresh prop to reload data after payment
+    onRefresh
 }) {
     const user = useAuthStore((state) => state.user);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [showPreviewModal, setShowPreviewModal] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState(null);
+
+    if (loading && (!data || data.length === 0)) {
+        return <TableLoader rows={perPage} columns={6} />;
+    }
 
     const handlePayClick = (invoice) => {
         setSelectedInvoice(invoice);
@@ -43,6 +48,7 @@ export default function InvoiceTable({
             onRefresh();
         }
     };
+
     const statusFilterElement = (options) => {
         return (
             <Dropdown
@@ -91,7 +97,7 @@ export default function InvoiceTable({
                 >
                     <i className="ri-file-pdf-line fs-14"></i>
                 </button>
-                {isNotPaid  && (
+                {isNotPaid && (
                    <button 
                         className="btn btn-primary btn-sm waves-effect waves-light fw-medium border-0"
                         onClick={(e) => { 

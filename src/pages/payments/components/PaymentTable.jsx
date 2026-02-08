@@ -3,6 +3,7 @@ import { DataTable } from '../../../components/Table/DataTableWrapper';
 import { Column } from 'primereact/column';
 import { Dropdown } from 'primereact/dropdown';
 import { PAYMENT_STATUS_OPTIONS, PAYMENT_STATUS_COLORS } from '../../../data/paymentConfig';
+import TableLoader from '../../../components/Loader/TableLoader';
 
 export default function PaymentTable({
     data,
@@ -17,6 +18,9 @@ export default function PaymentTable({
     sortField,
     sortOrder
 }) {
+    if (loading && (!data || data.length === 0)) {
+        return <TableLoader rows={perPage} columns={8} />;
+    }
     const statusBodyTemplate = (rowData) => {
         const status = rowData.status?.toLowerCase();
         const color = PAYMENT_STATUS_COLORS[status] || 'primary';

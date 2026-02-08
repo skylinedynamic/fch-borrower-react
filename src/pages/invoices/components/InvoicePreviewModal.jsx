@@ -3,6 +3,7 @@ import Modal from 'bootstrap/js/dist/modal';
 import { downloadInvoice, sendInvoice, fetchInvoiceDetails } from '../../../modules/invoice/services';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '../../../store/auth/authStore';
+import InvoicePreviewSkeleton from './InvoicePreviewSkeleton';
 
 // Helper to format currency
 const formatCurrency = (amount) => {
@@ -147,11 +148,7 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
                     </div>
                     <div className="modal-body p-0">
                         {fetching && !fullInvoice ? (
-                            <div className="p-5 text-center">
-                                <div className="spinner-border text-primary" role="status">
-                                    <span className="visually-hidden">Loading...</span>
-                                </div>
-                            </div>
+                            <InvoicePreviewSkeleton />
                         ) : !displayInvoice ? (
                             <div className="p-5 text-center text-muted">
                                 No invoice data available.
