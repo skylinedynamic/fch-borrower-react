@@ -1,5 +1,4 @@
 import React from 'react';
-import './SkeletonLoader.css';
 
 /**
  * Dynamic Filter Loader

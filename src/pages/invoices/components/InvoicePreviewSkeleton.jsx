@@ -1,5 +1,4 @@
 import React from 'react';
-import '../../../components/Loader/SkeletonLoader.css';
 
 export default function InvoicePreviewSkeleton() {
     return (
