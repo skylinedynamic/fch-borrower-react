@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { TableLoader } from '../../../components/Loader/TableLoader'
+import { TableRowsLoader } from '../../../components/Loader/TableRowsLoader'
 import type { PreQualificationRequest } from '../../../modules/my-application/types'
 import PreQualificationDetailsModal from './PreQualificationDetailsModal'
 
@@ -50,7 +50,7 @@ export default function PreQualificationRequests({ loading, data }: PreQualifica
               </thead>
               <tbody>
                 {loading ? (
-                  <TableLoader rows={5} columns={7} />
+                  <TableRowsLoader rows={5} columns={7} />
                 ) : (
                   <>
                     {data.map((r) => (
@@ -62,7 +62,7 @@ export default function PreQualificationRequests({ loading, data }: PreQualifica
                         <td>{r.requested_amount}</td>
                         <td><span className={statusClass(r.status)}>{r.status}</span></td>
                         <td className="text-end">
-                          <button 
+                          <button
                             className="btn btn-sm btn-soft-primary btn-icon"
                             onClick={() => handleViewDetails(r.id)}
                             title="View Details"
@@ -86,11 +86,11 @@ export default function PreQualificationRequests({ loading, data }: PreQualifica
           </div>
         </div>
       </div>
-      
-      <PreQualificationDetailsModal 
-        isOpen={detailsModalOpen} 
-        toggle={toggleDetailsModal} 
-        requestId={selectedRequestId} 
+
+      <PreQualificationDetailsModal
+        isOpen={detailsModalOpen}
+        toggle={toggleDetailsModal}
+        requestId={selectedRequestId}
       />
     </>
   )

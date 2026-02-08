@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useFundingApplications } from '../../../modules/my-application/queries'
 import type { FundingApplication } from '../../../modules/my-application/types'
-import { TableLoader } from '../../../components/Loader/TableLoader'
+import { TableRowsLoader } from '../../../components/Loader/TableRowsLoader'
 import FundingApplicationDetailsModal from './FundingApplicationDetailsModal'
 
 export default function FundingApplications() {
@@ -45,7 +45,7 @@ export default function FundingApplications() {
               </thead>
               <tbody>
                 {isLoading ? (
-                  <TableLoader rows={5} columns={7} />
+                  <TableRowsLoader rows={5} columns={7} />
                 ) : (
                   <>
                     {rows.length > 0 ? (
