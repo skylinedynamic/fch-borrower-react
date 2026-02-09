@@ -12,7 +12,7 @@ import './StatisticsCardSkeleton.css';
 const StatisticsCardSkeleton = ({ colSize = 'col-xl-3 col-md-6' }) => {
     return (
         <div className={colSize}>
-            <div className="card card-animate statistics-skeleton">
+            <div className="card card-animate statistics-skeleton mb-0">
                 <div className="card-body">
                     <div className="d-flex align-items-center">
                         {/* Icon Skeleton */}

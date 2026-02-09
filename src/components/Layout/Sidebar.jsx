@@ -5,7 +5,7 @@ import { logout } from '../../modules/auth/services'
 import { useAuthStore } from '../../store/auth'
 import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils'
 import faviconImg from '../../../assets/images/Favicon.png'
-import logoImg from '../../../assets/images/logo.png'
+import logoImg from '../../../assets/images/fch-logo-wide.png'
 import avatarDefault from '../../../assets/images/users/avatar-1.jpg'
 export default function Sidebar() {
   const navigate = useNavigate()
@@ -81,13 +81,13 @@ export default function Sidebar() {
 
   return (
     <div className={menuClass}>
-      <div className="navbar-brand-box py-2">
+      <div className="navbar-brand-box">
         <a href="/" className="logo logo-dark">
           <span className="logo-sm">
             <img src={faviconImg} alt="" height="22" />
           </span>
           <span className="logo-lg">
-            <img src={logoImg} alt="" height="17" />
+            <img src={logoImg} alt="" width="200" height="auto" />
           </span>
         </a>
         <a href="/" className="logo logo-light">
@@ -95,7 +95,7 @@ export default function Sidebar() {
             <img src={faviconImg} alt="" height="40" />
           </span>
           <span className="logo-lg">
-            <img src={logoImg} alt="" height="120" />
+            <img src={logoImg} alt="" width="200" height="auto" />
           </span>
         </a>
         <button type="button" className="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover" onClick={toggleOpen} aria-label="Toggle menu" aria-expanded={open}>

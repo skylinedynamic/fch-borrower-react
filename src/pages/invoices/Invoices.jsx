@@ -5,8 +5,6 @@ import InvoiceStats from './components/InvoiceStats';
 import InvoiceFilters from './components/InvoiceFilters';
 import InvoiceTable from './components/InvoiceTable';
 import { fetchInvoices, fetchInvoiceStats } from '../../modules/invoice';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 export default function Invoices() {
     const [loading, setLoading] = useState(true);
@@ -172,12 +170,11 @@ export default function Invoices() {
 
     return (
         <div className="page-content">
-            <ToastContainer position="top-right" autoClose={3000} />
             <div className="container-fluid">
                 {/* Header */}
-                <div className="row mb-3 pb-1 page-subheader-sticky bg-body">
+                <div className="row pb-1 page-subheader-sticky bg-body">
                     <div className="col-12">
-                        <div className="d-flex align-items-center justify-content-between flex-row">
+                        <div className="d-flex align-items-center justify-content-between flex-row py-2">
                             <div className="flex-grow-1">
                                 <h4 className="fs-20 mb-1">Invoices</h4>
                                 <nav aria-label="breadcrumb">
