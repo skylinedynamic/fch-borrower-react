@@ -5724,3 +5724,27 @@
   margin-top: 5px;
   margin-bottom: 5px;
 }
+
+
+/* ====== GLOBAL HEIGHT & SHAPE ====== */
+
+
+/* ====== BUTTON: FILTERS ====== */
+.btn-warning {
+    background-color: #c9a227 !important;
+    border-color: #c9a227 !important;
+    color: #fff !important;
+    font-weight: 500;
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
+}
+
+/* ====== BUTTON: CLEAR (replace btn-default) ====== */
+.btn-clear {
+    background-color: #f1f3f5 !important;
+    border: 1px solid #dee2e6 !important;
+    color: #495057 !important;
+    font-weight: 500;
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
+}

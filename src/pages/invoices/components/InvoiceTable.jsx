@@ -28,7 +28,7 @@ export default function InvoiceTable({
     const [selectedInvoice, setSelectedInvoice] = useState(null);
 
     if (loading && (!data || data.length === 0)) {
-        return <TableLoader rows={perPage} columns={6} />;
+        return <TableLoader rows={perPage} columns={7} />;
     }
 
     const handlePayClick = (invoice) => {
@@ -49,6 +49,20 @@ export default function InvoiceTable({
         }
     };
 
+    const statusBodyTemplate = (rowData) => {
+        const status = rowData.status?.toLowerCase();
+        const color = INVOICE_STATUS_COLORS[status] || 'primary';
+        return (
+            <span className={`badge bg-${color} text-uppercase`}>
+                {rowData.status}
+            </span>
+        );
+    };
+
+    const amountBodyTemplate = (rowData) => {
+        return `$${Number(rowData.payment_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    };
+
     const statusFilterElement = (options) => {
         return (
             <Dropdown
@@ -63,23 +77,6 @@ export default function InvoiceTable({
                 style={{ minWidth: '10rem' }}
             />
         );
-    };
-
-    const statusBodyTemplate = (rowData) => {
-        const severity = INVOICE_STATUS_COLORS[rowData.status?.toLowerCase()] || 'primary';
-        
-        return (
-            <span className={`badge bg-${severity} text-white px-3 py-1 rounded-pill fw-medium text-uppercase`}>
-                {rowData.status}
-            </span>
-        );
-    };
-
-    const amountBodyTemplate = (rowData) => {
-        const amount = typeof rowData.payment_amount === 'string' 
-            ? parseFloat(rowData.payment_amount) 
-            : rowData.payment_amount;
-        return <span>${amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>;
     };
 
     const actionBodyTemplate = (rowData) => {
@@ -115,35 +112,33 @@ export default function InvoiceTable({
 
     return (
         <div className="table-responsive table-card mt-1">
-            <DataTable 
-                value={data} 
-                loading={loading}
-                paginator 
+            <DataTable
+                value={data}
+                paginator
                 lazy
-                totalRecords={totalRecords}
                 first={(page - 1) * perPage}
-                rows={perPage} 
-                rowsPerPageOptions={[10, 25, 50, 100]}
+                rows={perPage}
+                totalRecords={totalRecords}
                 onPage={onPage}
                 onSort={onSort}
-                onFilter={onFilter}
-                filters={filters}
                 sortField={sortField}
                 sortOrder={sortOrder === 'asc' ? 1 : -1}
-                globalFilterFields={['invoice_id', 'customer_name', 'email', 'country', 'payment_date', 'payment_amount', 'status']}
+                onFilter={onFilter}
+                filters={filters}
+                filterDisplay="menu"
+                globalFilterFields={['invoice_id', 'customer_name', 'email', 'created_at', 'payment_amount', 'status']}
+                loading={loading}
                 dataKey="id"
-                scrollable
-                scrollHeight="510px"
-                className="p-datatable-sm fs-13" 
-                responsiveLayout="scroll"
+                className="p-datatable-sm"
                 emptyMessage="No invoices found."
+                responsiveLayout="scroll"
             >
-                <Column field="invoice_id" header="Invoice ID" style={{ minWidth: '100px' }} sortable filter showFilterMatchModes filterPlaceholder="Search by ID"></Column>
-                <Column field="customer_name" header="Customer" style={{ minWidth: '180px' }} sortable filter showFilterMatchModes filterPlaceholder="Search by name"></Column>
-                <Column field="email" header="Email" bodyClassName="text-muted" style={{ minWidth: '100px' }} sortable filter showFilterMatchModes filterPlaceholder="Search by email"></Column>
-                <Column field="created_at" header="Invoice Date" style={{ minWidth: '120px' }} sortable filter showFilterMatchModes filterPlaceholder="Search by date"></Column>
-                <Column field="payment_amount" header="Amount" body={amountBodyTemplate} style={{ minWidth: '120px' }} sortable filter showFilterMatchModes filterPlaceholder="Search by amount"></Column>
-                <Column field="status" header="Status" body={statusBodyTemplate} style={{ minWidth: '150px' }} sortable filter filterElement={statusFilterElement} showFilterMatchModes={false}></Column>
+                <Column field="invoice_id" header="Invoice ID" sortable filter showFilterMatchModes filterPlaceholder="Search by ID" style={{ minWidth: '100px' }}></Column>
+                <Column field="customer_name" header="Customer" sortable filter showFilterMatchModes filterPlaceholder="Search by name" style={{ minWidth: '180px' }}></Column>
+                <Column field="email" header="Email" sortable filter showFilterMatchModes filterPlaceholder="Search by email" style={{ minWidth: '100px' }}></Column>
+                <Column field="created_at" header="Invoice Date" sortable filter showFilterMatchModes filterPlaceholder="Search by date" style={{ minWidth: '120px' }}></Column>
+                <Column field="payment_amount" header="Amount" body={amountBodyTemplate} sortable filter showFilterMatchModes filterPlaceholder="Search by amount" style={{ minWidth: '100px' }}></Column>
+                <Column field="status" header="Status" body={statusBodyTemplate} sortable filter filterElement={statusFilterElement} showFilterMatchModes={false} style={{ minWidth: '100px' }}></Column>
                 <Column header="Action" body={actionBodyTemplate} style={{ minWidth: '120px' }}></Column>
             </DataTable>
             

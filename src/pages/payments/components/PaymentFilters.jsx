@@ -63,17 +63,19 @@ export default function PaymentFilters({
                     </div>
                 </div>
 
-                <div className="col-xxl-3 col-sm-6">
+                <div className="col-xxl-2 col-sm-6">
                     <Dropdown
                         value={selectedStatus}
                         options={PAYMENT_STATUS_OPTIONS}
                         onChange={(e) => setSelectedStatus(e.value)}
                         placeholder="All Status"
                         className="w-100 bg-light border-light"
+                        style={{ height: '38px' }}
+                        inputStyle={{ height: '38px' }}
                     />
                 </div>
 
-                <div className="col-xxl-2 col-sm-6 d-flex gap-2">
+                <div className="col-xxl-3 col-sm-6 d-flex gap-2">
                     <button 
                         type="button" 
                         className="btn btn-warning flex-grow-1"
@@ -81,7 +83,7 @@ export default function PaymentFilters({
                     >
                         <i className="ri-equalizer-fill me-1 align-bottom"></i> Filters
                     </button>
-                     <button type="button" className="btn btn-default flex-grow-1"  onClick={onClear}>
+                     <button type="button" className="btn-clear flex-grow-1"  onClick={onClear}>
                         <i className="ri-close-line me-1 align-bottom"></i> Clear
                     </button>
                 </div>

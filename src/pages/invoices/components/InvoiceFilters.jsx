@@ -71,7 +71,9 @@ export default function InvoiceFilters({
                             options={INVOICE_STATUS_OPTIONS} 
                             placeholder="All Status" 
                             className="w-100 bg-light border-light"
-                            onChange={(e) => setSelectedStatus(e.value)}    
+                            onChange={(e) => setSelectedStatus(e.value)}
+                            style={{ height: '38px' }}
+                            inputStyle={{ height: '38px' }}
                         />
                     </div>
 
@@ -80,7 +82,7 @@ export default function InvoiceFilters({
                             <button type="button" className="btn btn-warning flex-grow-1" onClick={onApply}>
                                 <i className="ri-equalizer-fill me-1 align-bottom"></i> Filters
                             </button>
-                            <button type="button" className="btn btn-default flex-grow-1" onClick={onClear}>
+                            <button type="button" className="btn-clear flex-grow-1" onClick={onClear}>
                                 <i className="ri-close-line me-1 align-bottom"></i> Clear
                             </button>
                         </div>
