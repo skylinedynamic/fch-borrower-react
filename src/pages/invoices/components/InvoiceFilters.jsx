@@ -70,8 +70,8 @@ export default function InvoiceFilters({
                             value={selectedStatus}
                             options={INVOICE_STATUS_OPTIONS} 
                             placeholder="All Status" 
-                            className="w-100 employee-filter-dropdown"
-                            onChange={(e) => setSelectedStatus(e.value)}
+                            className="w-100 bg-light border-light"
+                            onChange={(e) => setSelectedStatus(e.value)}    
                         />
                     </div>
 
