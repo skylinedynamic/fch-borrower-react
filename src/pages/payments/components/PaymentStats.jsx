@@ -5,7 +5,7 @@ import StatisticsCardSkeleton from '../../../components/Common/StatisticsCardSke
 export default function PaymentStats({ stats, loading }) {
     if (loading && !stats) {
         return (
-            <div className="row g-4 mt-1">
+            <div className="row ">
                 <StatisticsCardSkeleton />
                 <StatisticsCardSkeleton />
                 <StatisticsCardSkeleton />

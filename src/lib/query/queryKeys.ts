@@ -41,6 +41,7 @@ export const queryKeys = {
     all: ['creditBuilder'] as const,
     progress: () => [...queryKeys.creditBuilder.all, 'progress'] as const,
     tierTaskList: () => [...queryKeys.creditBuilder.all, 'tierTaskList'] as const,
+    taskOverview: () => [...queryKeys.creditBuilder.all, 'taskOverview'] as const,
   },
   documents: {
     all: ['documents'] as const,

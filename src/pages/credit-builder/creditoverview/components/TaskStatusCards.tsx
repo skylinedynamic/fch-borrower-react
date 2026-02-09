@@ -1,63 +1,261 @@
 import React from 'react'
+import { useTaskOverview } from '../../../../modules/credit-builder/overview'
+import TaskStatusCardsLoader from '../../../../components/Loader/TaskStatusCardsLoader'
 
 export default function TaskStatusCards() {
+  const { data, isLoading, isError, error } = useTaskOverview()
+
+  if (isLoading) {
+    return <TaskStatusCardsLoader />
+  }
+
+  if (isError) {
+    return (
+      <div className="card mb-3">
+        <div className="card-body">
+          <div className="alert alert-danger mb-0">
+            <i className="ri-error-warning-line me-2"></i>
+            {error instanceof Error ? error.message : 'Failed to load task overview'}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!data) {
+    return null
+  }
+
+  const { tier, verified, processing, pending, rejected } = data
+  const totalTasks = verified.length + processing.length + pending.length + rejected.length
+  const completedTasks = verified.length
+  const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+
   return (
     <div className="card mb-3">
       <div className="card-body">
         <div className="row g-3">
-          <div className="col-lg-4">
+          {/* Pending Tasks Panel */}
+          <div className="col-lg-3">
             <div className="panel panel--pending h-100">
-              <div className="panel-header"><div className="panel-title"><span className="icon-badge icon-badge--pending"><i className="ri-time-line"></i></span><span>Pending Tasks</span></div><span className="text-muted">0 remaining</span></div>
+              <div className="panel-header">
+                <div className="panel-title">
+                  <span className="icon-badge">
+                    <i className="ri-time-line"></i>
+                  </span>
+                  <span>Pending Tasks</span>
+                </div>
+                <span className="badge">
+                  {pending.length} tasks
+                </span>
+              </div>
               <div className="panel-body">
-                <div className="task"><div className="title d-flex justify-content-between"><span>Apply to Tier 1 Vendors</span><span className="pill pill-high">High Priority</span></div></div>
-                <div className="task"><div className="title d-flex justify-content-between"><span>Set up 411 Listing</span><span className="pill pill-medium">Medium Priority</span></div></div>
-                <div className="task"><div className="title d-flex justify-content-between"><span>Virtual Office Setup</span><span className="pill pill-medium">Medium Priority</span></div></div>
-                <div className="mt-3"><button type="button" className="btn btn-primary w-100">Start Next Task</button></div>
+                {pending.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-state-icon mb-3">
+                      <i className="ri-checkbox-circle-line" style={{ color: '#52a573' }}></i>
+                    </div>
+                    <div className="empty-state-text">
+                      <h6>All Caught Up!</h6>
+                      <p>No pending tasks at the moment</p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="tasks-list">
+                      {pending.map((task) => (
+                        <div key={task.id} className="task">
+                          <div className="d-flex align-items-start gap-2">
+                            <span className="task-dot"></span>
+                            <div className="flex-grow-1">
+                              <div className="task-title">{task.title}</div>
+                              <div className="task-subtitle">{task.subtitle}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3">
+                      <button type="button" className="btn btn-start w-100">
+                        <i className="ri-play-circle-line me-2"></i>
+                        Start Next Task
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
-          <div className="col-lg-4">
+
+          {/* Processing Tasks Panel */}
+          <div className="col-lg-3">
+            <div className="panel panel--processing h-100">
+              <div className="panel-header">
+                <div className="panel-title">
+                  <span className="icon-badge">
+                    <i className="ri-loader-4-line"></i>
+                  </span>
+                  <span>In Progress</span>
+                </div>
+                <span className="badge">
+                  {processing.length} active
+                </span>
+              </div>
+              <div className="panel-body">
+                {processing.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-state-icon mb-3">
+                      <i className="ri-time-line" style={{ color: '#5785c3' }}></i>
+                    </div>
+                    <div className="empty-state-text">
+                      <h6>No Tasks Processing</h6>
+                      <p>Start a task to see it here</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="tasks-list">
+                    {processing.map((task) => (
+                      <div key={task.id} className="task">
+                        <div className="d-flex justify-content-between align-items-start gap-2">
+                          <div className="d-flex align-items-start gap-2 flex-grow-1">
+                            <div className="spinner-border text-primary" style={{ width: '16px', height: '16px', borderWidth: '2px', marginTop: '2px' }}></div>
+                            <div className="flex-grow-1">
+                              <div className="task-title">{task.title}</div>
+                              <div className="task-subtitle">{task.subtitle}</div>
+                            </div>
+                          </div>
+                          <span className="status-badge">In Progress</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Verified/Completed Tasks Panel */}
+          <div className="col-lg-3">
             <div className="panel panel--completed h-100">
-              <div className="panel-header"><div className="panel-title"><span className="icon-badge icon-badge--completed"><i className="ri-checkbox-circle-line"></i></span><span>Completed Tasks</span></div><span className="text-muted">6 / 6 total</span></div>
+              <div className="panel-header">
+                <div className="panel-title">
+                  <span className="icon-badge">
+                    <i className="ri-checkbox-circle-line"></i>
+                  </span>
+                  <span>Verified</span>
+                </div>
+                <span className="badge">
+                  {verified.length} completed
+                </span>
+              </div>
               <div className="panel-body">
-                <div className="completed-scroll">
-                  <div className="task">
-                    <div className="d-flex justify-content-between align-items-start">
-                      <div className="task-check"><span className="tick tick-complete"><i className="ri-check-line"></i></span><div><div className="title">Business Registration</div><div className="text-muted">Complete this task to advance your business credit profile</div></div></div>
-                      <div className="status-complete">Complete</div>
+                {verified.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-state-icon mb-3">
+                      <i className="ri-trophy-line" style={{ color: '#52a573' }}></i>
                     </div>
-                    <div className="mt-2"><span className="pill pill-foundation">Foundation</span><span className="pill pill-high">High</span></div>
-                  </div>
-                  <div className="task">
-                    <div className="d-flex justify-content-between align-items-start">
-                      <div className="task-check"><span className="tick tick-complete"><i className="ri-check-line"></i></span><div><div className="title">EIN Application</div><div className="text-muted">Complete this task to advance your business credit profile</div></div></div>
-                      <div className="status-complete">Complete</div>
+                    <div className="empty-state-text">
+                      <h6>Start Your Journey</h6>
+                      <p>Complete tasks to build credit</p>
                     </div>
-                    <div className="mt-2"><span className="pill pill-foundation">Foundation</span><span className="pill pill-medium">Medium</span></div>
                   </div>
-                  <div className="task">
-                    <div className="d-flex justify-content-between align-items-start">
-                      <div className="task-check"><span className="tick tick-complete"><i className="ri-check-line"></i></span><div><div className="title">EIN Application</div><div className="text-muted">Complete this task to advance your business credit profile</div></div></div>
-                      <div className="status-complete">Complete</div>
+                ) : (
+                  <>
+                    <div className="tasks-list">
+                      {verified.map((task) => (
+                        <div key={task.id} className="task">
+                          <div className="d-flex justify-content-between align-items-start gap-2">
+                            <div className="d-flex align-items-start gap-2 flex-grow-1">
+                              <i className="ri-check-line" style={{ color: '#52a573', fontSize: '18px', marginTop: '2px' }}></i>
+                              <div className="flex-grow-1">
+                                <div className="task-title">{task.title}</div>
+                                <div className="task-subtitle">{task.subtitle}</div>
+                                {task.completed_at && (
+                                  <div className="task-meta">
+                                    <i className="ri-calendar-check-line me-1"></i>
+                                    {task.completed_at}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <span className="status-badge">Verified</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div className="mt-2"><span className="pill pill-foundation">Foundation</span><span className="pill pill-medium">Medium</span></div>
-                  </div>
-                </div>
-                <div className="mt-3">
-                  <div className="progress progress-goldnavy" style={{ height: 10 }}><div className="progress-bar progress-animated" style={{ width: '60%' }}></div></div>
-                  <div className="text-muted mt-1">60% of Tier 1 tasks complete</div>
-                </div>
+                    <div className="progress-section">
+                      <div className="progress">
+                        <div className="progress-bar" style={{ width: `${progressPercentage}%` }}></div>
+                      </div>
+                      <div className="d-flex justify-content-between align-items-center mt-2">
+                        <span className="task-subtitle">
+                          <i className="ri-trophy-line me-1"></i>
+                          {tier.name} Progress
+                        </span>
+                        <span className="fw-semibold" style={{ color: '#52a573', fontSize: '13px' }}>
+                          {progressPercentage}%
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
-          <div className="col-lg-4">
-            <div className="panel panel--score h-100">
-              <div className="panel-header"><div className="panel-title"><span className="icon-badge icon-badge--score"><i className="ri-line-chart-line"></i></span><span>Credit Score Status</span></div><span className="text-muted">75 D&B Score</span></div>
+
+          {/* Rejected Tasks Panel */}
+          <div className="col-lg-3">
+            <div className="panel panel--rejected h-100">
+              <div className="panel-header">
+                <div className="panel-title">
+                  <span className="icon-badge">
+                    <i className="ri-close-circle-line"></i>
+                  </span>
+                  <span>Rejected</span>
+                </div>
+                <span className="badge">
+                  {rejected.length} tasks
+                </span>
+              </div>
               <div className="panel-body">
-                <div className="task"><div className="d-flex justify-content-between"><span>Experian:</span><span className="text-muted">Building…</span></div></div>
-                <div className="task"><div className="d-flex justify-content-between"><span>Equifax:</span><span className="text-muted">Building…</span></div></div>
-                <div className="task"><div className="d-flex justify-content-between"><span>NAV:</span><span className="text-muted">Pending</span></div></div>
-                <div className="alert alert-success mt-3 mb-0"><i className="ri-arrow-up-line align-middle me-1"></i>Building credit profile</div>
+                {rejected.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-state-icon mb-3">
+                      <i className="ri-shield-check-line" style={{ color: '#52a573' }}></i>
+                    </div>
+                    <div className="empty-state-text">
+                      <h6>Perfect Record</h6>
+                      <p>No rejected tasks</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="tasks-list">
+                    {rejected.map((task) => (
+                      <div key={task.id} className="task">
+                        <div className="d-flex justify-content-between align-items-start gap-2 mb-2">
+                          <div className="d-flex align-items-start gap-2 flex-grow-1">
+                            <i className="ri-close-line" style={{ color: '#d67171', fontSize: '18px', marginTop: '2px' }}></i>
+                            <div className="flex-grow-1">
+                              <div className="task-title">{task.title}</div>
+                              <div className="task-subtitle">{task.subtitle}</div>
+                            </div>
+                          </div>
+                          <span className="status-badge">Rejected</span>
+                        </div>
+                        {task.rejection_reason && (
+                          <div className="rejection-alert">
+                            <div className="d-flex align-items-start gap-2">
+                              <i className="ri-information-line" style={{ color: '#d67171', fontSize: '14px', marginTop: '2px' }}></i>
+                              <span className="task-subtitle" style={{ lineHeight: '1.4' }}>
+                                {task.rejection_reason}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

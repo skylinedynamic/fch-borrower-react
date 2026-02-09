@@ -21,7 +21,7 @@ const StatisticsCard = ({
 }) => {
     return (
         <div className={colSize}>
-            <div className="card card-animate">
+            <div className="card card-animate mb-0">
                 <div className="card-body">
                     <div className="d-flex align-items-center">
                         <div className="avatar-sm flex-shrink-0">
