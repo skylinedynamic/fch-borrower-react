@@ -75,8 +75,8 @@ export type BusinessInfoRequest = {
   business_name: string
   industry_type: string
   business_structure: string
-  monthly_revenue: number
-  annual_revenue: number
+  monthly_revenue: number | null
+  annual_revenue: number | null
   years_in_business: string
 }
 
