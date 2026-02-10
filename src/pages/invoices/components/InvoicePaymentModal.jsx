@@ -71,11 +71,6 @@ const CheckoutForm = ({ amount, invoice, onPaymentSuccess, onCancel, loading }) 
           if (onPaymentSuccess) {
             onPaymentSuccess(response.data?.payment_intent_id || response.data?.id);
           }
-                        
-          // Small delay before reloading to allow the user to see the success state
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
         });
       } else {
         toast.error(response.message || "Payment failed");
