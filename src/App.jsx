@@ -6,12 +6,11 @@ import SignIn from '../src/pages/singin/SignIn.jsx'
 import ForgotPassword from '../src/pages/singin/ForgotPassword.jsx'
 import ResetPassword from '../src/pages/singin/ResetPassword.jsx'
 import SignUp from '../src/pages/singin/SignUp.jsx'
-import UnderConstruction from '../src/pages/UnderConstruction.jsx'
 import CreditGuide from '../src/pages/credit-builder/creditguide/CreditGuide.tsx'
 import FundApplication from '../src/pages/fundapplication/FundApplication.tsx'
 import PreQualification from '../src/pages/prequalification/PreQualification.tsx'
 import Documents from '../src/pages/documents/Documents.tsx'
-import { ProtectedRoute, GuestRoute, checkSession, refreshUser } from './lib/auth'
+import { ProtectedRoute, GuestRoute, checkSession, refreshSubscription } from './lib/auth'
 import Profile from '../src/pages/profile/profile.tsx'
 import MyApplication from '../src/pages/myapplication/MyApplication.tsx'
 import Invoices from '../src/pages/invoices/Invoices.jsx'
@@ -32,7 +31,7 @@ export default function App() {
     // Check session immediately on app load
     checkSession();
     // Refresh user details to ensure permissions/subscription are up to date
-    refreshUser();
+    refreshSubscription();
 
     // Set up periodic session validation (every 5 minutes)
     const intervalId = setInterval(() => {

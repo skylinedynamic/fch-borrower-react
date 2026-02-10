@@ -16,7 +16,8 @@ export default function Sidebar() {
   const { pathname } = location
 
   const user = useAuthStore((state) => state.user)
-  const isRestricted = isSubscriptionRestricted(user)
+  const userSubscription = useAuthStore((state) => state.userSubscription)
+  const isRestricted = isSubscriptionRestricted(userSubscription)
 
   // Cleaned up unused context
   const [creditOpen, setCreditOpen] = useState(() => {

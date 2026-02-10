@@ -11,7 +11,7 @@ import {
 } from '@stripe/react-stripe-js';
 import { getStripe } from '../../../lib/stripe';
 import { processInvoicePayment } from '../../../modules/invoice/services';
-import { refreshUser } from '../../../lib/auth';
+import { refreshSubscription } from '../../../lib/auth';
 import { toast } from 'react-toastify';
 
 const CheckoutForm = ({ amount, invoice, onPaymentSuccess, onCancel, loading }) => {
@@ -67,7 +67,7 @@ const CheckoutForm = ({ amount, invoice, onPaymentSuccess, onCancel, loading }) 
         toast.success("Payment completed successfully!");
         
         // Refresh user details to update subscription status and unlock features
-        await refreshUser().then(() => {
+        await refreshSubscription().then(() => {
           if (onPaymentSuccess) {
             onPaymentSuccess(response.data?.payment_intent_id || response.data?.id);
           }

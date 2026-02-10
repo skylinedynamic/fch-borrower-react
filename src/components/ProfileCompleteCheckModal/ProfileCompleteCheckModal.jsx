@@ -12,7 +12,8 @@ const ProfileCompleteCheckModal = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const user = useAuthStore((state) => state.user)
-  const isRestricted = isSubscriptionRestricted(user)
+  const userSubscription = useAuthStore((state) => state.userSubscription)
+  const isRestricted = isSubscriptionRestricted(userSubscription)
 
   useEffect(() => {
     // If restricted, never show the modal

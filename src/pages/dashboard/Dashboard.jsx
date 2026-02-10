@@ -15,7 +15,8 @@ import DashboardLoader from '../../components/Loader/DashboardLoader';
 export default function Dashboard() {
     const navigate = useNavigate();
     const user = useAuthStore((state) => state.user);
-    const isRestricted = isSubscriptionRestricted(user);
+    const userSubscription = useAuthStore((state) => state.userSubscription);
+    const isRestricted = isSubscriptionRestricted(userSubscription);
 
 
     // Fetch dashboard data
