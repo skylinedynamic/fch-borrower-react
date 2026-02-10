@@ -230,8 +230,8 @@ export const usePreQualificationForm = () => {
       return
     }
     try {
-      const monthlyRevenue = parseFloat(business.monthlyRevenue.replace(/,/g, '')) || 0
-      const annualRevenue = parseFloat(business.annualRevenue.replace(/,/g, '')) || 0
+      const monthlyRevenue = business.monthlyRevenue.trim() ? parseFloat(business.monthlyRevenue.replace(/,/g, '')) || null : null
+      const annualRevenue = business.annualRevenue.trim() ? parseFloat(business.annualRevenue.replace(/,/g, '')) || null : null
 
       await submitBusinessInfoMutation.mutateAsync({
         id: preQualId,

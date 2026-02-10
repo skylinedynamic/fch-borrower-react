@@ -500,6 +500,8 @@ export default function OwnershipInformationStep({
                 setOwner((prev: OwnerInfo) => ({ ...prev, hasCoBorrower: checked }))
                 if (checked) {
                   setTimeout(onShowCoModal, 150)
+                } else {
+                  setCoBorrowers([])
                 }
               }}
             />

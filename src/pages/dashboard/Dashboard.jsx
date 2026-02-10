@@ -205,7 +205,7 @@ export default function Dashboard() {
                     <div className="col-12">
                         <div className="d-flex align-items-lg-center flex-lg-row flex-column justify-content-between">
                             <div className="flex-grow-1">
-                                <h4 className="fs-18 fw-bold mb-1 text-dark">Dashboard Overview</h4>
+                                <h4 className="fs-16 mb-1">Dashboard Overview</h4>
                                 <p className="text-muted mb-0 fs-13">Welcome back, {user?.name}! Here's what's happening with your business.</p>
                             </div>
                         </div>

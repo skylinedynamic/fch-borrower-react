@@ -6103,3 +6103,15 @@
     padding-top: 0.45rem;
     padding-bottom: 0.45rem;
 }
+
+
+/* datatable */
+
+.p-icon {
+    width: 0.8rem !important;
+    height: 0.8rem !important;
+}
+
+img, svg {
+    vertical-align: middle !important;
+}
