@@ -3,7 +3,7 @@
 /* Scoped styles for partner sidebar redesign */
 
 .page-content {
-    padding: calc(60px + var(--vz-grid-gutter-width)) calc(var(--vz-grid-gutter-width) * .5) 60px calc(var(--vz-grid-gutter-width) * .5) !important;
+  padding: calc(60px + var(--vz-grid-gutter-width)) calc(var(--vz-grid-gutter-width) * .5) 60px calc(var(--vz-grid-gutter-width) * .5) !important;
 }
 
 .row>* {
@@ -6086,32 +6086,42 @@
 
 /* ====== BUTTON: FILTERS ====== */
 .btn-warning {
-    background-color: #c9a227 !important;
-    border-color: #c9a227 !important;
-    color: #fff !important;
-    font-weight: 500;
-    padding-top: 0.45rem;
-    padding-bottom: 0.45rem;
+  background-color: #c9a227 !important;
+  border-color: #c9a227 !important;
+  color: #fff !important;
+  font-weight: 500;
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
 }
 
 /* ====== BUTTON: CLEAR (replace btn-default) ====== */
 .btn-clear {
-    background-color: #f1f3f5 !important;
-    border: 1px solid #dee2e6 !important;
-    color: #495057 !important;
-    font-weight: 500;
-    padding-top: 0.45rem;
-    padding-bottom: 0.45rem;
+  background-color: #f1f3f5 !important;
+  border: 1px solid #dee2e6 !important;
+  color: #495057 !important;
+  font-weight: 500;
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
 }
 
 
 /* datatable */
 
 .p-icon {
-    width: 0.8rem !important;
-    height: 0.8rem !important;
+  width: 0.8rem !important;
+  height: 0.8rem !important;
 }
 
-img, svg {
-    vertical-align: middle !important;
+.btn-default,
+.btn-default:focus,
+.btn-default:active,
+.btn-default:hover {
+  background-color: #dddddeab !important;
+  color: var(--vz-secondary-text-color) !important;
+  border-color: none !important;
+}
+
+.p-inputtext {
+  height: 37.5px !important;
+  font-size: .9rem !important;
 }

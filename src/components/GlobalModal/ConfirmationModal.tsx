@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import Modal from 'bootstrap/js/dist/modal'
 
 interface ConfirmationModalProps {
@@ -58,19 +59,23 @@ export default function ConfirmationModal({
       if (modal) {
         try {
           modal.hide()
-          if (typeof modal.dispose === 'function') modal.dispose()
+          // Use a small timeout to let the hide animation finish before disposing
+          setTimeout(() => {
+            if (typeof modal.dispose === 'function') modal.dispose()
+          }, 300)
         } catch (_) { }
       }
       modalInstanceRef.current = null
     }
   }, [])
 
-  return (
+  const modalContent = (
     <div
       className="modal fade flip"
       ref={modalRef}
       tabIndex={-1}
       aria-hidden="true"
+      style={{ zIndex: 1056 }}
     >
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">
@@ -86,13 +91,14 @@ export default function ConfirmationModal({
               <p className="text-muted fs-15 mb-4">
                 {message}
               </p>
-              <div className="hstack gap-2 justify-content-center remove">
+              <div className="hstack gap-2 justify-content-center">
                 <button
+                  type="button"
                   className="btn btn-link link-secondary fw-medium"
                   onClick={onClose}
                   disabled={loading}
                 >
-                  {cancelText}
+                  <i className="ri-close-line me-1 align-middle"></i> {cancelText}
                 </button>
                 <button
                   type="button"
@@ -120,4 +126,6 @@ export default function ConfirmationModal({
       </div>
     </div>
   )
+
+  return createPortal(modalContent, document.body)
 }

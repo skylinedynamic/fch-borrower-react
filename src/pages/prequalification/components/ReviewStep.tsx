@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import type { PersonalInfo, BusinessDetails, FinancialSupport } from '../../../modules/pre-qualification'
+import ConfirmationModal from '../../../components/GlobalModal/ConfirmationModal'
 
 interface ReviewStepProps {
   personal: PersonalInfo
@@ -12,6 +13,8 @@ interface ReviewStepProps {
 }
 
 export default function ReviewStep({ personal, business, support, onEdit, onPrevious, onSubmit, isSaving }: ReviewStepProps) {
+  const [showConfirm, setShowConfirm] = useState(false)
+
   return (
     <div className="review-grid">
       <div className="review-card">
@@ -49,17 +52,30 @@ export default function ReviewStep({ personal, business, support, onEdit, onPrev
         <div className="kv"><div className="label">Personal Credit Score</div><div className="value">{support.personalCreditScore || '—'}</div></div>
         <div className="kv"><div className="label">Estimate Business Credit Score</div><div className="value">{support.estimatedBusinessCreditScore || '—'}</div></div>
         <div className="kv"><div className="label">Note</div><div className="value">{support.notes || '—'}</div></div>
-        <div className="kv"><div className="label">Existing Business Debt</div><div className="value">{support.existingBusinessDebt ? (support.existingBusinessDebt  ? 'Yes' : 'No') : '—'}</div></div>
+        <div className="kv"><div className="label">Existing Business Debt</div><div className="value">{support.existingBusinessDebt ? (support.existingBusinessDebt ? 'Yes' : 'No') : '—'}</div></div>
       </div>
       <div className="review-card review-card-wide">
         <div className="d-flex justify-content-between align-items-center">
           <div className="text-muted">Review your details then submit</div>
           <div className="d-flex gap-2">
             <button type="button" className="btn btn-warning" onClick={onPrevious}>Previous</button>
-            <button type="button" className="btn next-btn" onClick={onSubmit}>{isSaving ? 'Submitting...' : 'Submit'}</button>
+            <button type="button" className="btn next-btn" onClick={() => setShowConfirm(true)}>{isSaving ? 'Submitting...' : 'Submit'}</button>
           </div>
         </div>
       </div>
+
+      <ConfirmationModal
+        show={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={onSubmit}
+        title="Final Review Confirmation"
+        message="Are you sure you want to submit your pre-qualification request? Please ensure all details are correct."
+        confirmText="Yes, Submit"
+        cancelText="No, Cancel"
+        loading={isSaving}
+        loadingText="Submitting..."
+        icon="https://cdn.lordicon.com/lupuorrc.json"
+      />
     </div>
   )
 }
