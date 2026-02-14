@@ -6096,12 +6096,13 @@
 
 /* ====== BUTTON: CLEAR (replace btn-default) ====== */
 .btn-clear {
-  background-color: #f1f3f5 !important;
-  border: 1px solid #dee2e6 !important;
+  background-color: #dddddeab !important;
+  border: 1px solid #dddddeab !important;
   color: #495057 !important;
   font-weight: 500;
   padding-top: 0.45rem;
   padding-bottom: 0.45rem;
+  border-radius: .25rem !important;
 }
 
 
@@ -6123,5 +6124,9 @@
 
 .p-inputtext {
   height: 37.5px !important;
+  font-size: .9rem !important;
+}
+
+.p-component {
   font-size: .9rem !important;
 }

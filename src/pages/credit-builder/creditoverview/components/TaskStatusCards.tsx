@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { useTaskOverview } from '../../../../modules/credit-builder/overview'
 import TaskStatusCardsLoader from '../../../../components/Loader/TaskStatusCardsLoader'
 
@@ -76,10 +77,10 @@ export default function TaskStatusCards() {
                       ))}
                     </div>
                     <div className="mt-3">
-                      <button type="button" className="btn btn-start w-100">
+                      <Link to="/credit-builder/guide" className="btn btn-start w-100">
                         <i className="ri-play-circle-line me-2"></i>
                         Start Next Task
-                      </button>
+                      </Link>
                     </div>
                   </>
                 )}

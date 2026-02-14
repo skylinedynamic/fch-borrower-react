@@ -81,28 +81,16 @@ export default function PaymentTable({
             >
                 <Column field="transaction_date" header="Payment Date" sortable filter showFilterMatchModes filterPlaceholder="Search by date" style={{ minWidth: '100px' }}></Column>
                 <Column field="invoice_id" header="Invoice ID" sortable filter showFilterMatchModes filterPlaceholder="Search by invoice ID" style={{ minWidth: '100px' }}></Column>
-                <Column field="from" header="From" sortable filter showFilterMatchModes filterPlaceholder="Search by from" style={{ minWidth: '100px' }}></Column>
-                <Column 
-                    field="payment_type" 
-                    header="Payment Type" 
-                    body={(rowData) => {
-                        return (
-                            <div>
-                                <div className="fw-medium">{rowData.payment_type}</div>
-                                <div className="text-muted fs-11">Payment</div>
-                            </div>
-                        );
-                    }}
-                    sortable filter showFilterMatchModes filterPlaceholder="Search by type" style={{ minWidth: '120px' }}
-                ></Column>
-                <Column 
-                    header="Name" 
-                    body={nameBodyTemplate} 
-                    sortable 
-                    filter 
+                <Column field="from" header="Payment Method" sortable filter showFilterMatchModes filterPlaceholder="Search by from" style={{ minWidth: '100px' }}></Column>
+                <Column field="payment_type" header="Payment Type" body={(rowData) => rowData.payment_type} sortable filter showFilterMatchModes filterPlaceholder="Search by type" style={{ minWidth: '120px' }}></Column>
+                <Column
+                    header="Name"
+                    body={nameBodyTemplate}
+                    sortable
+                    filter
                     filterField="borrower_name"
-                    showFilterMatchModes 
-                    filterPlaceholder="Search name" 
+                    showFilterMatchModes
+                    filterPlaceholder="Search name"
                     style={{ minWidth: '150px' }}
                 ></Column>
                 <Column field="transaction_id" header="Transaction ID" sortable filter showFilterMatchModes filterPlaceholder="Search by ID" style={{ minWidth: '130px' }}></Column>

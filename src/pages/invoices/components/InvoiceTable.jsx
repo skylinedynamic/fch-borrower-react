@@ -8,14 +8,14 @@ import InvoicePreviewModal from './InvoicePreviewModal';
 import { useAuthStore } from '../../../store/auth/authStore';
 import TableLoader from '../../../components/Loader/TableLoader';
 
-export default function InvoiceTable({ 
-    data, 
-    loading, 
-    totalRecords, 
-    page, 
-    perPage, 
-    onPage, 
-    onSort, 
+export default function InvoiceTable({
+    data,
+    loading,
+    totalRecords,
+    page,
+    perPage,
+    onPage,
+    onSort,
     onFilter,
     filters,
     sortField,
@@ -82,12 +82,12 @@ export default function InvoiceTable({
     const actionBodyTemplate = (rowData) => {
         const isNotPaid = rowData.status !== STATUS_PAID;
         return (
-            <div className="d-flex align-items-center gap-2">
-                <button 
+            <div className="d-flex align-items-center justify-content-center gap-2">
+                <button
                     className="btn btn-soft-danger btn-sm p-1 d-flex align-items-center justify-content-center"
                     style={{ width: '28px', height: '28px' }}
-                    onClick={(e) => { 
-                        e.stopPropagation(); 
+                    onClick={(e) => {
+                        e.stopPropagation();
                         handlePreviewClick(rowData);
                     }}
                     title="View Details"
@@ -95,10 +95,10 @@ export default function InvoiceTable({
                     <i className="ri-file-pdf-line fs-14"></i>
                 </button>
                 {isNotPaid && (
-                   <button 
+                    <button
                         className="btn btn-primary btn-sm waves-effect waves-light fw-medium border-0"
-                        onClick={(e) => { 
-                            e.stopPropagation(); 
+                        onClick={(e) => {
+                            e.stopPropagation();
                             handlePayClick(rowData);
                         }}
                     >
@@ -139,17 +139,17 @@ export default function InvoiceTable({
                 <Column field="created_at" header="Invoice Date" sortable filter showFilterMatchModes filterPlaceholder="Search by date" style={{ minWidth: '120px' }}></Column>
                 <Column field="payment_amount" header="Amount" body={amountBodyTemplate} sortable filter showFilterMatchModes filterPlaceholder="Search by amount" style={{ minWidth: '100px' }}></Column>
                 <Column field="status" header="Status" body={statusBodyTemplate} sortable filter filterElement={statusFilterElement} showFilterMatchModes={false} style={{ minWidth: '100px' }}></Column>
-                <Column header="Action" body={actionBodyTemplate} style={{ minWidth: '120px' }}></Column>
+                <Column header="Action" body={actionBodyTemplate} style={{ minWidth: '120px' }} alignHeader="center" align="center"></Column>
             </DataTable>
-            
-            <InvoicePaymentModal 
+
+            <InvoicePaymentModal
                 show={showPaymentModal}
                 onHide={() => setShowPaymentModal(false)}
                 onSuccess={handlePaymentSuccess}
                 invoice={selectedInvoice}
             />
 
-            <InvoicePreviewModal 
+            <InvoicePreviewModal
                 show={showPreviewModal}
                 onHide={() => setShowPreviewModal(false)}
                 invoice={selectedInvoice}
