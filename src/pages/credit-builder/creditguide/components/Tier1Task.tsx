@@ -20,13 +20,13 @@ export interface Tier1TaskProps {
 
 export default function Tier1Task({ task, isCurrentTier, isFirstTier, onTaskClick, onVerifyClick, index, tierDescription }: Tier1TaskProps) {
   const [modalOpen, setModalOpen] = useState(false)
-  
+
   const isDone = task.status === CREDIT_BUILDER_STATUS.VERIFIED
   const isProcessing = task.status === CREDIT_BUILDER_STATUS.PROCESSING
   const isRejected = task.status === CREDIT_BUILDER_STATUS.REJECTED
 
   const bgColorClass = isDone ? 'bg-success' : isProcessing ? 'bg-info' : isRejected ? 'bg-danger' : 'bg-warning'
-  
+
   let statusText
   if (isDone) {
     statusText = 'Request Verified'
@@ -57,7 +57,7 @@ export default function Tier1Task({ task, isCurrentTier, isFirstTier, onTaskClic
     }
 
     return (
-      <span 
+      <span
         id={badgeId}
         className={`${colorClass} small text-decoration-underline d-flex align-items-center`}
       >
@@ -72,82 +72,82 @@ export default function Tier1Task({ task, isCurrentTier, isFirstTier, onTaskClic
   const handleModalVerify = (task: TierTaskType) => {
     // Small delay to allow TaskDetailsModal to close and cleanup body classes
     setTimeout(() => {
-        if (onVerifyClick) onVerifyClick(task)
+      if (onVerifyClick) onVerifyClick(task)
     }, 500)
   }
 
   return (
     <>
-        {/* Tier 1 Warning Box - Only for first item */}
-        {index === 0 && (
-            tierDescription ? (
-                <div dangerouslySetInnerHTML={{ __html: tierDescription }} />
-            ) : ''
-        )}
-        <div className="tier-task-item tier-vendor-task-item d-flex align-items-center gap-3 p-3 border rounded mb-2">
-            {/* Index Number */}
-            <div className={`tier-index-box d-flex align-items-center justify-content-center ${bgColorClass} text-white rounded font-weight-bold`}>
-                {index + 1}
-            </div>
-
-            {/* Logo */}
-            <div className="tier-logo-box d-flex align-items-center justify-content-center">
-                {logoSrc ? (
-                    <img src={logoSrc} alt={task.title} className="img-fluid" />
-                ) : (
-                    <div className="text-muted small text-center fw-bold">{task.title.substring(0, 3).toUpperCase()}</div>
-                )}
-            </div>
-
-            {/* Content */}
-            <div className="task-details-col flex-grow-1">
-                <div className="task-title fw-bold">
-                    {task.title}
-                </div>
-                {task.subtitle && (
-                    <div className="task-subtitle text-muted small mt-1">
-                        {task.subtitle}
-                    </div>
-                )}
-            </div>
-
-            {/* Right Side Status & Actions */}
-            <div className="task-action-col d-flex flex-column align-items-end justify-content-center">
-                 <div className="text-primary small mb-1 text-end vendor-eligibility-text">
-                    Vendor eligibility reviewed by FCH underwriting
-                </div>
-                
-                <div className="d-flex align-items-center gap-2">
-                    {/* Status Display */}
-                    {isRejected ? (
-                        <>
-                            {renderStatusBadge()}
-                            <UncontrolledTooltip placement="top" target={badgeId}>
-                                {task.rejection_reason || "No reason provided."}
-                            </UncontrolledTooltip>
-                        </>
-                    ) : (isDone || isProcessing) ? (
-                        renderStatusBadge()
-                    ) : null}
-
-                    <span 
-                        className="text-primary cursor-pointer text-decoration-underline small"
-                        onClick={() => setModalOpen(true)}
-                        role="button"
-                     >
-                        View Instructions
-                     </span>
-                </div>
-            </div>
+      {/* Tier 1 Warning Box - Only for first item */}
+      {index === 0 && (
+        tierDescription ? (
+          <div dangerouslySetInnerHTML={{ __html: tierDescription }} />
+        ) : ''
+      )}
+      <div className="tier-task-item tier-vendor-task-item d-flex align-items-center gap-3 p-3 border rounded mb-2">
+        {/* Index Number */}
+        <div className={`tier-index-box d-flex align-items-center justify-content-center ${bgColorClass} text-white rounded font-weight-bold`}>
+          {index + 1}
         </div>
 
-        <TaskDetailsModal 
-            isOpen={modalOpen} 
-            toggle={() => setModalOpen(!modalOpen)} 
-            task={task} 
-            logoSrc={logoSrc}
-            onVerifyClick={handleModalVerify}
-        />
+        {/* Logo */}
+        <div className="tier-logo-box d-flex align-items-center justify-content-center">
+          {logoSrc ? (
+            <img src={logoSrc} alt={task.title} className="img-fluid" />
+          ) : (
+            <div className="text-muted small text-center fw-bold">{task.title.substring(0, 3).toUpperCase()}</div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="task-details-col flex-grow-1">
+          <div className="task-title fw-bold">
+            {task.title}
+          </div>
+          {task.subtitle && (
+            <div className="task-subtitle text-muted small mt-1">
+              {task.subtitle}
+            </div>
+          )}
+        </div>
+
+        {/* Right Side Status & Actions */}
+        <div className="task-action-col d-flex flex-column align-items-end justify-content-center">
+          <div className="text-primary small mb-1 text-end vendor-eligibility-text">
+            Vendor eligibility reviewed by FCH underwriting
+          </div>
+
+          <div className="d-flex align-items-center gap-2">
+            {/* Status Display */}
+            {isRejected ? (
+              <>
+                {renderStatusBadge()}
+                <UncontrolledTooltip placement="top" target={badgeId}>
+                  {task.rejection_reason || "No reason provided."}
+                </UncontrolledTooltip>
+              </>
+            ) : (isDone || isProcessing) ? (
+              renderStatusBadge()
+            ) : null}
+
+            <span
+              className="text-primary cursor-pointer text-decoration-underline small"
+              onClick={() => setModalOpen(true)}
+              role="button"
+            >
+              View Instructions
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <TaskDetailsModal
+        isOpen={modalOpen}
+        toggle={() => setModalOpen(!modalOpen)}
+        task={task}
+        logoSrc={logoSrc}
+        onVerifyClick={handleModalVerify}
+      />
     </>
   )
 }
