@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAdvisor } from '../../../modules/my-application'
 import AdvisorLoader from '../../../components/Loader/AdvisorLoader'
-import avatarImg from '../../../../assets/images/users/cr.jpg'
+import avatarImg from '../../../../assets/images/users/user-dummy-img.jpg'
 
 interface RightSideSectionProps {
   loading: boolean
@@ -47,7 +47,7 @@ export default function RightSideSection({ loading }: RightSideSectionProps) {
                   <div className="item d-flex align-items-center gap-2"><span className="icon-circle"><i className="ri-phone-line"></i></span><span>{advisor.phone}</span></div>
                 )}
                 <div className="item d-flex align-items-center gap-2"><span className="icon-circle"><i className="ri-mail-line"></i></span><span>{advisor?.email || 'N/A'}</span></div>
-                <div className="item d-flex align-items-center gap-2"><span className="icon-circle"><i className="ri-time-line"></i></span><span>Available Mon-Fri 9–5 EST</span></div>
+                {/* <div className="item d-flex align-items-center gap-2"><span className="icon-circle"><i className="ri-time-line"></i></span><span>Available Mon-Fri 9–5 EST</span></div> */}
               </div>
               <div className="advisor-cta">
                 <Link to="/under-construction/schedule-call" className="btn primary-btn w-100">Schedule Call</Link>
