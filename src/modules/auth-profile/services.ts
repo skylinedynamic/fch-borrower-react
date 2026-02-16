@@ -15,3 +15,15 @@ export async function updatePassword(payload: ChangePasswordPayload): Promise<an
         throw err
     }
 }
+
+export async function refreshUser(): Promise<any> {
+    try {
+        const res = await apiClient.get('/common/refresh-user')
+        if (res?.data?.status === true && res?.data?.data) {
+            return res.data.data
+        }
+        return res?.data
+    } catch (err) {
+        return null
+    }
+}

@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react'
-import { clearAuth, getUser } from '../../lib/auth'
+import { clearAuth } from '../../lib/auth'
+import { useAuthStore } from '../../store/auth'
 import { logout } from '../../modules/auth/services'
 import avatarDefault from '../../../assets/images/users/avatar-1.jpg'
 import { useNavigate } from 'react-router-dom'
 
 export default function Header() {
   const navigate = useNavigate()
+  const storeUser = useAuthStore((state) => state.user)
   const [user, setUser] = useState(null)
+
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     if (typeof document !== 'undefined') {
       return (document.documentElement.getAttribute('data-sidebar-size') || 'lg') === 'sm'
@@ -15,8 +18,8 @@ export default function Header() {
   })
 
   useEffect(() => {
-    setUser(getUser())
-  }, [])
+    setUser(storeUser)
+  }, [storeUser])
 
   const handleLogout = async (e) => {
     e?.preventDefault?.()

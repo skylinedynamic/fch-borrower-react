@@ -81,6 +81,26 @@ export type AttestationPayload = {
   attestation_authorization: boolean
 }
 
+export type CoBorrowerValidationPayload = {
+  first_name: string
+  last_name: string
+  role: string
+  ownership: string
+  email: string
+  mobile_phone: string
+  home_phone: string
+  date_of_birth: string
+  ssn: string
+  street_address: string
+  country: string
+  state: string
+  city: string
+  zip_code: string
+  drivers_license_number: string
+  drivers_license_state: string
+  phone_country_code: string
+}
+
 
 export const fetchBusinessInfo = async (): Promise<BusinessInfoData> => {
   const { data } = await apiClient.get<BusinessInfoResponse>('/borrower/funding-application/business-info')
@@ -168,5 +188,10 @@ export const uploadFundingApplicationDocuments = async (payload: {
   files: string[]
 }): Promise<{ message: string }> => {
   const { data } = await apiClient.post('/borrower/funding-application/documents/upload', payload)
+  return data
+}
+
+export const validateCoBorrower = async (payload: CoBorrowerValidationPayload): Promise<any> => {
+  const { data } = await apiClient.post('/borrower/myapplication/funding-application/co-borrower-validation', payload)
   return data
 }

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { toast } from 'react-toastify'
 import { SavePersonalInfoRequest, SaveBusinessDetailsRequest, SaveFinancialInfoRequest } from '../../modules/profile/types'
 import PersonalInfo from './components/PersonalInfo'
 import BusinessDetails from './components/BusinessDetails'
@@ -14,10 +13,6 @@ export default function Profile() {
   const [step, setStep] = useState<number>(initialStep)
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 700)
-    return () => clearTimeout(t)
-  }, [])
 
   const [personal, setPersonal] = useState<SavePersonalInfoRequest>({
     first_name: '',
@@ -51,7 +46,6 @@ export default function Profile() {
     business_industry_type: '',
   })
 
-  // Start with string values to match existing usage in FinancialSupport before we fix the component
   const [support, setSupport] = useState<any>({
     currency: 'USD',
     years_in_business: '',
@@ -59,13 +53,13 @@ export default function Profile() {
     annual_revenue: '',
   })
 
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 700)
+    return () => clearTimeout(t)
+  }, [])
+
   const onSave = async () => {
-    setSaving(true)
-    try {
-      toast.success('Profile saved')
-    } finally {
-      setSaving(false)
-    }
+    // Parent onSave logic if any (e.g. tracking or general notifications)
   }
 
   return (

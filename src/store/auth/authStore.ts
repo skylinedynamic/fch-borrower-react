@@ -43,6 +43,7 @@ type AuthState = {
   userSubscription?: UserSubscription | null
   rememberMe?: boolean
   setCredentials: (payload: { token?: string; user?: AuthUser | null; rememberMe?: boolean }) => void
+  setUserData: (user: AuthUser | null) => void
   setUserSubscription: (subscription: UserSubscription | null) => void
   clearCredentials: () => void
 }
@@ -54,7 +55,8 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       userSubscription: null,
       rememberMe: true,
-      setCredentials: ({ token, user, rememberMe }) => set(() => ({ token, user, rememberMe })),
+  setCredentials: ({ token, user, rememberMe }) => set(() => ({ token, user, rememberMe })),
+      setUserData: (user) => set(() => ({ user })),
       setUserSubscription: (subscription) => set(() => ({ userSubscription: subscription })),
       clearCredentials: () => set(() => ({ token: undefined, user: null, userSubscription: null })),
     }),

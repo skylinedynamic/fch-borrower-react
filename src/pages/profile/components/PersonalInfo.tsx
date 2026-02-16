@@ -9,6 +9,7 @@ import TabLoader from '../../../components/Loader/TabLoader'
 import { countries as countriesData } from '../../../data/countries'
 
 import { formatPhoneNumber, formatLast4SSN } from '../../../utils/formatters'
+import { useAuth } from '../../../hooks/useAuth'
 
 interface PersonalInfoProps {
   data: SavePersonalInfoRequest
@@ -49,6 +50,7 @@ const transformApiToComponent = (apiData: PersonalInfoData): SavePersonalInfoReq
 export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoProps) {
   const { data: apiData, isLoading, error } = usePersonalInfo()
   const { mutate: savePersonalInfo, isPending: isSaving } = useSavePersonalInfo()
+  const { refreshUser } = useAuth()
   const [availableStates, setAvailableStates] = useState<StateType[]>([])
   const [availableCities, setAvailableCities] = useState<CityType[]>([])
   const [showCityInput, setShowCityInput] = useState(false)
@@ -80,9 +82,10 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
     }
 
     savePersonalInfo(payload, {
-      onSuccess: (response) => {
+      onSuccess: async (response) => {
         toast.success(response.message || 'Personal information saved successfully')
-        // onSave() // Call parent onSave if needed
+        await refreshUser()
+       // onSave() // Call parent onSave if needed
       },
       onError: (error: any) => {
         // Handle validation errors from server

@@ -5,8 +5,8 @@ import { countries } from '../../../../data/countries'
 import { formatPhoneNumber } from '../../../../utils/formatters'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
-import { apiClient } from '../../../../lib/http/apiClient'
 import { toast } from 'react-toastify'
+import { useValidateCoBorrower } from '../../../../modules/funding-application/queries'
 
 type CoBorrowerModalProps = {
   coDraft: CoBorrower
@@ -20,6 +20,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
   const [showCityInput, setShowCityInput] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [validating, setValidating] = useState(false)
+  const { mutateAsync: validateCoBorrower } = useValidateCoBorrower()
 
   // Update available states when country changes
   useEffect(() => {
@@ -87,7 +88,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
     }
 
     try {
-      await apiClient.post('borrower/myapplication/funding-application/co-borrower-validation', payload)
+      await validateCoBorrower(payload)
       // If validation successful, call the original onSubmit which likely adds the co-borrower to state
       onSubmit(e)
       setErrors({})
