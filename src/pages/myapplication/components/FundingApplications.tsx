@@ -55,8 +55,8 @@ export default function FundingApplications() {
                           <td>{app.entity_type || 'N/A'}</td>
                           <td>{app.industry_type || 'N/A'}</td>
                           <td>{app.date || 'N/A'}</td>
-                          <td>{app.requested_amount ? `$${parseFloat(app.requested_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A'}</td>
-                          <td><span className={statusClass(app.status || 'Pending')}>{app.status || 'Pending'}</span></td>
+                          <td>{app.requested_amount || 'N/A'}</td>
+                          <td><span className={statusClass(app.status)}>{app.status}</span></td>
                           <td className="text-end">
                             <button
                               className="btn btn-sm btn-soft-primary btn-icon"

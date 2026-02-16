@@ -6,7 +6,7 @@
 export const formatPhoneNumber = (value: string): string => {
   // Remove all non-digit characters
   const phoneNumber = value.replace(/\D/g, '')
-  
+
   // Format as (###) ###-####
   if (phoneNumber.length <= 3) {
     return phoneNumber
@@ -34,10 +34,10 @@ export const formatLast4SSN = (value: string): string => {
 export const formatCurrency = (value: string): string => {
   // Remove all non-digit characters
   const numericValue = value.replace(/\D/g, '')
-  
+
   // If empty, return empty string
   if (!numericValue) return ''
-  
+
   // Convert to number and format with commas
   return Number(numericValue).toLocaleString('en-US')
 }
@@ -57,5 +57,23 @@ export const unformatCurrency = (value: string): string => {
  * @returns The formatted string
  */
 export const formatSSN = (value: string): string => {
+  return value.replace(/\D/g, '').slice(0, 9)
+}
+
+/**
+ * Formats the DUNS input to ensure only digits and max 9 characters
+ * @param value The raw input string
+ * @returns The formatted string
+ */
+export const formatDUNS = (value: string): string => {
+  return value.replace(/\D/g, '').slice(0, 9)
+}
+
+/**
+ * Formats the EIN input to ensure only digits and max 9 characters
+ * @param value The raw input string
+ * @returns The formatted string
+ */
+export const formatEIN = (value: string): string => {
   return value.replace(/\D/g, '').slice(0, 9)
 }

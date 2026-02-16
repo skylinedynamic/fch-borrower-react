@@ -7,7 +7,7 @@ import { useBusinessDetails, useSaveBusinessDetails } from '../../../modules/pro
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import TabLoader from '../../../components/Loader/TabLoader'
-import { formatPhoneNumber } from '../../../utils/formatters'
+import { formatPhoneNumber, formatDUNS, formatEIN } from '../../../utils/formatters'
 
 interface BusinessDetailsProps {
   data: SaveBusinessDetailsRequest
@@ -142,10 +142,11 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
           <label className="form-label">Business EIN <span className="text-danger">*</span></label>
           <input
             type="text"
-            placeholder="XX-XXXXXXX"
+            placeholder="9 digit EIN"
             value={data.business_ein}
-            onChange={(e) => onChange({ ...data, business_ein: e.target.value })}
+            onChange={(e) => onChange({ ...data, business_ein: formatEIN(e.target.value) })}
             className={`form-control ${errors.business_ein ? 'is-invalid' : ''}`}
+            maxLength={9}
           />
           {errors.business_ein && <div className="invalid-feedback">{errors.business_ein}</div>}
         </div>
@@ -183,10 +184,11 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
           <label className="form-label">DUNS Number</label>
           <input
             type="text"
-            placeholder="Enter DUNS number"
+            placeholder="9 digit DUNS Number"
             value={data.duns_number}
-            onChange={(e) => onChange({ ...data, duns_number: e.target.value })}
+            onChange={(e) => onChange({ ...data, duns_number: formatDUNS(e.target.value) })}
             className={`form-control ${errors.duns_number ? 'is-invalid' : ''}`}
+            maxLength={9}
           />
           {errors.duns_number && <div className="invalid-feedback">{errors.duns_number}</div>}
         </div>
