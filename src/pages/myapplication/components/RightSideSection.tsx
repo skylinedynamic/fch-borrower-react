@@ -50,7 +50,7 @@ export default function RightSideSection({ loading }: RightSideSectionProps) {
                 {/* <div className="item d-flex align-items-center gap-2"><span className="icon-circle"><i className="ri-time-line"></i></span><span>Available Mon-Fri 9–5 EST</span></div> */}
               </div>
               <div className="advisor-cta">
-                <Link to="/under-construction/schedule-call" className="btn primary-btn w-100">Schedule Call</Link>
+                <Link to="/appointment" className="btn primary-btn w-100">Schedule a Meeting</Link>
               </div>
             </>
           )}

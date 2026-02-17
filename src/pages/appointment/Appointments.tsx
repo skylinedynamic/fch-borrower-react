@@ -220,7 +220,7 @@ export default function Appointments() {
                   </div>
                 </div>
                 <div className="mb-3 px-1">
-                  <h4 className="fw-bold fs-18 mb-1" style={{ color: '#313a46' }}>Upcoming Appointment</h4>
+                  <h4 className="fs-18 mb-1" style={{ color: '#313a46' }}>Upcoming Appointment</h4>
                   <p className="text-muted fs-13">Don't miss scheduled appointments</p>
                 </div>
                 <div className="pe-2 me-n1 mb-3" data-simplebar style={{ height: "750px" }}>
@@ -298,7 +298,7 @@ export default function Appointments() {
                                 </span>
                               </div>
                             </div>
-                            <h6 className="card-title mb-2 fs-16 fw-bold" style={{ color: eventStyles.text }}>{evt.title}</h6>
+                            <h6 className="card-title mb-2 fs-16" style={{ color: eventStyles.text }}>{evt.title}</h6>
                             {(() => {
                               const desc = evt.extendedProps?.description || evt.description || "";
                               const cleanDesc = desc.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();

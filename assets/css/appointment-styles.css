@@ -436,7 +436,8 @@
 
 .borrower-appointments-wrapper .fc-event-title, 
 .borrower-appointments-wrapper .fc-event-main-frame {
-    font-weight: 600 !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
@@ -453,9 +454,8 @@
 }
 
 .borrower-appointments-wrapper .upcoming-event-card:hover {
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
     transform: translateY(-2px);
-    border-color: #405189 !important;
 }
 
 .borrower-appointments-wrapper .cursor-pointer {
