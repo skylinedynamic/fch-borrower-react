@@ -27,7 +27,7 @@ export default function CreditGuide() {
     const els = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     if (bootstrapLib && els.length) {
       els.forEach((el) => {
-        try { new bootstrapLib.Tooltip(el) } catch {}
+        try { new bootstrapLib.Tooltip(el) } catch { }
       })
     }
   }, [tiers])
@@ -54,13 +54,13 @@ export default function CreditGuide() {
 
   // Calculate overall progress safely
   const totalTasks = tiers ? tiers.reduce((sum, tier) => sum + tier.tasks.length, 0) : 0
-  const completedTasks = tiers ? tiers.reduce((sum, tier) => 
+  const completedTasks = tiers ? tiers.reduce((sum, tier) =>
     sum + tier.tasks.filter(t => t.status === CREDIT_BUILDER_STATUS.VERIFIED).length, 0
   ) : 0
-  
+
   // Use API state for current tier instead of derived tasks
   const currentTier = tiers && progressData ? tiers.find(t => t.id === progressData.id) : null
-  
+
   const overallProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
 
   useEffect(() => {
@@ -106,7 +106,7 @@ export default function CreditGuide() {
               <div className="card-body">
                 {isLoadingProgress || !progressData ? (
                   /* Progress Stats Skeleton */
-                   <div className="stats mb-4">
+                  <div className="stats mb-4">
                     {[...Array(4)].map((_, i) => (
                       <div className="stat" key={i}>
                         <div className="skeleton-line skeleton-stat-value mb-1"></div>
@@ -122,15 +122,15 @@ export default function CreditGuide() {
                     tasksCompleted={`${progressData.total_complete_task}/${progressData.total_complete_task + progressData.total_tasks_remaining}`}
                   />
                 )}
-                
+
                 {isLoadingTiers || !tiers ? (
-                   <TierTaskListLoader />
+                  <TierTaskListLoader />
                 ) : (
 
                   tiers.map((tier, index) => {
                     const currentTierIndex = tiers.findIndex(t => t.id === currentTier?.id)
                     const isLocked = index > currentTierIndex
-                    
+
                     return (
                       <TierAccordion
                         key={tier.id}
@@ -145,7 +145,7 @@ export default function CreditGuide() {
                             // Collect names of all tiers between current and this one (inclusive of current, exclusive of this one)
                             // actually requirements says: "you have to complete tier_id 0 ,1 name have to complete"
                             // so we list all tiers from currentTierIndex up to (targetIndex - 1)
-                            
+
                             const missingTiers = tiers.slice(currentTierIndex, index)
                             const names = missingTiers.map(t => t.name).join(', ')
                             toast.error(`You have to complete ${names}`)
@@ -169,9 +169,9 @@ export default function CreditGuide() {
           </div> */}
         </div>
       </div>
-      
-      <TaskCompleteModal 
-        show={modalOpen} 
+
+      <TaskCompleteModal
+        show={modalOpen}
         onClose={() => setModalOpen(false)}
         onConfirm={handleConfirmCompletion}
         text={selectedTask ? `Are you sure you have completed the task "${selectedTask.title}"?` : undefined}
