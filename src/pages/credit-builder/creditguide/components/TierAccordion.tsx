@@ -38,7 +38,7 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
   return (
     <div className={`tier mb-4 ${isOpen ? 'open' : ''}`}>
       {/* Header */}
-      <div 
+      <div
         className={`tier-accordion-header p-3 d-flex align-items-center justify-content-between ${isLocked ? 'cursor-default' : 'cursor-pointer'}`}
         onClick={onToggle}
       >
@@ -48,9 +48,9 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
               {tier.name}: {tier.title}
             </h5>
             {tier.description && (
-              <span 
+              <span
                 className="info-badge"
-                data-bs-toggle="tooltip" 
+                data-bs-toggle="tooltip"
                 title={tier.description}
               >
                 <i className="ri-flashlight-fill"></i>
@@ -70,15 +70,15 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
             {completedCount}/{totalCount}
           </span>
           {!isLocked && (
-            <i 
-              className="ri-arrow-down-s-line arrow-icon" 
-              style={{ 
-                transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' 
+            <i
+              className="ri-arrow-down-s-line arrow-icon"
+              style={{
+                transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)'
               }}
             ></i>
           )}
           {isLocked && (
-             <i className="ri-lock-line text-muted fs-18"></i>
+            <i className="ri-lock-line text-muted fs-18"></i>
           )}
         </div>
       </div>
@@ -86,45 +86,56 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
       {/* Body */}
       {isOpen && (
         <div className="tier-body p-3">
-          
+
           {/* Task List */}
           <div className="tier-tasks d-flex flex-column gap-2">
             {tier.tasks.map((task, index) => {
-                const commonProps = {
-                    key: task.id,
-                    task: task,
-                    isCurrentTier: isCurrentTier,
-                    isFirstTier: isFirstTier,
-                    onTaskClick: onTaskClick,
-                    onVerifyClick: handleVerifyClick,
-                    index: index,
-                    tierDescription: tier.description,
-                }
+              const commonProps = {
+                key: task.id,
+                task: task,
+                isCurrentTier: isCurrentTier,
+                isFirstTier: isFirstTier,
+                onTaskClick: onTaskClick,
+                onVerifyClick: handleVerifyClick,
+                index: index,
+                tierDescription: tier.description,
+              }
 
-                if (tier.code === tierCode[0].value) {
-                    return <Tier0Task {...commonProps} />
-                } else if (tier.code === tierCode[1].value) {
-                    return (
-                        <Tier1Task 
-                            key={task.id}
-                            task={task}
-                            isCurrentTier={isCurrentTier}
-                            isFirstTier={isFirstTier}
-                            onTaskClick={onTaskClick}
-                            onVerifyClick={handleVerifyClick}
-                            index={index}
-                            tierDescription={tier.description}
-                        />
-                    )
-                } else if (tier.code === tierCode[2].value) {
-                    return <Tier2Task {...commonProps} />
-                } else if (tier.code === tierCode[3].value) {
-                    return <Tier3Task {...commonProps} />
-                } else if (tier.code === tierCode[4].value) {
-                    return <Tier4Task {...commonProps} />
-                } else {
-                    return <TierGenericTask {...commonProps} />
-                }
+              if (tier.code === tierCode[0].value) {
+                return <Tier0Task {...commonProps} />
+              } else if (tier.code === tierCode[1].value) {
+                return (
+                  <Tier1Task
+                    key={task.id}
+                    task={task}
+                    isCurrentTier={isCurrentTier}
+                    isFirstTier={isFirstTier}
+                    onTaskClick={onTaskClick}
+                    onVerifyClick={handleVerifyClick}
+                    index={index}
+                    tierDescription={tier.description}
+                  />
+                )
+              } else if (tier.code === tierCode[2].value) {
+                return (
+                  <Tier2Task
+                    key={task.id}
+                    task={task}
+                    isCurrentTier={isCurrentTier}
+                    isFirstTier={isFirstTier}
+                    onTaskClick={onTaskClick}
+                    onVerifyClick={handleVerifyClick}
+                    index={index}
+                    tierDescription={tier.description}
+                  />
+                )
+              } else if (tier.code === tierCode[3].value) {
+                return <Tier3Task {...commonProps} />
+              } else if (tier.code === tierCode[4].value) {
+                return <Tier4Task {...commonProps} />
+              } else {
+                return <TierGenericTask {...commonProps} />
+              }
             })}
           </div>
         </div>
