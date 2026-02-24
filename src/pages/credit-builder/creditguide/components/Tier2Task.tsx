@@ -7,6 +7,7 @@ import TaskDetailsModal from './TaskDetailsModal'
 
 
 export interface Tier1TaskProps {
+  tierId: number
   task: TierTaskType
   isCurrentTier?: boolean
   isFirstTier?: boolean
@@ -18,7 +19,7 @@ export interface Tier1TaskProps {
 
 
 
-export default function Tier1Task({ task, isCurrentTier, isFirstTier, onTaskClick, onVerifyClick, index, tierDescription }: Tier1TaskProps) {
+export default function Tier2Task({ tierId, task, isCurrentTier, isFirstTier, onTaskClick, onVerifyClick, index, tierDescription }: Tier1TaskProps) {
   const [modalOpen, setModalOpen] = useState(false)
 
   const isDone = task.status === CREDIT_BUILDER_STATUS.VERIFIED

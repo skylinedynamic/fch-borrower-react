@@ -106,6 +106,7 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
               } else if (tier.code === tierCode[1].value) {
                 return (
                   <Tier1Task
+                    tierId={tier.id}
                     key={task.id}
                     task={task}
                     isCurrentTier={isCurrentTier}
@@ -119,6 +120,7 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
               } else if (tier.code === tierCode[2].value) {
                 return (
                   <Tier2Task
+                    tierId={tier.id}
                     key={task.id}
                     task={task}
                     isCurrentTier={isCurrentTier}
@@ -150,7 +152,7 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
         onConfirm={() => {
           if (!selectedTask) return
           verifyTierTasksMutation.mutate(
-            { task_ids: [selectedTask.id] },
+            { task_ids: [selectedTask.id], tier_id: tier.id },
             {
               onSuccess: (response) => {
                 setShowConfirmModal(false)

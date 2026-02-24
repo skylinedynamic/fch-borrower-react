@@ -3,10 +3,12 @@ import { TierTask as TierTaskType } from '../../../../modules/credit-builder/gui
 import { CREDIT_BUILDER_STATUS } from '../../../../data/credit-builder'
 import { UncontrolledTooltip } from 'reactstrap'
 import TaskDetailsModal from './TaskDetailsModal'
+import { Tier } from '../../../../modules/credit-builder/guide/types'
 
 
 
 export interface Tier1TaskProps {
+  tierId: number
   task: TierTaskType
   isCurrentTier?: boolean
   isFirstTier?: boolean
@@ -18,7 +20,7 @@ export interface Tier1TaskProps {
 
 
 
-export default function Tier1Task({ task, isCurrentTier, isFirstTier, onTaskClick, onVerifyClick, index, tierDescription }: Tier1TaskProps) {
+export default function Tier1Task({ tierId, task, isCurrentTier, isFirstTier, onTaskClick, onVerifyClick, index, tierDescription }: Tier1TaskProps) {
   const [modalOpen, setModalOpen] = useState(false)
 
   const isDone = task.status === CREDIT_BUILDER_STATUS.VERIFIED

@@ -51,6 +51,7 @@ export interface TierTaskListResponse {
 
 export interface TaskVerifyRequest {
   task_ids: number[]
+  tier_id?: number
 }
 
 export interface TaskVerifyResponse {
