@@ -119,7 +119,7 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
                 )
               } else if (tier.code === tierCode[2].value) {
                 return (
-                  <Tier2Task
+                  <Tier1Task
                     tierId={tier.id}
                     key={task.id}
                     task={task}
@@ -132,9 +132,33 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
                   />
                 )
               } else if (tier.code === tierCode[3].value) {
-                return <Tier3Task {...commonProps} />
+                return (
+                  <Tier1Task
+                    tierId={tier.id}
+                    key={task.id}
+                    task={task}
+                    isCurrentTier={isCurrentTier}
+                    isFirstTier={isFirstTier}
+                    onTaskClick={onTaskClick}
+                    onVerifyClick={handleVerifyClick}
+                    index={index}
+                    tierDescription={tier.description}
+                  />
+                )
               } else if (tier.code === tierCode[4].value) {
-                return <Tier4Task {...commonProps} />
+                return (
+                  <Tier1Task
+                    tierId={tier.id}
+                    key={task.id}
+                    task={task}
+                    isCurrentTier={isCurrentTier}
+                    isFirstTier={isFirstTier}
+                    onTaskClick={onTaskClick}
+                    onVerifyClick={handleVerifyClick}
+                    index={index}
+                    tierDescription={tier.description}
+                  />
+                )
               } else {
                 return <TierGenericTask {...commonProps} />
               }
@@ -152,7 +176,7 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
         onConfirm={() => {
           if (!selectedTask) return
           verifyTierTasksMutation.mutate(
-            { task_ids: [selectedTask.id], tier_id: tier.id },
+            { task_ids: [selectedTask.id], migrated_task_id: selectedTask.migrated_task_id ?? null, tier_id: tier.id },
             {
               onSuccess: (response) => {
                 setShowConfirmModal(false)

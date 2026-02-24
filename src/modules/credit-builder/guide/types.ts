@@ -41,6 +41,7 @@ export interface TierTask {
   rejection_reason?: string | null
   order: number
   vendor: Vendor | null
+  migrated_task_id: number | null
 }
 
 export interface TierTaskListResponse {
@@ -51,6 +52,7 @@ export interface TierTaskListResponse {
 
 export interface TaskVerifyRequest {
   task_ids: number[]
+  migrated_task_id?: number | null
   tier_id?: number
 }
 
