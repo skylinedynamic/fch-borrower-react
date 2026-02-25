@@ -6,6 +6,7 @@ import { yearsInBusinessOptions } from '../../../data/profile'
 import { useFinancialInfo, useSaveFinancialInfo } from '../../../modules/profile/queries'
 import { toast } from 'react-toastify'
 import TabLoader from '../../../components/Loader/TabLoader'
+import { formatCurrency, unformatCurrency } from '../../../utils/formatters'
 
 interface FinancialSupportProps {
   data: any
@@ -25,8 +26,8 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
     const payload: SaveFinancialInfoRequest = {
       currency: data.currency,
       years_in_business: data.years_in_business,
-      monthly_revenue: parseFloat(data.monthly_revenue) || 0,
-      annual_revenue: parseFloat(data.annual_revenue) || 0,
+      monthly_revenue: parseFloat(unformatCurrency(data.monthly_revenue)) || 0,
+      annual_revenue: parseFloat(unformatCurrency(data.annual_revenue)) || 0,
     }
 
     saveFinancial(payload, {
@@ -57,8 +58,8 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
         ...data,
         currency: apiData.currency,
         years_in_business: apiData.years_in_business,
-        monthly_revenue: apiData.monthly_revenue,
-        annual_revenue: apiData.annual_revenue,
+        monthly_revenue: apiData.monthly_revenue ? formatCurrency(apiData.monthly_revenue) : '',
+        annual_revenue: apiData.annual_revenue ? formatCurrency(apiData.annual_revenue) : '',
       })
     }
   }, [isSuccess, apiData])
@@ -110,7 +111,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
             type="text"
             placeholder="$20,000"
             value={data.monthly_revenue}
-            onChange={(e) => onChange({ ...data, monthly_revenue: e.target.value })}
+            onChange={(e) => onChange({ ...data, monthly_revenue: formatCurrency(e.target.value) })}
             className={`form-control ${errors.monthly_revenue ? 'is-invalid' : ''}`}
           />
           {errors.monthly_revenue && <div className="invalid-feedback">{errors.monthly_revenue}</div>}
@@ -121,7 +122,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
             type="text"
             placeholder="$30,000"
             value={data.annual_revenue}
-            onChange={(e) => onChange({ ...data, annual_revenue: e.target.value })}
+            onChange={(e) => onChange({ ...data, annual_revenue: formatCurrency(e.target.value) })}
             className={`form-control ${errors.annual_revenue ? 'is-invalid' : ''}`}
           />
           {errors.annual_revenue && <div className="invalid-feedback">{errors.annual_revenue}</div>}

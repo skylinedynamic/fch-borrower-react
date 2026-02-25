@@ -6,6 +6,7 @@ import CustomDropdown from '../../../../components/Common/CustomDropdown'
 import { purposeOfFundingOptions, fundingTypeOptions, timeframeOptions, collateralOptions } from '../../../../data/profile'
 import { useFundingRequest, useSaveFundingRequest } from '../../../../modules/funding-application/queries'
 import { toast } from 'react-toastify'
+import { formatCurrency, unformatCurrency } from '../../../../utils/formatters'
 
 interface FundingRequestStepProps {
   funding: FundingRequest
@@ -35,7 +36,7 @@ export default function FundingRequestStep({
 
     const payload = {
       id: fundingRequestId,
-      requested_amount: funding.requestedAmount || null,
+      requested_amount: unformatCurrency(funding.requestedAmount) || null,
       purpose_of_funds: funding.purpose || null,
       preferred_funding_type: funding.fundingType || null,
       timeframe_needed: funding.timeframe || null,
@@ -73,7 +74,7 @@ export default function FundingRequestStep({
       setFundingRequestId(apiData.id || null)
       setFunding({
         ...funding,
-        requestedAmount: apiData.requested_amount || '',
+        requestedAmount: apiData.requested_amount ? formatCurrency(apiData.requested_amount) : '',
         purpose: apiData.purpose_of_funds || '',
         fundingType: apiData.preferred_funding_type || '',
         timeframe: apiData.timeframe_needed || '',
@@ -114,11 +115,11 @@ export default function FundingRequestStep({
           Requested Amount <span className="text-danger">*</span>
         </label>
         <input
-          type="number"
+          type="text"
           className={`form-control ${hasError('requested_amount') ? 'is-invalid' : ''}`}
           placeholder="Enter requested amount"
           value={funding.requestedAmount}
-          onChange={(e) => setFunding({ ...funding, requestedAmount: e.target.value })}
+          onChange={(e) => setFunding({ ...funding, requestedAmount: formatCurrency(e.target.value) })}
         />
         {hasError('requested_amount') && <div className="invalid-feedback">{getFieldError('requested_amount')}</div>}
       </div>

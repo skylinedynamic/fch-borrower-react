@@ -294,7 +294,7 @@ export default function OwnershipInformationStep({
             options={{
               dateFormat: 'Y-m-d',
               altInput: true,
-              altFormat: 'm-d-Y',
+              altFormat: 'j M, Y',
               maxDate: 'today',
             }}
             placeholder="Select date of birth"

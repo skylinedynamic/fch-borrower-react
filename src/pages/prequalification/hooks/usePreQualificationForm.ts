@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { usePreQualification, useSubmitPersonalInfo, useSubmitBusinessInfo, useSubmitFundingInfo, useSubmitPreQualification } from '../../../modules/pre-qualification'
 import type { PersonalInfo, BusinessDetails, FinancialSupport } from '../../../modules/pre-qualification'
 import { countries } from '../../../data/countries'
+import { formatCurrency, unformatCurrency } from '../../../utils/formatters'
 
 export const usePreQualificationForm = () => {
   const [step, setStep] = useState<number>(0)
@@ -83,19 +84,19 @@ export const usePreQualificationForm = () => {
         industryType: apiData.industry_type || '',
         businessStructure: apiData.business_structure || '',
         yearsInBusiness: apiData.years_in_business || '',
-        annualRevenue: apiData.annual_revenue || '',
-        monthlyRevenue: apiData.monthly_revenue || '',
+        annualRevenue: apiData.annual_revenue ? formatCurrency(apiData.annual_revenue.toString()) : '',
+        monthlyRevenue: apiData.monthly_revenue ? formatCurrency(apiData.monthly_revenue.toString()) : '',
       })
 
       setSupport({
-        fundingRequestedAmount: apiData.funding_requested_amount || '',
+        fundingRequestedAmount: apiData.funding_requested_amount ? formatCurrency(apiData.funding_requested_amount.toString()) : '',
         fundingUrgency: apiData.funding_urgency || '',
         purposeOfFunding: apiData.purpose_of_funding || '',
         personalCreditScore: apiData.personal_credit_score || '',
         estimatedBusinessCreditScore: apiData.estimated_business_credit_score || '',
         notes: apiData.notes || '',
         existingBusinessDebt: apiData.existing_business_debt,
-        debtBalance: apiData.debt_balance || '',
+        debtBalance: apiData.debt_balance ? formatCurrency(apiData.debt_balance.toString()) : '',
       })
       
       setLoading(false)
@@ -116,17 +117,17 @@ export const usePreQualificationForm = () => {
           industryType: apiData.industry_type || '',
           businessStructure: apiData.business_structure || '',
           yearsInBusiness: apiData.years_in_business || '',
-          annualRevenue: apiData.annual_revenue || '',
-          monthlyRevenue: apiData.monthly_revenue || '',
+          annualRevenue: apiData.annual_revenue ? formatCurrency(apiData.annual_revenue.toString()) : '',
+          monthlyRevenue: apiData.monthly_revenue ? formatCurrency(apiData.monthly_revenue.toString()) : '',
         }
         initialSupportRef.current = {
-          fundingRequestedAmount: apiData.funding_requested_amount || '',
+          fundingRequestedAmount: apiData.funding_requested_amount ? formatCurrency(apiData.funding_requested_amount.toString()) : '',
           fundingUrgency: apiData.funding_urgency || '',
           purposeOfFunding: apiData.purpose_of_funding || '',
           personalCreditScore: apiData.personal_credit_score || '',
           estimatedBusinessCreditScore: apiData.estimated_business_credit_score || '',
           existingBusinessDebt: apiData.existing_business_debt,
-          debtBalance: apiData.debt_balance || '',
+          debtBalance: apiData.debt_balance ? formatCurrency(apiData.debt_balance.toString()) : '',
           notes: apiData.notes || '',
         }
       }, 100)
@@ -230,8 +231,8 @@ export const usePreQualificationForm = () => {
       return
     }
     try {
-      const monthlyRevenue = business.monthlyRevenue.trim() ? parseFloat(business.monthlyRevenue.replace(/,/g, '')) || null : null
-      const annualRevenue = business.annualRevenue.trim() ? parseFloat(business.annualRevenue.replace(/,/g, '')) || null : null
+      const monthlyRevenue = business.monthlyRevenue.trim() ? parseFloat(unformatCurrency(business.monthlyRevenue)) || null : null
+      const annualRevenue = business.annualRevenue.trim() ? parseFloat(unformatCurrency(business.annualRevenue)) || null : null
 
       await submitBusinessInfoMutation.mutateAsync({
         id: preQualId,
@@ -297,8 +298,8 @@ export const usePreQualificationForm = () => {
       return
     }
     try {
-      const fundingAmount = support.fundingRequestedAmount.trim() ? parseFloat(support.fundingRequestedAmount.replace(/,/g, '')) : null
-      const debtBalance = support.debtBalance.trim() ? parseFloat(support.debtBalance.replace(/,/g, '')) : null
+      const fundingAmount = support.fundingRequestedAmount.trim() ? parseFloat(unformatCurrency(support.fundingRequestedAmount)) : null
+      const debtBalance = support.debtBalance.trim() ? parseFloat(unformatCurrency(support.debtBalance)) : null
 
       await submitFundingInfoMutation.mutateAsync({
         id: preQualId,

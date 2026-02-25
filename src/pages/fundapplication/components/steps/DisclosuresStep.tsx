@@ -117,14 +117,14 @@ export default function DisclosuresStep({
               </label>
               {getApiError(item.key) && <div className="invalid-feedback d-block mt-1">{getApiError(item.key)}</div>}
             </div>
-            <button
+            {/* <button
               type="button"
               className="btn btn-sm btn-outline-primary d-flex align-items-center"
               onClick={() => window.open(item.route, '_blank')}
             >
               <i className="ri-eye-line me-1"></i>
               View
-            </button>
+            </button> */}
           </div>
         </div>
       ))}

@@ -4,6 +4,7 @@ import { downloadInvoice, sendInvoice, fetchInvoiceDetails } from '../../../modu
 import { toast } from 'react-toastify';
 import { useAuthStore } from '../../../store/auth/authStore';
 import InvoicePreviewSkeleton from './InvoicePreviewSkeleton';
+import invoiceLogo from '../../../../assets/images/logo-mail.png';
 
 // Helper to format currency
 const formatCurrency = (amount) => {
@@ -54,12 +55,17 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
         if (!modalRef.current) return;
         if (!modalInstanceRef.current) {
             modalInstanceRef.current = new Modal(modalRef.current, {
-                backdrop: 'static',
+                backdrop: true,
                 keyboard: true,
             });
         }
+
+        // Sync parent state when modal is closed via backdrop click or keyboard
+        const handleHidden = () => onHide();
+        modalRef.current.addEventListener('hidden.bs.modal', handleHidden);
         
         return () => {
+            modalRef.current?.removeEventListener('hidden.bs.modal', handleHidden);
             if (modalInstanceRef.current) {
                 modalInstanceRef.current.hide();
                 modalInstanceRef.current.dispose();
@@ -142,10 +148,7 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
         <div className="modal fade" ref={modalRef} tabIndex="-1" aria-hidden="true">
             <div className="modal-dialog modal-lg modal-dialog-centered">
                 <div className="modal-content border-0 shadow-lg">
-                    <div className="modal-header">
-                        <h5 className="modal-title fw-bold">Invoice Preview</h5>
-                        <button type="button" className="btn-close" onClick={onHide} aria-label="Close"></button>
-                    </div>
+
                     <div className="modal-body p-0">
                         {fetching && !fullInvoice ? (
                             <InvoicePreviewSkeleton />
@@ -160,7 +163,7 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
                                         <div className="card-header border-bottom-dashed p-4">
                                             <div className="d-flex flex-column flex-sm-row align-items-center">
                                                 <div className="flex-grow-1 text-center text-sm-start">
-                                                    <img src="/assets/images/Four Corner Holdings LLC.png" className="card-logo card-logo-dark" alt="logo dark" height="100" />
+                                                    <img src={invoiceLogo} className="card-logo card-logo-dark" alt="logo dark" height="65" />
                                                 </div>
                                                 <div className="flex-shrink-0 mt-sm-0 mt-4 text-center text-sm-end">
                                                     <h6 className="mb-1"><span className="text-muted fw-normal">Invoice No:</span> <span id="legal-register-no" className="fw-semibold"> #{displayInvoice.invoice_id || displayInvoice.id}</span></h6>
@@ -264,33 +267,42 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="hstack gap-2 justify-content-center justify-content-sm-end d-print-none mt-4 flex-wrap">
-                                                <button 
-                                                    className="btn btn-primary shadow-sm" 
-                                                    onClick={handleDownload}
-                                                    disabled={downloadLoading}
+                                            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 d-print-none mt-4">
+                                                <button
+                                                    className="btn btn-clear"
+                                                    onClick={onHide}
                                                 >
-                                                    {downloadLoading ? (
-                                                        <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                                                    ) : (
-                                                        <i className="ri-download-2-line align-bottom me-1"></i>
-                                                    )}
-                                                    Download Invoice
+                                                    <i className="ri-close-line align-bottom me-1"></i>
+                                                    Cancel
                                                 </button>
-                                                {((displayInvoice?.borrower_id && user?.is_host === 0) || user?.is_host === 1) && (
+                                                <div className="hstack gap-2 flex-wrap">
                                                     <button 
-                                                        className="btn btn-danger shadow-sm" 
-                                                        onClick={handleSend}
-                                                        disabled={sendLoading}
+                                                        className="btn btn-primary shadow-sm" 
+                                                        onClick={handleDownload}
+                                                        disabled={downloadLoading}
                                                     >
-                                                        {sendLoading ? (
+                                                        {downloadLoading ? (
                                                             <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
                                                         ) : (
-                                                            <i className="ri-send-plane-fill align-bottom me-1"></i>
+                                                            <i className="ri-download-2-line align-bottom me-1"></i>
                                                         )}
-                                                        Send Invoice
+                                                        Download Invoice
                                                     </button>
-                                                )}
+                                                    {((displayInvoice?.borrower_id && user?.is_host === 0) || user?.is_host === 1) && (
+                                                        <button 
+                                                            className="btn btn-danger shadow-sm" 
+                                                            onClick={handleSend}
+                                                            disabled={sendLoading}
+                                                        >
+                                                            {sendLoading ? (
+                                                                <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                                            ) : (
+                                                                <i className="ri-send-plane-fill align-bottom me-1"></i>
+                                                            )}
+                                                            Send Invoice
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

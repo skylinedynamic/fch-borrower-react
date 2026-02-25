@@ -6130,3 +6130,40 @@
 .p-component {
   font-size: .9rem !important;
 }
+
+/* -----------------------------------------------
+   Fix: Dropdown z-index over active step tab nav
+   The card-header (step tabs) must sit below the
+   card-body (form fields + dropdowns).
+----------------------------------------------- */
+.prequalification-page .card-header,
+.fundapplication-page .card-header {
+  position: relative;
+  z-index: 1;
+}
+
+.prequalification-page .card-body,
+.fundapplication-page .card-body {
+  position: relative;
+  z-index: 2;
+}
+
+/* Ensure the dropdown wrapper itself establishes a stacking context when open */
+.prequalification-page .dropdown.is-open,
+.fundapplication-page .dropdown.is-open {
+  position: relative;
+  z-index: 1050; /* Bring open dropdown to the front */
+}
+
+/* Base dropdown positioning */
+.prequalification-page .dropdown,
+.fundapplication-page .dropdown {
+  position: relative;
+}
+
+/* Mobile step accordion sections should also sit above the nav header */
+.prequalification-page .step-section-body,
+.fundapplication-page .step-section-body {
+  position: relative;
+  z-index: 2;
+}

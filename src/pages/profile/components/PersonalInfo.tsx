@@ -427,7 +427,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             options={{
               dateFormat: "Y-m-d",
               altInput: true,
-              altFormat: "m-d-Y",
+              altFormat: "j M, Y",
               maxDate: "today",
               yearDropdown: true,
               yearRange: "1900:" + new Date().getFullYear(),
