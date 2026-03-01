@@ -76,7 +76,7 @@ export default function PaymentTable({
                 loading={loading}
                 dataKey="id"
                 className="p-datatable-sm"
-                emptyMessage="No payments found."
+                emptyMessage={<div className="text-center">No payments found.</div>}
                 responsiveLayout="scroll"
             >
                 <Column field="transaction_date" header="Payment Date" sortable filter showFilterMatchModes filterPlaceholder="Search by date" style={{ minWidth: '100px' }}></Column>

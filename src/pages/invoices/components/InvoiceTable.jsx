@@ -130,7 +130,7 @@ export default function InvoiceTable({
                 loading={loading}
                 dataKey="id"
                 className="p-datatable-sm"
-                emptyMessage="No invoices found."
+                emptyMessage={<div className="text-center">No invoices found. Contact your partner to pay and unlock.</div>}
                 responsiveLayout="scroll"
             >
                 <Column field="invoice_id" header="Invoice ID" sortable filter showFilterMatchModes filterPlaceholder="Search by ID" style={{ minWidth: '100px' }}></Column>
