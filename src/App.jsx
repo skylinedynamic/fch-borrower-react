@@ -10,7 +10,7 @@ import CreditGuide from '../src/pages/credit-builder/creditguide/CreditGuide.tsx
 import FundApplication from '../src/pages/fundapplication/FundApplication.tsx'
 import PreQualification from '../src/pages/prequalification/PreQualification.tsx'
 import Documents from '../src/pages/documents/Documents.tsx'
-import { ProtectedRoute, GuestRoute, checkSession, refreshSubscription } from './lib/auth'
+import { ProtectedRoute, GuestRoute, HostRoute, checkSession, refreshSubscription } from './lib/auth'
 import Profile from '../src/pages/profile/profile.tsx'
 import MyApplication from '../src/pages/myapplication/MyApplication.tsx'
 import Invoices from '../src/pages/invoices/Invoices.jsx'
@@ -61,8 +61,12 @@ export default function App() {
           }>
             <Route index element={<Dashboard />} />
             <Route path="dashboard" element={<Dashboard />} />
-            <Route path="invoices" element={<Invoices />} />
-            <Route path="payments" element={<Payments />} />
+
+            <Route element={<HostRoute />}>
+              <Route path="invoices" element={<Invoices />} />
+              <Route path="payments" element={<Payments />} />
+            </Route>
+
             <Route path="change-password" element={<ChangePassword />} />
 
             <Route path="pre-qualification" element={<PreQualification />} />

@@ -136,7 +136,7 @@ export default function Sidebar() {
             <LinkItem to="/fund-application" label="Fund Application" icon="ri-hand-coin-line" restricted={isRestricted} />
             <LinkItem to="/my-applications" label="My Applications" icon="ri-file-list-line" restricted={isRestricted} />
 
-            {user?.is_host && (
+            {!!user?.is_host && (
               <>
                 <LinkItem to="/invoices" label="Invoices" icon="ri-article-line" />
                 <LinkItem to="/payments" label="Payments" icon="ri-money-dollar-box-line" />
