@@ -10,6 +10,7 @@ import DocumentUploadStep from './components/steps/DocumentUploadStep'
 import DisclosuresStep from './components/steps/DisclosuresStep'
 import FederalComplianceStep from './components/steps/FederalComplianceStep'
 import AttestationStep from './components/steps/AttestationStep'
+import CoBorrowerModal from './components/shared/CoBorrowerModal'
 
 // Hooks
 import { useCoBorrowers } from './hooks/useCoBorrowers'
@@ -70,10 +71,11 @@ export default function FundApplication() {
     setCoBorrowers,
     coDraft,
     setCoDraft,
-    showCoModal,
+    addCoBorrower,
     submitCoBorrower,
     deleteCoBorrower,
     editCoBorrower,
+    isEditing,
   } = useCoBorrowers()
 
   // Form State
@@ -358,7 +360,7 @@ export default function FundApplication() {
             coBorrowers={coBorrowers}
             setCoBorrowers={setCoBorrowers}
             onDeleteCoBorrower={deleteCoBorrower}
-            onShowCoModal={showCoModal}
+            onShowCoModal={addCoBorrower}
             coDraft={coDraft}
             setCoDraft={setCoDraft}
             onAddCoBorrower={submitCoBorrower}
@@ -533,6 +535,12 @@ export default function FundApplication() {
           </div>
         </div>
       </div>
+      <CoBorrowerModal 
+        coDraft={coDraft} 
+        setCoDraft={setCoDraft} 
+        onSubmit={submitCoBorrower} 
+        isEditing={isEditing} 
+      />
     </div>
   )
 }

@@ -6167,3 +6167,23 @@
   position: relative;
   z-index: 2;
 }
+
+.flatpickr-months .flatpickr-prev-month svg path, .flatpickr-months .flatpickr-next-month svg path{
+  fill: #fff !important
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowUp:after {
+    border-bottom-color: rgb(255 255 255 / 90%) !important;
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowDown:after {
+    border-top-color: rgb(255 255 255 / 90%) !important;
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowUp:before {
+    border-bottom-color: rgb(255 255 255 / 90%) !important;
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowDown:before {
+    border-top-color: rgb(255 255 255 / 90%) !important;
+}

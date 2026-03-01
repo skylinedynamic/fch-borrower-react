@@ -2,19 +2,21 @@ import React, { useState, useEffect } from 'react'
 import type { CoBorrower } from '../../types'
 import CustomDropdown from '../../../../components/Common/CustomDropdown'
 import { countries } from '../../../../data/countries'
-import { formatPhoneNumber } from '../../../../utils/formatters'
+import { useValidateCoBorrower } from '../../../../modules/funding-application/queries'
+import { getCountryCodeByName, getPhoneCodeByName } from '../../../../utils/countryHelpers'
+import { formatPhoneNumber, formatSSN } from '../../../../utils/formatters'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
 import { toast } from 'react-toastify'
-import { useValidateCoBorrower } from '../../../../modules/funding-application/queries'
 
 type CoBorrowerModalProps = {
   coDraft: CoBorrower
   setCoDraft: (data: CoBorrower) => void
   onSubmit: (e: React.FormEvent) => void
+  isEditing: boolean
 }
 
-export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBorrowerModalProps) {
+export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit, isEditing }: CoBorrowerModalProps) {
   const [availableStates, setAvailableStates] = useState<{ name: string; code: string; cities?: string[] }[]>([])
   const [availableCities, setAvailableCities] = useState<{ name: string; code: string }[]>([])
   const [showCityInput, setShowCityInput] = useState(false)
@@ -22,10 +24,10 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
   const [validating, setValidating] = useState(false)
   const { mutateAsync: validateCoBorrower } = useValidateCoBorrower()
 
-  // Update available states when country changes
   useEffect(() => {
     if (coDraft.country) {
-      const selectedCountry = countries.find((c) => c.name === coDraft.country || c.code === coDraft.country)
+      const code = getCountryCodeByName(coDraft.country)
+      const selectedCountry = countries.find((c) => c.code === code)
       if (selectedCountry && selectedCountry.states) {
         setAvailableStates(selectedCountry.states.map((s) => ({ name: s.name, code: s.code, cities: s.cities })))
       } else {
@@ -97,7 +99,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
         const validationErrors = error.response.data.errors
         setErrors(validationErrors)
       } else {
-        toast.error('An error occurred during validation. Please try again.')
+        toast.error(error.response?.data?.message || 'An error occurred during validation. Please try again.')
       }
     } finally {
       setValidating(false)
@@ -202,8 +204,8 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
                   </label>
                   <div className="input-group">
                     <span className="input-group-text bg-light border">
-                      <span className="me-1">{countries.find(c => c.name === coDraft.country)?.code || 'US'}</span>
-                      <span className="text-muted">{countries.find(c => c.name === coDraft.country)?.phone_code || '+1'}</span>
+                    <span className="me-1">{getCountryCodeByName(coDraft.country) || 'US'}</span>
+                    <span className="text-muted">{getPhoneCodeByName(coDraft.country) || '+1'}</span>
                     </span>
                     <input
                       type="tel"
@@ -220,8 +222,8 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
                   <label className="form-label">Home Phone</label>
                   <div className="input-group">
                     <span className="input-group-text bg-light border">
-                      <span className="me-1">{countries.find(c => c.name === coDraft.country)?.code || 'US'}</span>
-                      <span className="text-muted">{countries.find(c => c.name === coDraft.country)?.phone_code || '+1'}</span>
+                    <span className="me-1">{getCountryCodeByName(coDraft.country) || 'US'}</span>
+                    <span className="text-muted">{getPhoneCodeByName(coDraft.country) || '+1'}</span>
                     </span>
                     <input
                       type="tel"
@@ -269,7 +271,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
                     className={`form-control ${hasError('ssn') ? 'is-invalid' : ''}`}
                     placeholder="Enter Social Security Number (SSN)"
                     value={coDraft.ssn}
-                    onChange={(e) => setCoDraft({ ...coDraft, ssn: e.target.value })}
+                    onChange={(e) => setCoDraft({ ...coDraft, ssn: formatSSN(e.target.value) })}
                   />
                   {hasError('ssn') && <div className="invalid-feedback">{getError('ssn')}</div>}
                 </div>
@@ -414,7 +416,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit }: CoBor
             </div>
             <div className="modal-footer">
               <button type="submit" className="btn btn-primary" disabled={validating}>
-                {validating ? 'Validating...' : '+ Add Co-Borrower'}
+                {validating ? 'Validating...' : isEditing ? 'Update Co-Borrower' : '+ Add Co-Borrower'}
               </button>
               <button type="button" className="btn btn-light" data-bs-dismiss="modal">
                 Close

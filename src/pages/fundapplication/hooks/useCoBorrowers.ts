@@ -29,7 +29,7 @@ export const useCoBorrowers = () => {
   const [coDraft, setCoDraft] = useState<CoBorrower>(EMPTY_CO_BORROWER)
   const [editIndex, setEditIndex] = useState<number | null>(null)
 
-  const showCoModal = useCallback(() => {
+  const showModal = useCallback(() => {
     const modalEl = typeof document !== 'undefined' ? document.getElementById(CO_BORROWER_MODAL_ID) : null
     const bs = (window as any)?.bootstrap
     if (modalEl && bs?.Modal) {
@@ -45,13 +45,19 @@ export const useCoBorrowers = () => {
     }
   }, [])
 
+  const addCoBorrower = useCallback(() => {
+    setEditIndex(null)
+    setCoDraft(EMPTY_CO_BORROWER)
+    showModal()
+  }, [showModal])
+
   const editCoBorrower = useCallback(
     (idx: number) => {
       setEditIndex(idx)
       setCoDraft(coBorrowers[idx])
-      showCoModal()
+      showModal()
     },
-    [coBorrowers, showCoModal]
+    [coBorrowers, showModal]
   )
 
   const submitCoBorrower = useCallback(
@@ -86,10 +92,11 @@ export const useCoBorrowers = () => {
     setCoBorrowers,
     coDraft,
     setCoDraft,
-    showCoModal,
+    addCoBorrower,
     submitCoBorrower,
     deleteCoBorrower,
     editCoBorrower,
+    isEditing: editIndex !== null,
     emptyCoDraft: EMPTY_CO_BORROWER,
   }
 }

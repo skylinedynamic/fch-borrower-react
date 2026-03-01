@@ -5,7 +5,6 @@ import type { OwnerInfo, CoBorrower } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 import CoBorrowerTable from '../shared/CoBorrowerTable'
-import CoBorrowerModal from '../shared/CoBorrowerModal'
 import CustomDropdown from '../../../../components/Common/CustomDropdown'
 import { countries } from '../../../../data/countries'
 import { useOwnershipInfo, useSaveOwnershipInfo } from '../../../../modules/funding-application/queries'
@@ -78,24 +77,26 @@ export default function OwnershipInformationStep({
       has_co_borrower: owner.hasCoBorrower,
       phone_number: owner.phoneNumber,
       phone_country_code: getPhoneCodeByName(owner.country) || '+1',
-      co_borrowers: coBorrowers.map((cb) => ({
-        id: cb.id,
-        first_name: cb.firstName,
-        last_name: cb.lastName,
-        role: cb.role,
-        ownership: cb.ownershipPct,
-        email: cb.email,
-        mobile_phone: cb.mobilePhone,
-        home_phone: cb.homePhone,
-        street_address: cb.streetAddress,
-        city: cb.city,
-        state: cb.state,
-        zip_code: cb.zip,
-        ssn: cb.ssn,
-        date_of_birth: cb.dob,
-        drivers_license_number: cb.driversLicenseNumber,
-        drivers_license_state: cb.driversLicenseState,
-      })),
+      co_borrowers: owner.hasCoBorrower 
+        ? coBorrowers.map((cb) => ({
+            id: cb.id,
+            first_name: cb.firstName,
+            last_name: cb.lastName,
+            role: cb.role,
+            ownership: cb.ownershipPct,
+            email: cb.email,
+            mobile_phone: cb.mobilePhone,
+            home_phone: cb.homePhone,
+            street_address: cb.streetAddress,
+            city: cb.city,
+            state: cb.state,
+            zip_code: cb.zip,
+            ssn: cb.ssn,
+            date_of_birth: cb.dob,
+            drivers_license_number: cb.driversLicenseNumber,
+            drivers_license_state: cb.driversLicenseState,
+          }))
+        : [],
     }
 
     try {
@@ -500,8 +501,6 @@ export default function OwnershipInformationStep({
                 setOwner((prev: OwnerInfo) => ({ ...prev, hasCoBorrower: checked }))
                 if (checked) {
                   setTimeout(onShowCoModal, 150)
-                } else {
-                  setCoBorrowers([])
                 }
               }}
             />
@@ -511,7 +510,7 @@ export default function OwnershipInformationStep({
           </div>
         </div>
 
-        {(owner.hasCoBorrower || coBorrowers.length > 0) && (
+        {owner.hasCoBorrower && (
           <div className="col-12 mt-2">
             <CoBorrowerTable
               coBorrowers={coBorrowers}
@@ -530,7 +529,6 @@ export default function OwnershipInformationStep({
         />
       </form>
 
-      <CoBorrowerModal coDraft={coDraft} setCoDraft={setCoDraft} onSubmit={onAddCoBorrower} />
     </>
   )
 }
