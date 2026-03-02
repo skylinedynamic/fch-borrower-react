@@ -125,7 +125,7 @@ export default function Tier1Task({ tierId, task, isCurrentTier, isFirstTier, on
               <>
                 {renderStatusBadge()}
                 <UncontrolledTooltip placement="top" target={badgeId}>
-                  {task.rejection_reason || "No reason provided."}
+                  {task.note || 'No note provided.'}
                 </UncontrolledTooltip>
               </>
             ) : (isDone || isProcessing) ? (

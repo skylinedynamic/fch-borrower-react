@@ -14,6 +14,7 @@ import CoBorrowerModal from './components/shared/CoBorrowerModal'
 
 // Hooks
 import { useCoBorrowers } from './hooks/useCoBorrowers'
+import { FUNDING_PURPOSE_OTHER } from '../../data/profile'
 import { useFundingRequest, useFundingApplicationDocuments } from '../../modules/funding-application/queries'
 
 // Types & Utils
@@ -133,6 +134,7 @@ export default function FundApplication() {
     fundingType: '',
     timeframe: '',
     collateral: '',
+    purposeNote: '',
   })
 
   const [federal, setFederal] = useState<FederalCompliance>({
@@ -237,7 +239,12 @@ export default function FundApplication() {
         }
 
         case STEP_INDICES.FUNDING_REQUEST:
-          return Boolean(funding.requestedAmount && funding.purpose && funding.fundingType)
+          return Boolean(
+            funding.requestedAmount &&
+            funding.purpose &&
+            funding.fundingType &&
+            (funding.purpose !== FUNDING_PURPOSE_OTHER || funding.purposeNote)
+          )
 
         case STEP_INDICES.DOCUMENT_UPLOAD:
           // Document upload is optional (never blocks navigation)

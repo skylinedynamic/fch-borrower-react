@@ -38,7 +38,7 @@ export interface TierTask {
   button_title: string | null
   completed_at: string | null
   estimated_completion_days: number | null
-  rejection_reason?: string | null
+  note?: string | null
   order: number
   vendor: Vendor | null
   migrated_task_id: number | null

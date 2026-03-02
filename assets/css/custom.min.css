@@ -4003,7 +4003,7 @@
   border-top-right-radius: 12px
 }
 
-.credit-overview-page .panel--pending::before {
+/* .credit-overview-page .panel--pending::before {
   background: #ff7f32
 }
 
@@ -4013,7 +4013,7 @@
 
 .credit-overview-page .panel--score::before {
   background: #6f42c1
-}
+} */
 
 .credit-overview-page .panel-header {
   display: flex;
@@ -6186,4 +6186,8 @@
 
 .flatpickr-current-month .numInputWrapper span.arrowDown:before {
     border-top-color: rgb(255 255 255 / 90%) !important;
+}
+
+.xtrasmall{
+  font-size: .65rem !important;
 }

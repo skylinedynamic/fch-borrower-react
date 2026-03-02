@@ -3,7 +3,7 @@ import type { FundingRequest } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 import CustomDropdown from '../../../../components/Common/CustomDropdown'
-import { purposeOfFundingOptions, fundingTypeOptions, timeframeOptions, collateralOptions } from '../../../../data/profile'
+import { purposeOfFundingOptions, fundingTypeOptions, timeframeOptions, collateralOptions, FUNDING_PURPOSE_OTHER } from '../../../../data/profile'
 import { useFundingRequest, useSaveFundingRequest } from '../../../../modules/funding-application/queries'
 import { toast } from 'react-toastify'
 import { formatCurrency, unformatCurrency } from '../../../../utils/formatters'
@@ -41,6 +41,7 @@ export default function FundingRequestStep({
       preferred_funding_type: funding.fundingType || null,
       timeframe_needed: funding.timeframe || null,
       collateral_available: funding.collateral || null,
+      purpose_note: funding.purposeNote || null,
     }
 
     try {
@@ -79,6 +80,7 @@ export default function FundingRequestStep({
         fundingType: apiData.preferred_funding_type || '',
         timeframe: apiData.timeframe_needed || '',
         collateral: apiData.collateral_available || '',
+        purposeNote: apiData.purpose_note || '',
       })
     }
   }, [isSuccess, apiData])
@@ -102,7 +104,12 @@ export default function FundingRequestStep({
     }
   }
 
-  const isValid = !!(funding.requestedAmount && funding.purpose && funding.fundingType)
+  const isValid = !!(
+    funding.requestedAmount &&
+    funding.purpose &&
+    funding.fundingType &&
+    (funding.purpose !== FUNDING_PURPOSE_OTHER || funding.purposeNote)
+  )
 
   if (loading || isApiLoading) {
     return <FormSkeleton fieldCount={5} />
@@ -140,6 +147,22 @@ export default function FundingRequestStep({
           <div className="invalid-feedback d-block">{getFieldError('purpose_of_funds')}</div>
         )}
       </div>
+
+      {funding.purpose === FUNDING_PURPOSE_OTHER && (
+        <div className="col-md-6">
+          <label className="form-label">
+            Purpose Note <span className="text-danger">*</span>
+          </label>
+          <input
+            type="text"
+            className={`form-control ${hasError('purpose_note') ? 'is-invalid' : ''}`}
+            placeholder="Please specify the purpose of funds"
+            value={funding.purposeNote || ''}
+            onChange={(e) => setFunding({ ...funding, purposeNote: e.target.value })}
+          />
+          {hasError('purpose_note') && <div className="invalid-feedback">{getFieldError('purpose_note')}</div>}
+        </div>
+      )}
 
       <div className="col-md-6">
         <label className="form-label">

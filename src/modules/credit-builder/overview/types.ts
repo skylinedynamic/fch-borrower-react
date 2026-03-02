@@ -46,6 +46,7 @@ export interface TaskOverviewTier {
 export interface Task {
   id: number
   title: string
+  tier: string
   subtitle: string
   description: string | null
   status: 'verified' | 'processing' | 'pending' | 'rejected'

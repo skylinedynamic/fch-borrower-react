@@ -57,13 +57,15 @@ export const fundingUrgencyOptions: OptionType[] = [
   { label: 'Flexible', value: 'Flexible' }
 ]
 
+export const FUNDING_PURPOSE_OTHER = 'Other'
+
 export const purposeOfFundingOptions: OptionType[] = [
   { label: 'Working Capital', value: 'Working Capital' },
   { label: 'Equipment', value: 'Equipment' },
   { label: 'Inventory', value: 'Inventory' },
   { label: 'Marketing', value: 'Marketing' },
   { label: 'Expansion', value: 'Expansion' },
-  { label: 'Other', value: 'Other' }
+  { label: FUNDING_PURPOSE_OTHER, value: FUNDING_PURPOSE_OTHER }
 ]
 
 export const personalCreditScoreOptions: OptionType[] = [

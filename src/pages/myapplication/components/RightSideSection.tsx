@@ -39,7 +39,7 @@ export default function RightSideSection({ loading }: RightSideSectionProps) {
                 />
                 <div>
                   <div className="advisor-name">{advisor?.name || 'Advisor'}</div>
-                  <div className="advisor-role text-muted">Financial Advisor</div>
+                  <div className="advisor-role text-muted">Funding Strategy Advisor</div>
                 </div>
               </div>
               <div className="advisor-list d-flex flex-column gap-2 mb-3">

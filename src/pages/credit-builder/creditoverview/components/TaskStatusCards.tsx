@@ -37,7 +37,7 @@ export default function TaskStatusCards() {
       <div className="card-body">
         <div className="row g-3">
           {/* Pending Tasks Panel */}
-          <div className="col-lg-3">
+          {/* <div className="col-lg-3">
             <div className="panel panel--pending h-100">
               <div className="panel-header">
                 <div className="panel-title">
@@ -67,9 +67,8 @@ export default function TaskStatusCards() {
                       {pending.map((task) => (
                         <div key={task.id} className="task">
                           <div className="d-flex align-items-start gap-2">
-                            <span className="task-dot"></span>
                             <div className="flex-grow-1">
-                              <div className="task-title">{task.title}</div>
+                              <div className="task-title">{task.title} <span className="ml-2">{task.tier}</span></div>
                               <div className="task-subtitle">{task.subtitle}</div>
                             </div>
                           </div>
@@ -86,10 +85,10 @@ export default function TaskStatusCards() {
                 )}
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Processing Tasks Panel */}
-          <div className="col-lg-3">
+          <div className="col-lg-4">
             <div className="panel panel--processing h-100">
               <div className="panel-header">
                 <div className="panel-title">
@@ -119,13 +118,11 @@ export default function TaskStatusCards() {
                       <div key={task.id} className="task">
                         <div className="d-flex justify-content-between align-items-start gap-2">
                           <div className="d-flex align-items-start gap-2 flex-grow-1">
-                            <div className="spinner-border text-primary" style={{ width: '16px', height: '16px', borderWidth: '2px', marginTop: '2px' }}></div>
                             <div className="flex-grow-1">
-                              <div className="task-title">{task.title}</div>
+                              <div className="task-title">{task.title} <span className="ms-1 xtrasmall text-primary" style={{ verticalAlign: 'middle' }}>{task.tier}</span></div>
                               <div className="task-subtitle">{task.subtitle}</div>
                             </div>
                           </div>
-                          <span className="status-badge">In Progress</span>
                         </div>
                       </div>
                     ))}
@@ -136,7 +133,7 @@ export default function TaskStatusCards() {
           </div>
 
           {/* Verified/Completed Tasks Panel */}
-          <div className="col-lg-3">
+          <div className="col-lg-4">
             <div className="panel panel--completed h-100">
               <div className="panel-header">
                 <div className="panel-title">
@@ -167,9 +164,8 @@ export default function TaskStatusCards() {
                         <div key={task.id} className="task">
                           <div className="d-flex justify-content-between align-items-start gap-2">
                             <div className="d-flex align-items-start gap-2 flex-grow-1">
-                              <i className="ri-check-line" style={{ color: '#52a573', fontSize: '18px', marginTop: '2px' }}></i>
                               <div className="flex-grow-1">
-                                <div className="task-title">{task.title}</div>
+                                <div className="task-title">{task.title} <span className="ms-1 xtrasmall text-success" style={{ verticalAlign: 'middle' }}>{task.tier}</span></div>
                                 <div className="task-subtitle">{task.subtitle}</div>
                                 {task.completed_at && (
                                   <div className="task-meta">
@@ -179,7 +175,7 @@ export default function TaskStatusCards() {
                                 )}
                               </div>
                             </div>
-                            <span className="status-badge">Verified</span>
+                           
                           </div>
                         </div>
                       ))}
@@ -205,7 +201,7 @@ export default function TaskStatusCards() {
           </div>
 
           {/* Rejected Tasks Panel */}
-          <div className="col-lg-3">
+          <div className="col-lg-4">
             <div className="panel panel--rejected h-100">
               <div className="panel-header">
                 <div className="panel-title">
@@ -235,13 +231,12 @@ export default function TaskStatusCards() {
                       <div key={task.id} className="task">
                         <div className="d-flex justify-content-between align-items-start gap-2 mb-2">
                           <div className="d-flex align-items-start gap-2 flex-grow-1">
-                            <i className="ri-close-line" style={{ color: '#d67171', fontSize: '18px', marginTop: '2px' }}></i>
                             <div className="flex-grow-1">
-                              <div className="task-title">{task.title}</div>
+                              <div className="task-title">{task.title} <span className="ms-1 xtrasmall text-danger" style={{ verticalAlign: 'middle' }}>{task.tier}</span></div>
                               <div className="task-subtitle">{task.subtitle}</div>
                             </div>
                           </div>
-                          <span className="status-badge">Rejected</span>
+                      
                         </div>
                         {task.rejection_reason && (
                           <div className="rejection-alert">

@@ -54,6 +54,7 @@ export type FundingRequestPayload = {
   preferred_funding_type: string | null
   timeframe_needed: string | null
   collateral_available: string | null
+  purpose_note: string | null
 }
 
 export type DisclosuresConsentPayload = {
