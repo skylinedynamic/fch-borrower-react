@@ -2,7 +2,7 @@ import React from 'react'
 import type { FinancialSupport } from '../../../modules/pre-qualification'
 import { formatCurrency } from '../../../utils/formatters'
 import CustomDropdown from '../../../components/Common/CustomDropdown'
-import { fundingUrgencyOptions, purposeOfFundingOptions, personalCreditScoreOptions, estimatedBusinessCreditScoreOptions } from '../../../data/profile'
+import { fundingUrgencyOptions, purposeOfFundingOptions, personalCreditScoreOptions, estimatedBusinessCreditScoreOptions, FUNDING_PURPOSE_OTHER } from '../../../data/profile'
 
 interface FundingNeedsStepProps {
   support: FinancialSupport
@@ -55,7 +55,11 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
         <label className="form-label">Purpose of Funding <span className="text-danger">*</span></label>
         <CustomDropdown
           value={support.purposeOfFunding}
-          onChange={(value) => setSupport({ ...support, purposeOfFunding: value })}
+          onChange={(value) => setSupport({
+            ...support,
+            purposeOfFunding: value,
+            purposeNote: value === FUNDING_PURPOSE_OTHER ? support.purposeNote : ''
+          })}
           options={purposeOfFundingOptions}
           optionLabel="label"
           optionValue="value"
@@ -64,6 +68,20 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
         />
         {errors.purposeOfFunding && <div className="invalid-feedback d-block">{errors.purposeOfFunding}</div>}
       </div>
+      {support.purposeOfFunding === FUNDING_PURPOSE_OTHER && (
+        <div className="col-md-6">
+          <label className="form-label">Purpose Of Funding Note <span className="text-danger">*</span></label>
+          <input
+            type="text"
+            className={`form-control ${errors.purposeNote ? 'is-invalid' : ''}`}
+            placeholder="Please specify"
+            value={support.purposeNote}
+            onChange={(e) => setSupport({ ...support, purposeNote: e.target.value })}
+            disabled={isSubmitting}
+          />
+          {errors.purposeNote && <div className="invalid-feedback">{errors.purposeNote}</div>}
+        </div>
+      )}
       <div className="col-md-6">
         <label className="form-label">Personal Credit Score <span className="text-danger">*</span></label>
         <CustomDropdown
@@ -90,19 +108,19 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
         />
         {errors.estimatedBusinessCreditScore && <div className="invalid-feedback d-block">{errors.estimatedBusinessCreditScore}</div>}
       </div>
-      <div className="col-md-6">
+      <div className="col-md-12">
         <label className="form-label">Note</label>
         <textarea
           className={`form-control ${errors.notes ? 'is-invalid' : ''}`}
           placeholder="Additional information or special requirements"
-          rows={1}
+          rows={2}
           value={support.notes}
           onChange={(e) => setSupport({ ...support, notes: e.target.value })}
           disabled={isSubmitting}
         />
         {errors.notes && <div className="invalid-feedback">{errors.notes}</div>}
       </div>
-      <div className="col-6 d-flex align-items-center gap-3">
+      <div className="col-12 d-flex align-items-center gap-3">
         <span className="fw-medium">Existing Business Debt?</span>
         <div className="form-check form-check-inline">
           <input

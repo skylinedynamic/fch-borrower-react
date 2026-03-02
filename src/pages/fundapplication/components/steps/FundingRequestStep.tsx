@@ -41,7 +41,7 @@ export default function FundingRequestStep({
       preferred_funding_type: funding.fundingType || null,
       timeframe_needed: funding.timeframe || null,
       collateral_available: funding.collateral || null,
-      purpose_note: funding.purposeNote || null,
+      purpose_note: funding.purpose === FUNDING_PURPOSE_OTHER ? (funding.purposeNote || null) : null,
     }
 
     try {
@@ -136,7 +136,11 @@ export default function FundingRequestStep({
         </label>
         <CustomDropdown
           value={funding.purpose}
-          onChange={(value) => setFunding({ ...funding, purpose: value })}
+          onChange={(value) => setFunding({
+            ...funding,
+            purpose: value,
+            purposeNote: value === FUNDING_PURPOSE_OTHER ? funding.purposeNote : ''
+          })}
           options={purposeOfFundingOptions}
           optionLabel="label"
           optionValue="value"

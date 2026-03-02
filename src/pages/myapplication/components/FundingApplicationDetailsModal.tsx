@@ -1,6 +1,7 @@
 import React from 'react'
 import { Modal, ModalBody, ModalHeader, Badge, ModalFooter } from 'reactstrap'
-import type { FundingApplication } from '../../../modules/my-application/types'
+import { FundingApplication } from '../../../modules/my-application/types'
+import { formatSSN } from '../../../utils/formatters'
 
 interface FundingApplicationDetailsModalProps {
   isOpen: boolean
@@ -46,7 +47,7 @@ export default function FundingApplicationDetailsModal({ isOpen, toggle, applica
   return (
     <Modal isOpen={isOpen} toggle={toggle} size="lg" centered scrollable className="zoomIn">
       <ModalHeader toggle={toggle} className="border-bottom-0 pb-0">
-        Funding Application Details 
+        Funding Application Details
         <Badge color={application.status === 'Submitted' ? 'success' : 'warning'} pill className="ms-2 fs-12 text-uppercase">{application.status}</Badge>
       </ModalHeader>
       <ModalBody className="p-4 bg-light-subtle">
@@ -60,9 +61,9 @@ export default function FundingApplicationDetailsModal({ isOpen, toggle, applica
           <DetailItem label="Entity Type" value={application.entity_type} icon="pi pi-sitemap" />
           <DetailItem label="Years in Business" value={application.years_in_business} icon="pi pi-clock" />
           <DetailItem label="Number of Employees" value={application.number_of_employees} icon="pi pi-users" />
-          
+
           <div className="col-12"><hr className="border-light my-3" /></div>
-          
+
           <DetailItem label="Address" value={application.business_address} fullWidth />
           <DetailItem label="City" value={application.business_city} />
           <DetailItem label="State" value={application.business_state} />
@@ -75,13 +76,13 @@ export default function FundingApplicationDetailsModal({ isOpen, toggle, applica
           <DetailItem label="First Name" value={application.first_name} />
           <DetailItem label="Last Name" value={application.last_name} />
           <DetailItem label="Date of Birth" value={application.date_of_birth} icon="pi pi-calendar" />
-          <DetailItem label="SSN" value={application.ssn ? '***-**-' + application.ssn.slice(-4) : 'N/A'} icon="pi pi-shield" />
+          <DetailItem label="SSN" value={application.ssn ? formatSSN(application.ssn) : 'N/A'} icon="pi pi-shield" />
           <DetailItem label="Citizenship Status" value={application.citizenship_status} icon="pi pi-flag" />
           <DetailItem label="Ownership %" value={application.ownership} icon="pi pi-percentage" />
           <DetailItem label="Has Co-Borrower" value={application.has_co_borrower ? 'Yes' : 'No'} />
-          
+
           <div className="col-12"><hr className="border-light my-3" /></div>
-          
+
           <DetailItem label="Street Address" value={application.street_address} fullWidth />
           <DetailItem label="City" value={application.city} />
           <DetailItem label="State" value={application.state} />
@@ -109,6 +110,9 @@ export default function FundingApplicationDetailsModal({ isOpen, toggle, applica
           <DetailItem label="Timeframe Needed" value={application.timeframe_needed} icon="pi pi-hourglass" />
           <DetailItem label="Collateral Available" value={application.collateral_available} />
           <DetailItem label="Purpose of Funds" value={application.purpose_of_funds} fullWidth />
+          {application.purpose_note && (
+            <DetailItem label="Purpose Note" value={application.purpose_note} fullWidth />
+          )}
         </SectionCard>
 
         {/* Federal Compliance */}

@@ -15,6 +15,7 @@ export type PreQualificationData = {
   funding_requested_amount: string | null
   funding_urgency: string | null
   purpose_of_funding: string | null
+  purpose_note: string | null
   personal_credit_score: string | null
   estimated_business_credit_score: string | null
   existing_business_debt: boolean
@@ -53,6 +54,7 @@ export type FinancialSupport = {
   fundingRequestedAmount: string
   fundingUrgency: string
   purposeOfFunding: string
+  purposeNote: string
   personalCreditScore: string
   estimatedBusinessCreditScore: string
   existingBusinessDebt: boolean
@@ -85,6 +87,7 @@ export type FundingInfoRequest = {
   funding_requested_amount: number | null
   funding_urgency: string
   purpose_of_funding: string
+  purpose_note: string | null
   personal_credit_score: string
   estimated_business_credit_score: string
   existing_business_debt: boolean
@@ -112,6 +115,7 @@ export type StepSubmissionResponse = {
     funding_requested_amount: string
     funding_urgency: string
     purpose_of_funding: string
+    purpose_note: string
     personal_credit_score: string
     estimated_business_credit_score: string
     existing_business_debt: boolean

@@ -48,7 +48,7 @@ export default function PreQualificationDetailsModal({ isOpen, toggle, requestId
   return (
     <Modal isOpen={isOpen} toggle={toggle} size="lg" centered scrollable className="zoomIn">
       <ModalHeader toggle={toggle} className="border-bottom-0 pb-0">
-        Pre-Qualification Details 
+        Pre-Qualification Details
         {data && <Badge color={data.status === 'submitted' ? 'success' : 'warning'} pill className="ms-2 fs-12 text-uppercase">{data.status}</Badge>}
       </ModalHeader>
       <ModalBody className="p-4 bg-light-subtle">
@@ -80,14 +80,17 @@ export default function PreQualificationDetailsModal({ isOpen, toggle, requestId
               <DetailItem label="Requested Amount" value={data.funding_requested_amount} icon="pi pi-chart-line" />
               <DetailItem label="Funding Urgency" value={data.funding_urgency} icon="pi pi-hourglass" />
               <DetailItem label="Purpose of Funding" value={data.purpose_of_funding} fullWidth />
-              
+              {data.purpose_note && (
+                <DetailItem label="Purpose Of Funding Note" value={data.purpose_note} fullWidth />
+              )}
+
               <div className="col-12"><hr className="border-light my-3" /></div>
-              
+
               <DetailItem label="Personal Credit" value={data.personal_credit_score} />
               <DetailItem label="Business Credit (Est.)" value={data.estimated_business_credit_score} />
-              
+
               <div className="col-12"><hr className="border-light my-3" /></div>
-              
+
               <DetailItem label="Existing Business Debt" value={data.existing_business_debt ? 'Yes' : 'No'} />
               {data.existing_business_debt && (
                 <DetailItem label="Debt Balance" value={data.debt_balance} icon="pi pi-credit-card" />
@@ -107,16 +110,16 @@ export default function PreQualificationDetailsModal({ isOpen, toggle, requestId
         ) : (
           <div className="text-center py-5">
             <div className="avatar-lg mx-auto mb-3">
-               <div className="avatar-title bg-light text-primary rounded-circle fs-24">
-                  <i className="pi pi-exclamation-circle"></i>
-               </div>
+              <div className="avatar-title bg-light text-primary rounded-circle fs-24">
+                <i className="pi pi-exclamation-circle"></i>
+              </div>
             </div>
             <h5 className="text-muted">No details available</h5>
           </div>
         )}
       </ModalBody>
       <ModalFooter className="border-top-0 pt-0">
-          <button className="btn btn-light" onClick={toggle}>Close</button>
+        <button className="btn btn-light" onClick={toggle}>Close</button>
       </ModalFooter>
     </Modal>
   )

@@ -38,15 +38,15 @@ export const formatCurrency = (value: string | number): string => {
 
   // Split into integer and decimal parts
   const parts = stringValue.split('.')
-  
+
   // Remove all non-digit characters from the integer part
   let integerPart = parts[0].replace(/\D/g, '')
-  
+
   // Handle case where user starts with a decimal point (e.g., .5 -> 0.5)
   if (integerPart === '' && parts.length > 1) {
     integerPart = '0'
   }
-  
+
   // If empty and no decimal, return empty string
   if (integerPart === '' && parts.length === 1) return ''
 
@@ -72,7 +72,7 @@ export const unformatCurrency = (value: string): string => {
   if (!value) return ''
   // Remove everything except digits and decimal point
   const cleaned = value.replace(/[^\d.]/g, '')
-  
+
   // Ensure only the first decimal point is kept if there are multiple
   const parts = cleaned.split('.')
   if (parts.length > 2) {
@@ -82,12 +82,24 @@ export const unformatCurrency = (value: string): string => {
 }
 
 /**
- * Formats the SSN input to ensure only digits and max 9 characters
+ * Formats the SSN input to ensure only digits and max 9 characters in ###-###-### format
  * @param value The raw input string
  * @returns The formatted string
  */
 export const formatSSN = (value: string): string => {
-  return value.replace(/\D/g, '').slice(0, 9)
+  const digits = value.replace(/\D/g, '').slice(0, 9)
+  if (digits.length <= 3) return digits
+  if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`
+  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6, 9)}`
+}
+
+/**
+ * Removes hyphens from SSN string
+ * @param value The formatted SSN string
+ * @returns The raw numeric string
+ */
+export const unformatSSN = (value: string): string => {
+  return value.replace(/\D/g, '')
 }
 
 /**

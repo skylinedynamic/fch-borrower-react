@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { FUNDING_PURPOSE_OTHER } from '../../../data/profile'
 import type { PersonalInfo, BusinessDetails, FinancialSupport } from '../../../modules/pre-qualification'
 import ConfirmationModal from '../../../components/GlobalModal/ConfirmationModal'
 
@@ -49,6 +50,9 @@ export default function ReviewStep({ personal, business, support, onEdit, onPrev
         <div className="kv"><div className="label">Funding Requested Amount</div><div className="value">{support.fundingRequestedAmount || '—'}</div></div>
         <div className="kv"><div className="label">Funding Urgency</div><div className="value">{support.fundingUrgency || '—'}</div></div>
         <div className="kv"><div className="label">Purpose of Funding</div><div className="value">{support.purposeOfFunding || '—'}</div></div>
+        {support.purposeOfFunding === FUNDING_PURPOSE_OTHER && (
+          <div className="kv"><div className="label">Purpose Note</div><div className="value">{support.purposeNote || '—'}</div></div>
+        )}
         <div className="kv"><div className="label">Personal Credit Score</div><div className="value">{support.personalCreditScore || '—'}</div></div>
         <div className="kv"><div className="label">Estimate Business Credit Score</div><div className="value">{support.estimatedBusinessCreditScore || '—'}</div></div>
         <div className="kv"><div className="label">Note</div><div className="value">{support.notes || '—'}</div></div>

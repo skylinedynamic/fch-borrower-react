@@ -10,7 +10,7 @@ import { countries } from '../../../../data/countries'
 import { useOwnershipInfo, useSaveOwnershipInfo } from '../../../../modules/funding-application/queries'
 import { citizenshipOptions } from '../../../../data/profile'
 import { toast } from 'react-toastify'
-import { formatPhoneNumber, formatSSN } from '../../../../utils/formatters'
+import { formatPhoneNumber, formatSSN, unformatSSN } from '../../../../utils/formatters'
 import { getCountryCodeByName, getPhoneCodeByName, getCountryNameByCode, getDefaultCountry } from '../../../../utils/countryHelpers'
 
 interface OwnershipInformationStepProps {
@@ -66,7 +66,7 @@ export default function OwnershipInformationStep({
       first_name: owner.firstName,
       last_name: owner.lastName,
       date_of_birth: owner.dob,
-      ssn: owner.ssn,
+      ssn: unformatSSN(owner.ssn),
       citizenship_status: owner.citizenship,
       street_address: owner.streetAddress,
       country: owner.country,
@@ -77,25 +77,25 @@ export default function OwnershipInformationStep({
       has_co_borrower: owner.hasCoBorrower,
       phone_number: owner.phoneNumber,
       phone_country_code: getPhoneCodeByName(owner.country) || '+1',
-      co_borrowers: owner.hasCoBorrower 
+      co_borrowers: owner.hasCoBorrower
         ? coBorrowers.map((cb) => ({
-            id: cb.id,
-            first_name: cb.firstName,
-            last_name: cb.lastName,
-            role: cb.role,
-            ownership: cb.ownershipPct,
-            email: cb.email,
-            mobile_phone: cb.mobilePhone,
-            home_phone: cb.homePhone,
-            street_address: cb.streetAddress,
-            city: cb.city,
-            state: cb.state,
-            zip_code: cb.zip,
-            ssn: cb.ssn,
-            date_of_birth: cb.dob,
-            drivers_license_number: cb.driversLicenseNumber,
-            drivers_license_state: cb.driversLicenseState,
-          }))
+          id: cb.id,
+          first_name: cb.firstName,
+          last_name: cb.lastName,
+          role: cb.role,
+          ownership: cb.ownershipPct,
+          email: cb.email,
+          mobile_phone: cb.mobilePhone,
+          home_phone: cb.homePhone,
+          street_address: cb.streetAddress,
+          city: cb.city,
+          state: cb.state,
+          zip_code: cb.zip,
+          ssn: unformatSSN(cb.ssn),
+          date_of_birth: cb.dob,
+          drivers_license_number: cb.driversLicenseNumber,
+          drivers_license_state: cb.driversLicenseState,
+        }))
         : [],
     }
 
@@ -132,7 +132,7 @@ export default function OwnershipInformationStep({
         firstName: apiData.first_name || prev.firstName,
         lastName: apiData.last_name || prev.lastName,
         dob: apiData.date_of_birth || prev.dob,
-        ssn: apiData.ssn || prev.ssn,
+        ssn: apiData.ssn ? formatSSN(apiData.ssn) : prev.ssn,
         citizenship: apiData.citizenship_status || prev.citizenship || citizenshipOptions[0].value,
         streetAddress: apiData.street_address || prev.streetAddress,
         country: apiData.country || prev.country || getDefaultCountry().name,
@@ -160,7 +160,7 @@ export default function OwnershipInformationStep({
             city: cb.city,
             state: cb.state,
             zip: cb.zip_code,
-            ssn: cb.ssn,
+            ssn: cb.ssn ? formatSSN(cb.ssn) : '',
             dob: cb.date_of_birth,
             driversLicenseNumber: cb.drivers_license_number,
             driversLicenseState: cb.drivers_license_state,

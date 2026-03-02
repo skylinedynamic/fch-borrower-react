@@ -67,6 +67,7 @@ export interface PreQualificationDetail {
   funding_requested_amount: string
   funding_urgency: string
   purpose_of_funding: string
+  purpose_note: string
   personal_credit_score: string
   estimated_business_credit_score: string
   existing_business_debt: boolean | number
@@ -122,6 +123,7 @@ export interface FundingApplication {
   debt_balance: string
   requested_amount: string
   purpose_of_funds: string
+  purpose_note: string | null
   preferred_funding_type: string
   timeframe_needed: string
   collateral_available: string

@@ -87,7 +87,7 @@ export default function PersonalInfoStep({
       <div className="col-md-6">
         <label className="form-label">Business Website</label>
         <input
-          type="url"
+          type="text"
           className={`form-control ${errors.businessWebsite ? 'is-invalid' : ''}`}
           placeholder="https://"
           value={personal.businessWebsite}

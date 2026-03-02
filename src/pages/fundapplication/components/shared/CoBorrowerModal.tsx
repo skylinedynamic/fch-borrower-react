@@ -4,7 +4,7 @@ import CustomDropdown from '../../../../components/Common/CustomDropdown'
 import { countries } from '../../../../data/countries'
 import { useValidateCoBorrower } from '../../../../modules/funding-application/queries'
 import { getCountryCodeByName, getPhoneCodeByName } from '../../../../utils/countryHelpers'
-import { formatPhoneNumber, formatSSN } from '../../../../utils/formatters'
+import { formatPhoneNumber, formatSSN, unformatSSN } from '../../../../utils/formatters'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
 import { toast } from 'react-toastify'
@@ -78,7 +78,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit, isEditi
       mobile_phone: coDraft.mobilePhone,
       home_phone: coDraft.homePhone,
       date_of_birth: coDraft.dob,
-      ssn: coDraft.ssn,
+      ssn: unformatSSN(coDraft.ssn),
       street_address: coDraft.streetAddress,
       country: coDraft.country,
       state: coDraft.state,
@@ -204,8 +204,8 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit, isEditi
                   </label>
                   <div className="input-group">
                     <span className="input-group-text bg-light border">
-                    <span className="me-1">{getCountryCodeByName(coDraft.country) || 'US'}</span>
-                    <span className="text-muted">{getPhoneCodeByName(coDraft.country) || '+1'}</span>
+                      <span className="me-1">{getCountryCodeByName(coDraft.country) || 'US'}</span>
+                      <span className="text-muted">{getPhoneCodeByName(coDraft.country) || '+1'}</span>
                     </span>
                     <input
                       type="tel"
@@ -222,8 +222,8 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit, isEditi
                   <label className="form-label">Home Phone</label>
                   <div className="input-group">
                     <span className="input-group-text bg-light border">
-                    <span className="me-1">{getCountryCodeByName(coDraft.country) || 'US'}</span>
-                    <span className="text-muted">{getPhoneCodeByName(coDraft.country) || '+1'}</span>
+                      <span className="me-1">{getCountryCodeByName(coDraft.country) || 'US'}</span>
+                      <span className="text-muted">{getPhoneCodeByName(coDraft.country) || '+1'}</span>
                     </span>
                     <input
                       type="tel"

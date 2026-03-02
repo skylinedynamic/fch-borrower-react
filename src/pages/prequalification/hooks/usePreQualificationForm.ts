@@ -3,6 +3,7 @@ import { usePreQualification, useSubmitPersonalInfo, useSubmitBusinessInfo, useS
 import type { PersonalInfo, BusinessDetails, FinancialSupport } from '../../../modules/pre-qualification'
 import { countries } from '../../../data/countries'
 import { formatCurrency, unformatCurrency } from '../../../utils/formatters'
+import { FUNDING_PURPOSE_OTHER } from '../../../data/profile'
 
 export const usePreQualificationForm = () => {
   const [step, setStep] = useState<number>(0)
@@ -48,6 +49,7 @@ export const usePreQualificationForm = () => {
     estimatedBusinessCreditScore: '',
     existingBusinessDebt: false,
     debtBalance: '',
+    purposeNote: '',
     notes: '',
   })
 
@@ -97,8 +99,9 @@ export const usePreQualificationForm = () => {
         notes: apiData.notes || '',
         existingBusinessDebt: apiData.existing_business_debt,
         debtBalance: apiData.debt_balance ? formatCurrency(apiData.debt_balance.toString()) : '',
+        purposeNote: apiData.purpose_note || '',
       })
-      
+
       setLoading(false)
 
       // Store initial values after data is loaded
@@ -128,24 +131,25 @@ export const usePreQualificationForm = () => {
           estimatedBusinessCreditScore: apiData.estimated_business_credit_score || '',
           existingBusinessDebt: apiData.existing_business_debt,
           debtBalance: apiData.debt_balance ? formatCurrency(apiData.debt_balance.toString()) : '',
+          purposeNote: apiData.purpose_note || '',
           notes: apiData.notes || '',
         }
       }, 100)
     } else if (!isLoading) {
-       setLoading(false)
+      setLoading(false)
     }
   }, [apiData, isLoading])
 
   const handlePersonalInfoSubmit = async (navigateToStep?: number) => {
     // Check if any required field is empty
-    const hasEmptyFields = !personal.firstName.trim() || 
-      !personal.lastName.trim() || 
-      !personal.email.trim() || 
-      !personal.phoneNumber.trim() || 
+    const hasEmptyFields = !personal.firstName.trim() ||
+      !personal.lastName.trim() ||
+      !personal.email.trim() ||
+      !personal.phoneNumber.trim() ||
       !personal.stateOfIncorporation.trim()
 
     // Check if any field has changed
-    const hasChanged = initialPersonalRef.current === null || 
+    const hasChanged = initialPersonalRef.current === null ||
       personal.firstName !== initialPersonalRef.current.firstName ||
       personal.lastName !== initialPersonalRef.current.lastName ||
       personal.email !== initialPersonalRef.current.email ||
@@ -173,7 +177,7 @@ export const usePreQualificationForm = () => {
         business_website: personal.businessWebsite || undefined,
         state_of_incorporation: personal.stateOfIncorporation,
       })
-      
+
       if (response?.id) {
         setPreQualId(response.id)
       }
@@ -183,7 +187,7 @@ export const usePreQualificationForm = () => {
       const nextStep = navigateToStep !== undefined ? navigateToStep : 1
       setStep(nextStep)
       setMobileOpenIdx(nextStep)
-      
+
       initialPersonalRef.current = { ...personal }
     } catch (error: any) {
       if (error?.response?.data?.errors) {
@@ -248,7 +252,7 @@ export const usePreQualificationForm = () => {
       const nextStep = navigateToStep !== undefined ? navigateToStep : 2
       setStep(nextStep)
       setMobileOpenIdx(nextStep)
-      
+
       initialBusinessRef.current = { ...business }
     } catch (error: any) {
       if (error?.response?.data?.errors) {
@@ -277,7 +281,8 @@ export const usePreQualificationForm = () => {
       !support.purposeOfFunding.trim() ||
       !support.personalCreditScore.trim() ||
       !support.estimatedBusinessCreditScore.trim() ||
-      (support.existingBusinessDebt && !support.debtBalance.trim())
+      (support.existingBusinessDebt && !support.debtBalance.trim()) ||
+      (support.purposeOfFunding === FUNDING_PURPOSE_OTHER && !support.purposeNote.trim())
 
     const hasChanged = initialSupportRef.current === null ||
       support.fundingRequestedAmount !== initialSupportRef.current.fundingRequestedAmount ||
@@ -287,6 +292,7 @@ export const usePreQualificationForm = () => {
       support.estimatedBusinessCreditScore !== initialSupportRef.current.estimatedBusinessCreditScore ||
       support.existingBusinessDebt !== initialSupportRef.current.existingBusinessDebt ||
       support.debtBalance !== initialSupportRef.current.debtBalance ||
+      support.purposeNote !== initialSupportRef.current.purposeNote ||
       support.notes !== initialSupportRef.current.notes
 
     if (!hasEmptyFields && !hasChanged) {
@@ -304,12 +310,13 @@ export const usePreQualificationForm = () => {
       await submitFundingInfoMutation.mutateAsync({
         id: preQualId,
         funding_requested_amount: fundingAmount,
-        funding_urgency: support.fundingUrgency,  
+        funding_urgency: support.fundingUrgency,
         purpose_of_funding: support.purposeOfFunding,
         personal_credit_score: support.personalCreditScore,
         estimated_business_credit_score: support.estimatedBusinessCreditScore,
         existing_business_debt: support.existingBusinessDebt,
         debt_balance: debtBalance,
+        purpose_note: support.purposeOfFunding === FUNDING_PURPOSE_OTHER ? support.purposeNote : null,
         notes: support.notes
       })
       setFundingErrors({})
@@ -317,7 +324,7 @@ export const usePreQualificationForm = () => {
       const nextStep = navigateToStep !== undefined ? navigateToStep : 3
       setStep(nextStep)
       setMobileOpenIdx(nextStep)
-      
+
       initialSupportRef.current = { ...support }
     } catch (error: any) {
       if (error?.response?.data?.errors) {
@@ -331,6 +338,7 @@ export const usePreQualificationForm = () => {
           'estimated_business_credit_score': 'estimatedBusinessCreditScore',
           'existing_business_debt': 'existingBusinessDebt',
           'debt_balance': 'debtBalance',
+          'purpose_note': 'purposeNote',
           'notes': 'notes'
         }
         Object.keys(apiErrors).forEach(key => {
