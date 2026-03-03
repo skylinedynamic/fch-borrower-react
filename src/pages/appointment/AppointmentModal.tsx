@@ -38,6 +38,7 @@ interface DisplayData {
     assignedForAvatar: string | null;
     appointmentCode: string;
     category: string;
+    scheduledById: string | number | null;
 }
 
 const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, ref) => {
@@ -93,6 +94,7 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
         assignedForAvatar: null,
         appointmentCode: '',
         category: '',
+        scheduledById: null,
     });
 
     const [originalData, setOriginalData] = useState<any>(null);
@@ -348,6 +350,7 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
                 assignedForAvatar: apt.assigned_for?.image || apt.assigned_for?.avatar || apt.assigned_for?.profile_picture || null,
                 appointmentCode: apt.appointment_code || '',
                 category: apt.meeting_type || 'Business Review',
+                scheduledById: apt.scheduled_by?.id || null,
             });
 
             const h_full = start.getHours().toString().padStart(2, '0');
@@ -621,15 +624,18 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
                                                 <label className="uppercase-label mb-1 d-block">APPOINTMENT TITLE</label>
                                                 <h4 className="fw-bold mb-0 text-dark" style={{ fontSize: '22px', letterSpacing: '-0.3px', lineHeight: '1.4' }}>{displayData.title || "No Title"}</h4>
                                             </div>
-                                            <div className="flex-shrink-0">
-                                                <button
-                                                    className="btn btn-sm btn-soft-primary d-flex align-items-center px-3 fw-bold shadow-none"
-                                                    onClick={() => setViewMode(false)}
-                                                    style={{ height: '34px' }}
-                                                >
-                                                    <i className="ri-pencil-fill fs-14 me-1"></i> Edit
-                                                </button>
-                                            </div>
+
+                                            {(currentUser?.id == displayData.scheduledById) && (
+                                                <div className="flex-shrink-0">
+                                                    <button
+                                                        className="btn btn-sm btn-soft-primary d-flex align-items-center px-3 fw-bold shadow-none"
+                                                        onClick={() => setViewMode(false)}
+                                                        style={{ height: '34px' }}
+                                                    >
+                                                        <i className="ri-pencil-fill fs-14 me-1"></i> Edit
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -721,11 +727,13 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
                                         </div>
                                     </div>
 
-                                    <div className="mt-4 pt-4 border-top d-flex justify-content-end">
-                                        <button className="btn btn-soft-danger fw-bold text-uppercase fs-12 px-4 shadow-none" onClick={confirmDelete} disabled={isDeleting} style={{ height: '40px' }}>
-                                            <i className="ri-delete-bin-line me-1 align-middle"></i> {isDeleting ? "Deleting..." : "Delete"}
-                                        </button>
-                                    </div>
+                                    {(currentUser?.id == displayData.scheduledById) && (
+                                        <div className="mt-4 pt-4 border-top d-flex justify-content-end">
+                                            <button className="btn btn-soft-danger fw-bold text-uppercase fs-12 px-4 shadow-none" onClick={confirmDelete} disabled={isDeleting} style={{ height: '40px' }}>
+                                                <i className="ri-delete-bin-line me-1 align-middle"></i> {isDeleting ? "Deleting..." : "Delete"}
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             )
                         ) : (
