@@ -312,16 +312,16 @@ export default function Appointments() {
                           onClick={() => handleEventClick({ event: { id: evt.id } })}
                           style={{ transition: 'all 0.3s ease', borderRadius: '8px' }}>
                           <div className="card-body p-3">
-                            <div className="d-flex mb-2 align-items-center">
-                              <div className="flex-grow-1 d-flex align-items-center">
-                                <i className="ri-checkbox-blank-circle-fill me-2" style={{ color: eventStyles.text, fontSize: '10px' }}></i>
-                                <span className="fw-semibold text-dark fs-13">{dateStr}</span>
+                            <div className="d-flex mb-2 align-items-center justify-content-between flex-nowrap overflow-hidden">
+                              <div className="d-flex align-items-center flex-shrink-1 overflow-hidden">
+                                <i className="ri-checkbox-blank-circle-fill me-1 flex-shrink-0" style={{ color: eventStyles.text, fontSize: '8px' }}></i>
+                                <span className="fw-semibold text-dark fs-11 text-nowrap">{dateStr}</span>
                               </div>
-                              <div className="flex-shrink-0 d-flex gap-1">
-                                <span className="badge fw-medium px-2 py-1" style={{ backgroundColor: eventStyles.bg, color: eventStyles.text, borderRadius: '4px', fontSize: '11px' }}>
-                                  {startTime} to {endTime || 'N/A'}
+                              <div className="ms-auto flex-shrink-0 d-flex gap-1 align-items-center">
+                                <span className="badge fw-medium px-1 py-1 text-nowrap" style={{ backgroundColor: eventStyles.bg, color: eventStyles.text, borderRadius: '4px', fontSize: '10px' }}>
+                                  {startTime}-{endTime || 'N/A'}
                                 </span>
-                                <span className={`badge ${statusClass}`} style={{ borderRadius: '4px', fontSize: '11px' }}>{statusLabel}</span>
+                                <span className={`badge ${statusClass} text-nowrap`} style={{ borderRadius: '4px', fontSize: '10px', padding: '2px 4px' }}>{statusLabel}</span>
                               </div>
                             </div>
                             <h6 className="card-title mb-2 fs-16" style={{ color: eventStyles.text }}>{evt.title}</h6>
