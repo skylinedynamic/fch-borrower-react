@@ -88,6 +88,19 @@ export const useSummernote = (fieldName, fieldValue, onChange, options = {}, ena
                             onChange({ target: { name: fieldName, value: normalized } });
                             setTimeout(() => { isInternalChange.current = false; }, 150);
                         },
+                        onPaste: function (e) {
+                            const bufferText = ((e.originalEvent || e).clipboardData || (window as any).clipboardData).getData('Text');
+                            e.preventDefault();
+
+                            // Trim to remove any accidental leading/trailing spaces or empty lines from the source
+                            const cleanText = (bufferText || '').trim();
+
+                            if (cleanText) {
+                                setTimeout(() => {
+                                    $j(editorRef.current).summernote('insertText', cleanText);
+                                }, 10);
+                            }
+                        },
                         onInit: function () {
                             // No-op: Removed overflow: visible as it breaks Bootstrap modal scrolling.
                             // Summernote dialogs are handled by 'dialogsInBody: true' in config.
