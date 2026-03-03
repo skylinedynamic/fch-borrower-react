@@ -369,14 +369,14 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
                 timeEnd: hh_mm_end_full,
                 entity_id: String(apt.assigned_for?.entity_id || apt.assigned_for?.id || ''),
                 assigned_for: String(apt.assigned_for?.id || ''),
-                entity_type: apt.assigned_for?.entity_type?.toLowerCase() || 'borrower'
+                entity_type: apt.assigned_for?.entity_type ? apt.assigned_for.entity_type.toLowerCase() : 'borrower'
             });
 
             setIsMeetingWithChecked(apt.meeting_with === 1 || apt.meeting_with_host === 1);
 
             if (apt.assigned_for) {
-                const rawType = apt.assigned_for.entity_type || '';
-                const formattedType = rawType.toLowerCase();
+                const rawType = apt.assigned_for.entity_type;
+                const formattedType = rawType ? rawType.toLowerCase() : '';
                 setAssignedForType(formattedType);
                 setFormData(p => ({
                     ...p,
@@ -394,8 +394,8 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
                     date: start.toISOString().split('T')[0],
                     timeStart: hh_mm_full,
                     timeEnd: hh_mm_end_full,
-                    entity_id: apt.assigned_for.entity_id || apt.assigned_for.id,
-                    assigned_for: apt.assigned_for.id,
+                    entity_id: String(apt.assigned_for.entity_id || apt.assigned_for.id),
+                    assigned_for: String(apt.assigned_for.id),
                     entity_type: formattedType
                 });
             }
@@ -555,10 +555,10 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
 
     const assignedOptions = selectableUsers.map(u => ({
         label: u.name,
-        value: u.entity_type ? u.entity_id : u.id,
-        user_id: u.id,
+        value: String(u.entity_id || u.id),
+        user_id: String(u.id),
         entity_type: u.entity_type,
-        actual_entity_id: u.entity_id
+        actual_entity_id: String(u.entity_id || '')
     }));
 
     return (
