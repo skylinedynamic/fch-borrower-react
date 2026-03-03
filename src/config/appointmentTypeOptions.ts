@@ -72,3 +72,19 @@ export const TIMEZONE_OPTIONS = [
     { label: "Asia/Tokyo (GMT+09:00)", value: "Asia/Tokyo (GMT+09:00)" },
     { label: "Australia/Sydney (GMT+10:00)", value: "Australia/Sydney (GMT+10:00)" },
 ];
+
+export const APPOINTMENT_STATUS_OPTIONS = [
+    { label: "Pending", value: "pending" },
+    { label: "Confirmed", value: "confirmed" },
+    { label: "Cancelled", value: "cancelled" },
+    { label: "Completed", value: "completed" },
+    { label: "Expired", value: "expired" },
+];
+
+export const APPOINTMENT_STATUS_CONFIG: Record<string, { label: string, badgeClass: string }> = {
+    pending: { label: "Pending", badgeClass: "bg-warning-subtle text-warning" },
+    confirmed: { label: "Confirmed", badgeClass: "bg-success-subtle text-success" },
+    cancelled: { label: "Cancelled", badgeClass: "bg-danger-subtle text-danger" },
+    completed: { label: "Completed", badgeClass: "bg-primary-subtle text-primary" },
+    expired: { label: "Expired", badgeClass: "bg-secondary-subtle text-secondary" }
+};

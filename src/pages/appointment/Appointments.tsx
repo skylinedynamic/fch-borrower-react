@@ -19,6 +19,9 @@ import { useAuthStore } from '../../store/auth/authStore';
 // API Services
 import { fetchAppointments, updateAppointment } from '../../modules/appointment/services';
 
+// Config
+import { APPOINTMENT_STATUS_CONFIG } from '../../config/appointmentTypeOptions';
+
 // Components
 import AppointmentModal from './AppointmentModal';
 
@@ -31,9 +34,9 @@ export default function Appointments() {
 
 
   // Events data
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
 
   // Fetch Appointments
   useEffect(() => {
@@ -77,7 +80,7 @@ export default function Appointments() {
             style = PALETTE[1]; // Emerald
           } else {
             // Maximize difference using a prime shift
-            const colorIndex = (parseInt(apt.id) * 11) % PALETTE.length;
+            const colorIndex = (parseInt(String(apt.id)) * 11) % PALETTE.length;
             style = PALETTE[colorIndex];
           }
 
@@ -95,6 +98,7 @@ export default function Appointments() {
             location: apt.timezone,
             extendedProps: {
               colorKey: style.key,
+              colorClass: `apt-${style.key}`,
               bg: style.bg,
               text: style.text,
               border: style.border,
@@ -123,15 +127,15 @@ export default function Appointments() {
     }
   };
 
-  const str_dt_fmt = (date) => {
+  const str_dt_fmt = (date: any) => {
     return new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
   };
 
-  const tConvert = (timeStr) => {
+  const tConvert = (timeStr: any) => {
     if (!timeStr) return '';
     let [h, m] = timeStr.split(':');
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12 || 12;
+    const ampm = Number(h) >= 12 ? 'PM' : 'AM';
+    h = Number(h) % 12 || 12;
     return `${h}:${m} ${ampm}`;
   };
 
@@ -140,34 +144,34 @@ export default function Appointments() {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Start of today
 
-    const sorted = [...events].sort((a, b) => new Date(a.start) - new Date(b.start));
-    const fromToday = sorted.filter(e => new Date(e.start) >= today);
+    const sorted = [...events].sort((a: any, b: any) => new Date(a.start).getTime() - new Date(b.start).getTime());
+    const fromToday = sorted.filter((e: any) => new Date(e.start) >= today);
     setUpcomingEvents(fromToday.slice(0, 15)); // Show up to 15
   }, [events]);
 
   // Actions
-  const handleNewEvent = (dateStr) => {
+  const handleNewEvent = (dateStr?: any) => {
     // Permission check removed
 
     if (appointmentModalRef.current) {
-      appointmentModalRef.current.create(dateStr);
+      (appointmentModalRef.current as any).create(dateStr);
     }
   };
 
-  const handleEventClick = (info) => {
+  const handleEventClick = (info: any) => {
     if (appointmentModalRef.current) {
-      appointmentModalRef.current.show(info.event.id);
+      (appointmentModalRef.current as any).show(info.event.id);
     }
   };
 
-  const handleDropResize = async (info) => {
+  const handleDropResize = async (info: any) => {
     const calEvent = info.event;
     const start = calEvent.start;
     const end = calEvent.end || new Date(start.getTime() + 30 * 60000);
-    const duration = (end - start) / 60000;
+    const duration = (end.getTime() - start.getTime()) / 60000;
 
-    const toMySQLDate = (date) => {
-      const pad = (num) => (num < 10 ? '0' + num : num);
+    const toMySQLDate = (date: any) => {
+      const pad = (num: any) => (num < 10 ? '0' + num : num);
       return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
     };
 
@@ -279,11 +283,32 @@ export default function Appointments() {
                         key: evt.extendedProps.colorKey || 'info'
                       } : { bg: '#cff4fc', text: '#055160', border: '#9eeaf9', key: 'info' };
 
+                      const colorClass = evt.extendedProps?.colorClass || 'apt-blue';
+
+                      // Status Logic
+                      const status = evt.extendedProps?.status || '';
+                      const isPast = new Date() > s;
+                      let currentStatus = status;
+                      if (status === 'pending' && isPast) {
+                        currentStatus = 'expired';
+                      }
+
+                      const statusCfg = APPOINTMENT_STATUS_CONFIG[currentStatus];
+                      const statusLabel = statusCfg?.label || status;
+                      const statusClass = statusCfg?.badgeClass || 'bg-info-subtle text-info';
+
+                      let badge;
                       const startTime = s ? tConvert(s.toTimeString().slice(0, 5)) : '';
                       const endTime = e ? tConvert(e.toTimeString().slice(0, 5)) : '';
 
+                      if (evt.allDay || !e || !endTime) {
+                        badge = <small className="badge border-0 py-1 px-2 time-badge-item">Full day</small>;
+                      } else {
+                        badge = <small className="badge border-0 py-1 px-2 time-badge-item">{startTime} to {endTime}</small>;
+                      }
+
                       return (
-                        <div className="card mb-3 upcoming-event-card cursor-pointer shadow-none border" key={evt.id}
+                        <div className={`card mb-3 upcoming-event-card cursor-pointer shadow-none border ${colorClass}`} key={evt.id}
                           onClick={() => handleEventClick({ event: { id: evt.id } })}
                           style={{ transition: 'all 0.3s ease', borderRadius: '8px' }}>
                           <div className="card-body p-3">
@@ -292,23 +317,19 @@ export default function Appointments() {
                                 <i className="ri-checkbox-blank-circle-fill me-2" style={{ color: eventStyles.text, fontSize: '10px' }}></i>
                                 <span className="fw-semibold text-dark fs-13">{dateStr}</span>
                               </div>
-                              <div className="flex-shrink-0">
+                              <div className="flex-shrink-0 d-flex gap-1">
                                 <span className="badge fw-medium px-2 py-1" style={{ backgroundColor: eventStyles.bg, color: eventStyles.text, borderRadius: '4px', fontSize: '11px' }}>
                                   {startTime} to {endTime || 'N/A'}
                                 </span>
+                                <span className={`badge ${statusClass}`} style={{ borderRadius: '4px', fontSize: '11px' }}>{statusLabel}</span>
                               </div>
                             </div>
                             <h6 className="card-title mb-2 fs-16" style={{ color: eventStyles.text }}>{evt.title}</h6>
-                            {(() => {
-                              const desc = evt.extendedProps?.description || evt.description || "";
-                              const cleanDesc = desc.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
-                              const limit = 140;
-                              return (
-                                <p className="text-muted mb-0 fs-13" style={{ lineHeight: '1.5', letterSpacing: '0.1px' }}>
-                                  {cleanDesc.length > limit ? `${cleanDesc.substring(0, limit)}...` : cleanDesc}
-                                </p>
-                              );
-                            })()}
+                            <div
+                              className="text-muted text-truncate-two-lines mb-0 fs-13"
+                              style={{ lineHeight: '1.5', letterSpacing: '0.1px' }}
+                              dangerouslySetInnerHTML={{ __html: evt.extendedProps?.description || evt.description || "" }}
+                            />
                           </div>
                         </div>
                       )
@@ -436,7 +457,7 @@ export default function Appointments() {
               </div>
             </div>
 
-            
+
           </div>
         </div>
         <AppointmentModal ref={appointmentModalRef} onSuccess={loadAppointments} />
