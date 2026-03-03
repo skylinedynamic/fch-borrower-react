@@ -95,7 +95,7 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
         category: '',
     });
 
-    const [originalData, setOriginalData] = useState(null);
+    const [originalData, setOriginalData] = useState<any>(null);
 
     const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
     const [showDateSkeleton, setShowDateSkeleton] = useState(false);
@@ -112,7 +112,10 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
     // Initialize Modal
     useEffect(() => {
         if (eventModalRef.current && !modalInstance) {
-            const mod = new Modal(eventModalRef.current, { keyboard: false });
+            const mod = new Modal(eventModalRef.current, {
+                keyboard: false,
+                focus: false // Prevents Bootstrap from stealing focus from Summernote dialogs
+            });
             setModalInstance(mod);
         }
     }, []);
@@ -364,6 +367,9 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
                 date: start.toISOString().split('T')[0],
                 timeStart: hh_mm_full,
                 timeEnd: hh_mm_end_full,
+                entity_id: String(apt.assigned_for?.entity_id || apt.assigned_for?.id || ''),
+                assigned_for: String(apt.assigned_for?.id || ''),
+                entity_type: apt.assigned_for?.entity_type?.toLowerCase() || 'borrower'
             });
 
             setIsMeetingWithChecked(apt.meeting_with === 1 || apt.meeting_with_host === 1);
@@ -374,8 +380,8 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
                 setAssignedForType(formattedType);
                 setFormData(p => ({
                     ...p,
-                    entity_id: apt.assigned_for.entity_id || apt.assigned_for.id,
-                    assigned_for: apt.assigned_for.id,
+                    entity_id: String(apt.assigned_for.entity_id || apt.assigned_for.id),
+                    assigned_for: String(apt.assigned_for.id),
                     entity_type: formattedType
                 }));
 
@@ -556,7 +562,7 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
     }));
 
     return (
-        <div className="modal fade borrower-appointments-wrapper" id="appointmentModal" ref={eventModalRef} tabIndex="-1" aria-hidden="true">
+        <div className="modal fade borrower-appointments-wrapper" id="appointmentModal" ref={eventModalRef} aria-hidden="true">
             <div className="modal-dialog modal-dialog-centered modal-lg">
                 <div className="modal-content border-0 shadow-lg">
                     <div className="modal-header p-3 px-4" style={{ backgroundColor: '#f3f6f9', borderBottom: '1px solid #e9ebec' }}>

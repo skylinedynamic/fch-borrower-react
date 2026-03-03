@@ -319,3 +319,162 @@
         margin-bottom: 1rem;
     }
 }
+
+/* Premium Summernote Modal Design */
+.note-modal {
+    z-index: 2005 !important;
+    pointer-events: auto !important;
+}
+
+.note-modal .modal-dialog {
+    z-index: 2006 !important;
+    pointer-events: auto !important;
+}
+
+.note-modal-backdrop {
+    z-index: 2004 !important;
+}
+
+.note-dropdown-menu {
+    z-index: 2007 !important;
+    pointer-events: auto !important;
+}
+
+.note-popover {
+    z-index: 2005 !important;
+    pointer-events: auto !important;
+}
+
+.note-modal .modal-content {
+    border: none !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+    overflow: hidden;
+    pointer-events: auto !important;
+}
+
+.note-modal .modal-header {
+    background-color: #f3f6f9 !important;
+    border-bottom: 1px solid #e9ebec !important;
+    padding: 15px 20px !important;
+}
+
+.note-modal .modal-title {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #3b4b7a !important;
+    text-transform: none !important;
+}
+
+.note-modal .close {
+    font-size: 20px !important;
+    color: #878a99 !important;
+    opacity: 0.7;
+    transition: all 0.2s;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.note-modal .close:hover {
+    opacity: 1;
+    color: #405189 !important;
+}
+
+.note-modal .modal-body {
+    padding: 24px !important;
+}
+
+.note-form-group {
+    margin-bottom: 1.5rem !important;
+    padding: 0 !important;
+}
+
+.note-form-label {
+    display: block !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #4b5563 !important;
+    margin-bottom: 8px !important;
+}
+
+.note-input {
+    display: block !important;
+    width: 100% !important;
+    height: 38px !important;
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+    color: #212529 !important;
+    background-color: #fff !important;
+    background-clip: padding-box !important;
+    border: 1px solid #e2e5ec !important;
+    border-radius: 6px !important;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out !important;
+}
+
+.note-input:focus {
+    border-color: #405189 !important;
+    outline: 0 !important;
+    box-shadow: 0 0 0 0.125rem rgba(64, 81, 137, 0.1) !important;
+}
+
+.note-modal-footer {
+    padding: 15px 20px !important;
+    background-color: #fdfdfd !important;
+    border-top: 1px solid #e9ebec !important;
+    height: auto !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+}
+
+.note-btn-primary {
+    background-color: #405189 !important;
+    border-color: #405189 !important;
+    color: #fff !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    padding: 8px 20px !important;
+    border-radius: 6px !important;
+    transition: all 0.2s !important;
+    box-shadow: 0 2px 4px rgba(64, 81, 137, 0.2) !important;
+}
+
+.note-btn-primary:hover {
+    background-color: #354473 !important;
+    border-color: #354473 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(64, 81, 137, 0.3) !important;
+}
+
+.note-btn-primary:disabled {
+    background-color: #a5adc9 !important;
+    border-color: #a5adc9 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+.note-modal .checkbox {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.note-modal .checkbox label {
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #4b5563 !important;
+    cursor: pointer !important;
+    padding-left: 8px !important;
+}
+
+.note-modal .checkbox input[type="checkbox"] {
+    cursor: pointer !important;
+    width: 16px !important;
+    height: 16px !important;
+    border-radius: 4px !important;
+    border: 1px solid #e2e5ec !important;
+    accent-color: #405189 !important;
+}

@@ -42,8 +42,8 @@ export const useSummernote = (fieldName, fieldValue, onChange, options = {}, ena
             ['color', ['color']],
             ['para', ['ul', 'ol', 'paragraph']],
             ['table', ['table']],
-            ['insert', ['link', 'picture', 'video']],
-            ['view', ['codeview', 'help']]
+            ['insert', ['link', 'picture']],
+            ['view', ['help']]
         ]
     };
 
@@ -65,6 +65,13 @@ export const useSummernote = (fieldName, fieldValue, onChange, options = {}, ena
 
         if (isInitialized.current) return;
 
+        const handleFocus = (e) => {
+            const target = e.target;
+            if (target && (target.closest('.note-editor, .note-modal, .note-popover, .note-dropdown-menu, .note-children-container'))) {
+                e.stopImmediatePropagation();
+            }
+        };
+
         const initEditor = () => {
             const $j = window.jQuery || window.$;
             if ($j && editorRef.current && $j(editorRef.current).summernote) {
@@ -78,43 +85,30 @@ export const useSummernote = (fieldName, fieldValue, onChange, options = {}, ena
                             const normalized = normalize(contents);
                             isInternalChange.current = true;
                             lastContentRef.current = normalized;
-
-                            // Send normalized empty string if applicable
                             onChange({ target: { name: fieldName, value: normalized } });
+                            setTimeout(() => { isInternalChange.current = false; }, 150);
+                        },
+                        onPaste: function (e) {
+                            const bufferText = ((e.originalEvent || e).clipboardData || (window as any).clipboardData).getData('Text');
+                            e.preventDefault();
 
-                            setTimeout(() => {
-                                isInternalChange.current = false;
-                            }, 150);
+                            // Trim to remove any accidental leading/trailing spaces or empty lines from the source
+                            const cleanText = (bufferText || '').trim();
+
+                            if (cleanText) {
+                                setTimeout(() => {
+                                    $j(editorRef.current).summernote('insertText', cleanText);
+                                }, 10);
+                            }
                         },
                         onInit: function () {
-                            // Fix for nested modals - only apply if Summernote is inside a modal
-                            const parentModal = $j(editorRef.current).closest('.modal');
-
-                            if (parentModal.length > 0) {
-                                // Only add listeners if we're inside a modal
-                                $j(document).on('show.bs.modal.summernote', '.note-modal', function (e) {
-                                    // Temporarily allow overflow on parent modal
-                                    parentModal.css('overflow', 'visible');
-
-                                    // Ensure Summernote modal appears above parent
-                                    const parentZIndex = parseInt(parentModal.css('z-index')) || 1050;
-                                    $j(this).css('z-index', parentZIndex + 10);
-
-                                    // Fix backdrop z-index
-                                    setTimeout(() => {
-                                        $j('.modal-backdrop').last().css('z-index', parentZIndex + 9);
-                                    }, 50);
-                                });
-
-                                // Restore parent modal overflow when Summernote modal closes
-                                $j(document).on('hidden.bs.modal.summernote', '.note-modal', function (e) {
-                                    parentModal.css('overflow', '');
-                                });
-                            }
+                            // No-op: Removed overflow: visible as it breaks Bootstrap modal scrolling.
+                            // Summernote dialogs are handled by 'dialogsInBody: true' in config.
                         }
                     }
                 });
 
+                document.addEventListener('focusin', handleFocus, true);
                 $editor.summernote('code', initialCode);
                 lastContentRef.current = normalize(initialCode);
                 isInitialized.current = true;
@@ -126,9 +120,9 @@ export const useSummernote = (fieldName, fieldValue, onChange, options = {}, ena
         initEditor();
 
         return () => {
+            document.removeEventListener('focusin', handleFocus, true);
             if (isInitialized.current && $ && editorRef.current) {
                 try {
-                    // Clean up namespaced event listeners
                     $(document).off('.summernote');
                     $(editorRef.current).summernote('destroy');
                 } catch (e) { }
@@ -171,7 +165,7 @@ export const SUMMERNOTE_CONFIG = {
         ['para', ['ul', 'ol', 'paragraph']],
         ['color', ['color']],
         ['table', ['table']],
-        ['insert', ['link', 'picture', 'video']],
-        ['view', ['fullscreen', 'codeview', 'help']]
+        ['insert', ['link', 'picture']],
+        ['view', ['fullscreen', 'help']]
     ]
 };
