@@ -61,7 +61,7 @@ export default function Tier1Task({ tierId, task, isCurrentTier, isFirstTier, on
     return (
       <span
         id={badgeId}
-        className={`${colorClass} small text-decoration-underline d-flex align-items-center`}
+        className={`${colorClass} small text-decoration-underline d-flex align-items-center cursor-pointer`}
       >
         {icon}
         {statusText}
@@ -121,14 +121,14 @@ export default function Tier1Task({ tierId, task, isCurrentTier, isFirstTier, on
 
           <div className="d-flex align-items-center gap-2">
             {/* Status Display */}
-            {isRejected ? (
+            {(isRejected || isDone) ? (
               <>
                 {renderStatusBadge()}
                 <UncontrolledTooltip placement="top" target={badgeId}>
                   {task.note || 'No note provided.'}
                 </UncontrolledTooltip>
               </>
-            ) : (isDone || isProcessing) ? (
+            ) : isProcessing ? (
               renderStatusBadge()
             ) : null}
 

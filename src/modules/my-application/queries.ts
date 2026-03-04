@@ -13,7 +13,6 @@ export const useAdvisor = () => {
   return useQuery({
     queryKey: ['advisor'],
     queryFn: fetchAdvisor,
-    staleTime: 30 * 60 * 1000, // 30 minutes
   })
 }
 
