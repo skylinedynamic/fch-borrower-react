@@ -414,11 +414,11 @@ export default function Dashboard() {
                             </div>
                         </div>
 
-                        {/* Unpaid Invoices */}
+                        {/* Invoices */}
                         {invoicesData.length > 0 && (
                             <div className="card dashboard-card border-0 shadow-sm mb-4">
                                 <div className="card-header bg-transparent border-0 py-3">
-                                    <h5 className="card-title mb-0 flex-grow-1"><i className="ri-file-list-line me-2 text-danger"></i>Unpaid Invoices</h5>
+                                    <h5 className="card-title mb-0 flex-grow-1"><i className="ri-file-list-line me-2 text-danger"></i>Invoices</h5>
                                 </div>
                                 <div className="card-body pt-0">
                                     {invoicesData.length > 0 ? (
@@ -451,7 +451,7 @@ export default function Dashboard() {
                                                     <i className="ri-file-list-line fs-1"></i>
                                                 </div>
                                             </div>
-                                            <h6 className="fs-14 fw-semibold text-dark mb-2">No Unpaid Invoices</h6>
+                                            <h6 className="fs-14 fw-semibold text-dark mb-2">No Invoices Found</h6>
                                             <p className="text-muted fs-12 mb-0">You're all caught up! No outstanding invoices at the moment.</p>
                                         </div>
                                     )}

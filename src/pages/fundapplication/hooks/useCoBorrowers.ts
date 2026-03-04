@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import Modal from 'bootstrap/js/dist/modal'
 import { toast } from 'react-toastify'
 import type { CoBorrower } from '../types'
 
@@ -30,18 +31,16 @@ export const useCoBorrowers = () => {
   const [editIndex, setEditIndex] = useState<number | null>(null)
 
   const showModal = useCallback(() => {
-    const modalEl = typeof document !== 'undefined' ? document.getElementById(CO_BORROWER_MODAL_ID) : null
-    const bs = (window as any)?.bootstrap
-    if (modalEl && bs?.Modal) {
-      bs.Modal.getOrCreateInstance(modalEl).show()
+    const modalEl = document.getElementById(CO_BORROWER_MODAL_ID)
+    if (modalEl) {
+      Modal.getOrCreateInstance(modalEl).show()
     }
   }, [])
 
   const hideCoModal = useCallback(() => {
-    const modalEl = typeof document !== 'undefined' ? document.getElementById(CO_BORROWER_MODAL_ID) : null
-    const bs = (window as any)?.bootstrap
-    if (modalEl && bs?.Modal) {
-      bs.Modal.getInstance(modalEl)?.hide()
+    const modalEl = document.getElementById(CO_BORROWER_MODAL_ID)
+    if (modalEl) {
+      Modal.getInstance(modalEl)?.hide()
     }
   }, [])
 

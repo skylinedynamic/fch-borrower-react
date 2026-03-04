@@ -48,7 +48,7 @@ export default function TierTask({ task, isCurrentTier, isFirstTier, onTaskClick
   const isClickableForNavigation = false
   // Rejected tasks are NOT clickable for navigation/verification in the same way, but the "Submit Again" button handles it.
   
-  const isClickable = isClickableForVerification || isClickableForNavigation
+  const isClickable = isClickableForVerification || isClickableForNavigation || isRejected || isDone
   
   let statusIcon
   if (isDone) {
@@ -145,13 +145,13 @@ export default function TierTask({ task, isCurrentTier, isFirstTier, onTaskClick
             {/* Right Side Status */}
             <div className="task-action-col" style={{ minWidth: '140px' }}>
                 <div className="d-flex flex-column align-items-end gap-2">
-                    {isRejected ? (
+                    {(isRejected || isDone) ? (
                         <>
                             {renderStatusBadge()}
                             <UncontrolledTooltip placement="top" target={badgeId}>
-                                {task.rejection_reason || "No reason provided."}
+                                {task.note || "No note provided."}
                             </UncontrolledTooltip>
-                            {onVerifyClick && (
+                            {isRejected && onVerifyClick && (
                                 <div 
                                 className="status-badge pending clickable" 
                                 onClick={() => onVerifyClick(task)}
@@ -195,19 +195,17 @@ export default function TierTask({ task, isCurrentTier, isFirstTier, onTaskClick
       {/* Right Side Status */}
       <div className="task-action-col">
         <div className="d-flex gap-2 align-items-center">
-          {isRejected ? (
+          {(isRejected || isDone) ? (
             <>
-           
-             
-              {/* Rejected Badge with Tooltip */}
+              {/* Badge with Tooltip */}
               {renderStatusBadge()}
               
               <UncontrolledTooltip placement="top" target={badgeId}>
-                {task.rejection_reason || "No reason provided."}
+                {task.note || "No note provided."}
               </UncontrolledTooltip>
 
-                 {/* Submit Again Button */}
-              {onVerifyClick && (
+              {/* Submit Again Button */}
+              {isRejected && onVerifyClick && (
                  <div 
                  className="status-badge pending clickable" 
                  onClick={() => onVerifyClick(task)}
