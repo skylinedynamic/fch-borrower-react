@@ -469,7 +469,7 @@ export default function Dashboard() {
                                 </div>
                                 <h5 className="fs-15 fw-bold text-dark mb-2">Need Help?</h5>
                                 <p className="text-muted fs-13 mb-3">Contact our support team for any queries regarding your applications.</p>
-                                <Button label="Contact Support" className="btn btn-primary p-button-sm rounded-pill w-100" />
+                                <Button onClick={() => navigate('/appointment')} label="Contact Support" className="btn btn-primary p-button-sm rounded-pill w-100" />
                             </div>
                         </div>
 
