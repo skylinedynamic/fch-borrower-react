@@ -48,6 +48,7 @@ export interface DashboardInvoice {
     id: number;
     invoice_id: string;
     status: string;
+    status_class?: string;
     payment_amount: string;
     payment_date: string;
     currency: string;

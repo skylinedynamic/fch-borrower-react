@@ -8,6 +8,7 @@ import { ProgressBar } from 'primereact/progressbar';
 import { Chart } from 'primereact/chart';
 import { useAuthStore } from '../../store/auth';
 import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils';
+import { INVOICE_STATUS_TYPES } from '../../config/invoiceStatusOptions';
 import { useDashboard } from '../../modules/dashboard';
 import DashboardLoader from '../../components/Loader/DashboardLoader';
 
@@ -94,15 +95,27 @@ export default function Dashboard() {
     }) || [];
 
     // Process invoices data
-    const invoicesData = dashboardData?.data.invoices.map(invoice => ({
-        id: invoice.id,
-        invoice_id: invoice.invoice_id,
-        payment_amount: parseFloat(invoice.payment_amount || 0),
-        payment_date: invoice.payment_date,
-        status: invoice.status,
-        currency_symbol: invoice.currency_symbol,
-        formatted_created_at: invoice.formatted_created_at
-    })) || [];
+    const invoicesData = dashboardData?.data.invoices.map(invoice => {
+        let status_class = 'info';
+        const st = invoice.status;
+        if (st === INVOICE_STATUS_TYPES.PAID) status_class = 'success';
+        else if (st === INVOICE_STATUS_TYPES.UNPAID || st === INVOICE_STATUS_TYPES.OVERDUE) status_class = 'danger';
+        else if (st === INVOICE_STATUS_TYPES.PENDING) status_class = 'warning';
+
+        return {
+            id: invoice.id,
+            invoice_id: invoice.invoice_id,
+            payment_amount: parseFloat(invoice.payment_amount || 0),
+            payment_date: invoice.payment_date,
+            status: invoice.status,
+            status_class: status_class,
+            currency_symbol: invoice.currency_symbol,
+            formatted_created_at: invoice.formatted_created_at
+        };
+    }) || [];
+
+    const pendingInvoices = invoicesData.filter(invoice => invoice.status !== INVOICE_STATUS_TYPES.PAID);
+
 
     // Credit Score Mock Data (keep as mock since not in API)
     const creditScore = 740;
@@ -171,7 +184,7 @@ export default function Dashboard() {
             <div className="container-fluid">
 
                 {/* --- Header Section --- */}
-                {isRestricted && (
+                {isRestricted && pendingInvoices.length > 0 && (
                     <div className="row mb-4">
                         <div className="col-12">
                             <div className="card bg-danger-subtle border-0 shadow-sm border-start border-danger border-3">
@@ -185,12 +198,18 @@ export default function Dashboard() {
                                             </div>
                                         </div>
                                         <div className="flex-grow-1">
-                                            <h5 className="fs-16 fw-bold text-danger mb-1">Currently you have pending invoice</h5>
-                                            <p className="text-muted mb-0 fs-14">Please pay your invoice. Click here to go to the invoice and complete the payment.</p>
+                                            <h5 className="fs-16 fw-bold text-danger mb-1">
+                                                {pendingInvoices.length === 1 ? "You currently have a pending invoice" : "You currently have pending invoices"}
+                                            </h5>
+                                            <p className="text-muted mb-0 fs-14">
+                                                {pendingInvoices.length === 1
+                                                    ? "Please pay your invoice. Click here to go to the invoice and complete the payment."
+                                                    : "Please pay your invoices. Click here to go to the invoices and complete the payment."}
+                                            </p>
                                         </div>
                                         <div className="flex-shrink-0 ms-3">
                                             <Button
-                                                label="View & Pay Invoices"
+                                                label={pendingInvoices.length === 1 ? "View & Pay Invoice" : "View & Pay Invoices"}
                                                 icon="ri-bill-line"
                                                 className="p-button-danger rounded-3"
                                                 onClick={() => navigate('/invoices')}
@@ -428,6 +447,7 @@ export default function Dashboard() {
                                                     <tr>
                                                         <th className="py-3">Invoice ID</th>
                                                         <th className="py-3">Amount</th>
+                                                        <th className="py-3 text-end">Status</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -438,6 +458,11 @@ export default function Dashboard() {
                                                             </td>
                                                             <td className="py-3">
                                                                 {invoiceAmountTemplate(invoice)}
+                                                            </td>
+                                                            <td className="py-3 text-end">
+                                                                <span className={`badge bg-${invoice.status_class}-subtle text-${invoice.status_class} px-2 py-1 rounded-pill fw-bold fs-10 text-uppercase`}>
+                                                                    {invoice.status}
+                                                                </span>
                                                             </td>
                                                         </tr>
                                                     ))}
