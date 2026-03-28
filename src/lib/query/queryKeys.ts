@@ -58,4 +58,8 @@ export const queryKeys = {
     federalCompliance: () => [...queryKeys.fundingApplication.all, 'federalCompliance'] as const,
     documents: (id: number | null) => [...queryKeys.fundingApplication.all, 'documents', id] as const,
   },
+  agreement: {
+    all: ['agreement'] as const,
+    check: () => [...queryKeys.agreement.all, 'check'] as const,
+  },
 } as const

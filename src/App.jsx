@@ -23,7 +23,7 @@ import ProgressTracker from '../src/pages/credit-builder/creditprogresstracker/P
 import CreditResources from '../src/pages/credit-builder/creditresources/CreditResources.tsx'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import ProfileCompleteCheckModal from './components/ProfileCompleteCheckModal/ProfileCompleteCheckModal'
+import GlobalModals from './components/Common/Modals/GlobalModals'
 
 
 export default function App() {
@@ -55,7 +55,7 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={
             <>
-              <ProfileCompleteCheckModal />
+              <GlobalModals />
               <Layout />
             </>
           }>
