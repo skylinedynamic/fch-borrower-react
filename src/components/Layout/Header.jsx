@@ -3,7 +3,7 @@ import { clearAuth } from '../../lib/auth'
 import { useAuthStore } from '../../store/auth'
 import { logout } from '../../modules/auth/services'
 import avatarDefault from '../../../assets/images/users/avatar-default.jpg'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 
 export default function Header() {
   const navigate = useNavigate()
@@ -191,6 +191,12 @@ export default function Header() {
                   <i className="mdi mdi-lock-reset text-muted fs-16 align-middle me-1"></i>
                   <span className="align-middle">Change Password</span>
                 </a>
+                {user?.is_agreement_signed && (
+                  <Link className="dropdown-item" to={`/download-agreement/${user.id}`} target="_blank">
+                    <i className="mdi mdi-file-document-outline text-muted fs-16 align-middle me-1"></i>
+                    <span className="align-middle">My Agreement</span>
+                  </Link>
+                )}
                 <a className="dropdown-item" href="#" onClick={handleLogout}><i className="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Logout</span></a>
               </div>
             </div>

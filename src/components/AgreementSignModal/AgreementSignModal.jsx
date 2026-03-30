@@ -3,16 +3,18 @@ import { toast } from 'react-toastify'
 import './AgreementSignModal.css'
 import { useAuthStore } from '../../store/auth/authStore'
 import { useCheckAgreementSign, useSubmitAgreementSign } from '../../modules/agreement/queries'
+import { AgreementSignModalLoader } from '../Loader/AgreementLoader.jsx'
 
 const AgreementSignModal = () => {
   const [visible, setVisible] = useState(false)
   const [template, setTemplate] = useState(null)
   const [isAgreed, setIsAgreed] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
   const iframeRef = useRef(null)
-  const { user } = useAuthStore()
+  const { user, setCredentials } = useAuthStore()
   
-  const { data: checkData } = useCheckAgreementSign()
+  const { data: checkData, isLoading: loadingCheck } = useCheckAgreementSign()
   const submitSignature = useSubmitAgreementSign()
 
   useEffect(() => {
@@ -141,7 +143,7 @@ const AgreementSignModal = () => {
                   cloneInputs[i].innerHTML = sourceInputs[i].value;
                 }
               }
-              return clone.innerHTML;
+              return clone.outerHTML;
             };
           `;
           head.appendChild(script);
@@ -159,7 +161,6 @@ const AgreementSignModal = () => {
 
       const isValid = iframeWindow.validateDoc?.()?.valid ?? true;
       if (!isValid) {
-        toast.error("Please fill all required fields before signing.")
         setIsLoading(false)
         return;
       }
@@ -167,18 +168,23 @@ const AgreementSignModal = () => {
       const filledHtml = iframeWindow.getFilledHTML?.() || template.template_html;
 
       await submitSignature.mutateAsync({
-        agreement_id: template.id,
-        signed_html: filledHtml
+        agreement_template_id: template.id,
+        content_html: filledHtml
       })
-      toast.success("Agreement signed successfully!")
-      setVisible(false)
-      window.location.reload()
+      setIsSuccess(true)
+      setCredentials({
+        token: useAuthStore.getState().token,
+        user: { ...user, is_agreement_signed: true },
+        rememberMe: useAuthStore.getState().rememberMe
+      })
     } catch (error) {
       toast.error("Failed to sign agreement. Please try again.")
     } finally {
       setIsLoading(false)
     }
   }
+
+  if (loadingCheck && visible) return <AgreementSignModalLoader />;
 
   if (!visible || !template) return null;
 
@@ -237,49 +243,70 @@ const AgreementSignModal = () => {
               <div className="asm-header-meta">MANDATORY ACTION</div>
             </div>
 
-            <div className="asm-document-frame">
-              <iframe
-                ref={iframeRef}
-                className="asm-iframe"
-                title="Agreement Content"
-                srcDoc={template.template_html}
-              />
-            </div>
-
-            <div className="asm-action-footer">
-              <div className="asm-action-flex">
-                <label className="asm-checkbox-container">
-                  <input
-                    type="checkbox"
-                    className="asm-hidden-checkbox"
-                    checked={isAgreed}
-                    onChange={(e) => setIsAgreed(e.target.checked)}
-                  />
-                  <div className={`asm-custom-checkbox ${isAgreed ? 'checked' : ''}`}>
-                    {isAgreed && <i className="ri-check-line"></i>}
-                  </div>
-                  <span className="asm-checkbox-label">I have reviewed and agree to the terms of this agreement.</span>
-                </label>
-
-                <button
-                  className={`asm-btn-submit ${(!isAgreed || isLoading) ? 'asm-btn-disabled' : ''}`}
-                  disabled={!isAgreed || isLoading}
-                  onClick={handleSign}
+            {isSuccess ? (
+              <div className="asm-success-screen">
+                <div className="asm-success-icon-wrapper">
+                  <i className="ri-checkbox-circle-fill"></i>
+                </div>
+                <h3 className="asm-success-title">Thank You!</h3>
+                <p className="asm-success-desc">
+                  Your agreement has been successfully signed. You now have full access to all platform features.
+                </p>
+                <button 
+                  className="asm-btn-proceed" 
+                  onClick={() => setVisible(false)}
                 >
-                  {isLoading ? (
-                    <>
-                      <div className="asm-spinner"></div>
-                      <span>Processing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <i className="ri-quill-pen-line"></i>
-                      <span>Accept & Continue</span>
-                    </>
-                  )}
+                  Proceed to Dashboard
+                  <i className="ri-arrow-right-line"></i>
                 </button>
               </div>
-            </div>
+            ) : (
+              <>
+                <div className="asm-document-frame">
+                  <iframe
+                    ref={iframeRef}
+                    className="asm-iframe"
+                    title="Agreement Content"
+                    srcDoc={template.template_html}
+                  />
+                </div>
+
+                <div className="asm-action-footer">
+                  <div className="asm-action-flex">
+                    <label className="asm-checkbox-container">
+                      <input
+                        type="checkbox"
+                        className="asm-hidden-checkbox"
+                        checked={isAgreed}
+                        onChange={(e) => setIsAgreed(e.target.checked)}
+                      />
+                      <div className={`asm-custom-checkbox ${isAgreed ? 'checked' : ''}`}>
+                        {isAgreed && <i className="ri-check-line"></i>}
+                      </div>
+                      <span className="asm-checkbox-label">I have reviewed and agree to the terms of this agreement.</span>
+                    </label>
+
+                    <button
+                      className={`asm-btn-submit ${(!isAgreed || isLoading) ? 'asm-btn-disabled' : ''}`}
+                      disabled={!isAgreed || isLoading}
+                      onClick={handleSign}
+                    >
+                      {isLoading ? (
+                        <>
+                          <div className="asm-spinner"></div>
+                          <span>Processing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <i className="ri-quill-pen-line"></i>
+                          <span>Accept & Continue</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -26,3 +26,22 @@ export const submitAgreementSign = async (data: SubmitAgreementSignRequest) => {
         throw error;
     }
 };
+/**
+ * Download signed agreement as PDF.
+ */
+export const downloadAgreementSign = async (userId?: number | string) => {
+    const url = userId ? `/borrower/agreement-sign/download/${userId}` : '/borrower/agreement-sign/download'
+    const response = await apiClient.get(url, {
+        responseType: 'blob'
+    })
+    return response
+}
+
+/**
+ * Fetch the signed agreement HTML snapshot for preview.
+ */
+export const fetchSignedAgreementHtml = async (userId?: number | string): Promise<CheckAgreementSignResponse> => {
+    const url = userId ? `/borrower/agreement-sign/signed-html/${userId}` : '/borrower/agreement-sign/signed-html'
+    const res = await apiClient.get(url)
+    return res.data
+}

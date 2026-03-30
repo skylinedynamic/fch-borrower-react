@@ -24,6 +24,8 @@ import CreditResources from '../src/pages/credit-builder/creditresources/CreditR
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import GlobalModals from './components/Common/Modals/GlobalModals'
+import DownloadAgreement from './pages/documents/DownloadAgreement.jsx'
+import ErrorPage from './pages/Utility/ErrorPage.jsx'
 
 
 export default function App() {
@@ -53,6 +55,7 @@ export default function App() {
         </Route>
 
         <Route element={<ProtectedRoute />}>
+          <Route path="download-agreement/:userId" element={<DownloadAgreement />} />
           <Route element={
             <>
               <GlobalModals />
@@ -85,6 +88,9 @@ export default function App() {
 
             <Route path="documents" element={<Documents />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="access-denied" element={<ErrorPage status={403} />} />
+            <Route path="not-found" element={<ErrorPage status={404} />} />
+            <Route path="*" element={<ErrorPage status={404} />} />
           </Route>
         </Route>
       </Routes>
