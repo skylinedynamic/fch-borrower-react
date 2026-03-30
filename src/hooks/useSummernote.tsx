@@ -42,7 +42,7 @@ export const useSummernote = (fieldName, fieldValue, onChange, options = {}, ena
             ['color', ['color']],
             ['para', ['ul', 'ol', 'paragraph']],
             ['table', ['table']],
-            ['insert', ['link', 'picture']],
+            ['insert', ['link']],
             ['view', ['help']]
         ]
     };

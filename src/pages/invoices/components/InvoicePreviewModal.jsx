@@ -288,20 +288,6 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
                                                         )}
                                                         Download Invoice
                                                     </button>
-                                                    {((displayInvoice?.borrower_id && user?.is_host === 0) || user?.is_host === 1) && (
-                                                        <button 
-                                                            className="btn btn-danger shadow-sm" 
-                                                            onClick={handleSend}
-                                                            disabled={sendLoading}
-                                                        >
-                                                            {sendLoading ? (
-                                                                <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                                                            ) : (
-                                                                <i className="ri-send-plane-fill align-bottom me-1"></i>
-                                                            )}
-                                                            Send Invoice
-                                                        </button>
-                                                    )}
                                                 </div>
                                             </div>
                                         </div>
