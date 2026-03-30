@@ -20,17 +20,17 @@ const DownloadAgreement = () => {
     const iframeRef = useRef(null);
 
     useEffect(() => {
-        if (!userId) { 
+        if (!userId) {
             navigate('/not-found');
-            return; 
+            return;
         }
 
         fetchSignedAgreementHtml(userId)
             .then(res => {
                 let html = res?.data?.content_html;
-                if (!html) { 
+                if (!html) {
                     navigate('/not-found');
-                    return; 
+                    return;
                 }
 
                 // NUCLEAR FIXES: This handles everything by injecting at the very end of the document
@@ -45,18 +45,25 @@ const DownloadAgreement = () => {
                     .ab4-sig-col--drop img { width: 150px !important; mix-blend-mode: multiply !important; max-height: none !important; }
                     .ab4-sig-meta { border-top: 1px solid #333 !important; }
                     
-                    /* Typography: Reduce label to 12px, Value to 13px */
-                    .ab4-field-lbl, .ab4-val-text { 
-                        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
-                    }
-                    .ab4-field-lbl { font-size: 12px !important; font-weight: 500 !important; color: #64748b !important; }
+                    /* Typography: Label and Value to 12px, light border bottom */
+                    .ab4-field-lbl, .p-label { font-size: 12px !important; font-weight: 400 !important; color: #000000ff !important; }
                     .ab4-val-text { 
                         font-size: 12px !important; 
-                        font-weight: 600 !important; 
+                        font-weight: 400 !important; 
                         color: #000 !important; 
-                        border: none !important; /* REMOVE UNDERLINE */
+                        border-bottom: 1px solid #e2e8f0 !important;
                         display: inline-block !important;
+                        width: 50% !important;
                     }
+                    .p-sig-box{
+                        border: none!important;
+                    }
+                    .p-sig-meta{
+                        margin-top: 5px!important;
+                    }    
+                    .p-sig-meta{
+                        color: #333435ff !important;
+                    }    
                     
                     /* Reset .p-field margins and configure field flex layout */
                     .p-field { margin-bottom: 0 !important; }
@@ -118,7 +125,7 @@ const DownloadAgreement = () => {
                     }, ms)
                 );
             })
-            .catch(e => { 
+            .catch(e => {
                 navigate('/not-found');
             })
             .finally(() => setLoading(false));

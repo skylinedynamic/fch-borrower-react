@@ -24,7 +24,7 @@ import CreditResources from '../src/pages/credit-builder/creditresources/CreditR
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import GlobalModals from './components/Common/Modals/GlobalModals'
-import DownloadAgreement from './pages/documents/DownloadAgreement.jsx'
+import DownloadAgreement from './pages/agreement/DownloadAgreement.jsx'
 import ErrorPage from './pages/Utility/ErrorPage.jsx'
 
 
