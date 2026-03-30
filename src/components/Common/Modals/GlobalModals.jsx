@@ -13,7 +13,7 @@ export default function GlobalModals() {
     return (
         <>
             {/* Agreement Signature Modal (Borrower specific) */}
-            {!user?.is_agreement_signed && <AgreementSignModal />}
+            <AgreementSignModal />
             
             {/* Profile Completion Check Modal */}
             <ProfileCompleteCheckModal />

@@ -172,11 +172,6 @@ const AgreementSignModal = () => {
         content_html: filledHtml
       })
       setIsSuccess(true)
-      setCredentials({
-        token: useAuthStore.getState().token,
-        user: { ...user, is_agreement_signed: true },
-        rememberMe: useAuthStore.getState().rememberMe
-      })
     } catch (error) {
       toast.error("Failed to sign agreement. Please try again.")
     } finally {
@@ -189,8 +184,9 @@ const AgreementSignModal = () => {
   if (!visible || !template) return null;
 
   return (
-    <div className="asm-overlay">
-      <div className="asm-main-wrapper">
+    <>
+      <div className="asm-overlay" />
+      <div className="asm-main-wrapper" role="dialog" aria-modal="true">
         <div className="asm-modal-card">
           <div className="asm-side-info">
             <div className="asm-brand-area">
@@ -248,13 +244,20 @@ const AgreementSignModal = () => {
                 <div className="asm-success-icon-wrapper">
                   <i className="ri-checkbox-circle-fill"></i>
                 </div>
-                <h3 className="asm-success-title">Thank You!</h3>
+                <h2 className="asm-success-title">Thank You!</h2>
                 <p className="asm-success-desc">
                   Your agreement has been successfully signed. You now have full access to all platform features.
                 </p>
                 <button 
                   className="asm-btn-proceed" 
-                  onClick={() => setVisible(false)}
+                  onClick={() => {
+                    setCredentials({
+                      token: useAuthStore.getState().token,
+                      user: { ...user, is_agreement_signed: true },
+                      rememberMe: useAuthStore.getState().rememberMe
+                    })
+                    setVisible(false)
+                  }}
                 >
                   Proceed to Dashboard
                   <i className="ri-arrow-right-line"></i>
@@ -310,7 +313,7 @@ const AgreementSignModal = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
