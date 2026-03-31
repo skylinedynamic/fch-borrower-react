@@ -309,7 +309,7 @@ export default function OwnershipInformationStep({
           <input
             type="text"
             className={`form-control ${hasError('ssn') ? 'is-invalid' : ''}`}
-            placeholder="Enter social security number (SSN)"
+            placeholder="xxx-xx-xxxx"
             value={owner.ssn}
             onChange={(e) => setOwner({ ...owner, ssn: formatSSN(e.target.value) })}
           />

@@ -269,7 +269,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit, isEditi
                   <input
                     type="text"
                     className={`form-control ${hasError('ssn') ? 'is-invalid' : ''}`}
-                    placeholder="Enter Social Security Number (SSN)"
+                    placeholder="xxx-xx-xxxx"
                     value={coDraft.ssn}
                     onChange={(e) => setCoDraft({ ...coDraft, ssn: formatSSN(e.target.value) })}
                   />
