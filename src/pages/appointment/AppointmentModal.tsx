@@ -58,7 +58,7 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
 
     const currentUser = useAuthStore((state) => state.user);
 
-    const isHost = currentUser?.is_host === 1;
+    const isHost = currentUser?.is_host == 1;
 
     const [assignedForType, setAssignedForType] = useState<string>('');
     const [selectableUsers, setSelectableUsers] = useState<any[]>([]);
