@@ -65,8 +65,16 @@ const DownloadAgreement = () => {
                         color: #333435ff !important;
                     }    
                     
+                    .p-sig-grid .p-field.is-invalid{
+                        border: none!important;
+                        background: transparent!important;
+                        box-shadow: none!important;
+                    }
                     /* Reset .p-field margins and configure field flex layout */
-                    .p-field { margin-bottom: 0 !important; }
+                    .p-field { margin-bottom: 10px !important; }
+                    .p-checkbox.ab4-val-text{
+                        display: none !important;
+                    }
                     .ab4-field { 
                         display: flex !important; 
                         align-items: baseline !important; 

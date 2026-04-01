@@ -2980,18 +2980,13 @@
 .flatpickr-weekday,
 .flatpickr-months .flatpickr-month,
 .flatpickr-current-month .flatpickr-monthDropdown-months {
-  background: #001f3f !important;
-  color: rgb(255 255 255) !important;
+  color: rgb(0, 0, 0) !important;
 }
+
 
 .flatpickr-weekday,
 .flatpickr-weekdays {
-  background: #001f3f !important;
-  color: rgb(255 255 255) !important;
-}
-
-.flatpickr-weekday {
-  background: #001f3f !important;
+  color: rgb(0, 0, 0) !important;
 }
 
 .flatpickr-day.selected,
@@ -3312,18 +3307,12 @@
 .flatpickr-weekday,
 .flatpickr-months .flatpickr-month,
 .flatpickr-current-month .flatpickr-monthDropdown-months {
-  background: #001f3f !important;
-  color: rgb(255 255 255) !important;
+  color: rgb(0, 0, 0) !important;
 }
 
 .flatpickr-weekday,
 .flatpickr-weekdays {
-  background: #001f3f !important;
-  color: rgb(255 255 255) !important;
-}
-
-.flatpickr-weekday {
-  background: #001f3f !important;
+  color: rgb(0, 0, 0) !important;
 }
 
 .flatpickr-day.selected,
@@ -3579,18 +3568,12 @@
 .flatpickr-weekday,
 .flatpickr-months .flatpickr-month,
 .flatpickr-current-month .flatpickr-monthDropdown-months {
-  background: #001f3f !important;
-  color: rgb(255 255 255) !important;
+  color: rgb(0, 0, 0) !important;
 }
 
 .flatpickr-weekday,
 .flatpickr-weekdays {
-  background: #001f3f !important;
-  color: rgb(255 255 255) !important;
-}
-
-.flatpickr-weekday {
-  background: #001f3f !important;
+  color: rgb(0, 0, 0) !important;
 }
 
 .flatpickr-day.selected,

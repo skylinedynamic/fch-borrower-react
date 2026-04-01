@@ -1767,7 +1767,7 @@
 }
 
 .flatpickr-months {
-  background: #3b518d;
+  background: #163968;
   color: #fff;
   padding: 12px 0;
 }
@@ -1780,7 +1780,7 @@
 
 .flatpickr-current-month .flatpickr-monthDropdown-months {
   background: #3b518d;
-  color: #fff;
+  color: #fff !important;
   font-weight: 800;
   padding: 0 5px
 }
@@ -1839,9 +1839,10 @@
 
 .flatpickr-day.today {
   border-color: transparent !important;
-  color: #334155 !important;
+  color: #eff1f3 !important;
   font-weight: 800;
   text-decoration: underline;
+  background: #163867 !important;
 }
 
 .flatpickr-day:hover {
