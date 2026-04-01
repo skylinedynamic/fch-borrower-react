@@ -82,6 +82,12 @@ const DownloadAgreement = () => {
                         margin-bottom: 8px !important;
                     }
                     
+                    /* Height and Min-Height adjustments as requested */
+                    .ab4-doc, .ab4-root, html, body { 
+                        height: 100% !important; 
+                        min-height: 0 !important; 
+                    }
+
                     /* General page breaks and layout spacing */
                     .page-break, .page-sep { display: block; height: 15px; background: #35434d; }
                     @media print { .page-break { display: none; page-break-before: always; } }
@@ -93,15 +99,20 @@ const DownloadAgreement = () => {
                             el.textContent = el.textContent.replace('*', '').trim();
                         });
 
-                        // 2. Transform inputs to bold text spans
-                        document.querySelectorAll('input, textarea, select').forEach(el => {
+                        // 2. Transform inputs to bold text spans (excluding file inputs for fakepath issue)
+                        document.querySelectorAll('input:not([type="file"]):not([type="hidden"]):not([type="submit"]), textarea, select').forEach(el => {
                             const span = document.createElement('span');
                             span.className = (el.className || '') + ' ab4-val-text';
                             span.textContent = el.value || el.getAttribute('value') || '';
                             el.parentNode.replaceChild(span, el);
                         });
 
-                        // 3. Clear styling for sig/date boxes
+                        // 3. Hide file inputs and buttons for static view
+                        document.querySelectorAll('input[type="file"], input[type="submit"], input[type="button"], button:not(.da-print-btn)').forEach(el => {
+                            el.style.display = 'none';
+                        });
+
+                        // 4. Clear styling for sig/date boxes
                         document.querySelectorAll('.ab4-sig-col, .ab4-sig-col--date').forEach(el => {
                             el.style.setProperty('border', 'none', 'important');
                             el.style.setProperty('background', 'transparent', 'important');
@@ -143,16 +154,15 @@ const DownloadAgreement = () => {
         iframeRef.current?.contentWindow?.print();
     };
 
-    if (loading) return (
-        <div className="da-loading">
-            <div className="spinner-border text-primary" role="status" />
-        </div>
-    );
-
     return (
         <div className="da-page">
+            {loading && (
+                <div className="da-loading">
+                    <div className="spinner-border text-primary" role="status" />
+                </div>
+            )}
 
-            <div className="da-toolbar">
+            <div className="da-toolbar" style={loading ? { visibility: 'hidden' } : {}}>
                 <div className="da-toolbar-brand">
                     <i className="ri-shield-check-fill" />
                     <span>VERIFIED AGREEMENT</span>
