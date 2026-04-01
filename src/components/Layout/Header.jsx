@@ -191,7 +191,7 @@ export default function Header() {
                   <i className="mdi mdi-lock-reset text-muted fs-16 align-middle me-1"></i>
                   <span className="align-middle">Change Password</span>
                 </a>
-                {user?.is_agreement_signed && (
+                {!!user?.is_agreement_signed && (
                   <Link className="dropdown-item" to={`/download-agreement/${user.id}`} target="_blank">
                     <i className="mdi mdi-file-document-outline text-muted fs-16 align-middle me-1"></i>
                     <span className="align-middle">My Agreement</span>
