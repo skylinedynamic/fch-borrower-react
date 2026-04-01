@@ -156,9 +156,40 @@ const DownloadAgreement = () => {
 
     return (
         <div className="da-page">
+            <style>{`
+                .da-loading {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(255, 255, 255, 0.9);
+                    backdrop-filter: blur(5px);
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 9999;
+                }
+                .da-loading-spinner {
+                    width: 3rem;
+                    height: 3rem;
+                    border-width: 0.25em;
+                }
+                .da-loading-text {
+                    margin-top: 20px;
+                    font-weight: 600;
+                    color: #4f46e5;
+                    font-size: 14px;
+                    letter-spacing: 0.1em;
+                    text-transform: uppercase;
+                }
+            `}</style>
+
             {loading && (
                 <div className="da-loading">
-                    <div className="spinner-border text-primary" role="status" />
+                    <div className="spinner-border text-primary da-loading-spinner" role="status" />
+                    <div className="da-loading-text">Preparing Agreement...</div>
                 </div>
             )}
 
