@@ -8,6 +8,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import TabLoader from '../../../components/Loader/TabLoader'
 import { formatPhoneNumber, formatDUNS, formatEIN } from '../../../utils/formatters'
+import Flatpickr from 'react-flatpickr'
+import 'flatpickr/dist/flatpickr.css'
 
 interface BusinessDetailsProps {
   data: SaveBusinessDetailsRequest
@@ -67,6 +69,8 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
         business_website: apiData.business_website,
         business_entity_type: apiData.business_entity_type,
         business_industry_type: apiData.business_industry_type,
+        business_start_date: apiData.business_start_date,
+        business_credit_score: apiData.business_credit_score,
       })
     }
   }, [isSuccess, apiData])
@@ -321,6 +325,49 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
           />
           {errors.business_entity_type && <div className="invalid-feedback d-block">{errors.business_entity_type}</div>}
         </div>
+
+
+        {/* New Field: Business Start Date */}
+        <div className="col-md-6">
+          <label className="form-label">Business Start Date <span className="text-danger">*</span></label>
+          <Flatpickr
+            className={`form-control ${errors.business_start_date ? 'is-invalid' : ''}`}
+            value={data.business_start_date || ''}
+            onChange={(dates, dateStr) => {
+              onChange({ ...data, business_start_date: dateStr })
+            }}
+            options={{
+              dateFormat: "Y-m-d",
+              altInput: true,
+              altFormat: "j M, Y",
+              maxDate: "today",
+              yearDropdown: true,
+              yearRange: "1900:" + new Date().getFullYear(),
+            } as any}
+            placeholder="Select business start date"
+          />
+          {errors.business_start_date && (
+            <div className="invalid-feedback d-block">{errors.business_start_date}</div>
+          )}
+        </div>
+
+        {/* New Field: Business Credit Score */}
+        <div className="col-md-6">
+          <label className="form-label">Business Credit Score <span className="text-danger">*</span></label>
+          <input
+            type="number"
+            placeholder="Enter credit score"
+            className={`form-control ${errors.business_credit_score ? 'is-invalid' : ''}`}
+            value={data.business_credit_score || ''}
+            onChange={(e) => onChange({ ...data, business_credit_score: Number(e.target.value) })}
+            min={0}
+            max={850}
+          />
+          {errors.business_credit_score && (
+            <div className="invalid-feedback d-block">{errors.business_credit_score}</div>
+          )}
+        </div>
+
         <div className="col-md-6">
           <label className="form-label">Business Website</label>
           <input

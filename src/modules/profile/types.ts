@@ -67,6 +67,8 @@ export type BusinessDetailsData = {
   business_website: string
   business_entity_type: string
   business_industry_type: string
+  business_start_date?: string
+  business_credit_score?: number
 }
 
 export type BusinessDetailsResponse = {
@@ -90,6 +92,8 @@ export type SaveBusinessDetailsRequest = {
   business_industry_type: string
   business_country: string
   business_country_code?: string
+  business_start_date?: string
+  business_credit_score?: null
 }
 
 export type SaveBusinessDetailsResponse = {

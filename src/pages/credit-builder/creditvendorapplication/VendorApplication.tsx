@@ -1,426 +1,298 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
+type Vendor = {
+  id: number
+  issuer: string
+  card_name: string
+  category: string
+  min_fico: number | null
+  time_in_business: number
+  pg_required: string
+  approval_level: string
+  image: string
+  link: string
+}
+
 export default function VendorApplication() {
-  type Vendor = {
-    id: number
-    name: string
-    category: string
-    tier: number
-    requirements: string[]
-    benefits: string[]
-    reports: Array<'D&B' | 'Experian' | 'Equifax'>
-    status: 'approved' | 'pending' | 'not_applied'
-  }
-  const vendors: Vendor[] = useMemo(() => ([
-    { id: 1, name: 'Staples Business Credit', category: 'Office Supplies', tier: 0, requirements: ['Business Bank Account','Business Address','EIN'], benefits: ['Online Account Management','Rewards Program','Net 30 Terms'], reports: ['D&B'], status: 'approved' },
-    { id: 2, name: 'Uline Business Credit', category: 'Industrial Supplies', tier: 1, requirements: ['6 Months in Business','Trade References','D&B Profile'], benefits: ['Volume Discounts','Free Shipping','Net 30 Terms'], reports: ['D&B','Experian'], status: 'pending' },
-    { id: 3, name: 'Dell Business Credit', category: 'Technology', tier: 2, requirements: ['Established Credit History','Strong Payment History','Financial Statements'], benefits: ['Technology Financing','Business Support','Flexible Terms'], reports: ['D&B','Experian','Equifax'], status: 'not_applied' },
-    { id: 4, name: 'Quill Business Credit', category: 'Office Supplies', tier: 1, requirements: ['6 Months in Business','Trade References','D&B Profile'], benefits: ['Volume Discounts','Net 30 Terms','Order Tracking'], reports: ['D&B','Experian'], status: 'approved' },
-    { id: 5, name: 'Grainger Commercial Account', category: 'Industrial Supplies', tier: 1, requirements: ['Business Bank Account','Trade References','D&B Profile'], benefits: ['Bulk Pricing','Quick Delivery','Net 30 Terms'], reports: ['D&B'], status: 'approved' },
-    { id: 6, name: 'Amazon Business Net Terms', category: 'Technology', tier: 2, requirements: ['Established Credit','Business Financials','Trade References'], benefits: ['Flexible Financing','Wide Selection','Payment Terms'], reports: ['Experian','Equifax'], status: 'pending' },
-    { id: 7, name: 'Office Depot Business Credit', category: 'Office Supplies', tier: 0, requirements: ['Business Bank Account','Business Address','EIN'], benefits: ['Rewards Program','Order History','Net 30 Terms'], reports: ['D&B'], status: 'approved' },
-    { id: 8, name: 'CDW Business Credit', category: 'Technology', tier: 3, requirements: ['Established Credit History','Strong Payment History','Financial Statements'], benefits: ['Tech Advisory','Flexible Financing','Business Support'], reports: ['Experian','Equifax'], status: 'not_applied' },
-    { id: 9, name: 'MSC Industrial Supply', category: 'Industrial Supplies', tier: 1, requirements: ['Business Bank Account','Trade References','D&B Profile'], benefits: ['Volume Discounts','Account Management','Net 30 Terms'], reports: ['D&B','Experian'], status: 'pending' }
+  const vendorsData = useMemo(() => ([
+    { difficulty_rank: 1, issuer: "Capital One", card_name: "Spark Classic", credit_category: "Revolving", approval_level: "Easy", typical_personal_fico_min: 600, time_in_business_min_months: 0, pg_required: "Yes", image: "/assets/images/vendor/1-Capital One - Spark.avif", link: "https://www.capitalone.com/small-business/credit-cards/spark-classic/" },
+    { difficulty_rank: 2, issuer: "Bank of America", card_name: "Business Advantage Secured", credit_category: "Revolving", approval_level: "Easy", typical_personal_fico_min: 580, time_in_business_min_months: 0, pg_required: "Yes", image: "/assets/images/vendor/2-Bank of America-Business Advantage Secured.png", link: "https://business.bankofamerica.com/en/credit-cards/business-advantage-unlimited-cash-rewards-secured-business" },
+    { difficulty_rank: 3, issuer: "Regions", card_name: "Business Visa", credit_category: "Revolving", approval_level: "Easy", typical_personal_fico_min: 620, time_in_business_min_months: 3, pg_required: "Yes", image: "/assets/images/vendor/3-Regions-Business Visa.webp", link: "https://www.regions.com/personal-banking/credit-cards" },
+    { difficulty_rank: 4, issuer: "PNC", card_name: "Cash Rewards Business", credit_category: "Revolving", approval_level: "Easy", typical_personal_fico_min: 620, time_in_business_min_months: 6, pg_required: "Yes", image: "/assets/images/vendor/4-PNC-Cash Reqards Business.avif", link: "https://lending.pnc.com/bccr/getting-started" },
+    { difficulty_rank: 5, issuer: "TD Bank", card_name: "Business Solutions", credit_category: "Revolving", approval_level: "Easy", typical_personal_fico_min: 640, time_in_business_min_months: 6, pg_required: "Yes", image: "/assets/images/vendor/5 TD Bank Business Solutions.webp", link: "https://www.td.com/us/en/personal-banking/credit-cards/business-solutions-credit-card" },
+    { difficulty_rank: 10, issuer: "Chase", card_name: "Ink Cash", credit_category: "Revolving", approval_level: "Moderate", typical_personal_fico_min: 660, time_in_business_min_months: 12, pg_required: "Yes", image: "/assets/images/vendor/10-Chase – Ink Cash.png", link: "https://creditcards.chase.com/business-credit-cards/ink-cash" },
+    { difficulty_rank: 11, issuer: "Chase", card_name: "Ink Unlimited", credit_category: "Revolving", approval_level: "Moderate", typical_personal_fico_min: 660, time_in_business_min_months: 12, pg_required: "Yes", image: "/assets/images/vendor/11-chase-ink-business-unlimited.webp", link: "https://creditcards.chase.com/business-credit-cards/ink-unlimited" },
+    { difficulty_rank: 13, issuer: "Wells Fargo", card_name: "Signify Business Cash", credit_category: "Revolving", approval_level: "Moderate", typical_personal_fico_min: 680, time_in_business_min_months: 12, pg_required: "Yes", image: "/assets/images/vendor/13-Wells Fargo – Signify Business Cash.jpg", link: "https://creditcards.wellsfargo.com/cards/business-credit-cards/signify-business-cash-credit-card/" },
+    { difficulty_rank: 14, issuer: "U.S. Bank", card_name: "Triple Cash Rewards", credit_category: "Revolving", approval_level: "Moderate", typical_personal_fico_min: 680, time_in_business_min_months: 12, pg_required: "Yes", image: "/assets/images/vendor/14-U.S. Bank – Triple Cash Rewards.jpg", link: "https://www.usbank.com/business-banking/business-credit-cards/business-triple-cash-back-credit-card.html" },
+    { difficulty_rank: 15, issuer: "Citi", card_name: "AAdvantage Business", credit_category: "Revolving", approval_level: "Moderate", typical_personal_fico_min: 680, time_in_business_min_months: 12, pg_required: "Yes", image: "/assets/images/vendor/15-Citi – AAdvantage Business.webp", link: "https://creditcards.aa.com/credit-cards/citi-business-card-american-airlines-direct/" },
+    { difficulty_rank: 24, issuer: "American Express", card_name: "Blue Business Plus", credit_category: "Revolving", approval_level: "Moderate", typical_personal_fico_min: 700, time_in_business_min_months: 24, pg_required: "Yes", image: "/assets/images/vendor/24-American Express – Blue Business Plus.avif", link: "https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/american-express-blue-business-plus-credit-card-amex/" },
+    { difficulty_rank: 30, issuer: "American Express", card_name: "Business Gold", credit_category: "Charge", approval_level: "Very Hard", typical_personal_fico_min: 720, time_in_business_min_months: 36, pg_required: "Yes", image: "/assets/images/vendor/30-American Express – Business Gold.jpg", link: "https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/american-express-business-gold-card-amex/" },
+    { difficulty_rank: 36, issuer: "Stripe", card_name: "Corporate Card", credit_category: "Corporate", approval_level: "Invite Only", typical_personal_fico_min: null, time_in_business_min_months: 12, pg_required: "No", image: "/assets/images/vendor/36-Stripe – Corporate Card.png", link: "https://stripe.com/corporate-card" },
+    { difficulty_rank: 37, issuer: "Brex", card_name: "Corporate Card", credit_category: "Corporate", approval_level: "Invite Only", typical_personal_fico_min: null, time_in_business_min_months: 12, pg_required: "No", image: "/assets/images/vendor/37-Brex – Corporate Card.jpg", link: "https://www.brex.com/product/credit-card" },
+    { difficulty_rank: 38, issuer: "Ramp", card_name: "Corporate Card", credit_category: "Corporate", approval_level: "Invite Only", typical_personal_fico_min: null, time_in_business_min_months: 12, pg_required: "No", image: "/assets/images/vendor/38-Ramp – Corporate Card.webp", link: "https://ramp.com/corporate-cards" },
+    { difficulty_rank: 40, issuer: "HSBC", card_name: "Corporate Card", credit_category: "Corporate", approval_level: "Very Hard", typical_personal_fico_min: 760, time_in_business_min_months: 36, pg_required: "Yes", image: "/assets/images/vendor/40-HSBC – Corporate Card.jpg", link: "https://www.business.us.hsbc.com/en/products/corporate-world-elite" },
   ]), [])
 
-  const [tier, setTier] = useState<'All' | 0 | 1 | 2 | 3 | 4>('All')
-  const [category, setCategory] = useState<'All' | 'Office Supplies' | 'Industrial Supplies' | 'Technology'>('All')
-  const [bureau, setBureau] = useState<'All' | 'D&B' | 'Experian' | 'Equifax'>('All')
+  const vendors: Vendor[] = useMemo(() => vendorsData.map(v => ({
+    id: v.difficulty_rank,
+    issuer: v.issuer,
+    card_name: v.card_name,
+    category: v.credit_category,
+    min_fico: v.typical_personal_fico_min,
+    time_in_business: v.time_in_business_min_months,
+    pg_required: v.pg_required,
+    approval_level: v.approval_level,
+    image: v.image,
+    link: v.link
+  })), [vendorsData])
+
+  const [tier, setTier] = useState('All Tier')
+  const [category, setCategory] = useState('All Categories')
+  const [bureau, setBureau] = useState('All Bureau')
   const [q, setQ] = useState('')
 
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(50)
-  const totalCount = 1250
-  const lastPage = Math.max(1, Math.ceil(totalCount / pageSize))
-  const [modalVendor, setModalVendor] = useState<Vendor | null>(null)
-  const [prefillVendor, setPrefillVendor] = useState<Vendor | null>(null)
-  type FormField = {name:string; label:string; type:'text'|'email'|'number'|'textarea'|'select'; options?: string[]; full?: boolean}
-  const vendorForms: Record<string,{title:string; fields:FormField[]; initial:Record<string,string>}> = {
-    'Uline Business Credit': {
-      title: 'Apply to Uline Business Credit',
-      fields: [
-        {name:'businessName',label:'Business Name',type:'text'},
-        {name:'ein',label:'EIN',type:'text'},
-        {name:'address',label:'Business Address',type:'textarea',full:true},
-        {name:'phone',label:'Phone Number',type:'text'},
-        {name:'email',label:'Email Address',type:'email'},
-        {name:'years',label:'Years in Business',type:'number'},
-        {name:'revenue',label:'Annual Revenue',type:'number'},
-        {name:'limit',label:'Requested Credit Limit',type:'select',options:['$1,000','$2,500','$5,000','$10,000'],full:true}
-      ],
-      initial: {businessName:'Sample Business LLC',ein:'12-3456789',address:'123 Business St, City, State 12345',phone:'(555) 123-4567',email:'owner@samplebusiness.com',years:'2',revenue:'250000',limit:''}
-    },
-    'Dell Business Credit': {
-      title: 'Apply to Dell Business Credit',
-      fields: [
-        {name:'businessName',label:'Business Name',type:'text'},
-        {name:'duns',label:'DUNS Number',type:'text'},
-        {name:'contact',label:'Primary Contact',type:'text'},
-        {name:'email',label:'Email Address',type:'email'},
-        {name:'revenue',label:'Annual Revenue',type:'number'},
-        {name:'limit',label:'Requested Credit Limit',type:'select',options:['$2,500','$5,000','$10,000','$25,000'],full:true}
-      ],
-      initial: {businessName:'Sample Business LLC',duns:'12-345-6789',contact:'John Doe',email:'owner@samplebusiness.com',revenue:'450000',limit:''}
-    },
-    'Staples Business Credit': {
-      title: 'Apply to Staples Business Credit',
-      fields: [
-        {name:'businessName',label:'Business Name',type:'text'},
-        {name:'taxid',label:'Tax ID',type:'text'},
-        {name:'address',label:'Business Address',type:'textarea',full:true},
-        {name:'phone',label:'Phone Number',type:'text'},
-        {name:'email',label:'Email Address',type:'email'},
-        {name:'limit',label:'Requested Credit Limit',type:'select',options:['$1,000','$3,000','$5,000','$7,500'],full:true}
-      ],
-      initial: {businessName:'Sample Business LLC',taxid:'12-3456789',address:'123 Business St, City, State 12345',phone:'(555) 123-4567',email:'owner@samplebusiness.com',limit:''}
-    },
-    default: {
-      title: 'Apply to Vendor',
-      fields: [
-        {name:'businessName',label:'Business Name',type:'text'},
-        {name:'ein',label:'EIN',type:'text'},
-        {name:'address',label:'Business Address',type:'textarea',full:true},
-        {name:'phone',label:'Phone Number',type:'text'},
-        {name:'email',label:'Email Address',type:'email'},
-        {name:'years',label:'Years in Business',type:'number'},
-        {name:'revenue',label:'Annual Revenue',type:'number'},
-        {name:'limit',label:'Requested Credit Limit',type:'select',options:['$1,000','$2,500','$5,000','$10,000'],full:true}
-      ],
-      initial: {businessName:'Sample Business LLC',ein:'12-3456789',address:'123 Business St, City, State 12345',phone:'(555) 123-4567',email:'owner@samplebusiness.com',years:'2',revenue:'250000',limit:''}
-    }
-  }
-  const [pf, setPf] = useState<Record<string,string>>(vendorForms.default.initial)
-
   const filtered = vendors.filter((v) => {
-    const tierOk = tier === 'All' ? true : v.tier === tier
-    const catOk = category === 'All' ? true : v.category === category
-    const bureauOk = bureau === 'All' ? true : v.reports.includes(bureau)
-    const qOk = q.trim() ? v.name.toLowerCase().includes(q.trim().toLowerCase()) : true
-    return tierOk && catOk && bureauOk && qOk
+    const bureauOk = bureau === 'All Bureau' ? true : v.approval_level === bureau
+    const qOk = q.trim() ? (v.issuer + " " + v.card_name).toLowerCase().includes(q.trim().toLowerCase()) : true
+    return bureauOk && qOk
   })
-
-  const start = (page - 1) * pageSize + 1
-  const end = Math.min(page * pageSize, totalCount)
-
-  const vendorSiteUrl = (v: Vendor) => {
-    switch (v.name) {
-      case 'Staples Business Credit': return 'https://www.staples.com';
-      case 'Uline Business Credit': return 'https://www.uline.com';
-      case 'Dell Business Credit': return 'https://www.dell.com';
-      case 'Quill Business Credit': return 'https://www.quill.com';
-      case 'Grainger Commercial Account': return 'https://www.grainger.com';
-      case 'Amazon Business Net Terms': return 'https://business.amazon.com';
-      case 'Office Depot Business Credit': return 'https://www.officedepot.com';
-      case 'CDW Business Credit': return 'https://www.cdw.com';
-      case 'MSC Industrial Supply': return 'https://www.mscdirect.com';
-      default: return `https://www.google.com/search?q=${encodeURIComponent(v.name+" credit application")}`
-    }
-  }
 
   useEffect(() => {
     const bootstrapLib = (window as unknown as { bootstrap?: any }).bootstrap
     const els = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     if (bootstrapLib && els.length) {
       els.forEach((el) => {
-        try { new bootstrapLib.Tooltip(el) } catch {}
+        try { new bootstrapLib.Tooltip(el) } catch { }
       })
     }
   }, [])
+
   return (
-    <div className="page-content vendor-application">
+    <div className="page-content">
       <div className="container-fluid">
-        <div className="row">
-          <div className="col-xl-9">
-            <div className="d-flex align-items-center mb-2">
-              <div>
-                <h4 className="fs-20 mb-1">Vendor Application</h4>
-                <p className="text-muted mb-0">Apply to foundational vendors to establish reportable trade lines</p>
-              </div>
-            </div>
+
+        {/* Header Matching Profile Page Style */}
+        <div className="text-center mb-4">
+          <h3 className="mb-1">Vendor Accounts</h3>
+          <div className="text-muted mx-auto intro-text">
+            <span className="d-block">Apply to pre-vetted vendors for business credit. Filter by tier, category, or reporting</span>
+            <span className="d-block">bureau to find the best matches for your business.</span>
           </div>
-          <div className="col-xl-9">
-            <div className="card mb-3">
-              <div className="card-header d-flex align-items-center justify-content-between">
-                <div className="d-flex align-items-center gap-2">
-                  <h6 className="mb-0">Filter Vendors</h6>
-                  <span className="ms-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" data-bs-custom-class="tooltip-info" title="<div class='tt-title'>Tip</div><div class='tt-body'>Apply to vendors that report to bureaus to build credit fast.</div>"><i className="ri-information-fill align-middle text-info info-icon-circle"></i></span>
-                </div>
-              </div>
-              <div className="card-body">
-                  
-                
-                <div className="row g-3 align-items-end mb-3 filter-toolbar">
-                  <div className="col-12 col-md-6 col-lg-3 col-xl-2">
-                    <label className="form-label">Filter by Tier</label>
-                    <select className="form-select" value={tier} onChange={(e)=>setTier((e.target.value as any))}>
-                      <option value="All">All Tier</option>
-                      <option value={0}>Tier 0</option>
-                      <option value={1}>Tier 1</option>
-                      <option value={2}>Tier 2</option>
-                      <option value={3}>Tier 3</option>
-                      <option value={4}>Tier 4</option>
+        </div>
+
+        {/* Filter Bar */}
+        <div className="row mb-1">
+          <div className="col-12">
+            <div className="card shadow-sm border-0 bg-white">
+              <div className="card-body p-4">
+                <h6 className="fw-bold mb-4 d-flex align-items-center">
+                  <i className="ri-filter-2-line me-2 text-primary"></i> Filter Vendors
+                </h6>
+                <div className="row g-3">
+                  <div className="col-md-3">
+                    <label className="form-label small text-muted mb-2">Filter by Tier</label>
+                    <select className="form-select bg-light border-0" value={tier} onChange={(e) => setTier(e.target.value)}>
+                      <option>All Tier</option>
+                      <option>Tier 1</option>
+                      <option>Tier 2</option>
                     </select>
                   </div>
-                  <div className="col-12 col-md-6 col-lg-3 col-xl-2">
-                    <label className="form-label">Filter by Category</label>
-                    <select className="form-select" value={category} onChange={(e)=>setCategory((e.target.value as any))}>
-                      <option value="All">All Categories</option>
-                      <option value="Office Supplies">Office Supplies</option>
-                      <option value="Industrial Supplies">Industrial Supplies</option>
-                      <option value="Technology">Technology</option>
+                  <div className="col-md-3">
+                    <label className="form-label small text-muted mb-2">Filter by Category</label>
+                    <select className="form-select bg-light border-0" value={category} onChange={(e) => setCategory(e.target.value)}>
+                      <option>All Categories</option>
+                      <option>Revolving</option>
+                      <option>Corporate</option>
                     </select>
                   </div>
-                  <div className="col-12 col-md-6 col-lg-3 col-xl-2">
-                    <label className="form-label">Reporting Bureaus</label>
-                    <select className="form-select" value={bureau} onChange={(e)=>setBureau((e.target.value as any))}>
-                      <option value="All">All Bureaus</option>
-                      <option value="D&B">D&amp;B</option>
-                      <option value="Experian">Experian</option>
-                      <option value="Equifax">Equifax</option>
+                  <div className="col-md-3">
+                    <label className="form-label small text-muted mb-2">Reporting Bureau</label>
+                    <select className="form-select bg-light border-0" value={bureau} onChange={(e) => setBureau(e.target.value)}>
+                      <option>All Bureau</option>
+                      <option>Easy</option>
+                      <option>Moderate</option>
+                      <option>Hard</option>
                     </select>
                   </div>
-                  <div className="col-12 col-md-6 col-lg-3 col-xl-4 d-flex flex-column">
-                    <label className="form-label">Search Vendors</label>
-                    <div className="input-group w-100">
-                      <input type="text" className="form-control" placeholder="Search by vendor name" value={q} onChange={(e)=>setQ(e.target.value)} />
+                  <div className="col-md-3">
+                    <label className="form-label small text-muted mb-2">Search Vendors</label>
+                    <div className="d-flex gap-2">
+                      <input
+                        type="text"
+                        className="form-control bg-light border-0"
+                        placeholder="Search by vendor name..."
+                        value={q}
+                        onChange={(e) => setQ(e.target.value)}
+                      />
+                      <button className="btn btn-dark px-3 fw-bold flex-shrink-0" style={{ backgroundColor: '#00204a' }}>+ Filters</button>
                     </div>
-                  </div>
-                  <div className="col-12 col-md-6 col-lg-3 col-xl-2 d-flex align-items-end">
-                    <button type="button" className="btn btn-primary w-100"><i className="ri-filter-3-line align-middle me-1"></i>Filters</button>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            <div className="card">
-              <div className="card-header d-flex align-items-center justify-content-between">
-                <div className="d-flex align-items-center gap-2">
-                  <h6 className="mb-0">Vendors</h6>
-                </div>
-              </div>
-              <div className="card-body">
-                {filtered.length ? (
-                  <div className="vendor-grid">
-                    {filtered.map((v) => (
-                      <div key={v.id} className="vendor-card">
-                        <div className="vendor-card-header">
-                          <span className="tier-badge">Tier {v.tier}</span>
-                          <span className={`status-badge ${v.status==='approved'?'status-approved':v.status==='pending'?'status-pending':'status-not'}`}>{v.status==='approved'?'Approved':v.status==='pending'?'Pending':'Not Applied'}</span>
-                        </div>
-                        <div className="vendor-card-body">
-                          <div className="vc-title pb-1">{v.name}</div>
-                          <div className="vc-sub">{v.category}</div>
-                          <div className="mt-2 fw-semibold">Requirements</div>
-                          <ul className="list">
-                            {v.requirements.map((r,i)=>(
-                              <li key={i}><i className="ri-check-line text-success"></i><span>{r}</span></li>
-                            ))}
-                          </ul>
-                          <div className="mt-2 fw-semibold">Benefits</div>
-                          <ul className="list">
-                            {v.benefits.map((b,i)=>(
-                              <li key={i}><i className="ri-checkbox-circle-line text-primary"></i><span>{b}</span></li>
-                            ))}
-                          </ul>
-                          <div className="mt-2 fw-semibold pb-2">Reports to</div>
-                          <div className="report-badges">
-                            {v.reports.map((r,i)=> (
-                              <span key={i} className={`rb ${r==='D&B'?'rb-yellow':r==='Experian'?'rb-green':'rb-blue'}`}>{r}</span>
-                            ))}
-                          </div>
-                          <div className="vc-actions">
-                            <button type="button" className="btn btn-apply" onClick={()=>setModalVendor(v)}><i className="ri-external-link-line align-middle me-1"></i>Apply Now</button>
-                            <button type="button" className="btn btn-prefill" onClick={()=>{setPrefillVendor(v); const cfg = vendorForms[v.name] ?? vendorForms.default; setPf(cfg.initial)}}><i className="ri-pencil-line align-middle me-1"></i>Pre-fill form</button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="empty-state" role="status" aria-live="polite">
-                    <div className="empty-icon"><i className="ri-file-search-line"></i></div>
-                    <div className="empty-title">No vendors found</div>
-                  </div>
-                )}
-
-                {modalVendor && (
-                  <>
-                    <div className="va-modal-backdrop" onClick={()=>setModalVendor(null)}></div>
-                    <div className="va-modal" role="dialog" aria-modal="true">
-                      <div className="va-modal-header">
-                        <div className="va-modal-title">Apply to {modalVendor.name}</div>
-                        <button type="button" className="btn btn-sm btn-light" onClick={()=>setModalVendor(null)} aria-label="Close">Close</button>
-                      </div>
-                      <div className="va-modal-body">
-                        <div className="va-option">
-                          <div className="va-option-icon"><i className="ri-external-link-line"></i></div>
-                          <div className="va-option-content">
-                            <div className="va-option-title">Apply on Vendor Site</div>
-                            <div className="va-option-desc">Complete application directly on the vendor's website</div>
-                            <a className="va-link" href={vendorSiteUrl(modalVendor)} target="_blank" rel="noopener noreferrer">Go to Vendor Site</a>
-                          </div>
-                        </div>
-                        <div className="va-option">
-                          <div className="va-option-icon"><i className="ri-pencil-line"></i></div>
-                          <div className="va-option-content">
-                            <div className="va-option-title">Apply in Portal</div>
-                            <div className="va-option-desc">Complete application here with pre-filled data and e-signature</div>
-                            <a className="va-link" href={`/application/start?vendor=${encodeURIComponent(modalVendor.name)}`} target="_blank" rel="noopener noreferrer">Start Application</a>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {prefillVendor && (
-                  <>
-                    <div className="va-modal-backdrop" onClick={()=>setPrefillVendor(null)}></div>
-                    <div className="va-modal pf-modal" role="dialog" aria-modal="true">
-                      <div className="va-modal-header">
-                        <div className="va-modal-title">{(vendorForms[prefillVendor.name] ?? vendorForms.default).title}</div>
-                        <button type="button" className="btn btn-sm btn-light" onClick={()=>setPrefillVendor(null)} aria-label="Close">Close</button>
-                      </div>
-                      <div className="va-modal-body">
-                        <form onSubmit={(e)=>{e.preventDefault(); window.open(`/application/start?vendor=${encodeURIComponent(prefillVendor.name)}`,'_blank','noopener'); setPrefillVendor(null)}}>
-                          <div className="pf-form-grid">
-                            {((vendorForms[prefillVendor.name] ?? vendorForms.default).fields).map((field)=> (
-                              <div key={field.name} className={field.full?'full-col':''}>
-                                <label className="form-label">{field.label}</label>
-                                {field.type==='textarea' ? (
-                                  <textarea className="form-control" rows={3} value={pf[field.name] || ''} onChange={(e)=>setPf({...pf,[field.name]:e.target.value})}></textarea>
-                                ) : field.type==='select' ? (
-                                  <select className="form-select" value={pf[field.name] || ''} onChange={(e)=>setPf({...pf,[field.name]:e.target.value})}>
-                                    <option value="">Select</option>
-                                    {(field.options || []).map((opt)=> (<option key={opt} value={opt}>{opt}</option>))}
-                                  </select>
-                                ) : (
-                                  <input type={field.type} className="form-control" value={pf[field.name] || ''} onChange={(e)=>setPf({...pf,[field.name]:e.target.value})} />
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                          <div className="pf-actions">
-                            <button type="button" className="btn btn-light" onClick={()=>setPrefillVendor(null)}>Cancel</button>
-                            <button type="submit" className="btn btn-primary">Submit Application</button>
-                          </div>
-                        </form>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                <div className="pagination-footer">
-                  <div className="d-flex align-items-center gap-2">
-                    <span>Result per page</span>
-                    <select className="form-select rpp-select" value={pageSize} onChange={(e)=>{setPageSize(parseInt(e.target.value,10)); setPage(1)}}>
-                      <option value={10}>10</option>
-                      <option value={25}>25</option>
-                      <option value={50}>50</option>
-                    </select>
-                  </div>
-                  <div className="text-muted">{start}-{end} of {totalCount}</div>
-                  <div className="btn-group" role="group">
-                    <button type="button" className="btn btn-outline-secondary" disabled={page===1} onClick={()=>setPage(1)}>&laquo;</button>
-                    <button type="button" className="btn btn-outline-secondary" disabled={page===1} onClick={()=>setPage((p)=>Math.max(1,p-1))}>&lsaquo;</button>
-                    <button type="button" className="btn btn-outline-secondary" disabled={page===lastPage} onClick={()=>setPage((p)=>Math.min(lastPage,p+1))}>&rsaquo;</button>
-                    <button type="button" className="btn btn-outline-secondary" disabled={page===lastPage} onClick={()=>setPage(lastPage)}>&raquo;</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="col-xl-3">
-            <div className="card mb-3">
-              <div className="card-header"><h6 className="mb-0">Recent Activity</h6></div>
-              <div className="card-body">
-                <div className="timeline">
-                  <div className="item">
-                    <span className="dot bg-soft-cyan">
-                      <i className="ri-user-3-line icon text-info"></i>
-                    </span>
-                    <div className="title">Business Bank Account Opened</div>
-                    <div className="desc">Successfully opened account with Chase Business</div>
-                    <div className="meta text-muted">1 day ago</div>
-                  </div>
-                  <div className="item">
-                    <span className="dot bg-soft-red">
-                      <i className="ri-heart-2-line icon text-danger"></i>
-                    </span>
-                    <div className="title">Vendor Application Approved</div>
-                    <div className="desc">Approved for $500 credit line with Uline</div>
-                    <div className="meta text-muted">3 days ago</div>
-                  </div>
-                  <div className="item">
-                    <span className="dot bg-soft-purple">
-                      <i className="ri-time-line icon text-primary"></i>
-                    </span>
-                    <div className="title">Credit Report Monitoring</div>
-                    <div className="desc">Waiting for first credit report update</div>
-                    <div className="meta text-muted">1 week ago</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-              <div className="card">
-              <div className="card-header"><h6 className="mb-0">Recommended Actions</h6></div>
-              <div className="card-body">
-                <div className="actions-list">
-                  <div className="action-item">
-                    <div className="action-top">
-                      <div className="action-icon"><i className="ri-hand-heart-line"></i></div>
-                      <div className="action-title">Apply to Tier 2 Vendors</div>
-                    </div>
-                    <div className="action-bottom">
-                      <div>
-                        <div className="action-sub">Ready to apply to 3 new credit-buil vendors</div>
-                      </div>
-                     
-                    </div>
-                     <div className="action-cta">
-                        <span className="priority priority-high">High Priority</span>
-                        <button type="button" className="btn btn-sm btn-primary btn-start">Start Now</button>
-                      </div>
-                  </div>
-                  <div className="action-item">
-                    <div className="action-top">
-                      <div className="action-icon action-icon-blue"><i className="ri-phone-line"></i></div>
-                      <div className="action-title">Set Up Business Phone</div>
-                    </div>
-                    <div className="action-bottom">
-                      <div>
-                        <div className="action-sub">Establish a dedicated business phone line</div>
-                      </div>
-                     
-                    </div>
-                     <div className="action-cta">
-                        <span className="priority priority-medium">Medium Priority</span>
-                        <button type="button" className="btn btn-sm btn-primary btn-start">Start Now</button>
-                      </div>
-                  </div>
-                  <div className="action-item">
-                    <div className="action-top">
-                      <div className="action-icon action-icon-purple"><i className="ri-book-2-line"></i></div>
-                      <div className="action-title">Update 411 Directory</div>
-                    </div>
-                    <div className="action-bottom">
-                      <div>
-                        <div className="action-sub">Ensure your business listing is current</div>
-                      </div>
-                      
-                    </div>
-                    <div className="action-cta">
-                        <span className="priority priority-medium">Medium Priority</span>
-                        <button type="button" className="btn btn-sm btn-primary btn-start">Start Now</button>
-                      </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Colorful Premium Cards - Sharp Design */}
+        <div className="row g-4">
+          {filtered.length ? (
+            filtered.map((v) => (
+              <div key={v.id} className="col-md-6 col-lg-4 col-xl-3">
+                <div className={`card h-100 vendor-card-colorful border-0 shadow-sm overflow-hidden bg-white mt-1 border-top-accent-${v.category.toLowerCase()}`}>
+
+                  {/* Visual Header with Subtle Gradient Background */}
+                  <div className="v-card-visual position-relative" style={{ height: '160px' }}>
+                    <div className="position-absolute top-0 end-0 m-3 z-1">
+                      <span className={`badge px-3 py-1 fs-10 fw-bold shadow-sm ${v.approval_level === 'Easy' ? 'bg-success text-white' :
+                        v.approval_level === 'Moderate' ? 'bg-primary text-white' :
+                          v.approval_level === 'Hard' ? 'bg-warning text-dark' :
+                            'bg-danger text-white'
+                        }`} style={{ borderRadius: '4px' }}>
+                        {v.approval_level}
+                      </span>
+                    </div>
+                    <div className="w-100 h-100 d-flex align-items-center justify-content-center p-4 v-gradient-bg">
+                      <img
+                        src={v.image}
+                        alt={v.card_name}
+                        className="vendor-logo-luxury w-100 h-100 object-fit-contain transition-all"
+                        onError={(e) => { (e.target as HTMLImageElement).src = '/assets/images/fch-logo-ver.png' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="card-body p-4 d-flex flex-column">
+                    <div className="mb-auto">
+                      <div className="d-flex align-items-center gap-2 mb-1">
+                        <span className={`issuer-dot dot-${v.category.toLowerCase()}`}></span>
+                        <span className="text-primary text-uppercase fw-bold tracking-widest fs-10">{v.issuer}</span>
+                      </div>
+                      <h5 className="card-title fw-bold text-dark mb-1 fs-16 lh-base" style={{ height: '38px', overflow: 'hidden' }}>{v.card_name}</h5>
+                      <div className="text-muted fs-12 mb-3 d-flex align-items-center gap-1">
+                        <span className={`badge fs-10 border text-uppercase ${v.category === 'Revolving' ? 'border-primary text-primary' :
+                          v.category === 'Charge' ? 'border-success text-success' :
+                            'border-dark text-dark'
+                          }`} style={{ borderRadius: '2px', backgroundColor: 'transparent' }}>
+                          {v.category}
+                        </span>
+                      </div>
+
+                      {/* Professional Metric Grid with Color Accents */}
+                      <div className="row g-2 mb-4">
+                        <div className="col-6">
+                          <div className="p-2 border border-light rounded-1 metric-box-primary h-100 shadow-sm-hover">
+                            <div className="d-flex align-items-center gap-1 mb-1">
+                              <i className="ri-user-star-line text-primary smaller"></i>
+                              <span className="text-muted smaller fw-bold text-uppercase tracking-wider">Min FICO</span>
+                            </div>
+                            <div className="fw-bold text-dark fs-13 ps-3">{v.min_fico || 'No Min'}</div>
+                          </div>
+                        </div>
+                        <div className="col-6">
+                          <div className="p-2 border border-light rounded-1 metric-box-success h-100 shadow-sm-hover">
+                            <div className="d-flex align-items-center gap-1 mb-1">
+                              <i className="ri-calendar-line text-success smaller"></i>
+                              <span className="text-muted smaller fw-bold text-uppercase tracking-wider">TIB</span>
+                            </div>
+                            <div className="fw-bold text-dark fs-13 ps-3">{v.time_in_business} Mo+</div>
+                          </div>
+                        </div>
+                        <div className="col-12 mt-2">
+                          <div className="p-2 border border-light rounded-1 metric-box-warning d-flex justify-content-between align-items-center shadow-sm-hover transition-all">
+                            <div className="d-flex align-items-center gap-1">
+                              <i className="ri-shield-user-line text-warning smaller"></i>
+                              <span className="text-muted smaller fw-bold text-uppercase tracking-wider">PG Required</span>
+                            </div>
+                            <span className="fw-bold text-dark fs-13">{v.pg_required}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-3">
+                      <a
+                        href={v.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-luxury-action w-100 py-2 fs-13 fw-bold d-flex align-items-center justify-content-center gap-2 transition-all"
+                        style={{ borderRadius: '4px' }}
+                      >
+                        Apply Now <i className="ri-arrow-right-up-line fs-14"></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="col-12 text-center py-5">
+              <div className="avatar-lg mx-auto mb-4">
+                <div className="avatar-title bg-light text-primary fs-24 rounded-circle">
+                  <i className="ri-search-line"></i>
+                </div>
+              </div>
+              <h5 className="fw-bold">No matching vendors</h5>
+              <p className="text-muted">Adjust your filters to discover more results.</p>
+            </div>
+          )}
+        </div>
       </div>
+
+      <style>{`
+        .vendor-card-colorful {
+          border-radius: 4px !important;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          border-top: 3px solid transparent;
+        }
+        .vendor-card-colorful:hover {
+          transform: translateY(-8px);
+          box-shadow: 0 15px 35px rgba(0,0,0,0.12) !important;
+        }
+        
+        /* Category Accent Bars */
+        .border-top-accent-revolving { border-top-color: #0d6efd; }
+        .border-top-accent-charge { border-top-color: #198754; }
+        .border-top-accent-corporate { border-top-color: #212529; }
+        
+        /* Metric Box Tints */
+        .metric-box-primary { background-color: #f0f7ff; border-color: #d0e7ff !important; }
+        .metric-box-success { background-color: #f2faf5; border-color: #dcf2e6 !important; }
+        .metric-box-warning { background-color: #fffaf0; border-color: #fcedcf !important; }
+        
+        .v-gradient-bg {
+          background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        }
+        
+        .issuer-dot { height: 6px; width: 6px; border-radius: 50%; display: inline-block; }
+        .dot-revolving { background-color: #0d6efd; }
+        .dot-charge { background-color: #198754; }
+        .dot-corporate { background-color: #212529; }
+        
+        .btn-luxury-action {
+          background: linear-gradient(to right, #00204a, #00306c);
+          color: white;
+          border: none;
+        }
+        .btn-luxury-action:hover {
+          background: linear-gradient(to right, #00306c, #00408d);
+          color: white;
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(0,32,74,0.3);
+        }
+        
+        .shadow-sm-hover { transition: all 0.2s ease; }
+        .shadow-sm-hover:hover { box-shadow: 0 2px 4px rgba(0,0,0,0.05); transform: scale(1.01); }
+        
+        .smaller { font-size: 10px; }
+        .fs-10 { font-size: 10px; }
+        .fs-13 { font-size: 13px; }
+        .fs-16 { font-size: 16px; }
+        .tracking-widest { letter-spacing: 0.15em; }
+        .tracking-wider { letter-spacing: 0.05em; }
+        
+        .vendor-logo-luxury { transition: transform 0.4s ease; }
+        .vendor-card-colorful:hover .vendor-logo-luxury { transform: scale(1.08); }
+      `}</style>
     </div>
   )
 }
