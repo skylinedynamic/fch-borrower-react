@@ -1,61 +1,95 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { useCreditAccounts, useCreditAccountFilters, applyForCreditAccount } from '../../../modules/credit-accounts'
+import VendorCardLoader from '../../../components/Loader/VendorCardLoader'
+import CustomDropdown from '../../../components/Common/CustomDropdown'
+import { creditAccountStatusOptions } from '../../../config/creditAccountStatusOptions'
+import { toast } from 'react-toastify'
 
-type Vendor = {
-  id: number
-  issuer: string
-  card_name: string
-  category: string
-  min_fico: number | null
-  time_in_business: number
-  pg_required: string
-  approval_level: string
-  image: string
-  link: string
-}
+const API_STORAGE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace('/api/v1', '/storage/')
 
 export default function VendorApplication() {
-  const vendorsData = useMemo(() => ([
-    { difficulty_rank: 1, issuer: "Capital One", card_name: "Spark Classic", credit_category: "Revolving", approval_level: "Easy", typical_personal_fico_min: 600, time_in_business_min_months: 0, pg_required: "Yes", image: "/assets/images/vendor/1-Capital One - Spark.avif", link: "https://www.capitalone.com/small-business/credit-cards/spark-classic/" },
-    { difficulty_rank: 2, issuer: "Bank of America", card_name: "Business Advantage Secured", credit_category: "Revolving", approval_level: "Easy", typical_personal_fico_min: 580, time_in_business_min_months: 0, pg_required: "Yes", image: "/assets/images/vendor/2-Bank of America-Business Advantage Secured.png", link: "https://business.bankofamerica.com/en/credit-cards/business-advantage-unlimited-cash-rewards-secured-business" },
-    { difficulty_rank: 3, issuer: "Regions", card_name: "Business Visa", credit_category: "Revolving", approval_level: "Easy", typical_personal_fico_min: 620, time_in_business_min_months: 3, pg_required: "Yes", image: "/assets/images/vendor/3-Regions-Business Visa.webp", link: "https://www.regions.com/personal-banking/credit-cards" },
-    { difficulty_rank: 4, issuer: "PNC", card_name: "Cash Rewards Business", credit_category: "Revolving", approval_level: "Easy", typical_personal_fico_min: 620, time_in_business_min_months: 6, pg_required: "Yes", image: "/assets/images/vendor/4-PNC-Cash Reqards Business.avif", link: "https://lending.pnc.com/bccr/getting-started" },
-    { difficulty_rank: 5, issuer: "TD Bank", card_name: "Business Solutions", credit_category: "Revolving", approval_level: "Easy", typical_personal_fico_min: 640, time_in_business_min_months: 6, pg_required: "Yes", image: "/assets/images/vendor/5 TD Bank Business Solutions.webp", link: "https://www.td.com/us/en/personal-banking/credit-cards/business-solutions-credit-card" },
-    { difficulty_rank: 10, issuer: "Chase", card_name: "Ink Cash", credit_category: "Revolving", approval_level: "Moderate", typical_personal_fico_min: 660, time_in_business_min_months: 12, pg_required: "Yes", image: "/assets/images/vendor/10-Chase – Ink Cash.png", link: "https://creditcards.chase.com/business-credit-cards/ink-cash" },
-    { difficulty_rank: 11, issuer: "Chase", card_name: "Ink Unlimited", credit_category: "Revolving", approval_level: "Moderate", typical_personal_fico_min: 660, time_in_business_min_months: 12, pg_required: "Yes", image: "/assets/images/vendor/11-chase-ink-business-unlimited.webp", link: "https://creditcards.chase.com/business-credit-cards/ink-unlimited" },
-    { difficulty_rank: 13, issuer: "Wells Fargo", card_name: "Signify Business Cash", credit_category: "Revolving", approval_level: "Moderate", typical_personal_fico_min: 680, time_in_business_min_months: 12, pg_required: "Yes", image: "/assets/images/vendor/13-Wells Fargo – Signify Business Cash.jpg", link: "https://creditcards.wellsfargo.com/cards/business-credit-cards/signify-business-cash-credit-card/" },
-    { difficulty_rank: 14, issuer: "U.S. Bank", card_name: "Triple Cash Rewards", credit_category: "Revolving", approval_level: "Moderate", typical_personal_fico_min: 680, time_in_business_min_months: 12, pg_required: "Yes", image: "/assets/images/vendor/14-U.S. Bank – Triple Cash Rewards.jpg", link: "https://www.usbank.com/business-banking/business-credit-cards/business-triple-cash-back-credit-card.html" },
-    { difficulty_rank: 15, issuer: "Citi", card_name: "AAdvantage Business", credit_category: "Revolving", approval_level: "Moderate", typical_personal_fico_min: 680, time_in_business_min_months: 12, pg_required: "Yes", image: "/assets/images/vendor/15-Citi – AAdvantage Business.webp", link: "https://creditcards.aa.com/credit-cards/citi-business-card-american-airlines-direct/" },
-    { difficulty_rank: 24, issuer: "American Express", card_name: "Blue Business Plus", credit_category: "Revolving", approval_level: "Moderate", typical_personal_fico_min: 700, time_in_business_min_months: 24, pg_required: "Yes", image: "/assets/images/vendor/24-American Express – Blue Business Plus.avif", link: "https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/american-express-blue-business-plus-credit-card-amex/" },
-    { difficulty_rank: 30, issuer: "American Express", card_name: "Business Gold", credit_category: "Charge", approval_level: "Very Hard", typical_personal_fico_min: 720, time_in_business_min_months: 36, pg_required: "Yes", image: "/assets/images/vendor/30-American Express – Business Gold.jpg", link: "https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/american-express-business-gold-card-amex/" },
-    { difficulty_rank: 36, issuer: "Stripe", card_name: "Corporate Card", credit_category: "Corporate", approval_level: "Invite Only", typical_personal_fico_min: null, time_in_business_min_months: 12, pg_required: "No", image: "/assets/images/vendor/36-Stripe – Corporate Card.png", link: "https://stripe.com/corporate-card" },
-    { difficulty_rank: 37, issuer: "Brex", card_name: "Corporate Card", credit_category: "Corporate", approval_level: "Invite Only", typical_personal_fico_min: null, time_in_business_min_months: 12, pg_required: "No", image: "/assets/images/vendor/37-Brex – Corporate Card.jpg", link: "https://www.brex.com/product/credit-card" },
-    { difficulty_rank: 38, issuer: "Ramp", card_name: "Corporate Card", credit_category: "Corporate", approval_level: "Invite Only", typical_personal_fico_min: null, time_in_business_min_months: 12, pg_required: "No", image: "/assets/images/vendor/38-Ramp – Corporate Card.webp", link: "https://ramp.com/corporate-cards" },
-    { difficulty_rank: 40, issuer: "HSBC", card_name: "Corporate Card", credit_category: "Corporate", approval_level: "Very Hard", typical_personal_fico_min: 760, time_in_business_min_months: 36, pg_required: "Yes", image: "/assets/images/vendor/40-HSBC – Corporate Card.jpg", link: "https://www.business.us.hsbc.com/en/products/corporate-world-elite" },
-  ]), [])
-
-  const vendors: Vendor[] = useMemo(() => vendorsData.map(v => ({
-    id: v.difficulty_rank,
-    issuer: v.issuer,
-    card_name: v.card_name,
-    category: v.credit_category,
-    min_fico: v.typical_personal_fico_min,
-    time_in_business: v.time_in_business_min_months,
-    pg_required: v.pg_required,
-    approval_level: v.approval_level,
-    image: v.image,
-    link: v.link
-  })), [vendorsData])
-
-  const [tier, setTier] = useState('All Tier')
-  const [category, setCategory] = useState('All Categories')
-  const [bureau, setBureau] = useState('All Bureau')
-  const [q, setQ] = useState('')
-
-  const filtered = vendors.filter((v) => {
-    const bureauOk = bureau === 'All Bureau' ? true : v.approval_level === bureau
-    const qOk = q.trim() ? (v.issuer + " " + v.card_name).toLowerCase().includes(q.trim().toLowerCase()) : true
-    return bureauOk && qOk
+  const [localFilters, setLocalFilters] = useState({
+    category: 'All Categories',
+    issuer: 'All Issuers',
+    q: ''
   })
+  const [appliedFilters, setAppliedFilters] = useState({
+    category: '',
+    issuer: '',
+    q: ''
+  })
+  const [page, setPage] = useState(1)
+
+  // Fetch filter options from DB
+  const { data: filterOptionsData } = useCreditAccountFilters()
+
+  const categories = useMemo(() => {
+    const list = filterOptionsData?.data?.categories || []
+    return [{ id: 'All Categories', name: 'All Categories' }, ...list.map(c => ({ id: c, name: c }))]
+  }, [filterOptionsData])
+
+  const issuers = useMemo(() => {
+    const list = filterOptionsData?.data?.issuers || []
+    return [{ id: 'All Issuers', name: 'All Issuers' }, ...list.map(i => ({ id: i, name: i }))]
+  }, [filterOptionsData])
+
+  const handleApplyFilters = () => {
+    setPage(1)
+    setAppliedFilters({
+      category: localFilters.category === 'All Categories' ? '' : localFilters.category,
+      issuer: localFilters.issuer === 'All Issuers' ? '' : localFilters.issuer,
+      q: localFilters.q.trim()
+    })
+  }
+
+  const handleResetFilters = () => {
+    const defaultFilters = {
+      category: 'All Categories',
+      issuer: 'All Issuers',
+      q: ''
+    }
+    setLocalFilters(defaultFilters)
+    setPage(1)
+    setAppliedFilters({
+      category: '',
+      issuer: '',
+      q: ''
+    })
+  }
+
+  const { data: accountsData, isLoading, refetch: refetchVendors } = useCreditAccounts({
+    ...appliedFilters,
+    page: page
+  })
+
+  const handleUpdateStatus = async (id: number, status: string) => {
+    try {
+      const response: any = await applyForCreditAccount(id, status);
+      toast.success(response?.message || "Status updated successfully");
+      refetchVendors();
+    } catch (err: any) {
+      console.error("Status update failed:", err);
+      toast.error(err?.response?.data?.message || "Failed to update status");
+    }
+  };
+
+  const vendors = useMemo(() => {
+    // API response is now { status: true, message: ..., data: [...] }
+    const list = accountsData?.data || []
+    return list.map((v: any) => ({
+      id: v.id,
+      issuer: v.issuer,
+      card_name: v.card_name,
+      category: v.credit_category,
+      min_fico: v.typical_personal_fico_min,
+      time_in_business: v.time_in_business_min_months,
+      pg_required: v.pg_required,
+      approval_level: v.approval_level,
+      image: v.image_url ? (v.image_url.startsWith('http') ? v.image_url : `${API_STORAGE_URL}${v.image_url}`) : '/assets/images/fch-logo-ver.png',
+      link: v.reference_url,
+      status: v.status
+    }))
+  }, [accountsData])
 
   useEffect(() => {
     const bootstrapLib = (window as unknown as { bootstrap?: any }).bootstrap
@@ -73,10 +107,10 @@ export default function VendorApplication() {
 
         {/* Header Matching Profile Page Style */}
         <div className="text-center mb-4">
-          <h3 className="mb-1">Vendor Accounts</h3>
+          <h3 className="mb-1">Credit Accounts</h3>
           <div className="text-muted mx-auto intro-text">
-            <span className="d-block">Apply to pre-vetted vendors for business credit. Filter by tier, category, or reporting</span>
-            <span className="d-block">bureau to find the best matches for your business.</span>
+            <span className="d-block">Apply to pre-vetted vendors for business credit. Filter by category or issuer</span>
+            <span className="d-block">to find the best matches for your business.</span>
           </div>
         </div>
 
@@ -85,47 +119,64 @@ export default function VendorApplication() {
           <div className="col-12">
             <div className="card shadow-sm border-0 bg-white">
               <div className="card-body p-4">
-                <h6 className="fw-bold mb-4 d-flex align-items-center">
-                  <i className="ri-filter-2-line me-2 text-primary"></i> Filter Vendors
-                </h6>
-                <div className="row g-3">
-                  <div className="col-md-3">
-                    <label className="form-label small text-muted mb-2">Filter by Tier</label>
-                    <select className="form-select bg-light border-0" value={tier} onChange={(e) => setTier(e.target.value)}>
-                      <option>All Tier</option>
-                      <option>Tier 1</option>
-                      <option>Tier 2</option>
-                    </select>
-                  </div>
-                  <div className="col-md-3">
-                    <label className="form-label small text-muted mb-2">Filter by Category</label>
-                    <select className="form-select bg-light border-0" value={category} onChange={(e) => setCategory(e.target.value)}>
-                      <option>All Categories</option>
-                      <option>Revolving</option>
-                      <option>Corporate</option>
-                    </select>
-                  </div>
-                  <div className="col-md-3">
-                    <label className="form-label small text-muted mb-2">Reporting Bureau</label>
-                    <select className="form-select bg-light border-0" value={bureau} onChange={(e) => setBureau(e.target.value)}>
-                      <option>All Bureau</option>
-                      <option>Easy</option>
-                      <option>Moderate</option>
-                      <option>Hard</option>
-                    </select>
-                  </div>
-                  <div className="col-md-3">
-                    <label className="form-label small text-muted mb-2">Search Vendors</label>
-                    <div className="d-flex gap-2">
+                <div className="vendor-filter-container">
+                  {/* Search Field */}
+                  <div className="vendor-filter-search">
+                    <div className="input-group vendor-filter-input-group border-0 transition-all shadow-sm-hover">
+                      <span className="input-group-text bg-transparent border-0 pe-1">
+                        <i className="ri-search-line text-muted opacity-75"></i>
+                      </span>
                       <input
                         type="text"
-                        className="form-control bg-light border-0"
-                        placeholder="Search by vendor name..."
-                        value={q}
-                        onChange={(e) => setQ(e.target.value)}
+                        className="form-control bg-transparent border-0 ps-1 fs-13"
+                        placeholder="Search here..."
+                        value={localFilters.q}
+                        onChange={(e) => setLocalFilters({ ...localFilters, q: e.target.value })}
                       />
-                      <button className="btn btn-dark px-3 fw-bold flex-shrink-0" style={{ backgroundColor: '#00204a' }}>+ Filters</button>
                     </div>
+                  </div>
+
+                  {/* Category Dropdown */}
+                  <div className="vendor-filter-select">
+                    <CustomDropdown
+                      options={categories}
+                      value={localFilters.category}
+                      onChange={(val) => setLocalFilters({ ...localFilters, category: val })}
+                      optionLabel="name"
+                      optionValue="id"
+                      placeholder="All Categories"
+                      className="border-0 rounded-2 fs-13 vendor-filter-bg"
+                    />
+                  </div>
+
+                  {/* Issuer Dropdown */}
+                  <div className="vendor-filter-select">
+                    <CustomDropdown
+                      options={issuers}
+                      value={localFilters.issuer}
+                      onChange={(val) => setLocalFilters({ ...localFilters, issuer: val })}
+                      optionLabel="name"
+                      optionValue="id"
+                      placeholder="All Issuers"
+                      searchable={true}
+                      className="border-0 rounded-2 fs-13 vendor-filter-bg"
+                    />
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="d-flex gap-2 ms-lg-auto">
+                    <button
+                      className="btn vendor-filter-btn-apply fw-bold d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13 shadow-sm"
+                      onClick={handleApplyFilters}
+                    >
+                      <i className="ri-equalizer-line"></i> Filters
+                    </button>
+                    <button
+                      className="btn vendor-filter-btn-clear fw-bold d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13"
+                      onClick={handleResetFilters}
+                    >
+                      <i className="ri-close-line"></i> Clear
+                    </button>
                   </div>
                 </div>
               </div>
@@ -135,23 +186,50 @@ export default function VendorApplication() {
 
         {/* Colorful Premium Cards - Sharp Design */}
         <div className="row g-4">
-          {filtered.length ? (
-            filtered.map((v) => (
+          {isLoading ? (
+            <VendorCardLoader count={8} />
+          ) : vendors.length ? (
+            vendors.map((v: any) => (
               <div key={v.id} className="col-md-6 col-lg-4 col-xl-3">
-                <div className={`card h-100 vendor-card-colorful border-0 shadow-sm overflow-hidden bg-white mt-1 border-top-accent-${v.category.toLowerCase()}`}>
+                <div className={`card vendor-card-colorful mb-0 border-0 shadow-sm overflow-hidden bg-white mt-1 border-top-accent-${v.category.toLowerCase()}`}>
 
                   {/* Visual Header with Subtle Gradient Background */}
-                  <div className="v-card-visual position-relative" style={{ height: '160px' }}>
-                    <div className="position-absolute top-0 end-0 m-3 z-1">
-                      <span className={`badge px-3 py-1 fs-10 fw-bold shadow-sm ${v.approval_level === 'Easy' ? 'bg-success text-white' :
-                        v.approval_level === 'Moderate' ? 'bg-primary text-white' :
-                          v.approval_level === 'Hard' ? 'bg-warning text-dark' :
-                            'bg-danger text-white'
-                        }`} style={{ borderRadius: '4px' }}>
+                  <div className="v-card-visual position-relative" style={{ height: '130px' }}>
+
+                    {/* Approval Level - Modern Tag Style */}
+                    <div className="position-absolute top-0 start-0 m-0 z-2">
+                      <span className={`approval-tag-modern tag-${v.approval_level.toLowerCase()}`}>
                         {v.approval_level}
                       </span>
                     </div>
-                    <div className="w-100 h-100 d-flex align-items-center justify-content-center p-4 v-gradient-bg">
+
+                    <div className="position-absolute top-0 end-0 m-3 z-2 d-flex align-items-center gap-2">
+                      {/* Manual Status Dropdown */}
+                      <div className="dropdown">
+                        <button
+                          className="btn btn-sm btn-light rounded-circle shadow-sm d-flex align-items-center justify-content-center p-0"
+                          style={{ width: '26px', height: '26px' }}
+                          data-bs-toggle="dropdown"
+                          aria-expanded="false"
+                        >
+                          <i className="ri-more-2-fill fs-14"></i>
+                        </button>
+                        <ul className="dropdown-menu dropdown-menu-end shadow border-0 fs-13">
+                          <li><h6 className="dropdown-header text-uppercase fw-bold fs-10 tracking-widest">Mark As</h6></li>
+                          {creditAccountStatusOptions.map((opt) => (
+                            <li key={opt.id}>
+                              <button
+                                className="dropdown-item d-flex align-items-center gap-2"
+                                onClick={() => handleUpdateStatus(v.id, opt.id)}
+                              >
+                                <span className={`dot-${opt.id.toLowerCase()}`}></span> {opt.name}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                    <div className="w-100 h-100 d-flex align-items-center justify-content-center p-3 v-gradient-bg">
                       <img
                         src={v.image}
                         alt={v.card_name}
@@ -161,24 +239,38 @@ export default function VendorApplication() {
                     </div>
                   </div>
 
-                  <div className="card-body p-4 d-flex flex-column">
-                    <div className="mb-auto">
-                      <div className="d-flex align-items-center gap-2 mb-1">
+                  <div className="card-body p-3 d-flex flex-column">
+                    <div>
+                      <div className="d-flex align-items-center gap-2 mb-1" style={{ minHeight: '18px' }}>
                         <span className={`issuer-dot dot-${v.category.toLowerCase()}`}></span>
                         <span className="text-primary text-uppercase fw-bold tracking-widest fs-10">{v.issuer}</span>
                       </div>
-                      <h5 className="card-title fw-bold text-dark mb-1 fs-16 lh-base" style={{ height: '38px', overflow: 'hidden' }}>{v.card_name}</h5>
-                      <div className="text-muted fs-12 mb-3 d-flex align-items-center gap-1">
+                      <h5 className="card-title fw-bold text-dark mb-2 fs-14 lh-sm" style={{
+                        height: '38px',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                      }}>
+                        {v.card_name}
+                      </h5>
+                      <div className="text-muted fs-12 mb-3 mt-1 d-flex align-items-center gap-1">
                         <span className={`badge fs-10 border text-uppercase ${v.category === 'Revolving' ? 'border-primary text-primary' :
                           v.category === 'Charge' ? 'border-success text-success' :
                             'border-dark text-dark'
                           }`} style={{ borderRadius: '2px', backgroundColor: 'transparent' }}>
                           {v.category}
                         </span>
+                        {/* Status Label - Reverted to Ribbon Style */}
+                        {v.status && (
+                          <span className={`ms-auto status-ribbon ribbon-${v.status.toLowerCase()}`}>
+                            {v.status}
+                          </span>
+                        )}
                       </div>
 
                       {/* Professional Metric Grid with Color Accents */}
-                      <div className="row g-2 mb-4">
+                      <div className="row g-2 mb-3">
                         <div className="col-6">
                           <div className="p-2 border border-light rounded-1 metric-box-primary h-100 shadow-sm-hover">
                             <div className="d-flex align-items-center gap-1 mb-1">
@@ -209,12 +301,12 @@ export default function VendorApplication() {
                       </div>
                     </div>
 
-                    <div className="pt-3">
+                    <div className="mt-2">
                       <a
                         href={v.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="btn btn-luxury-action w-100 py-2 fs-13 fw-bold d-flex align-items-center justify-content-center gap-2 transition-all"
+                        className="btn btn-luxury-action w-100 py-1.5 fs-13 fw-bold d-flex align-items-center justify-content-center gap-2 transition-all"
                         style={{ borderRadius: '4px' }}
                       >
                         Apply Now <i className="ri-arrow-right-up-line fs-14"></i>
@@ -236,6 +328,62 @@ export default function VendorApplication() {
             </div>
           )}
         </div>
+
+        {/* Pagination Section */}
+        {!isLoading && accountsData?.meta && accountsData.meta.last_page > 1 && (
+          <div className="d-flex justify-content-center mt-4 mb-5">
+            <nav aria-label="Vendor pagination">
+              <ul className="pagination pagination-rounded gap-1 mb-0">
+                <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
+                  <button
+                    className="page-link border-0 shadow-sm d-flex align-items-center justify-content-center"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    style={{ width: '36px', height: '36px', borderRadius: '6px' }}
+                  >
+                    <i className="ri-arrow-left-s-line fs-18"></i>
+                  </button>
+                </li>
+
+                {Array.from({ length: accountsData.meta.last_page }, (_, i) => i + 1)
+                  .filter(p => {
+                    const lastPage = accountsData.meta?.last_page || 1;
+                    return p === 1 || p === lastPage || (p >= page - 1 && p <= page + 1);
+                  })
+                  .map((p, i, arr) => (
+                    <React.Fragment key={p}>
+                      {i > 0 && arr[i - 1] !== p - 1 && (
+                        <li className="page-item disabled">
+                          <span className="page-link border-0 bg-transparent px-2">...</span>
+                        </li>
+                      )}
+                      <li className={`page-item ${page === p ? 'active' : ''}`}>
+                        <button
+                          className={`page-link border-0 shadow-sm d-flex align-items-center justify-content-center fw-bold ${page === p ? 'bg-primary text-white' : 'bg-white text-dark'}`}
+                          onClick={() => setPage(p)}
+                          style={{ width: '36px', height: '36px', borderRadius: '6px' }}
+                        >
+                          {p}
+                        </button>
+                      </li>
+                    </React.Fragment>
+                  ))
+                }
+
+                <li className={`page-item ${page === accountsData.meta.last_page ? 'disabled' : ''}`}>
+                  <button
+                    className="page-link border-0 shadow-sm d-flex align-items-center justify-content-center"
+                    onClick={() => setPage(p => Math.min(accountsData.meta?.last_page || 1, p + 1))}
+                    disabled={page === accountsData.meta.last_page}
+                    style={{ width: '36px', height: '36px', borderRadius: '6px' }}
+                  >
+                    <i className="ri-arrow-right-s-line fs-18"></i>
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        )}
       </div>
 
       <style>{`
@@ -292,6 +440,23 @@ export default function VendorApplication() {
         
         .vendor-logo-luxury { transition: transform 0.4s ease; }
         .vendor-card-colorful:hover .vendor-logo-luxury { transform: scale(1.08); }
+
+        /* Subtle Skeleton Loader Overrides */
+        .skeleton-line {
+          background: #f5f6f7;
+          background: linear-gradient(90deg, #f5f6f7 25%, #ebedf0 45%, #f5f6f7 65%);
+          background-size: 200% 100%;
+          animation: skeleton-loading 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+          display: block;
+          height: 1em;
+          border-radius: 4px;
+          opacity: 0.8;
+        }
+
+        @keyframes skeleton-loading {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
       `}</style>
     </div>
   )

@@ -6135,7 +6135,8 @@
 .prequalification-page .dropdown.is-open,
 .fundapplication-page .dropdown.is-open {
   position: relative;
-  z-index: 1050; /* Bring open dropdown to the front */
+  z-index: 1050;
+  /* Bring open dropdown to the front */
 }
 
 /* Base dropdown positioning */
@@ -6151,26 +6152,28 @@
   z-index: 2;
 }
 
-.flatpickr-months .flatpickr-prev-month svg path, .flatpickr-months .flatpickr-next-month svg path{
+.flatpickr-months .flatpickr-prev-month svg path,
+.flatpickr-months .flatpickr-next-month svg path {
   fill: #fff !important
 }
 
 .flatpickr-current-month .numInputWrapper span.arrowUp:after {
-    border-bottom-color: rgb(255 255 255 / 90%) !important;
+  border-bottom-color: rgb(255 255 255 / 90%) !important;
 }
 
 .flatpickr-current-month .numInputWrapper span.arrowDown:after {
-    border-top-color: rgb(255 255 255 / 90%) !important;
+  border-top-color: rgb(255 255 255 / 90%) !important;
 }
 
 .flatpickr-current-month .numInputWrapper span.arrowUp:before {
-    border-bottom-color: rgb(255 255 255 / 90%) !important;
+  border-bottom-color: rgb(255 255 255 / 90%) !important;
 }
 
 .flatpickr-current-month .numInputWrapper span.arrowDown:before {
-    border-top-color: rgb(255 255 255 / 90%) !important;
+  border-top-color: rgb(255 255 255 / 90%) !important;
 }
 
-.xtrasmall{
+.xtrasmall {
   font-size: .65rem !important;
 }
+

@@ -84,7 +84,7 @@ export default function CustomDropdown({
     return (
         <div className={`dropdown ${className} ${isOpen ? 'is-open' : ''}`} ref={dropdownRef}>
             <button
-                className={`form-select text-start d-flex justify-content-between align-items-center ${isOpen ? 'show' : ''} ${className.includes('is-invalid') ? 'is-invalid' : ''}`}
+                className={`form-select text-start d-flex justify-content-between align-items-center ${isOpen ? 'show' : ''} ${className} ${className.includes('is-invalid') ? 'is-invalid' : ''}`}
                 type="button"
                 onClick={() => !disabled && setIsOpen(!isOpen)}
                 disabled={disabled}
