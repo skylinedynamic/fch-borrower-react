@@ -7,7 +7,7 @@ import { toast } from 'react-toastify'
 
 const API_STORAGE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace('/api/v1', '/storage/')
 
-export default function VendorApplication() {
+export default function CreditAccounts() {
   const [localFilters, setLocalFilters] = useState({
     category: 'All Categories',
     issuer: 'All Issuers',
@@ -194,7 +194,7 @@ export default function VendorApplication() {
                 <div className={`card vendor-card-colorful mb-0 border-0 shadow-sm overflow-hidden bg-white mt-1 border-top-accent-${v.category.toLowerCase()}`}>
 
                   {/* Visual Header with Subtle Gradient Background */}
-                  <div className="v-card-visual position-relative" style={{ height: '130px' }}>
+                  <div className="v-card-visual position-relative h-130px">
 
                     {/* Approval Level - Modern Tag Style */}
                     <div className="position-absolute top-0 start-0 m-0 z-2">
@@ -207,8 +207,7 @@ export default function VendorApplication() {
                       {/* Manual Status Dropdown */}
                       <div className="dropdown">
                         <button
-                          className="btn btn-sm btn-light rounded-circle shadow-sm d-flex align-items-center justify-content-center p-0"
-                          style={{ width: '26px', height: '26px' }}
+                          className="btn btn-sm btn-light rounded-circle shadow-sm d-flex align-items-center justify-content-center p-0 w-26px h-26px"
                           data-bs-toggle="dropdown"
                           aria-expanded="false"
                         >
@@ -317,14 +316,43 @@ export default function VendorApplication() {
               </div>
             ))
           ) : (
-            <div className="col-12 text-center py-5">
-              <div className="avatar-lg mx-auto mb-4">
-                <div className="avatar-title bg-light text-primary fs-24 rounded-circle">
-                  <i className="ri-search-line"></i>
+            <div className="col-12 mt-4">
+              <div className="no-result-elegant d-flex align-items-center justify-content-center rounded-1 overflow-hidden position-relative bg-white border border-light-subtle shadow-sm" style={{ minHeight: '400px' }}>
+                {/* Refined Geometric Background Elements */}
+                <div className="position-absolute top-0 start-0 w-100 h-100 opacity-25">
+                  <div className="position-absolute top-0 start-0 w-100 h-100" style={{ backgroundImage: 'radial-gradient(circle at 10% 20%, rgba(13,110,253,0.03) 0%, transparent 50%), radial-gradient(circle at 90% 80%, rgba(13,110,253,0.03) 0%, transparent 50%)' }}></div>
+                  <div className="position-absolute top-0 start-0 w-100 h-100" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%230d6efd\' fill-opacity=\'0.02\'%3E%3Cpath d=\'M0 40h40V0H0v40zM1 39h38V1H1v38z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }}></div>
+                </div>
+
+                <div className="text-center position-relative z-1 p-4">
+                  <div className="mb-4 position-relative d-inline-block">
+                    <div className="floating-icon-wrapper rounded-circle bg-primary-subtle d-flex align-items-center justify-content-center shadow-md" style={{ width: '100px', height: '100px' }}>
+                      <i className="ri-database-2-line fs-48 text-primary opacity-75"></i>
+                      <div className="position-absolute bottom-0 end-0 mb-0 me-0">
+                        <div className="bg-white rounded-circle p-1.5 shadow-sm border border-light">
+                          <i className="ri-search-line fs-18 text-primary"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <h4 className="text-dark mb-2">No Matching Accounts</h4>
+                  <p className="text-muted fs-14 mx-auto mb-4 fw-normal lh-base" style={{ maxWidth: '550px' }}>
+                    We couldn't find any credit opportunities matching your current search or eligibility parameters.
+                    Meeting different business metrics or clearing filters may reveal more options.
+                  </p>
+
+                  <div className="d-flex flex-column flex-sm-row align-items-center justify-content-center gap-3">
+                    <button
+                      className="btn btn-primary px-4 py-2 rounded-3 fw-bold shadow-sm d-flex align-items-center gap-2 transition-all hover-translate-y fs-13"
+                      onClick={handleResetFilters}
+                    >
+                      <i className="ri-restart-line fs-16"></i> Clear All Requirements
+                    </button>
+
+                  </div>
                 </div>
               </div>
-              <h5 className="fw-bold">No matching vendors</h5>
-              <p className="text-muted">Adjust your filters to discover more results.</p>
             </div>
           )}
         </div>
@@ -336,10 +364,9 @@ export default function VendorApplication() {
               <ul className="pagination pagination-rounded gap-1 mb-0">
                 <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
                   <button
-                    className="page-link border-0 shadow-sm d-flex align-items-center justify-content-center"
+                    className="page-link border-0 shadow-sm d-flex align-items-center justify-content-center w-36px h-36px rounded-6"
                     onClick={() => setPage(p => Math.max(1, p - 1))}
                     disabled={page === 1}
-                    style={{ width: '36px', height: '36px', borderRadius: '6px' }}
                   >
                     <i className="ri-arrow-left-s-line fs-18"></i>
                   </button>
@@ -359,9 +386,8 @@ export default function VendorApplication() {
                       )}
                       <li className={`page-item ${page === p ? 'active' : ''}`}>
                         <button
-                          className={`page-link border-0 shadow-sm d-flex align-items-center justify-content-center fw-bold ${page === p ? 'bg-primary text-white' : 'bg-white text-dark'}`}
+                          className={`page-link border-0 shadow-sm d-flex align-items-center justify-content-center fw-bold w-36px h-36px rounded-6 ${page === p ? 'bg-primary text-white' : 'bg-white text-dark'}`}
                           onClick={() => setPage(p)}
-                          style={{ width: '36px', height: '36px', borderRadius: '6px' }}
                         >
                           {p}
                         </button>
@@ -372,10 +398,9 @@ export default function VendorApplication() {
 
                 <li className={`page-item ${page === accountsData.meta.last_page ? 'disabled' : ''}`}>
                   <button
-                    className="page-link border-0 shadow-sm d-flex align-items-center justify-content-center"
+                    className="page-link border-0 shadow-sm d-flex align-items-center justify-content-center w-36px h-36px rounded-6"
                     onClick={() => setPage(p => Math.min(accountsData.meta?.last_page || 1, p + 1))}
                     disabled={page === accountsData.meta.last_page}
-                    style={{ width: '36px', height: '36px', borderRadius: '6px' }}
                   >
                     <i className="ri-arrow-right-s-line fs-18"></i>
                   </button>
@@ -386,78 +411,6 @@ export default function VendorApplication() {
         )}
       </div>
 
-      <style>{`
-        .vendor-card-colorful {
-          border-radius: 4px !important;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          border-top: 3px solid transparent;
-        }
-        .vendor-card-colorful:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 15px 35px rgba(0,0,0,0.12) !important;
-        }
-        
-        /* Category Accent Bars */
-        .border-top-accent-revolving { border-top-color: #0d6efd; }
-        .border-top-accent-charge { border-top-color: #198754; }
-        .border-top-accent-corporate { border-top-color: #212529; }
-        
-        /* Metric Box Tints */
-        .metric-box-primary { background-color: #f0f7ff; border-color: #d0e7ff !important; }
-        .metric-box-success { background-color: #f2faf5; border-color: #dcf2e6 !important; }
-        .metric-box-warning { background-color: #fffaf0; border-color: #fcedcf !important; }
-        
-        .v-gradient-bg {
-          background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-        }
-        
-        .issuer-dot { height: 6px; width: 6px; border-radius: 50%; display: inline-block; }
-        .dot-revolving { background-color: #0d6efd; }
-        .dot-charge { background-color: #198754; }
-        .dot-corporate { background-color: #212529; }
-        
-        .btn-luxury-action {
-          background: linear-gradient(to right, #00204a, #00306c);
-          color: white;
-          border: none;
-        }
-        .btn-luxury-action:hover {
-          background: linear-gradient(to right, #00306c, #00408d);
-          color: white;
-          transform: translateY(-2px);
-          box-shadow: 0 5px 15px rgba(0,32,74,0.3);
-        }
-        
-        .shadow-sm-hover { transition: all 0.2s ease; }
-        .shadow-sm-hover:hover { box-shadow: 0 2px 4px rgba(0,0,0,0.05); transform: scale(1.01); }
-        
-        .smaller { font-size: 10px; }
-        .fs-10 { font-size: 10px; }
-        .fs-13 { font-size: 13px; }
-        .fs-16 { font-size: 16px; }
-        .tracking-widest { letter-spacing: 0.15em; }
-        .tracking-wider { letter-spacing: 0.05em; }
-        
-        .vendor-logo-luxury { transition: transform 0.4s ease; }
-        .vendor-card-colorful:hover .vendor-logo-luxury { transform: scale(1.08); }
-
-        /* Subtle Skeleton Loader Overrides */
-        .skeleton-line {
-          background: #f5f6f7;
-          background: linear-gradient(90deg, #f5f6f7 25%, #ebedf0 45%, #f5f6f7 65%);
-          background-size: 200% 100%;
-          animation: skeleton-loading 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-          display: block;
-          height: 1em;
-          border-radius: 4px;
-          opacity: 0.8;
-        }
-
-        @keyframes skeleton-loading {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-      `}</style>
     </div>
   )
 }

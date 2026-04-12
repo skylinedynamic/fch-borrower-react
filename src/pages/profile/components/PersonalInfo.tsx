@@ -8,8 +8,12 @@ import type { PersonalInfoData, SavePersonalInfoRequest, ValidationErrors } from
 import TabLoader from '../../../components/Loader/TabLoader'
 import { countries as countriesData } from '../../../data/countries'
 
-import { formatPhoneNumber, formatLast4SSN } from '../../../utils/formatters'
+import { formatPhoneNumber, formatLast4SSN, unformatPhoneNumber } from '../../../utils/formatters'
 import { useAuth } from '../../../hooks/useAuth'
+import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
+import { LOCKED_PERSONAL_FIELDS } from '../../../config/profileLockFields'
+import { useSubmitChangeRequest } from '../../../modules/profile/queries'
+import { useRef } from 'react'
 
 interface PersonalInfoProps {
   data: SavePersonalInfoRequest
@@ -55,6 +59,34 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
   const [availableCities, setAvailableCities] = useState<CityType[]>([])
   const [showCityInput, setShowCityInput] = useState(false)
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({})
+  const { mutate: submitChange, isPending: isSubmittingChange } = useSubmitChangeRequest()
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Update Request Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [updateRequest, setUpdateRequest] = useState({
+    label: '',
+    key: '' as keyof SavePersonalInfoRequest,
+    currentValue: '',
+    newValue: ''
+  })
+
+  const toggleModal = () => setIsModalOpen(!isModalOpen)
+
+  const handleOpenRequestModal = (label: string, key: keyof SavePersonalInfoRequest, value: any) => {
+    setUpdateRequest({
+      label,
+      key,
+      currentValue: value || '',
+      newValue: ''
+    })
+    setIsModalOpen(true)
+  }
+
+  const isFieldLocked = (field: keyof SavePersonalInfoRequest) => {
+    const dbValue = (apiData as any)?.[field];
+    return LOCKED_PERSONAL_FIELDS.includes(field) && dbValue !== null && dbValue !== undefined && dbValue !== '';
+  }
 
   // Helper to find country by name or code
   const getCountryByName = (countryName: string) => {
@@ -85,7 +117,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
       onSuccess: async (response) => {
         toast.success(response.message || 'Personal information saved successfully')
         await refreshUser()
-       // onSave() // Call parent onSave if needed
+        // onSave() // Call parent onSave if needed
       },
       onError: (error: any) => {
         // Handle validation errors from server
@@ -202,63 +234,111 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
       <form className="row g-3">
         <div className="col-md-6">
           <label className="form-label">First Name <span className="text-danger">*</span></label>
-          <input
-            type="text"
-            className={`form-control ${hasError('first_name') ? 'is-invalid' : ''}`}
-            placeholder="Enter first name"
-            value={data.first_name}
-            onChange={(e) => onChange({ ...data, first_name: e.target.value })}
-            required
-          />
+          <div className="position-relative">
+            <input
+              type="text"
+              className={`form-control ${hasError('first_name') ? 'is-invalid' : ''} ${isFieldLocked('first_name') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              placeholder="Enter first name"
+              value={data.first_name}
+              onChange={(e) => onChange({ ...data, first_name: e.target.value })}
+              required
+              readOnly={isFieldLocked('first_name')}
+            />
+            {isFieldLocked('first_name') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('First Name', 'first_name', data.first_name)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
           {hasError('first_name') && (
-            <div className="invalid-feedback">{getFieldError('first_name')}</div>
+            <div className="invalid-feedback d-block">{getFieldError('first_name')}</div>
           )}
         </div>
         <div className="col-md-6">
           <label className="form-label">Last Name <span className="text-danger">*</span></label>
-          <input
-            type="text"
-            className={`form-control ${hasError('last_name') ? 'is-invalid' : ''}`}
-            placeholder="Enter last name"
-            value={data.last_name}
-            onChange={(e) => onChange({ ...data, last_name: e.target.value })}
-            required
-          />
+          <div className="position-relative">
+            <input
+              type="text"
+              className={`form-control ${hasError('last_name') ? 'is-invalid' : ''} ${isFieldLocked('last_name') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              placeholder="Enter last name"
+              value={data.last_name}
+              onChange={(e) => onChange({ ...data, last_name: e.target.value })}
+              required
+              readOnly={isFieldLocked('last_name')}
+            />
+            {isFieldLocked('last_name') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Last Name', 'last_name', data.last_name)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
           {hasError('last_name') && (
-            <div className="invalid-feedback">{getFieldError('last_name')}</div>
+            <div className="invalid-feedback d-block">{getFieldError('last_name')}</div>
           )}
         </div>
         <div className="col-md-6">
           <label className="form-label">Email <span className="text-danger">*</span></label>
-          <input
-            type="email"
-            className={`form-control ${hasError('email') ? 'is-invalid' : ''}`}
-            placeholder="Enter email id"
-            value={data.email}
-            onChange={(e) => onChange({ ...data, email: e.target.value })}
-            required
-          />
+          <div className="position-relative">
+            <input
+              type="email"
+              className={`form-control ${hasError('email') ? 'is-invalid' : ''} ${isFieldLocked('email') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              placeholder="Enter email id"
+              value={data.email}
+              onChange={(e) => onChange({ ...data, email: e.target.value })}
+              required
+              readOnly={isFieldLocked('email')}
+            />
+            {isFieldLocked('email') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Email Address', 'email', data.email)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
           {hasError('email') && (
-            <div className="invalid-feedback">{getFieldError('email')}</div>
+            <div className="invalid-feedback d-block">{getFieldError('email')}</div>
           )}
         </div>
         <div className="col-md-6">
           <label className="form-label">Phone Number <span className="text-danger">*</span></label>
-          <div className="input-group">
-            <span className="input-group-text bg-light border">
-              <span className="me-1">{selectedCountry?.code || 'US'}</span>
-              <span className="text-muted">{selectedCountry?.phone_code || '+1'}</span>
-            </span>
-            <input
-              type="tel"
-              className={`form-control ${hasError('phone_number') ? 'is-invalid' : ''}`}
-              placeholder="(555) 555-5555"
-              value={data.phone_number}
-              onChange={(e) => onChange({ ...data, phone_number: formatPhoneNumber(e.target.value) })}
-              required
-            />
+          <div className="position-relative">
+            <div className="input-group">
+              <span className="input-group-text bg-light border">
+                <span className="me-1">{selectedCountry?.code || 'US'}</span>
+                <span className="text-muted">{selectedCountry?.phone_code || '+1'}</span>
+              </span>
+              <input
+                type="tel"
+                className={`form-control ${hasError('phone_number') ? 'is-invalid' : ''} ${isFieldLocked('phone_number') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+                placeholder="(555) 555-5555"
+                value={data.phone_number}
+                onChange={(e) => onChange({ ...data, phone_number: formatPhoneNumber(e.target.value) })}
+                required
+                readOnly={isFieldLocked('phone_number')}
+              />
+            </div>
+            {isFieldLocked('phone_number') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Phone Number', 'phone_number', data.phone_number)}
+              >
+                Change Request
+              </button>
+            )}
             {hasError('phone_number') && (
-              <div className="invalid-feedback">{getFieldError('phone_number')}</div>
+              <div className="invalid-feedback d-block">{getFieldError('phone_number')}</div>
             )}
           </div>
         </div>
@@ -418,39 +498,64 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
         </div>
         <div className="col-md-6">
           <label className="form-label">Date of Birth <span className="text-danger">*</span></label>
-          <Flatpickr
-            className={`form-control ${hasError('date_of_birth') ? 'is-invalid' : ''}`}
-            value={data.date_of_birth}
-            onChange={(dates, dateStr) => {
-              onChange({ ...data, date_of_birth: dateStr })
-            }}
-            options={{
-              dateFormat: "Y-m-d",
-              altInput: true,
-              altFormat: "j M, Y",
-              maxDate: "today",
-              yearDropdown: true,
-              yearRange: "1900:" + new Date().getFullYear(),
-            }}
-            placeholder="Select date of birth"
-          />
+          <div className="position-relative">
+            <Flatpickr
+              className={`form-control ${hasError('date_of_birth') ? 'is-invalid' : ''} ${isFieldLocked('date_of_birth') ? 'bg-light border-dashed' : ''}`}
+              value={data.date_of_birth}
+              onChange={(dates, dateStr) => {
+                onChange({ ...data, date_of_birth: dateStr })
+              }}
+              options={{
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "j M, Y",
+                maxDate: "today",
+                yearDropdown: true,
+                yearRange: "1900:" + new Date().getFullYear(),
+                clickOpens: !isFieldLocked('date_of_birth')
+              } as any}
+              placeholder="Select date of birth"
+              disabled={isFieldLocked('date_of_birth')}
+            />
+            {isFieldLocked('date_of_birth') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Date of Birth', 'date_of_birth', data.date_of_birth)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
           {hasError('date_of_birth') && (
             <div className="invalid-feedback d-block">{getFieldError('date_of_birth')}</div>
           )}
         </div>
         <div className="col-md-6">
           <label className="form-label">Last 4 SSN <span className="text-danger">*</span></label>
-          <input
-            type="password"
-            className={`form-control ${hasError('last_4_ssn') ? 'is-invalid' : ''}`}
-            placeholder="Enter last 4 digits"
-            value={data.last_4_ssn}
-            onChange={(e) => onChange({ ...data, last_4_ssn: formatLast4SSN(e.target.value) })}
-            maxLength={4}
-            required
-          />
+          <div className="position-relative">
+            <input
+              type="password"
+              className={`form-control ${hasError('last_4_ssn') ? 'is-invalid' : ''} ${isFieldLocked('last_4_ssn') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              placeholder="Enter last 4 digits"
+              value={data.last_4_ssn}
+              onChange={(e) => onChange({ ...data, last_4_ssn: formatLast4SSN(e.target.value) })}
+              maxLength={4}
+              required
+              readOnly={isFieldLocked('last_4_ssn')}
+            />
+            {isFieldLocked('last_4_ssn') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Last 4 SSN', 'last_4_ssn', data.last_4_ssn)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
           {hasError('last_4_ssn') && (
-            <div className="invalid-feedback">{getFieldError('last_4_ssn')}</div>
+            <div className="invalid-feedback d-block">{getFieldError('last_4_ssn')}</div>
           )}
         </div>
         <div className="col-12 d-flex justify-content-end mt-4">
@@ -471,6 +576,106 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
           </button>
         </div>
       </form>
+
+      {/* Update Request Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        toggle={toggleModal}
+        centered
+        onOpened={() => inputRef.current?.focus()}
+      >
+        <ModalHeader toggle={toggleModal}>Change Request: {updateRequest.label}</ModalHeader>
+        <ModalBody>
+          <div className="mb-3">
+            <label className="form-label text-muted">Current Value</label>
+            <input
+              type="text"
+              className="form-control bg-light"
+              value={updateRequest.key === 'date_of_birth' && updateRequest.currentValue
+                ? new Date(updateRequest.currentValue).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                : (updateRequest.key === 'phone_number' ? formatPhoneNumber(String(updateRequest.currentValue))
+                  : updateRequest.currentValue)}
+              readOnly
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label fw-bold">Requested New Value <span className="text-danger">*</span></label>
+            {updateRequest.key === 'date_of_birth' ? (
+              <Flatpickr
+                className="form-control"
+                value={updateRequest.newValue}
+                onChange={(dates, dateStr) => setUpdateRequest({ ...updateRequest, newValue: dateStr })}
+                options={{
+                  dateFormat: "Y-m-d",
+                  altInput: true,
+                  altFormat: "j M, Y",
+                  maxDate: "today",
+                  static: true
+                }}
+                placeholder="Select date of birth"
+              />
+            ) : (
+              <input
+                ref={inputRef}
+                type={updateRequest.key === 'email' ? 'email' : 'text'}
+                className="form-control"
+                placeholder={`Enter the updated ${updateRequest.label}`}
+                value={updateRequest.newValue}
+                onChange={(e) => {
+                  let val = e.target.value;
+                  if (updateRequest.key === 'phone_number') val = formatPhoneNumber(val);
+                  if (updateRequest.key === 'last_4_ssn') val = formatLast4SSN(val);
+                  setUpdateRequest({ ...updateRequest, newValue: val });
+                }}
+                maxLength={updateRequest.key === 'phone_number' ? 14 : (updateRequest.key === 'last_4_ssn' ? 4 : undefined)}
+              />
+            )}
+          </div>
+          <div className="alert alert-info border-0 mb-0">
+            <div className="d-flex">
+              <div className="flex-shrink-0">
+                <i className="ri-information-line fs-18"></i>
+              </div>
+              <div className="flex-grow-1 ms-2">
+                <p className="mb-0 fs-13">
+                  This field is verified and locked. Submitting this form will notify our compliance team to review and verify the new information before it is updated.
+                </p>
+              </div>
+            </div>
+          </div>
+        </ModalBody>
+        <ModalFooter>
+          <button className="btn btn-ghost-danger" onClick={toggleModal}>Discard</button>
+          <button
+            className="btn btn-primary px-4"
+            disabled={!updateRequest.newValue || isSubmittingChange}
+            onClick={() => {
+              let finalNewValue = updateRequest.newValue;
+              if (updateRequest.key === 'phone_number') finalNewValue = unformatPhoneNumber(finalNewValue);
+
+              submitChange({
+                field_name: updateRequest.key,
+                old_value: String(updateRequest.currentValue).replace(/\D/g, ''),
+                new_value: finalNewValue,
+              }, {
+                onSuccess: (response) => {
+                  if (response.status) {
+                    toast.success(response.message);
+                    toggleModal();
+                  } else {
+                    toast.error(response.message);
+                  }
+                },
+                onError: () => {
+                  toast.error('Failed to submit change request');
+                }
+              });
+            }}
+          >
+            {isSubmittingChange ? 'Submitting...' : 'Submit for Review'}
+          </button>
+        </ModalFooter>
+      </Modal>
     </div>
   )
 }

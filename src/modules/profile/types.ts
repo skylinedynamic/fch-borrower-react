@@ -93,7 +93,7 @@ export type SaveBusinessDetailsRequest = {
   business_country: string
   business_country_code?: string
   business_start_date?: string
-  business_credit_score?: null
+  business_credit_score?: number | null
 }
 
 export type SaveBusinessDetailsResponse = {
@@ -128,4 +128,17 @@ export type SaveFinancialInfoResponse = {
   message: string
   data?: FinancialInfoData
   errors?: ValidationErrors
+}
+
+export type ChangeRequestRequest = {
+  field_name: string
+  old_value: string
+  new_value: string
+  note?: string
+}
+
+export type ChangeRequestResponse = {
+  status: boolean
+  message: string
+  data?: any
 }

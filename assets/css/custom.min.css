@@ -6177,3 +6177,273 @@
   font-size: .65rem !important;
 }
 
+/* ==========================================================================
+   FCH Custom Component Styles (Refactored from Inline/On-Page)
+   ========================================================================== */
+
+/* Page Helper Classes */
+.w-36px {
+  width: 36px !important;
+}
+
+.h-130px {
+  height: 130px !important;
+}
+
+.h-36px {
+  height: 36px !important;
+}
+
+.h-26px {
+  height: 26px !important;
+}
+
+.w-26px {
+  width: 26px !important;
+}
+
+.rounded-6 {
+  border-radius: 6px !important;
+}
+
+.z-4 {
+  z-index: 4 !important;
+}
+
+/* Business Profile Lock System */
+.locked-field-padding {
+  padding-right: 120px !important;
+}
+
+.change-request-btn {
+  height: calc(100% - 8px) !important;
+}
+
+/* Modal Flip Animation */
+@keyframes flipInX {
+  from {
+    transform: perspective(400px) rotate3d(1, 0, 0, 90deg);
+    animation-timing-function: ease-in;
+    opacity: 0;
+  }
+
+  40% {
+    transform: perspective(400px) rotate3d(1, 0, 0, -20deg);
+    animation-timing-function: ease-in;
+  }
+
+  60% {
+    transform: perspective(400px) rotate3d(1, 0, 0, 10deg);
+    opacity: 1;
+  }
+
+  80% {
+    transform: perspective(400px) rotate3d(1, 0, 0, -5deg);
+  }
+
+  to {
+    transform: perspective(400px);
+  }
+}
+
+.modal-flip .modal-content {
+  animation: flipInX 0.7s ease-out;
+  backface-visibility: visible !important;
+}
+
+/* Credit Accounts Styling */
+.vendor-card-colorful {
+  border-radius: 4px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-top: 3px solid transparent;
+}
+
+.vendor-card-colorful:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Category Accent Bars */
+.border-top-accent-revolving {
+  border-top-color: #0d6efd;
+}
+
+.border-top-accent-charge {
+  border-top-color: #198754;
+}
+
+.border-top-accent-corporate {
+  border-top-color: #212529;
+}
+
+/* Metric Box Tints */
+.metric-box-primary {
+  background-color: #f0f7ff;
+  border-color: #d0e7ff !important;
+}
+
+.metric-box-success {
+  background-color: #f2faf5;
+  border-color: #dcf2e6 !important;
+}
+
+.metric-box-warning {
+  background-color: #fffaf0;
+  border-color: #fcedcf !important;
+}
+
+.v-gradient-bg {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.issuer-dot {
+  height: 6px;
+  width: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-revolving {
+  background-color: #0d6efd;
+}
+
+.dot-charge {
+  background-color: #198754;
+}
+
+.dot-corporate {
+  background-color: #212529;
+}
+
+.btn-luxury-action {
+  background: linear-gradient(to right, #00204a, #00306c);
+  color: white;
+  border: none;
+}
+
+.btn-luxury-action:hover {
+  background: linear-gradient(to right, #00306c, #00408d);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 32, 74, 0.3);
+}
+
+.shadow-sm-hover {
+  transition: all 0.2s ease;
+}
+
+.shadow-sm-hover:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transform: scale(1.01);
+}
+
+.smaller {
+  font-size: 10px;
+}
+
+.fs-10 {
+  font-size: 10px;
+}
+
+.fs-13 {
+  font-size: 13px;
+}
+
+.fs-16 {
+  font-size: 16px;
+}
+
+.tracking-widest {
+  letter-spacing: 0.15em;
+}
+
+.tracking-wider {
+  letter-spacing: 0.05em;
+}
+
+.vendor-logo-luxury {
+  transition: transform 0.4s ease;
+}
+
+.vendor-card-colorful:hover .vendor-logo-luxury {
+  transform: scale(1.08);
+}
+
+/* Subtle Skeleton Loader Overrides */
+.skeleton-line {
+  background: #f5f6f7;
+  background: linear-gradient(90deg, #f5f6f7 25%, #ebedf0 45%, #f5f6f7 65%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  display: block;
+  height: 1em;
+  border-radius: 4px;
+  opacity: 0.8;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.no-result-elegant {
+  background-color: #ffffff !important;
+  transition: all 0.5s ease;
+}
+
+.floating-icon-wrapper {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+.hover-translate-y:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(13, 110, 253, 0.25) !important;
+}
+
+.pulse-primary {
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.3);
+  }
+
+  70% {
+    box-shadow: 0 0 0 20px rgba(13, 110, 253, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(13, 110, 253, 0);
+  }
+}
+
+.fs-32 {
+  font-size: 32px;
+}
+
+.fs-24 {
+  font-size: 24px;
+}
+
+.avatar-xl {
+  width: 80px;
+  height: 80px;
+}
