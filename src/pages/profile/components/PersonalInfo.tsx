@@ -47,7 +47,7 @@ const transformApiToComponent = (apiData: PersonalInfoData): SavePersonalInfoReq
     home_phone: apiData.home_phone || '',
     date_of_birth: apiData.date_of_birth || '',
     last_4_ssn: apiData.last_4_ssn || '',
-    country_code: '+1',
+    country_code: countriesData.find(c => c.name === apiData.country || c.code === apiData.country)?.phone_code || '+1',
   }
 }
 

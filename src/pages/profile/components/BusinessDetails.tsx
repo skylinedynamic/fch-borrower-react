@@ -84,6 +84,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
 
   useEffect(() => {
     if (isSuccess && apiData) {
+      const selectedCountry = countriesData.find(c => c.name === apiData.country)
       onChange({
         ...data,
         business_name: apiData.business_name,
@@ -95,7 +96,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
         business_city: apiData.business_city,
         business_state: apiData.business_state,
         business_country: apiData.country,
-        business_country_code: apiData.country_code,
+        business_country_code: selectedCountry ? selectedCountry.phone_code : (apiData.country_code || ''),
         business_zip_code: apiData.business_postal_code,
         business_website: apiData.business_website,
         business_entity_type: apiData.business_entity_type,
@@ -105,6 +106,19 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
       })
     }
   }, [isSuccess, apiData])
+
+  // Update phone country codes when country changes
+  useEffect(() => {
+    if (data.business_country) {
+      const country = countriesData.find(c => c.name === data.business_country)
+      if (country && data.business_country_code !== country.phone_code) {
+        onChange({
+          ...data,
+          business_country_code: country.phone_code
+        })
+      }
+    }
+  }, [data.business_country])
 
   // Update available states when country changes
   useEffect(() => {
