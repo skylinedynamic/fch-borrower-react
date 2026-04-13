@@ -619,7 +619,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
           </div>
         </ModalBody>
         <ModalFooter>
-          <button className="btn btn-ghost-danger" onClick={toggleModal}>Discard</button>
+          <button className="btn btn-danger-subtle" onClick={toggleModal}>Discard</button>
           <button
             className="btn btn-primary px-4"
             disabled={!updateRequest.newValue || isSubmittingChange}

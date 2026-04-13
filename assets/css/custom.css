@@ -778,6 +778,68 @@ File: Custom Css File
     border-top-color: #f7b84b;
 }
 
+
+/* Subtle Button Variations (Hardcoded for maximum compatibility) */
+.btn-primary-subtle {
+    color: #405189 !important;
+    background-color: rgba(64, 81, 137, 0.1) !important;
+    border-color: transparent !important;
+}
+.btn-primary-subtle:hover {
+    color: #fff !important;
+    background-color: #405189 !important;
+}
+
+.btn-success-subtle {
+    color: #0ab39c !important;
+    background-color: rgba(10, 179, 156, 0.1) !important;
+    border-color: transparent !important;
+}
+.btn-success-subtle:hover {
+    color: #fff !important;
+    background-color: #0ab39c !important;
+}
+
+.btn-info-subtle {
+    color: #299cdb !important;
+    background-color: rgba(41, 156, 219, 0.1) !important;
+    border-color: transparent !important;
+}
+.btn-info-subtle:hover {
+    color: #fff !important;
+    background-color: #299cdb !important;
+}
+
+.btn-warning-subtle {
+    color: #f7b84b !important;
+    background-color: rgba(247, 184, 75, 0.1) !important;
+    border-color: transparent !important;
+}
+.btn-warning-subtle:hover {
+    color: #000 !important;
+    background-color: #f7b84b !important;
+}
+
+.btn-danger-subtle {
+    color: #f06548 !important;
+    background-color: rgba(240, 101, 72, 0.1) !important;
+    border-color: transparent !important;
+}
+.btn-danger-subtle:hover {
+    color: #fff !important;
+    background-color: #f06548 !important;
+}
+
+.btn-dark-subtle {
+    color: #212529 !important;
+    background-color: rgba(33, 37, 41, 0.1) !important;
+    border-color: transparent !important;
+}
+.btn-dark-subtle:hover {
+    color: #fff !important;
+    background-color: #212529 !important;
+}
+
 .status-dot-inner {
     width: 6px;
     height: 6px;
