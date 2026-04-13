@@ -4,6 +4,7 @@
  * @returns The formatted phone number string
  */
 export const formatPhoneNumber = (value: string): string => {
+  if (!value) return ''
   // Remove all non-digit characters
   const phoneNumber = value.replace(/\D/g, '')
 
@@ -23,6 +24,7 @@ export const formatPhoneNumber = (value: string): string => {
  * @returns The raw numeric string
  */
 export const unformatPhoneNumber = (value: string): string => {
+  if (!value) return ''
   return value.replace(/\D/g, '')
 }
 
@@ -32,6 +34,7 @@ export const unformatPhoneNumber = (value: string): string => {
  * @returns The formatted string
  */
 export const formatLast4SSN = (value: string): string => {
+  if (!value) return ''
   return value.replace(/\D/g, '').slice(0, 4)
 }
 
@@ -96,6 +99,7 @@ export const unformatCurrency = (value: string): string => {
  * @returns The formatted string
  */
 export const formatSSN = (value: string): string => {
+  if (!value) return ''
   const digits = value.replace(/\D/g, '').slice(0, 9)
   if (digits.length <= 3) return digits
   if (digits.length <= 5) return `${digits.slice(0, 3)}-${digits.slice(3)}`
@@ -108,6 +112,7 @@ export const formatSSN = (value: string): string => {
  * @returns The raw numeric string
  */
 export const unformatSSN = (value: string): string => {
+  if (!value) return ''
   return value.replace(/\D/g, '')
 }
 
@@ -117,6 +122,7 @@ export const unformatSSN = (value: string): string => {
  * @returns The formatted string
  */
 export const formatDUNS = (value: string): string => {
+  if (!value) return ''
   return value.replace(/\D/g, '').slice(0, 9)
 }
 
@@ -126,6 +132,7 @@ export const formatDUNS = (value: string): string => {
  * @returns The formatted string
  */
 export const formatEIN = (value: string): string => {
+  if (!value) return ''
   const digits = value.replace(/\D/g, '').slice(0, 9)
   if (digits.length <= 2) return digits
   return `${digits.slice(0, 2)}-${digits.slice(2, 9)}`
@@ -137,5 +144,6 @@ export const formatEIN = (value: string): string => {
  * @returns The raw numeric string
  */
 export const unformatEIN = (value: string): string => {
+  if (!value) return ''
   return value.replace(/\D/g, '').slice(0, 9)
 }
