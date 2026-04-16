@@ -5,14 +5,10 @@ export const LOCKED_BUSINESS_FIELDS = [
     'business_website',
     'business_email',
     'duns_number',
-    'business_credit_score',
+    'personal_credit_score',
     'business_start_date',
 ];
 
-export const LOCKED_PERSONAL_FIELDS = [
+export const LOCKED_PERSONAL_FIELDS = [];
 
-];
-
-export const LOCKED_FINANCIAL_FIELDS = [
-
-];
+export const LOCKED_FINANCIAL_FIELDS = [];

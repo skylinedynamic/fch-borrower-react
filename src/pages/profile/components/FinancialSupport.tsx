@@ -35,8 +35,12 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
     currentValue: '',
     newValue: ''
   })
+  const [modalErrors, setModalErrors] = useState<Record<string, string[]>>({})
 
-  const toggleModal = () => setIsModalOpen(!isModalOpen)
+  const toggleModal = () => {
+    if (isModalOpen) setModalErrors({})
+    setIsModalOpen(!isModalOpen)
+  }
 
   const handleOpenRequestModal = (label: string, key: keyof SaveFinancialInfoRequest, value: any) => {
     setUpdateRequest({
@@ -111,29 +115,53 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
     <div className="fade-panel">
       <form className="row g-3">
         <div className="col-md-6">
-          <label className="form-label">Currency <span className="text-danger">*</span></label>
-          <CustomDropdown
-            value={data.currency}
-            onChange={(value) => onChange({ ...data, currency: value })}
-            options={currencyOptions}
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Select currency"
-            className={`w-100 ${errors.currency ? 'is-invalid' : ''}`}
-          />
+          <div className="position-relative">
+            <CustomDropdown
+              searchable={true}
+              value={data.currency}
+              onChange={(value) => onChange({ ...data, currency: value })}
+              options={currencyOptions}
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select currency"
+              className={`w-100 ${errors.currency ? 'is-invalid' : ''} ${isFieldLocked('currency') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              disabled={isFieldLocked('currency')}
+            />
+            {isFieldLocked('currency') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Currency', 'currency', data.currency)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
           {errors.currency && <div className="invalid-feedback d-block">{errors.currency}</div>}
         </div>
         <div className="col-md-6">
-          <label className="form-label">Years in Business <span className="text-danger">*</span></label>
-          <CustomDropdown
-            value={data.years_in_business}
-            onChange={(value) => onChange({ ...data, years_in_business: value })}
-            options={yearsInBusinessOptions}
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Select years"
-            className={`w-100 ${errors.years_in_business ? 'is-invalid' : ''}`}
-          />
+          <div className="position-relative">
+            <CustomDropdown
+              searchable={true}
+              value={data.years_in_business}
+              onChange={(value) => onChange({ ...data, years_in_business: value })}
+              options={yearsInBusinessOptions}
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select years"
+              className={`w-100 ${errors.years_in_business ? 'is-invalid' : ''} ${isFieldLocked('years_in_business') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              disabled={isFieldLocked('years_in_business')}
+            />
+            {isFieldLocked('years_in_business') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Years in Business', 'years_in_business', data.years_in_business)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
           {errors.years_in_business && <div className="invalid-feedback d-block">{errors.years_in_business}</div>}
         </div>
 
@@ -150,7 +178,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
             />
             {isFieldLocked('monthly_revenue' as any) && (
               <button
-                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
                 type="button"
                 onClick={() => handleOpenRequestModal('Monthly Revenue', 'monthly_revenue' as any, data.monthly_revenue)}
               >
@@ -173,7 +201,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
             />
             {isFieldLocked('annual_revenue' as any) && (
               <button
-                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
                 type="button"
                 onClick={() => handleOpenRequestModal('Annual Revenue', 'annual_revenue' as any, data.annual_revenue)}
               >
@@ -205,20 +233,59 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
             <input
               type="text"
               className="form-control bg-light"
-              value={formatCurrency(String(updateRequest.currentValue))}
+              value={updateRequest.key === 'years_in_business' 
+                ? (yearsInBusinessOptions.find(opt => opt.value === updateRequest.currentValue)?.label || updateRequest.currentValue)
+                : ((updateRequest.key === 'monthly_revenue' || updateRequest.key === 'annual_revenue') 
+                  ? formatCurrency(String(updateRequest.currentValue)) 
+                  : updateRequest.currentValue)}
               readOnly
             />
           </div>
           <div className="mb-3">
             <label className="form-label fw-bold">Requested New Value <span className="text-danger">*</span></label>
-            <input
-              ref={inputRef}
-              type="text"
-              className="form-control"
-              placeholder={`Enter the updated ${updateRequest.label}`}
-              value={updateRequest.newValue}
-              onChange={(e) => setUpdateRequest({ ...updateRequest, newValue: formatCurrency(e.target.value) })}
-            />
+            {updateRequest.key === 'currency' ? (
+              <CustomDropdown
+                searchable={true}
+                value={updateRequest.newValue}
+                onChange={(val) => setUpdateRequest({ ...updateRequest, newValue: val })}
+                options={currencyOptions}
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select currency"
+                className={`w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
+              />
+            ) : updateRequest.key === 'years_in_business' ? (
+              <CustomDropdown
+                searchable={true}
+                value={updateRequest.newValue}
+                onChange={(val) => setUpdateRequest({ ...updateRequest, newValue: val })}
+                options={yearsInBusinessOptions}
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select years"
+                className={`w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
+              />
+            ) : (
+              <input
+                ref={inputRef}
+                type="text"
+                className={`form-control ${modalErrors.new_value ? 'is-invalid' : ''}`}
+                placeholder={`Enter the updated ${updateRequest.label}`}
+                value={updateRequest.newValue}
+                onChange={(e) => {
+                  let val = e.target.value;
+                  if (updateRequest.key === 'monthly_revenue' || updateRequest.key === 'annual_revenue') {
+                    val = formatCurrency(val);
+                  }
+                  setUpdateRequest({ ...updateRequest, newValue: val });
+                }}
+              />
+            )}
+            {modalErrors.new_value && (
+              <div className="invalid-feedback d-block mt-1">
+                {Array.isArray(modalErrors.new_value) ? modalErrors.new_value[0] : modalErrors.new_value}
+              </div>
+            )}
           </div>
           <div className="alert alert-info border-0 mb-0">
             <div className="d-flex">
@@ -239,21 +306,33 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
             className="btn btn-primary px-4"
             disabled={!updateRequest.newValue || isSubmittingChange}
             onClick={() => {
+              let finalNewValue = updateRequest.newValue;
+              if (updateRequest.key === 'monthly_revenue' || updateRequest.key === 'annual_revenue') {
+                finalNewValue = unformatCurrency(finalNewValue);
+              }
+
               submitChange({
                 field_name: updateRequest.key,
-                old_value: unformatCurrency(String(updateRequest.currentValue)),
-                new_value: unformatCurrency(updateRequest.newValue),
+                new_value: finalNewValue,
               }, {
                 onSuccess: (response) => {
                   if (response.status) {
                     toast.success(response.message);
                     toggleModal();
                   } else {
-                    toast.error(response.message);
+                    if (response.errors) {
+                      setModalErrors(response.errors);
+                    } else {
+                      toast.error(response.message);
+                    }
                   }
                 },
-                onError: () => {
-                  toast.error('Failed to submit change request');
+                onError: (error: any) => {
+                  if (error.response?.data?.errors) {
+                    setModalErrors(error.response.data.errors);
+                  } else {
+                    toast.error('Failed to submit change request');
+                  }
                 }
               });
             }}

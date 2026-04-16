@@ -8,7 +8,7 @@ import type { PersonalInfoData, SavePersonalInfoRequest, ValidationErrors } from
 import TabLoader from '../../../components/Loader/TabLoader'
 import { countries as countriesData } from '../../../data/countries'
 
-import { formatPhoneNumber, formatLast4SSN, unformatPhoneNumber } from '../../../utils/formatters'
+import { formatPhoneNumber, formatLast4SSN, unformatPhoneNumber, formatZipCode } from '../../../utils/formatters'
 import { useAuth } from '../../../hooks/useAuth'
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import { LOCKED_PERSONAL_FIELDS } from '../../../config/profileLockFields'
@@ -70,8 +70,12 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
     currentValue: '',
     newValue: ''
   })
+  const [modalErrors, setModalErrors] = useState<Record<string, string[]>>({})
 
-  const toggleModal = () => setIsModalOpen(!isModalOpen)
+  const toggleModal = () => {
+    if (isModalOpen) setModalErrors({})
+    setIsModalOpen(!isModalOpen)
+  }
 
   const handleOpenRequestModal = (label: string, key: keyof SavePersonalInfoRequest, value: any) => {
     setUpdateRequest({
@@ -298,7 +302,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             />
             {isFieldLocked('email') && (
               <button
-                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
                 type="button"
                 onClick={() => handleOpenRequestModal('Email Address', 'email', data.email)}
               >
@@ -330,7 +334,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             </div>
             {isFieldLocked('phone_number') && (
               <button
-                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
                 type="button"
                 onClick={() => handleOpenRequestModal('Phone Number', 'phone_number', data.phone_number)}
               >
@@ -345,37 +349,61 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
 
         <div className="col-md-6">
           <label className="form-label">Home Address <span className="text-danger">*</span></label>
-          <textarea
-            className={`form-control ${hasError('home_address') ? 'is-invalid' : ''}`}
-            placeholder="Enter address"
-            rows={1}
-            value={data.home_address}
-            onChange={(e) => onChange({ ...data, home_address: e.target.value })}
-            required
-          />
-          {hasError('home_address') && (
-            <div className="invalid-feedback">{getFieldError('home_address')}</div>
-          )}
+          <div className="position-relative">
+            <textarea
+              className={`form-control ${hasError('home_address') ? 'is-invalid' : ''} ${isFieldLocked('home_address') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              placeholder="Enter address"
+              rows={1}
+              value={data.home_address}
+              onChange={(e) => onChange({ ...data, home_address: e.target.value })}
+              required
+              readOnly={isFieldLocked('home_address')}
+            />
+            {isFieldLocked('home_address') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Home Address', 'home_address', data.home_address)}
+              >
+                Change Request
+              </button>
+            )}
+            {hasError('home_address') && (
+              <div className="invalid-feedback d-block">{getFieldError('home_address')}</div>
+            )}
+          </div>
         </div>
 
         <div className="col-md-6">
           <label className="form-label">Country <span className="text-danger">*</span></label>
-          <CustomDropdown
-            value={data.country}
-            onChange={(value) => {
-              onChange({
-                ...data,
-                country: value,
-                state: '', // Reset state when country changes
-              })
-            }}
-            options={countriesData}
-            optionLabel="name"
-            optionValue="name"
-            placeholder="Select country"
-            searchable={false}
-            className={`w-100 ${hasError('country') ? 'is-invalid' : ''}`}
-          />
+          <div className="position-relative">
+            <CustomDropdown
+              value={data.country}
+              onChange={(value) => {
+                onChange({
+                  ...data,
+                  country: value,
+                  state: '', // Reset state when country changes
+                })
+              }}
+              options={countriesData}
+              optionLabel="name"
+              optionValue="name"
+              placeholder="Select country"
+              searchable={true}
+              className={`w-100 ${hasError('country') ? 'is-invalid' : ''} ${isFieldLocked('country') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              disabled={isFieldLocked('country')}
+            />
+            {isFieldLocked('country') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Country', 'country', data.country)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
           {hasError('country') && (
             <div className="invalid-feedback d-block">{getFieldError('country')}</div>
           )}
@@ -384,31 +412,42 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
 
         <div className="col-md-6">
           <label className="form-label">State <span className="text-danger">*</span></label>
-          <CustomDropdown
-            value={data.state}
-            onChange={(value) => {
-              // Find the selected state object to get its cities
-              const selectedStateObj = availableStates.find(s => s.name === value || s.code === value)
-              let defaultCity = ''
-              // Default to the first city if available
-              if (selectedStateObj && selectedStateObj.cities && selectedStateObj.cities.length > 0) {
-                defaultCity = selectedStateObj.cities[0]
-              }
+          <div className="position-relative">
+            <CustomDropdown
+              value={data.state}
+              onChange={(value) => {
+                // Find the selected state object to get its cities
+                const selectedStateObj = availableStates.find(s => s.name === value || s.code === value)
+                let defaultCity = ''
+                // Default to the first city if available
+                if (selectedStateObj && selectedStateObj.cities && selectedStateObj.cities.length > 0) {
+                  defaultCity = selectedStateObj.cities[0]
+                }
 
-              onChange({
-                ...data,
-                state: value,
-                city: defaultCity
-              })
-            }}
-            options={availableStates}
-            optionLabel="name"
-            optionValue="name"
-            placeholder="Select state"
-            searchable={true}
-            className={`w-100 ${hasError('state') ? 'is-invalid' : ''}`}
-            disabled={!data.country}
-          />
+                onChange({
+                  ...data,
+                  state: value,
+                  city: defaultCity
+                })
+              }}
+              options={availableStates}
+              optionLabel="name"
+              optionValue="name"
+              placeholder="Select state"
+              searchable={true}
+              className={`w-100 ${hasError('state') ? 'is-invalid' : ''} ${isFieldLocked('state') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              disabled={!data.country || isFieldLocked('state')}
+            />
+            {isFieldLocked('state') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('State', 'state', data.state)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
           {hasError('state') && (
             <div className="invalid-feedback d-block">{getFieldError('state')}</div>
           )}
@@ -417,46 +456,68 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
 
         <div className={showCityInput ? "col-md-3" : "col-md-6"}>
           <label className="form-label">City <span className="text-danger">*</span></label>
-          <CustomDropdown
-            value={showCityInput ? 'Others' : data.city}
-            onChange={(value) => {
-              if (value === 'Others') {
-                setShowCityInput(true)
-                onChange({ ...data, city: '' })
-              } else {
-                setShowCityInput(false)
-                onChange({ ...data, city: value })
-              }
-            }}
-            options={availableCities}
-            optionLabel="name"
-            optionValue="code"
-            placeholder="Select city"
-            searchable={true}
-            className={`w-100 ${hasError('city') ? 'is-invalid' : ''}`}
-            disabled={!data.state}
-          />
-
-          {hasError('city') && (
-            <div className="invalid-feedback">{getFieldError('city')}</div>
-          )}
+          <div className="position-relative">
+            <CustomDropdown
+              value={showCityInput ? 'Others' : data.city}
+              onChange={(value) => {
+                if (value === 'Others') {
+                  setShowCityInput(true)
+                  onChange({ ...data, city: '' })
+                } else {
+                  setShowCityInput(false)
+                  onChange({ ...data, city: value })
+                }
+              }}
+              options={availableCities}
+              optionLabel="name"
+              optionValue="code"
+              placeholder="Select city"
+              searchable={true}
+              className={`w-100 ${hasError('city') ? 'is-invalid' : ''} ${isFieldLocked('city') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              disabled={!data.state || isFieldLocked('city')}
+            />
+            {isFieldLocked('city') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('City', 'city', data.city)}
+              >
+                Change Request
+              </button>
+            )}
+            {hasError('city') && (
+              <div className="invalid-feedback d-block">{getFieldError('city')}</div>
+            )}
+          </div>
 
         </div>
 
         {showCityInput && (
           <div className="col-md-3">
             <label className="form-label">City Name <span className="text-danger">*</span></label>
+          <div className="position-relative">
             <input
               type="text"
-              className={`form-control ${hasError('city') ? 'is-invalid' : ''}`}
+              className={`form-control ${hasError('city') ? 'is-invalid' : ''} ${isFieldLocked('city') ? 'bg-light border-dashed locked-field-padding' : ''}`}
               placeholder="Enter city name"
               value={data.city}
               onChange={(e) => onChange({ ...data, city: e.target.value })}
               required
+              readOnly={isFieldLocked('city')}
             />
-            {hasError('city') && (
-              <div className="invalid-feedback">{getFieldError('city')}</div>
+            {isFieldLocked('city') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('City Name', 'city', data.city)}
+              >
+                Change Request
+              </button>
             )}
+            {hasError('city') && (
+              <div className="invalid-feedback d-block">{getFieldError('city')}</div>
+            )}
+          </div>
           </div>
         )}
 
@@ -464,35 +525,59 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
 
         <div className="col-md-6">
           <label className="form-label">Zip Code <span className="text-danger">*</span></label>
-          <input
-            type="text"
-            className={`form-control ${hasError('zip_code') ? 'is-invalid' : ''}`}
-            placeholder="Enter zip code"
-            value={data.zip_code}
-            onChange={(e) => onChange({ ...data, zip_code: e.target.value })}
-            required
-          />
-          {hasError('zip_code') && (
-            <div className="invalid-feedback">{getFieldError('zip_code')}</div>
-          )}
+          <div className="position-relative">
+            <input
+              type="text"
+              className={`form-control ${hasError('zip_code') ? 'is-invalid' : ''} ${isFieldLocked('zip_code') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              placeholder="Enter zip code"
+              value={data.zip_code}
+              onChange={(e) => onChange({ ...data, zip_code: formatZipCode(e.target.value) })}
+              required
+              readOnly={isFieldLocked('zip_code')}
+            />
+            {isFieldLocked('zip_code') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Zip Code', 'zip_code', data.zip_code)}
+              >
+                Change Request
+              </button>
+            )}
+            {hasError('zip_code') && (
+              <div className="invalid-feedback d-block">{getFieldError('zip_code')}</div>
+            )}
+          </div>
         </div>
 
         <div className="col-md-6">
           <label className="form-label">Home Phone </label>
-          <div className="input-group">
-            <span className="input-group-text bg-light border">
-              <span className="me-1">{selectedCountry?.code || 'US'}</span>
-              <span className="text-muted">{selectedCountry?.phone_code || '+1'}</span>
-            </span>
-            <input
-              type="tel"
-              className={`form-control ${hasError('home_phone') ? 'is-invalid' : ''}`}
-              placeholder="(555) 555-5555"
-              value={data.home_phone}
-              onChange={(e) => onChange({ ...data, home_phone: formatPhoneNumber(e.target.value) })}
-            />
+          <div className="position-relative">
+            <div className="input-group">
+              <span className="input-group-text bg-light border">
+                <span className="me-1">{selectedCountry?.code || 'US'}</span>
+                <span className="text-muted">{selectedCountry?.phone_code || '+1'}</span>
+              </span>
+              <input
+                type="tel"
+                className={`form-control ${hasError('home_phone') ? 'is-invalid' : ''} ${isFieldLocked('home_phone') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+                placeholder="(555) 555-5555"
+                value={data.home_phone}
+                onChange={(e) => onChange({ ...data, home_phone: formatPhoneNumber(e.target.value) })}
+                readOnly={isFieldLocked('home_phone')}
+              />
+            </div>
+            {isFieldLocked('home_phone') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Home Phone', 'home_phone', data.home_phone)}
+              >
+                Change Request
+              </button>
+            )}
             {hasError('home_phone') && (
-              <div className="invalid-feedback">{getFieldError('home_phone')}</div>
+              <div className="invalid-feedback d-block">{getFieldError('home_phone')}</div>
             )}
           </div>
         </div>
@@ -519,7 +604,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             />
             {isFieldLocked('date_of_birth') && (
               <button
-                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
                 type="button"
                 onClick={() => handleOpenRequestModal('Date of Birth', 'date_of_birth', data.date_of_birth)}
               >
@@ -546,7 +631,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             />
             {isFieldLocked('last_4_ssn') && (
               <button
-                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
                 type="button"
                 onClick={() => handleOpenRequestModal('Last 4 SSN', 'last_4_ssn', data.last_4_ssn)}
               >
@@ -602,7 +687,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             <label className="form-label fw-bold">Requested New Value <span className="text-danger">*</span></label>
             {updateRequest.key === 'date_of_birth' ? (
               <Flatpickr
-                className="form-control"
+                className={`form-control ${modalErrors.new_value ? 'is-invalid' : ''}`}
                 value={updateRequest.newValue}
                 onChange={(dates, dateStr) => setUpdateRequest({ ...updateRequest, newValue: dateStr })}
                 options={{
@@ -614,21 +699,60 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
                 }}
                 placeholder="Select date of birth"
               />
+            ) : updateRequest.key === 'country' ? (
+              <CustomDropdown
+                searchable={true}
+                value={updateRequest.newValue}
+                onChange={(val) => setUpdateRequest({ ...updateRequest, newValue: val })}
+                options={countriesData}
+                optionLabel="name"
+                optionValue="name"
+                placeholder="Select country"
+                className={`w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
+              />
+            ) : updateRequest.key === 'state' ? (
+              <CustomDropdown
+                searchable={true}
+                value={updateRequest.newValue}
+                onChange={(val) => setUpdateRequest({ ...updateRequest, newValue: val })}
+                options={availableStates}
+                optionLabel="name"
+                optionValue="name"
+                placeholder="Select state"
+                className={`w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
+              />
+            ) : updateRequest.key === 'city' ? (
+              <CustomDropdown
+                searchable={true}
+                value={updateRequest.newValue}
+                onChange={(val) => setUpdateRequest({ ...updateRequest, newValue: val })}
+                options={availableCities.filter(c => c.code !== 'Others')}
+                optionLabel="name"
+                optionValue="code"
+                placeholder="Select city"
+                className={`w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
+              />
             ) : (
               <input
                 ref={inputRef}
                 type={updateRequest.key === 'email' ? 'email' : 'text'}
-                className="form-control"
+                className={`form-control ${modalErrors.new_value ? 'is-invalid' : ''}`}
                 placeholder={`Enter the updated ${updateRequest.label}`}
                 value={updateRequest.newValue}
                 onChange={(e) => {
                   let val = e.target.value;
                   if (updateRequest.key === 'phone_number') val = formatPhoneNumber(val);
                   if (updateRequest.key === 'last_4_ssn') val = formatLast4SSN(val);
+                  if (updateRequest.key === 'zip_code') val = formatZipCode(val);
                   setUpdateRequest({ ...updateRequest, newValue: val });
                 }}
                 maxLength={updateRequest.key === 'phone_number' ? 14 : (updateRequest.key === 'last_4_ssn' ? 4 : undefined)}
               />
+            )}
+            {modalErrors.new_value && (
+              <div className="invalid-feedback d-block mt-1">
+                {Array.isArray(modalErrors.new_value) ? modalErrors.new_value[0] : modalErrors.new_value}
+              </div>
             )}
           </div>
           <div className="alert alert-info border-0 mb-0">
@@ -651,11 +775,9 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             disabled={!updateRequest.newValue || isSubmittingChange}
             onClick={() => {
               let finalNewValue = updateRequest.newValue;
-              if (updateRequest.key === 'phone_number') finalNewValue = unformatPhoneNumber(finalNewValue);
 
               submitChange({
                 field_name: updateRequest.key,
-                old_value: String(updateRequest.currentValue).replace(/\D/g, ''),
                 new_value: finalNewValue,
               }, {
                 onSuccess: (response) => {
@@ -663,11 +785,19 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
                     toast.success(response.message);
                     toggleModal();
                   } else {
-                    toast.error(response.message);
+                    if (response.errors) {
+                      setModalErrors(response.errors);
+                    } else {
+                      toast.error(response.message);
+                    }
                   }
                 },
-                onError: () => {
-                  toast.error('Failed to submit change request');
+                onError: (error: any) => {
+                  if (error.response?.data?.errors) {
+                    setModalErrors(error.response.data.errors);
+                  } else {
+                    toast.error('Failed to submit change request');
+                  }
                 }
               });
             }}
@@ -679,3 +809,4 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
     </div>
   )
 }
+

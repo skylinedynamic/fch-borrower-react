@@ -7,7 +7,7 @@ import { useBusinessDetails, useSaveBusinessDetails, useSubmitChangeRequest } fr
 import { useEffect, useMemo, useState, useRef } from 'react'
 import { toast } from 'react-toastify'
 import TabLoader from '../../../components/Loader/TabLoader'
-import { formatPhoneNumber, formatDUNS, formatEIN, unformatEIN, unformatPhoneNumber } from '../../../utils/formatters'
+import { formatPhoneNumber, formatDUNS, formatEIN, unformatEIN, unformatPhoneNumber, formatZipCode } from '../../../utils/formatters'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/flatpickr.css'
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
@@ -39,8 +39,12 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
     currentValue: '',
     newValue: ''
   })
+  const [modalErrors, setModalErrors] = useState<Record<string, string[]>>({})
 
-  const toggleModal = () => setIsModalOpen(!isModalOpen)
+  const toggleModal = () => {
+    if (isModalOpen) setModalErrors({})
+    setIsModalOpen(!isModalOpen)
+  }
 
   const handleOpenRequestModal = (label: string, key: keyof SaveBusinessDetailsRequest, value: any) => {
     setUpdateRequest({
@@ -56,11 +60,15 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
     setErrors({})
     const payload = {
       ...data,
-      business_ein: unformatEIN(data.business_ein),
-      business_phone: unformatPhoneNumber(data.business_phone),
-      duns_number: data.duns_number.replace(/\D/g, '')
+      business_ein: data.business_ein,
+      business_phone: data.business_phone,
+      duns_number: data.duns_number.replace(/\D/g, ''),
     }
-    saveBusiness(payload, {
+
+    // Remove read-only fields from payload
+    const { business_credit_score, ...finalPayload } = payload;
+
+    saveBusiness(finalPayload as any, {
       onSuccess: (response) => {
         if (response.status) {
           toast.success(response.message)
@@ -103,6 +111,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
         business_industry_type: apiData.business_industry_type,
         business_start_date: apiData.business_start_date,
         business_credit_score: apiData.business_credit_score,
+        personal_credit_score: apiData.personal_credit_score,
       })
     }
   }, [isSuccess, apiData])
@@ -169,7 +178,16 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
   }, [data.business_country])
 
   const isFieldLocked = (field: keyof SaveBusinessDetailsRequest) => {
-    const dbValue = (apiData as any)?.[field];
+    // Map request keys to API data keys if they differ
+    const keyMap: Record<string, string> = {
+      'business_country': 'country',
+      'business_country_code': 'country_code',
+      'business_zip_code': 'business_postal_code',
+    };
+
+    const apiKey = keyMap[field] || field;
+    const dbValue = (apiData as any)?.[apiKey];
+
     return LOCKED_BUSINESS_FIELDS.includes(field) && dbValue !== null && dbValue !== undefined && dbValue !== '';
   }
 
@@ -184,14 +202,26 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
       <form className="row g-3">
         <div className="col-md-6">
           <label className="form-label">Legal Business Name <span className="text-danger">*</span></label>
-          <input
-            type="text"
-            placeholder="Enter business name"
-            value={data.business_name}
-            onChange={(e) => onChange({ ...data, business_name: e.target.value })}
-            className={`form-control ${errors.business_name ? 'is-invalid' : ''}`}
-          />
-          {errors.business_name && <div className="invalid-feedback">{errors.business_name}</div>}
+          <div className="position-relative">
+            <input
+              type="text"
+              placeholder="Enter business name"
+              value={data.business_name}
+              onChange={(e) => onChange({ ...data, business_name: e.target.value })}
+              className={`form-control ${errors.business_name ? 'is-invalid' : ''} ${isFieldLocked('business_name') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              readOnly={isFieldLocked('business_name')}
+            />
+            {isFieldLocked('business_name') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Legal Business Name', 'business_name', data.business_name)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
+          {errors.business_name && <div className="invalid-feedback d-block">{errors.business_name}</div>}
         </div>
         <div className="col-md-6">
           <label className="form-label d-flex align-items-center justify-content-between w-100">
@@ -209,7 +239,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
             />
             {isFieldLocked('business_ein') && (
               <button
-                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
                 type="button"
                 onClick={() => handleOpenRequestModal('Business EIN', 'business_ein', data.business_ein)}
               >
@@ -242,7 +272,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
             </div>
             {isFieldLocked('business_phone') && (
               <button
-                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
                 type="button"
                 onClick={() => handleOpenRequestModal('Phone Number', 'business_phone', data.business_phone)}
               >
@@ -267,7 +297,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
             />
             {isFieldLocked('business_email') && (
               <button
-                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
                 type="button"
                 onClick={() => handleOpenRequestModal('Business Email', 'business_email', data.business_email)}
               >
@@ -293,7 +323,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
             />
             {isFieldLocked('duns_number') && (
               <button
-                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
                 type="button"
                 onClick={() => handleOpenRequestModal('DUNS Number', 'duns_number', data.duns_number)}
               >
@@ -318,7 +348,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
             />
             {isFieldLocked('business_address') && (
               <button
-                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
                 type="button"
                 onClick={() => handleOpenRequestModal('Business Address', 'business_address', data.business_address)}
               >
@@ -331,25 +361,37 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
 
         <div className="col-md-6">
           <label className="form-label">Country <span className="text-danger">*</span></label>
-          <CustomDropdown
-            value={data.business_country}
-            onChange={(value) => {
-              const selectedCountryObj = countriesData.find(c => c.name === value)
-              onChange({
-                ...data,
-                business_country: value,
-                business_country_code: selectedCountryObj ? selectedCountryObj.phone_code : '',
-                business_state: '', // Reset state when country changes
-                business_city: '' // Reset city when country changes
-              })
-            }}
-            options={countriesData}
-            optionLabel="name"
-            optionValue="name"
-            placeholder="Select country"
-            searchable={false}
-            className={`w-100 ${errors.business_country ? 'is-invalid' : ''}`}
-          />
+          <div className="position-relative">
+            <CustomDropdown
+              value={data.business_country}
+              onChange={(value) => {
+                const selectedCountryObj = countriesData.find(c => c.name === value)
+                onChange({
+                  ...data,
+                  business_country: value,
+                  business_country_code: selectedCountryObj ? selectedCountryObj.phone_code : '',
+                  business_state: '', // Reset state when country changes
+                  business_city: '' // Reset city when country changes
+                })
+              }}
+              options={countriesData}
+              optionLabel="name"
+              optionValue="name"
+              placeholder="Select country"
+              searchable={true}
+              className={`w-100 ${errors.business_country ? 'is-invalid' : ''} ${isFieldLocked('business_country') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              disabled={isFieldLocked('business_country')}
+            />
+            {isFieldLocked('business_country') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Country', 'business_country', data.business_country)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
           {errors.business_country && (
             <div className="invalid-feedback d-block">{errors.business_country}</div>
           )}
@@ -357,48 +399,70 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
 
         <div className="col-md-6">
           <label className="form-label">State <span className="text-danger">*</span></label>
-          <CustomDropdown
-            value={data.business_state}
-            onChange={(value) => {
-              const selectedStateObj = availableStates.find(s => s.name === value)
-              let defaultCity = ''
-              if (selectedStateObj && selectedStateObj.cities && selectedStateObj.cities.length > 0) {
-                defaultCity = selectedStateObj.cities[0]
-              }
-              onChange({ ...data, business_state: value, business_city: defaultCity })
-            }}
-            options={availableStates}
-            optionLabel="name"
-            optionValue="name"
-            searchable={true}
-            placeholder="Select state"
-            className={`w-100 ${errors.business_state ? 'is-invalid' : ''}`}
-            disabled={!data.business_country}
-          />
+          <div className="position-relative">
+            <CustomDropdown
+              value={data.business_state}
+              onChange={(value) => {
+                const selectedStateObj = availableStates.find(s => s.name === value)
+                let defaultCity = ''
+                if (selectedStateObj && selectedStateObj.cities && selectedStateObj.cities.length > 0) {
+                  defaultCity = selectedStateObj.cities[0]
+                }
+                onChange({ ...data, business_state: value, business_city: defaultCity })
+              }}
+              options={availableStates}
+              optionLabel="name"
+              optionValue="name"
+              searchable={true}
+              placeholder="Select state"
+              className={`w-100 ${errors.business_state ? 'is-invalid' : ''} ${isFieldLocked('business_state') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              disabled={!data.business_country || isFieldLocked('business_state')}
+            />
+            {isFieldLocked('business_state') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('State', 'business_state', data.business_state)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
           {errors.business_state && <div className="invalid-feedback d-block">{errors.business_state}</div>}
         </div>
 
         <div className={showCityInput ? "col-md-3" : "col-md-6"}>
           <label className="form-label">City <span className="text-danger">*</span></label>
-          <CustomDropdown
-            value={showCityInput ? 'Others' : data.business_city}
-            onChange={(value) => {
-              if (value === 'Others') {
-                setShowCityInput(true)
-                onChange({ ...data, business_city: '' })
-              } else {
-                setShowCityInput(false)
-                onChange({ ...data, business_city: value })
-              }
-            }}
-            options={availableCities}
-            optionLabel="name"
-            optionValue="code"
-            placeholder="Select city"
-            searchable={true}
-            className={`w-100 ${errors.business_city ? 'is-invalid' : ''}`}
-            disabled={!data.business_state}
-          />
+          <div className="position-relative">
+            <CustomDropdown
+              value={showCityInput ? 'Others' : data.business_city}
+              onChange={(value) => {
+                if (value === 'Others') {
+                  setShowCityInput(true)
+                  onChange({ ...data, business_city: '' })
+                } else {
+                  setShowCityInput(false)
+                  onChange({ ...data, business_city: value })
+                }
+              }}
+              options={availableCities}
+              optionLabel="name"
+              optionValue="code"
+              placeholder="Select city"
+              searchable={true}
+              className={`w-100 ${errors.business_city ? 'is-invalid' : ''} ${isFieldLocked('business_city') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              disabled={!data.business_state || isFieldLocked('business_city')}
+            />
+            {isFieldLocked('business_city') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('City', 'business_city', data.business_city)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
           {errors.business_city && !showCityInput && (
             <div className="invalid-feedback d-block">{errors.business_city}</div>
           )}
@@ -407,43 +471,80 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
         {showCityInput && (
           <div className="col-md-3">
             <label className="form-label">City Name <span className="text-danger">*</span></label>
-            <input
-              type="text"
-              className={`form-control ${errors.business_city ? 'is-invalid' : ''}`}
-              placeholder="Enter city name"
-              value={data.business_city}
-              onChange={(e) => onChange({ ...data, business_city: e.target.value })}
-              required
-            />
-            {errors.business_city && (
-              <div className="invalid-feedback">{errors.business_city}</div>
-            )}
+            <div className="position-relative">
+              <input
+                type="text"
+                className={`form-control ${errors.business_city ? 'is-invalid' : ''} ${isFieldLocked('business_city') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+                placeholder="Enter city name"
+                value={data.business_city}
+                onChange={(e) => onChange({ ...data, business_city: e.target.value })}
+                required
+                readOnly={isFieldLocked('business_city')}
+              />
+              {isFieldLocked('business_city') && (
+                <button
+                  className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                  type="button"
+                  onClick={() => handleOpenRequestModal('City Name', 'business_city', data.business_city)}
+                >
+                  Change Request
+                </button>
+              )}
+              {errors.business_city && (
+                <div className="invalid-feedback d-block">{errors.business_city}</div>
+              )}
+            </div>
           </div>
         )}
 
 
         <div className="col-md-6">
           <label className="form-label">Zip Code <span className="text-danger">*</span></label>
-          <input
-            type="text"
-            placeholder="Enter zip code"
-            value={data.business_zip_code}
-            onChange={(e) => onChange({ ...data, business_zip_code: e.target.value })}
-            className={`form-control ${errors.business_zip_code ? 'is-invalid' : ''}`}
-          />
-          {errors.business_zip_code && <div className="invalid-feedback">{errors.business_zip_code}</div>}
+          <div className="position-relative">
+            <input
+              type="text"
+              placeholder="Enter zip code"
+              value={data.business_zip_code}
+              onChange={(e) => onChange({ ...data, business_zip_code: formatZipCode(e.target.value) })}
+              className={`form-control ${errors.business_zip_code ? 'is-invalid' : ''} ${isFieldLocked('business_zip_code') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              readOnly={isFieldLocked('business_zip_code')}
+            />
+            {isFieldLocked('business_zip_code') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Zip Code', 'business_zip_code', data.business_zip_code)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
+          {errors.business_zip_code && <div className="invalid-feedback d-block">{errors.business_zip_code}</div>}
         </div>
         <div className="col-md-6">
           <label className="form-label">Entity Type <span className="text-danger">*</span></label>
-          <CustomDropdown
-            value={data.business_entity_type}
-            onChange={(value) => onChange({ ...data, business_entity_type: value })}
-            options={entityTypes}
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Select entity type"
-            className={`w-100 ${errors.business_entity_type ? 'is-invalid' : ''}`}
-          />
+          <div className="position-relative">
+            <CustomDropdown
+              searchable={true}
+              value={data.business_entity_type}
+              onChange={(value) => onChange({ ...data, business_entity_type: value })}
+              options={entityTypes}
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select entity type"
+              className={`w-100 ${errors.business_entity_type ? 'is-invalid' : ''} ${isFieldLocked('business_entity_type') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              disabled={isFieldLocked('business_entity_type')}
+            />
+            {isFieldLocked('business_entity_type') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Entity Type', 'business_entity_type', data.business_entity_type)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
           {errors.business_entity_type && <div className="invalid-feedback d-block">{errors.business_entity_type}</div>}
         </div>
 
@@ -472,7 +573,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
             />
             {isFieldLocked('business_start_date') && (
               <button
-                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
                 type="button"
                 onClick={() => handleOpenRequestModal('Business Start Date', 'business_start_date', data.business_start_date)}
               >
@@ -485,33 +586,49 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
           )}
         </div>
 
-        {/* New Field: Business Credit Score */}
+        {/* New Field: Personal Credit Score */}
         <div className="col-md-6">
-          <label className="form-label">Business Credit Score <span className="text-danger">*</span></label>
+          <label className="form-label">Personal Credit Score <span className="text-danger">*</span></label>
           <div className="position-relative">
             <input
               type="number"
-              placeholder="Enter credit score"
-              className={`form-control ${errors.business_credit_score ? 'is-invalid' : ''} ${isFieldLocked('business_credit_score') ? 'bg-light border-dashed locked-field-padding' : ''}`}
-              value={data.business_credit_score || ''}
-              onChange={(e) => onChange({ ...data, business_credit_score: Number(e.target.value) })}
-              min={0}
+              placeholder="Enter personal credit score"
+              className={`form-control ${errors.personal_credit_score ? 'is-invalid' : ''} ${isFieldLocked('personal_credit_score') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              value={data.personal_credit_score || ''}
+              onChange={(e) => onChange({ ...data, personal_credit_score: Number(e.target.value) })}
+              min={300}
               max={850}
-              readOnly={isFieldLocked('business_credit_score')}
+              readOnly={isFieldLocked('personal_credit_score')}
             />
-            {isFieldLocked('business_credit_score') && (
+            {isFieldLocked('personal_credit_score') && (
               <button
-                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
                 type="button"
-                onClick={() => handleOpenRequestModal('Business Credit Score', 'business_credit_score', data.business_credit_score)}
+                onClick={() => handleOpenRequestModal('Personal Credit Score', 'personal_credit_score', data.personal_credit_score)}
               >
                 Change Request
               </button>
             )}
           </div>
-          {errors.business_credit_score && (
-            <div className="invalid-feedback d-block">{errors.business_credit_score}</div>
+          {errors.personal_credit_score && (
+            <div className="invalid-feedback d-block">{errors.personal_credit_score}</div>
           )}
+        </div>
+
+        {/* New Field: Business Credit Score */}
+        <div className="col-md-6">
+          <label className="form-label">Business Credit Score</label>
+          <div className="position-relative">
+            <input
+              type="number"
+              placeholder="Not available"
+              className="form-control bg-light border-dashed locked-field-padding"
+              value={data.business_credit_score || ''}
+              min={0}
+              max={850}
+              readOnly={true}
+            />
+          </div>
         </div>
 
         <div className="col-md-6">
@@ -529,7 +646,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
             />
             {isFieldLocked('business_website') && (
               <button
-                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
                 type="button"
                 onClick={() => handleOpenRequestModal('Business Website', 'business_website', data.business_website)}
               >
@@ -542,16 +659,28 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
 
         <div className="col-md-6">
           <label className="form-label">Industry Type <span className="text-danger">*</span></label>
-          <CustomDropdown
-            value={data.business_industry_type}
-            onChange={(value) => onChange({ ...data, business_industry_type: value })}
-            options={industryTypes}
-            optionLabel="label"
-            optionValue="value"
-            searchable={true}
-            placeholder="Select industry type"
-            className={`w-100 ${errors.business_industry_type ? 'is-invalid' : ''}`}
-          />
+          <div className="position-relative">
+            <CustomDropdown
+              value={data.business_industry_type}
+              onChange={(value) => onChange({ ...data, business_industry_type: value })}
+              options={industryTypes}
+              optionLabel="label"
+              optionValue="value"
+              searchable={true}
+              placeholder="Select industry type"
+              className={`w-100 ${errors.business_industry_type ? 'is-invalid' : ''} ${isFieldLocked('business_industry_type') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              disabled={isFieldLocked('business_industry_type')}
+            />
+            {isFieldLocked('business_industry_type') && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Industry Type', 'business_industry_type', data.business_industry_type)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
           {errors.business_industry_type && <div className="invalid-feedback d-block">{errors.business_industry_type}</div>}
         </div>
         <div className="col-12 d-flex justify-content-between mt-4">
@@ -589,7 +718,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
             <label className="form-label fw-bold">Requested New Value <span className="text-danger">*</span></label>
             {updateRequest.key === 'business_start_date' ? (
               <Flatpickr
-                className="form-control"
+                className={`form-control ${modalErrors.new_value ? 'is-invalid' : ''}`}
                 value={updateRequest.newValue}
                 onChange={(dates, dateStr) => setUpdateRequest({ ...updateRequest, newValue: dateStr })}
                 options={{
@@ -601,11 +730,66 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
                 }}
                 placeholder="Select business start date"
               />
+            ) : updateRequest.key === 'business_country' ? (
+              <CustomDropdown
+                searchable={true}
+                value={updateRequest.newValue}
+                onChange={(val) => setUpdateRequest({ ...updateRequest, newValue: val })}
+                options={countriesData}
+                optionLabel="name"
+                optionValue="name"
+                placeholder="Select country"
+                className={`w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
+              />
+            ) : updateRequest.key === 'business_state' ? (
+              <CustomDropdown
+                searchable={true}
+                value={updateRequest.newValue}
+                onChange={(val) => setUpdateRequest({ ...updateRequest, newValue: val })}
+                options={availableStates}
+                optionLabel="name"
+                optionValue="name"
+                placeholder="Select state"
+                className={`w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
+              />
+            ) : updateRequest.key === 'business_city' ? (
+              <CustomDropdown
+                searchable={true}
+                value={updateRequest.newValue}
+                onChange={(val) => setUpdateRequest({ ...updateRequest, newValue: val })}
+                options={availableCities.filter(c => c.code !== 'Others')}
+                optionLabel="name"
+                optionValue="code"
+                placeholder="Select city"
+                className={`w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
+              />
+            ) : updateRequest.key === 'business_entity_type' ? (
+              <CustomDropdown
+                searchable={true}
+                value={updateRequest.newValue}
+                onChange={(val) => setUpdateRequest({ ...updateRequest, newValue: val })}
+                options={entityTypes}
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select entity type"
+                className={`w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
+              />
+            ) : updateRequest.key === 'business_industry_type' ? (
+              <CustomDropdown
+                searchable={true}
+                value={updateRequest.newValue}
+                onChange={(val) => setUpdateRequest({ ...updateRequest, newValue: val })}
+                options={industryTypes}
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select industry type"
+                className={`w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
+              />
             ) : (
               <input
                 ref={inputRef}
-                type={updateRequest.key === 'business_credit_score' ? 'number' : 'text'}
-                className="form-control"
+                type={(updateRequest.key === 'business_credit_score' || updateRequest.key === 'personal_credit_score') ? 'number' : 'text'}
+                className={`form-control ${modalErrors.new_value ? 'is-invalid' : ''}`}
                 placeholder={`Enter the updated ${updateRequest.label}`}
                 value={updateRequest.newValue}
                 onChange={(e) => {
@@ -613,10 +797,16 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
                   if (updateRequest.key === 'business_ein') val = formatEIN(val);
                   if (updateRequest.key === 'duns_number') val = formatDUNS(val);
                   if (updateRequest.key === 'business_phone') val = formatPhoneNumber(val);
+                  if (updateRequest.key === 'business_zip_code') val = formatZipCode(val);
                   setUpdateRequest({ ...updateRequest, newValue: val });
                 }}
                 maxLength={(updateRequest.key === 'business_ein') ? 10 : (updateRequest.key === 'duns_number' ? 9 : (updateRequest.key === 'business_phone' ? 14 : undefined))}
               />
+            )}
+            {modalErrors.new_value && (
+              <div className="invalid-feedback d-block mt-1">
+                {Array.isArray(modalErrors.new_value) ? modalErrors.new_value[0] : modalErrors.new_value}
+              </div>
             )}
           </div>
           <div className="alert alert-info border-0 mb-0">
@@ -639,13 +829,10 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
             disabled={!updateRequest.newValue || isSubmittingChange}
             onClick={() => {
               let finalNewValue = updateRequest.newValue;
-              if (updateRequest.key === 'business_ein') finalNewValue = unformatEIN(finalNewValue);
-              if (updateRequest.key === 'business_phone') finalNewValue = unformatPhoneNumber(finalNewValue);
               if (updateRequest.key === 'duns_number') finalNewValue = finalNewValue.replace(/\D/g, '');
 
               submitChange({
                 field_name: updateRequest.key,
-                old_value: String(updateRequest.currentValue).replace(/\D/g, ''), // Send raw old value too if it was EIN/Phone
                 new_value: finalNewValue,
               }, {
                 onSuccess: (response) => {
@@ -653,11 +840,19 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
                     toast.success(response.message);
                     toggleModal();
                   } else {
-                    toast.error(response.message);
+                    if (response.errors) {
+                      setModalErrors(response.errors);
+                    } else {
+                      toast.error(response.message);
+                    }
                   }
                 },
-                onError: () => {
-                  toast.error('Failed to submit change request');
+                onError: (error: any) => {
+                  if (error.response?.data?.errors) {
+                    setModalErrors(error.response.data.errors);
+                  } else {
+                    toast.error('Failed to submit change request');
+                  }
                 }
               });
             }}

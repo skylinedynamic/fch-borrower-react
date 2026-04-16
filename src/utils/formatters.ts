@@ -121,13 +121,38 @@ export const unformatSSN = (value: string): string => {
  * @param value The raw input string
  * @returns The formatted string
  */
+/**
+ * Formats the DUNS input to ensure only digits and max 9 characters
+ * @param value The raw input string
+ * @returns The formatted string
+ */
 export const formatDUNS = (value: string): string => {
   if (!value) return ''
   return value.replace(/\D/g, '').slice(0, 9)
 }
 
 /**
- * Formats the EIN input to ensure 12-3456789 format
+ * Removes formatting from DUNS string
+ * @param value The formatted DUNS string
+ * @returns The raw numeric string
+ */
+export const unformatDUNS = (value: string): string => {
+  if (!value) return ''
+  return value.replace(/\D/g, '').slice(0, 9)
+}
+
+/**
+ * Formats the ZIP code to ensure max 5 digits
+ * @param value The raw input string
+ * @returns The formatted string
+ */
+export const formatZipCode = (value: string): string => {
+  if (!value) return ''
+  return value.replace(/\D/g, '').slice(0, 5)
+}
+
+/**
+ * Formats the EIN input to ensure XX-XXXXXXX format
  * @param value The raw input string
  * @returns The formatted string
  */
