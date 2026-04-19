@@ -60,11 +60,24 @@ export const fundingUrgencyOptions: OptionType[] = [
 export const FUNDING_PURPOSE_OTHER = 'Other'
 
 export const purposeOfFundingOptions: OptionType[] = [
-  { label: 'Working Capital', value: 'Working Capital' },
-  { label: 'Equipment', value: 'Equipment' },
-  { label: 'Inventory', value: 'Inventory' },
-  { label: 'Marketing', value: 'Marketing' },
-  { label: 'Expansion', value: 'Expansion' },
+  { label: 'Working Capital (General Use)', value: 'Working Capital (General Use)' },
+  { label: 'Inventory Purchase', value: 'Inventory Purchase' },
+  { label: 'Marketing / Customer Acquisition', value: 'Marketing / Customer Acquisition' },
+  { label: 'Payroll / Operating Expenses', value: 'Payroll / Operating Expenses' },
+  { label: 'Business Expansion (New Location / Growth)', value: 'Business Expansion (New Location / Growth)' },
+  { label: 'Hiring / Staffing Expansion', value: 'Hiring / Staffing Expansion' },
+  { label: 'Product Development', value: 'Product Development' },
+  { label: 'Equipment Purchase', value: 'Equipment Purchase' },
+  { label: 'Vehicle Purchase', value: 'Vehicle Purchase' },
+  { label: 'Real Estate Acquisition', value: 'Real Estate Acquisition' },
+  { label: 'Construction / Renovation', value: 'Construction / Renovation' },
+  { label: 'Leasehold Improvements', value: 'Leasehold Improvements' },
+  { label: 'Refinance Existing Debt', value: 'Refinance Existing Debt' },
+  { label: 'Debt Consolidation', value: 'Debt Consolidation' },
+  { label: 'Payoff High-Interest Debt', value: 'Payoff High-Interest Debt' },
+  { label: 'Bridge Financing', value: 'Bridge Financing' },
+  { label: 'Business Acquisition', value: 'Business Acquisition' },
+  { label: 'Partner Buyout', value: 'Partner Buyout' },
   { label: FUNDING_PURPOSE_OTHER, value: FUNDING_PURPOSE_OTHER }
 ]
 
@@ -113,6 +126,15 @@ export const fundingTypeOptions: OptionType[] = [
   { label: 'Equipment Financing', value: 'Equipment Financing' },
   { label: 'SBA Loan', value: 'SBA Loan' },
   { label: 'Merchant Cash Advance', value: 'Merchant Cash Advance' },
+  { label: 'Hard Money / Bridge Loan', value: 'Hard Money / Bridge Loan' },
+  { label: 'Commercial Real Estate Loan', value: 'Commercial Real Estate Loan' },
+  { label: 'Construction Loan', value: 'Construction Loan' },
+  { label: 'Asset-Based Lending (AR / Inventory)', value: 'Asset-Based Lending (AR / Inventory)' },
+  { label: 'Invoice Factoring', value: 'Invoice Factoring' },
+  { label: 'Revenue-Based Financing', value: 'Revenue-Based Financing' },
+  { label: 'Unsecured Business Credit', value: 'Unsecured Business Credit' },
+  { label: 'Business Acquisition Financing', value: 'Business Acquisition Financing' },
+  { label: 'Refinance / Debt Consolidation', value: 'Refinance / Debt Consolidation' },
 ]
 
 export const timeframeOptions: OptionType[] = [
