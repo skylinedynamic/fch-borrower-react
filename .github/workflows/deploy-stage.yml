@@ -27,7 +27,7 @@ jobs:
           # Create exactly the .env variable required for staging 
           # Assuming /api/v1 is needed based on your local .env configuration
           # You can also replace this with GitHub secrets later if needed
-          echo "VITE_API_BASE_URL=https://api.skylinedynamic.dev/api/v1" > .env.local
+          echo "VITE_API_BASE_URL=https://api.skylinedynamic.dev/api/v1" > .env.production
 
       - name: Build Application
         run: npm run build
