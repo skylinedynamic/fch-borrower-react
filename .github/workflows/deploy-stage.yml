@@ -35,9 +35,9 @@ jobs:
       - name: Deploy to EC2 & Restart Nginx
         uses: easingthemes/ssh-deploy@main
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-          REMOTE_HOST: ${{ secrets.EC2_HOST }}
-          REMOTE_USER: ${{ secrets.EC2_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.STAGE_EC2_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.STAGE_EC2_HOST }}
+          REMOTE_USER: ${{ secrets.STAGE_EC2_USER }}
           SOURCE: "dist/"
           TARGET: "/var/www/client-portal-react"
           SSH_CMD_ARGS: "-o StrictHostKeyChecking=no" 
