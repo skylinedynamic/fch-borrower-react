@@ -21,6 +21,7 @@ import CreditOverview from '../src/pages/credit-builder/creditoverview/CreditOve
 import VendorApplication from '../src/pages/credit-builder/creditvendorapplication/VendorApplication.tsx'
 import ProgressTracker from '../src/pages/credit-builder/creditprogresstracker/ProgressTracker.tsx'
 import CreditResources from '../src/pages/credit-builder/creditresources/CreditResources.tsx'
+import ResourceHub from '../src/pages/resources/ResourceHub.jsx'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import GlobalModals from './components/Common/Modals/GlobalModals'
@@ -88,6 +89,7 @@ export default function App() {
 
             <Route path="documents" element={<Documents />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="resources" element={<ResourceHub />} />
             <Route path="access-denied" element={<ErrorPage status={403} />} />
             <Route path="not-found" element={<ErrorPage status={404} />} />
             <Route path="*" element={<ErrorPage status={404} />} />
