@@ -22,6 +22,9 @@ export interface CreditAccount {
     sequencing_priority: string | null;
     image_url: string;
     reference_url: string;
+    personal_guarantee: string | null;
+    business_credit_profile: string | null;
+    final_approval: string | null;
     status?: 'Requested' | 'Processing' | 'Approved';
     created_at: string;
     updated_at: string;

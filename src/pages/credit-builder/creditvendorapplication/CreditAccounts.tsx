@@ -84,6 +84,9 @@ export default function CreditAccounts() {
       min_fico: v.typical_personal_fico_min,
       time_in_business: v.time_in_business_min_months,
       pg_required: v.pg_required,
+      personal_guarantee: v.personal_guarantee,
+      business_credit_profile: v.business_credit_profile,
+      final_approval: v.final_approval,
       approval_level: v.approval_level,
       image: v.image_url ? (v.image_url.startsWith('http') ? v.image_url : `${API_STORAGE_URL}${v.image_url}`) : '/assets/images/fch-logo-ver.png',
       link: v.reference_url,
@@ -166,13 +169,13 @@ export default function CreditAccounts() {
                   {/* Action Buttons */}
                   <div className="d-flex gap-2 ms-lg-auto">
                     <button
-                      className="btn vendor-filter-btn-apply fw-bold d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13 shadow-sm"
+                      className="btn vendor-filter-btn-apply d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13 shadow-sm"
                       onClick={handleApplyFilters}
                     >
                       <i className="ri-equalizer-line"></i> Filters
                     </button>
                     <button
-                      className="btn vendor-filter-btn-clear fw-bold d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13"
+                      className="btn vendor-filter-btn-clear d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13"
                       onClick={handleResetFilters}
                     >
                       <i className="ri-close-line"></i> Clear
@@ -191,15 +194,15 @@ export default function CreditAccounts() {
           ) : vendors.length ? (
             vendors.map((v: any) => (
               <div key={v.id} className="col-md-6 col-lg-4 col-xl-3">
-                <div className={`card vendor-card-colorful mb-0 border-0 shadow-sm overflow-hidden bg-white mt-1 border-top-accent-${v.category.toLowerCase()}`}>
+                <div className={`card vendor-card-colorful mb-0 border-0 shadow-sm overflow-hidden bg-white mt-1 border-top-accent-${(v.category || '').toLowerCase()}`}>
 
                   {/* Visual Header with Subtle Gradient Background */}
                   <div className="v-card-visual position-relative h-130px">
 
                     {/* Approval Level - Modern Tag Style */}
                     <div className="position-absolute top-0 start-0 m-0 z-2">
-                      <span className={`approval-tag-modern tag-${v.approval_level.toLowerCase()}`}>
-                        {v.approval_level}
+                      <span className={`approval-tag-modern tag-${(v.approval_level || '').toLowerCase()}`}>
+                        {v.approval_level || 'N/A'}
                       </span>
                     </div>
 
@@ -241,7 +244,7 @@ export default function CreditAccounts() {
                   <div className="card-body p-3 d-flex flex-column">
                     <div>
                       <div className="d-flex align-items-center gap-2 mb-1" style={{ minHeight: '18px' }}>
-                        <span className={`issuer-dot dot-${v.category.toLowerCase()}`}></span>
+                        <span className={`issuer-dot dot-${(v.category || '').toLowerCase()}`}></span>
                         <span className="text-primary text-uppercase fw-bold tracking-widest fs-10">{v.issuer}</span>
                       </div>
                       <h5 className="card-title fw-bold text-dark mb-2 fs-14 lh-sm" style={{
@@ -288,13 +291,21 @@ export default function CreditAccounts() {
                             <div className="fw-bold text-dark fs-13 ps-3">{v.time_in_business} Mo+</div>
                           </div>
                         </div>
+                        {/* Supplemental Details */}
                         <div className="col-12 mt-2">
-                          <div className="p-2 border border-light rounded-1 metric-box-warning d-flex justify-content-between align-items-center shadow-sm-hover transition-all">
-                            <div className="d-flex align-items-center gap-1">
-                              <i className="ri-shield-user-line text-warning smaller"></i>
-                              <span className="text-muted smaller fw-bold text-uppercase tracking-wider">PG Required</span>
+                          <div className="p-2 border border-light border-dashed rounded-2 d-flex flex-column gap-2">
+                            <div className="d-flex justify-content-between align-items-start">
+                              <span className="text-muted fs-12 fw-medium d-flex align-items-center gap-1"><i className="ri-shield-user-line text-primary fs-13"></i> PG Required</span>
+                              <span className="text-muted fs-12 text-end" style={{ maxWidth: '60%' }}>{(v.personal_guarantee && v.personal_guarantee.trim() !== '') ? v.personal_guarantee : 'Not Required'}</span>
                             </div>
-                            <span className="fw-bold text-dark fs-13">{v.pg_required}</span>
+                            <div className="d-flex justify-content-between align-items-start">
+                              <span className="text-muted fs-12 fw-medium d-flex align-items-center gap-1"><i className="ri-briefcase-4-line text-warning fs-13"></i>Credit Profile</span>
+                              <span className="text-muted fs-12 text-end" style={{ maxWidth: '60%' }}>{(v.business_credit_profile && v.business_credit_profile.trim() !== '') ? v.business_credit_profile : 'Not Required'}</span>
+                            </div>
+                            <div className="d-flex justify-content-between align-items-start">
+                              <span className="text-muted fs-12 fw-medium d-flex align-items-center gap-1"><i className="ri-checkbox-circle-line text-success fs-13"></i> Final Approval</span>
+                              <span className="text-muted fs-12 text-end" style={{ maxWidth: '60%' }}>{(v.final_approval && v.final_approval.trim() !== '') ? v.final_approval : 'Not Required'}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
