@@ -67,6 +67,9 @@ export type BusinessDetailsData = {
   business_website: string
   business_entity_type: string
   business_industry_type: string
+  business_start_date?: string
+  business_credit_score?: number
+  personal_credit_score?: number
 }
 
 export type BusinessDetailsResponse = {
@@ -90,6 +93,9 @@ export type SaveBusinessDetailsRequest = {
   business_industry_type: string
   business_country: string
   business_country_code?: string
+  business_start_date?: string
+  business_credit_score?: number | null
+  personal_credit_score?: number | null
 }
 
 export type SaveBusinessDetailsResponse = {
@@ -124,4 +130,16 @@ export type SaveFinancialInfoResponse = {
   message: string
   data?: FinancialInfoData
   errors?: ValidationErrors
+}
+
+export type ChangeRequestRequest = {
+  field_name: string
+  new_value: string
+  note?: string
+}
+
+export type ChangeRequestResponse = {
+  status: boolean
+  message: string
+  data?: any
 }

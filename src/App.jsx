@@ -18,7 +18,7 @@ import Payments from '../src/pages/payments/Payments.jsx'
 import Appointments from '../src/pages/appointment/Appointments.tsx'
 import ChangePassword from '../src/pages/settings/ChangePassword.jsx'
 import CreditOverview from '../src/pages/credit-builder/creditoverview/CreditOverview.tsx'
-import VendorApplication from '../src/pages/credit-builder/creditvendorapplication/VendorApplication.tsx'
+import VendorApplication from '../src/pages/credit-builder/creditvendorapplication/CreditAccounts.tsx'
 import ProgressTracker from '../src/pages/credit-builder/creditprogresstracker/ProgressTracker.tsx'
 import CreditResources from '../src/pages/credit-builder/creditresources/CreditResources.tsx'
 import { ToastContainer } from 'react-toastify'
@@ -81,7 +81,7 @@ export default function App() {
               <Route index element={<CreditOverview />} />
               <Route path="overview" element={<CreditOverview />} />
               <Route path="guide" element={<CreditGuide />} />
-              <Route path="vendor-application" element={<VendorApplication />} />
+              <Route path="credit-accounts" element={<VendorApplication />} />
               <Route path="progress-tracker" element={<ProgressTracker />} />
               <Route path="resources" element={<CreditResources />} />
             </Route>

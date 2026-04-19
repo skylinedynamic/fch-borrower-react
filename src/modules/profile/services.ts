@@ -1,5 +1,5 @@
 import { apiClient } from '../../lib/http/apiClient'
-import type { PersonalInfoResponse, PersonalInfoData, SavePersonalInfoRequest, SavePersonalInfoResponse, BusinessDetailsResponse, BusinessDetailsData, SaveBusinessDetailsRequest, SaveBusinessDetailsResponse, FinancialInfoResponse, FinancialInfoData, SaveFinancialInfoRequest, SaveFinancialInfoResponse } from './types'
+import type { PersonalInfoResponse, PersonalInfoData, SavePersonalInfoRequest, SavePersonalInfoResponse, BusinessDetailsResponse, BusinessDetailsData, SaveBusinessDetailsRequest, SaveBusinessDetailsResponse, FinancialInfoResponse, FinancialInfoData, SaveFinancialInfoRequest, SaveFinancialInfoResponse, ChangeRequestRequest, ChangeRequestResponse } from './types'
 
 export interface ProfileCompletionStatus {
   is_complete: boolean
@@ -55,5 +55,10 @@ export const saveFinancialInfo = async (payload: SaveFinancialInfoRequest): Prom
 
 export const fetchProfileCompletion = async (): Promise<ProfileCompletionResponse> => {
   const { data } = await apiClient.get<ProfileCompletionResponse>('/borrower/profile/completion')
+  return data
+}
+
+export const submitChangeRequest = async (payload: ChangeRequestRequest): Promise<ChangeRequestResponse> => {
+  const { data } = await apiClient.post<ChangeRequestResponse>('/borrower/profile/change-request', payload)
   return data
 }

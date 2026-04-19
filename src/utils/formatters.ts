@@ -4,6 +4,7 @@
  * @returns The formatted phone number string
  */
 export const formatPhoneNumber = (value: string): string => {
+  if (!value) return ''
   // Remove all non-digit characters
   const phoneNumber = value.replace(/\D/g, '')
 
@@ -18,11 +19,22 @@ export const formatPhoneNumber = (value: string): string => {
 }
 
 /**
+ * Removes formatting from phone number string
+ * @param value The formatted phone number string
+ * @returns The raw numeric string
+ */
+export const unformatPhoneNumber = (value: string): string => {
+  if (!value) return ''
+  return value.replace(/\D/g, '')
+}
+
+/**
  * Formats the Last 4 SSN input to ensure only digits and max 4 characters
  * @param value The raw input string
  * @returns The formatted string
  */
 export const formatLast4SSN = (value: string): string => {
+  if (!value) return ''
   return value.replace(/\D/g, '').slice(0, 4)
 }
 
@@ -87,6 +99,7 @@ export const unformatCurrency = (value: string): string => {
  * @returns The formatted string
  */
 export const formatSSN = (value: string): string => {
+  if (!value) return ''
   const digits = value.replace(/\D/g, '').slice(0, 9)
   if (digits.length <= 3) return digits
   if (digits.length <= 5) return `${digits.slice(0, 3)}-${digits.slice(3)}`
@@ -99,6 +112,7 @@ export const formatSSN = (value: string): string => {
  * @returns The raw numeric string
  */
 export const unformatSSN = (value: string): string => {
+  if (!value) return ''
   return value.replace(/\D/g, '')
 }
 
@@ -107,15 +121,54 @@ export const unformatSSN = (value: string): string => {
  * @param value The raw input string
  * @returns The formatted string
  */
+/**
+ * Formats the DUNS input to ensure only digits and max 9 characters
+ * @param value The raw input string
+ * @returns The formatted string
+ */
 export const formatDUNS = (value: string): string => {
+  if (!value) return ''
   return value.replace(/\D/g, '').slice(0, 9)
 }
 
 /**
- * Formats the EIN input to ensure only digits and max 9 characters
+ * Removes formatting from DUNS string
+ * @param value The formatted DUNS string
+ * @returns The raw numeric string
+ */
+export const unformatDUNS = (value: string): string => {
+  if (!value) return ''
+  return value.replace(/\D/g, '').slice(0, 9)
+}
+
+/**
+ * Formats the ZIP code to ensure max 5 digits
+ * @param value The raw input string
+ * @returns The formatted string
+ */
+export const formatZipCode = (value: string): string => {
+  if (!value) return ''
+  return value.replace(/\D/g, '').slice(0, 5)
+}
+
+/**
+ * Formats the EIN input to ensure XX-XXXXXXX format
  * @param value The raw input string
  * @returns The formatted string
  */
 export const formatEIN = (value: string): string => {
+  if (!value) return ''
+  const digits = value.replace(/\D/g, '').slice(0, 9)
+  if (digits.length <= 2) return digits
+  return `${digits.slice(0, 2)}-${digits.slice(2, 9)}`
+}
+
+/**
+ * Removes formatting from EIN string
+ * @param value The formatted EIN string
+ * @returns The raw numeric string
+ */
+export const unformatEIN = (value: string): string => {
+  if (!value) return ''
   return value.replace(/\D/g, '').slice(0, 9)
 }

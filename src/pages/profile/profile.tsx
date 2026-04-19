@@ -9,7 +9,7 @@ export default function Profile() {
   const [searchParams] = useSearchParams()
   const tabParam = searchParams.get('tab')
   const initialStep = tabParam ? parseInt(tabParam, 10) : 0
-  
+
   const [step, setStep] = useState<number>(initialStep)
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -44,6 +44,8 @@ export default function Profile() {
     business_website: '',
     business_entity_type: '',
     business_industry_type: '',
+    business_start_date: '',
+    business_credit_score: null,
   })
 
   const [support, setSupport] = useState<any>({
@@ -77,9 +79,9 @@ export default function Profile() {
             <div className="card-header p-0">
               <ul className="tab-chevrons">
                 <li>
-                  <button 
-                    type="button" 
-                    className={`tab-btn ${step===0?'active':''}`} 
+                  <button
+                    type="button"
+                    className={`tab-btn ${step === 0 ? 'active' : ''}`}
                     onClick={(e) => {
                       e.currentTarget.blur()
                       setStep(0)
@@ -89,9 +91,9 @@ export default function Profile() {
                   </button>
                 </li>
                 <li>
-                  <button 
-                    type="button" 
-                    className={`tab-btn ${step===1?'active':''}`} 
+                  <button
+                    type="button"
+                    className={`tab-btn ${step === 1 ? 'active' : ''}`}
                     onClick={(e) => {
                       e.currentTarget.blur()
                       setStep(1)
@@ -101,9 +103,9 @@ export default function Profile() {
                   </button>
                 </li>
                 <li>
-                  <button 
-                    type="button" 
-                    className={`tab-btn ${step===2?'active':''}`} 
+                  <button
+                    type="button"
+                    className={`tab-btn ${step === 2 ? 'active' : ''}`}
                     onClick={(e) => {
                       e.currentTarget.blur()
                       setStep(2)
@@ -117,29 +119,29 @@ export default function Profile() {
             <div className="card-body checkout-tab">
               <div key={step} className="tab-content-anim">
                 {step === 0 && (
-                  <PersonalInfo 
-                    data={personal} 
-                    onChange={setPersonal} 
-                    onSave={onSave} 
+                  <PersonalInfo
+                    data={personal}
+                    onChange={setPersonal}
+                    onSave={onSave}
                   />
                 )}
 
                 {step === 1 && (
-                  <BusinessDetails 
-                    data={business} 
-                    onChange={setBusiness} 
-                    onSave={onSave} 
-                    onBack={() => setStep(0)} 
+                  <BusinessDetails
+                    data={business}
+                    onChange={setBusiness}
+                    onSave={onSave}
+                    onBack={() => setStep(0)}
                   />
                 )}
 
                 {step === 2 && (
-                  <FinancialSupport 
-                    data={support} 
-                    onChange={setSupport} 
-                    onSave={onSave} 
-                    onBack={() => setStep(1)} 
-                    saving={saving} 
+                  <FinancialSupport
+                    data={support}
+                    onChange={setSupport}
+                    onSave={onSave}
+                    onBack={() => setStep(1)}
+                    saving={saving}
                   />
                 )}
               </div>

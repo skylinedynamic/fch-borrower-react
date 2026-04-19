@@ -160,13 +160,22 @@ export default function Sidebar() {
                 <i className="ri-building-2-line"></i> <span>Credit Builder {isRestricted && <i className="ri-lock-line align-middle ms-1"></i>}</span>
                 <i className={`ri-arrow-down-s-line float-end submenu-caret ${creditOpen ? 'open' : ''}`}></i>
               </button>
-              <ul id="creditBuilderMenu" className={`navbar-nav ms-3 submenu-collapse ${creditOpen ? 'open' : ''}`}>
+              <ul id="creditBuilderMenu" className={`navbar-nav submenu-collapse ${creditOpen ? 'open' : ''}`}>
                 <li className="nav-item">
                   <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/overview"><i className="ri-subtract-line"></i> <span>Overview</span></NavLink>
                 </li>
                 <li className="nav-item">
                   <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/guide"><i className="ri-subtract-line"></i> <span>Step-By-Step Guide</span></NavLink>
                 </li>
+                <li className="nav-item">
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/credit-accounts"><i className="ri-subtract-line"></i> <span>Credit Accounts</span></NavLink>
+                </li>
+                {/* <li className="nav-item">
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/progress-tracker"><i className="ri-subtract-line"></i> <span>Progress Tracker</span></NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/resources"><i className="ri-subtract-line"></i> <span>Resources</span></NavLink>
+                </li> */}
               </ul>
             </li>
 

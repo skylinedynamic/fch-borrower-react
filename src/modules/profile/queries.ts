@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '../../lib/query'
-import { fetchPersonalInfo, savePersonalInfo, fetchBusinessDetails, saveBusinessDetails, fetchFinancialInfo, saveFinancialInfo } from './services'
-import type { SavePersonalInfoRequest, SaveBusinessDetailsRequest, SaveFinancialInfoRequest } from './types'
+import { fetchPersonalInfo, savePersonalInfo, fetchBusinessDetails, saveBusinessDetails, fetchFinancialInfo, saveFinancialInfo, submitChangeRequest } from './services'
+import type { SavePersonalInfoRequest, SaveBusinessDetailsRequest, SaveFinancialInfoRequest, ChangeRequestRequest } from './types'
 
 export const usePersonalInfo = () => {
   return useQuery({
@@ -12,7 +12,7 @@ export const usePersonalInfo = () => {
 
 export const useSavePersonalInfo = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: (data: SavePersonalInfoRequest) => savePersonalInfo(data),
     onSuccess: () => {
@@ -31,7 +31,7 @@ export const useBusinessDetails = () => {
 
 export const useSaveBusinessDetails = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: (data: SaveBusinessDetailsRequest) => saveBusinessDetails(data),
     onSuccess: () => {
@@ -49,11 +49,17 @@ export const useFinancialInfo = () => {
 
 export const useSaveFinancialInfo = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: (data: SaveFinancialInfoRequest) => saveFinancialInfo(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.profile.financialInfo() })
     },
+  })
+}
+
+export const useSubmitChangeRequest = () => {
+  return useMutation({
+    mutationFn: (data: ChangeRequestRequest) => submitChangeRequest(data),
   })
 }
