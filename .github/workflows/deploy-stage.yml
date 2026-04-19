@@ -41,8 +41,13 @@ jobs:
           SOURCE: "dist/"
           TARGET: "/var/www/client-portal-react"
           SSH_CMD_ARGS: "-o StrictHostKeyChecking=no" 
+          SCRIPT_BEFORE: |
+            echo "Creating target directory if it doesn't exist..."
+            sudo mkdir -p /var/www/client-portal-react
+            echo "Temporarily giving SSH user permission to write to directory..."
+            sudo chown -R $(whoami):$(whoami) /var/www/client-portal-react
           SCRIPT_AFTER: |
-            echo "Setting correct directory permissions..."
+            echo "Setting correct directory permissions for Nginx..."
             sudo chown -R www-data:www-data /var/www/client-portal-react || echo "Warning: chown failed, ignoring..."
             
             echo "Restarting Nginx..."
