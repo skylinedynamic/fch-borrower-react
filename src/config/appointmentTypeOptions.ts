@@ -88,3 +88,5 @@ export const APPOINTMENT_STATUS_CONFIG: Record<string, { label: string, badgeCla
     completed: { label: "Completed", badgeClass: "bg-primary-subtle text-primary" },
     expired: { label: "Expired", badgeClass: "bg-secondary-subtle text-secondary" }
 };
+
+
