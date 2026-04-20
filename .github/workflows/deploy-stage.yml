@@ -74,8 +74,8 @@ jobs:
                echo "${{ secrets.STAGE_EC2_SSH_KEY }}" > deploy_key
                chmod 600 deploy_key
                
-               echo "--- Nginx Sites Configuration ---"
-               ssh -i deploy_key -o StrictHostKeyChecking=no ${{ secrets.STAGE_EC2_USER }}@${{ secrets.STAGE_EC2_HOST }} "sudo grep -r 'client-portal-react' /etc/nginx/sites-enabled/ || echo 'No matching config found.'"
+               echo "--- Nginx Sites Configuration (Searching for domain) ---"
+               ssh -i deploy_key -o StrictHostKeyChecking=no ${{ secrets.STAGE_EC2_USER }}@${{ secrets.STAGE_EC2_HOST }} "sudo grep -r 'client.skylinedynamic.dev' /etc/nginx/sites-enabled/ || echo 'No matching config found.'"
                
                echo "--- Directory Listing ---"
                ssh -i deploy_key -o StrictHostKeyChecking=no ${{ secrets.STAGE_EC2_USER }}@${{ secrets.STAGE_EC2_HOST }} "ls -la /var/www/html/client-portal-react"
