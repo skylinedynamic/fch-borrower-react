@@ -59,7 +59,7 @@ jobs:
         run: |
           echo "Ensuring the service is up..."
           sleep 5
-          STAGE_URL="${{ secrets.STAGE_WEB_URL || 'https://your-stage-domain.com' }}"
+          STAGE_URL="${{ secrets.STAGE_WEB_URL || 'https://client.skylinedynamic.dev/login' }}"
           
           if [ "$STAGE_URL" == "https://your-stage-domain.com" ]; then
             echo "Disclaimer: Smoke test domain is not defined. Please add STAGE_WEB_URL to GitHub Secrets."
@@ -70,12 +70,20 @@ jobs:
             else
                echo "❌ Smoke test failed! Expected HTTP 200 but received $HTTP_STATUS."
                
-               echo "--- Attempting to fetch Nginx Error Logs for Debugging ---"
+               echo "--- Attempting to fetch Nginx Debug Info ---"
                echo "${{ secrets.STAGE_EC2_SSH_KEY }}" > deploy_key
                chmod 600 deploy_key
-               ssh -i deploy_key -o StrictHostKeyChecking=no ${{ secrets.STAGE_EC2_USER }}@${{ secrets.STAGE_EC2_HOST }} "sudo tail -n 50 /var/log/nginx/error.log" || echo "Failed to fetch Nginx logs."
-               rm deploy_key
                
+               echo "--- Nginx Sites Configuration ---"
+               ssh -i deploy_key -o StrictHostKeyChecking=no ${{ secrets.STAGE_EC2_USER }}@${{ secrets.STAGE_EC2_HOST }} "sudo grep -r 'client-portal-react' /etc/nginx/sites-enabled/ || echo 'No matching config found.'"
+               
+               echo "--- Directory Listing ---"
+               ssh -i deploy_key -o StrictHostKeyChecking=no ${{ secrets.STAGE_EC2_USER }}@${{ secrets.STAGE_EC2_HOST }} "ls -la /var/www/html/client-portal-react"
+               
+               echo "--- Nginx Error Logs ---"
+               ssh -i deploy_key -o StrictHostKeyChecking=no ${{ secrets.STAGE_EC2_USER }}@${{ secrets.STAGE_EC2_HOST }} "sudo tail -n 20 /var/log/nginx/error.log" || echo "Failed to fetch Nginx logs."
+               
+               rm deploy_key
                exit 1
             fi
           fi
