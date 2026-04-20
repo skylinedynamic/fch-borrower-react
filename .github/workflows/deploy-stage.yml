@@ -39,17 +39,17 @@ jobs:
           REMOTE_HOST: ${{ secrets.STAGE_EC2_HOST }}
           REMOTE_USER: ${{ secrets.STAGE_EC2_USER }}
           SOURCE: "dist/"
-          TARGET: "/var/www/html/client-portal-react"
+          TARGET: "/var/www/html/client-portal-react/dist"
           ARGS: "-rlgoDzvc --delete"
           SSH_CMD_ARGS: "-o StrictHostKeyChecking=no" 
           SCRIPT_BEFORE: |
             echo "Creating target directory if it doesn't exist..."
-            sudo mkdir -p /var/www/html/client-portal-react
+            sudo mkdir -p /var/www/html/client-portal-react/dist
             echo "Temporarily giving SSH user permission to write to directory..."
-            sudo chown -R $(whoami):$(whoami) /var/www/html/client-portal-react
+            sudo chown -R $(whoami):$(whoami) /var/www/html/client-portal-react/dist
           SCRIPT_AFTER: |
             echo "Setting correct directory permissions for Nginx..."
-            sudo chown -R www-data:www-data /var/www/html/client-portal-react || echo "Warning: chown failed, ignoring..."
+            sudo chown -R www-data:www-data /var/www/html/client-portal-react/dist || echo "Warning: chown failed, ignoring..."
             
             echo "Restarting Nginx...."
             sudo systemctl restart nginx
