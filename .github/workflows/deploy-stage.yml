@@ -50,7 +50,7 @@ jobs:
             echo "Setting correct directory permissions for Nginx..."
             sudo chown -R www-data:www-data /var/www/client-portal-react || echo "Warning: chown failed, ignoring..."
             
-            echo "Restarting Nginx..."
+            echo "Restarting Nginx...."
             sudo systemctl restart nginx
             echo "Nginx restarted successfully."
 
