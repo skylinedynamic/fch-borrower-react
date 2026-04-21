@@ -12,3 +12,5 @@ export const downloadResource = async (id: number) => {
   });
   return response;
 };
+return response;
+};

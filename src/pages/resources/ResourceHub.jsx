@@ -10,12 +10,6 @@ const ResourceHub = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const { data: resourcesData, isLoading } = useResources();
 
-  const [showAllLegal, setShowAllLegal] = useState(false);
-  const [showAllBusiness, setShowAllBusiness] = useState(false);
-  const [showAllAssets, setShowAllAssets] = useState(false);
-  const [showAllEducation, setShowAllEducation] = useState(false);
-  const [showAllVideos, setShowAllVideos] = useState(false);
-
   const [modal, setModal] = useState(false);
   const [selectedResource, setSelectedResource] = useState(null);
 
@@ -24,15 +18,20 @@ const ResourceHub = () => {
 
   /* ---- Handlers ---- */
   const handleItemClick = (item) => {
+    if (item.file_url) {
+      console.log(item);
+      setSelectedResource(item);
+      setModal(true);
+      return;
+    }
+
     const externalLink = item.link || item.external_url || item.url;
     if (externalLink) {
       window.open(externalLink, '_blank');
-    } else if (item.file_url) {
-      setSelectedResource(item);
-      setModal(true);
-    } else {
-      toast.error('Resource not available');
+      return;
     }
+
+    toast.error('Resource not available');
   };
 
   const handleDownload = async (resourceItem = null) => {
@@ -110,28 +109,19 @@ const ResourceHub = () => {
   }));
 
   const trainingVideos = filterItems(resources.training_academy).map((item, i) => {
-    const date = item.created_at ? new Date(item.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recent';
     return {
       id: item.id,
       title: item.title,
       subtitle: item.subtitle,
-      date: date,
-      views_info: `0 views`,
+      date: item.created_at,
       thumb: getYoutubeThumb(item.link || item.external_url || item.url),
       original: item,
     };
   });
 
-  const visibleVideos = showAllVideos ? trainingVideos : trainingVideos.slice(0, 8);
+  const visibleVideos = trainingVideos;
 
-  /* ---- Shared "View More" button ---- */
-  const ViewMoreBtn = ({ label = 'View More', onClick }) => (
-    <div className="rh-view-more">
-      <button className="rh-view-more-btn" onClick={onClick}>
-        {label} <i className="ri-arrow-down-s-line"></i>
-      </button>
-    </div>
-  );
+
 
   return (
     <div className="page-content resource-hub-page">
@@ -188,54 +178,52 @@ const ResourceHub = () => {
 
                   {/* Legal & Registration */}
                   <div className="col-md-6">
-                    <div className="card shadow-sm border-0 rounded-2 h-100 bg-white d-flex flex-column">
+                    <div className="card shadow-sm border-0 rounded-2 bg-white d-flex flex-column">
                       <div className="card-header bg-transparent border-0 pt-3 px-3">
                         <h6 className="fw-bold mb-0 fs-15" style={{ color: BRAND }}>Legal & Registration</h6>
                       </div>
-                      <div className="card-body p-3 pt-2 rh-cat-body">
-                        <div className={`rh-cat-list d-flex flex-column gap-3 ${showAllLegal && filteredLegal.length > 4 ? 'rh-scroll rh-scroll-sm' : ''}`}>
-                          {(showAllLegal ? filteredLegal : filteredLegal.slice(0, 4)).map(item => (
-                            <div key={item.id} className="p-3 rounded-2 rh-luxe-item d-flex align-items-center" onClick={() => handleItemClick(item)}>
-                              <div className="flex-shrink-0 avatar-xs rounded d-flex align-items-center justify-content-center me-3 rh-item-icon" style={{ backgroundColor: 'rgba(64,81,137,0.1)' }}>
-                                <i className={`${item.icon || 'ri-article-line'} fs-18`} style={{ color: BRAND }}></i>
+                      <div className="card-body p-3 pt-2 rh-cat-body position-relative mb-0">
+                        <div className="rh-scroll rh-scroll-sm" style={{ height: '290px', overflowY: 'auto', paddingRight: '4px' }}>
+                          <div className="rh-cat-list d-flex flex-column gap-2">
+                            {filteredLegal.map(item => (
+                              <div key={item.id} className="p-2 px-3 rounded-2 rh-luxe-item d-flex align-items-center" style={{ minHeight: '65px' }} onClick={() => handleItemClick(item)}>
+                                <div className="flex-shrink-0 avatar-xs rounded d-flex align-items-center justify-content-center me-3 rh-item-icon" style={{ backgroundColor: 'rgba(64,81,137,0.1)' }}>
+                                  <i className={`${item.icon || 'ri-article-line'} fs-18`} style={{ color: BRAND }}></i>
+                                </div>
+                                <div className="flex-grow-1 overflow-hidden pe-1">
+                                  <h6 className="mb-0 semi-bold fs-13 text-dark text-truncate">{item.title}</h6>
+                                  <span className="text-muted fs-11 text-truncate d-block">{item.subtitle}</span>
+                                </div>
                               </div>
-                              <div className="flex-grow-1 overflow-hidden pe-2">
-                                <h6 className="mb-1 fw-bold fs-14 text-dark text-truncate">{item.title}</h6>
-                                <span className="text-muted fs-11 text-truncate d-block">{item.subtitle}</span>
-                              </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
-                        {!showAllLegal && filteredLegal.length > 4 && (
-                          <ViewMoreBtn onClick={() => setShowAllLegal(true)} />
-                        )}
                       </div>
                     </div>
                   </div>
 
                   {/* Business Services */}
                   <div className="col-md-6">
-                    <div className="card shadow-sm border-0 rounded-2 h-100 bg-white d-flex flex-column">
+                    <div className="card shadow-sm border-0 rounded-2 bg-white d-flex flex-column">
                       <div className="card-header bg-transparent border-0 pt-3 px-3">
                         <h6 className="fw-bold mb-0 fs-15" style={{ color: BRAND }}>Business Services</h6>
                       </div>
-                      <div className="card-body p-3 pt-2 rh-cat-body">
-                        <div className={`rh-cat-list d-flex flex-column gap-3 ${showAllBusiness && filteredBus.length > 4 ? 'rh-scroll rh-scroll-sm' : ''}`}>
-                          {(showAllBusiness ? filteredBus : filteredBus.slice(0, 4)).map(item => (
-                            <div key={item.id} className="p-3 rounded-2 rh-luxe-item d-flex align-items-center" onClick={() => handleItemClick(item)}>
-                              <div className="flex-shrink-0 avatar-xs rounded d-flex align-items-center justify-content-center me-3 rh-item-icon" style={{ backgroundColor: 'rgba(64,81,137,0.1)' }}>
-                                <i className={`${item.icon || 'ri-phone-circle-line'} fs-18`} style={{ color: BRAND }}></i>
+                      <div className="card-body p-3 pt-2 rh-cat-body position-relative mb-0">
+                        <div className="rh-scroll rh-scroll-sm" style={{ height: '290px', overflowY: 'auto', paddingRight: '4px' }}>
+                          <div className="rh-cat-list d-flex flex-column gap-2">
+                            {filteredBus.map(item => (
+                              <div key={item.id} className="p-2 px-3 rounded-2 rh-luxe-item d-flex align-items-center" style={{ minHeight: '65px' }} onClick={() => handleItemClick(item)}>
+                                <div className="flex-shrink-0 avatar-xs rounded d-flex align-items-center justify-content-center me-3 rh-item-icon" style={{ backgroundColor: 'rgba(64,81,137,0.1)' }}>
+                                  <i className={`${item.icon || 'ri-phone-circle-line'} fs-18`} style={{ color: BRAND }}></i>
+                                </div>
+                                <div className="flex-grow-1 overflow-hidden pe-1">
+                                  <h6 className="mb-0 semi-bold fs-13 text-dark text-truncate">{item.title}</h6>
+                                  <span className="text-muted fs-11 text-truncate d-block">{item.subtitle}</span>
+                                </div>
                               </div>
-                              <div className="flex-grow-1 overflow-hidden pe-2">
-                                <h6 className="mb-1 fw-bold fs-14 text-dark text-truncate">{item.title}</h6>
-                                <span className="text-muted fs-11 text-truncate d-block">{item.subtitle}</span>
-                              </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
-                        {!showAllBusiness && filteredBus.length > 4 && (
-                          <ViewMoreBtn onClick={() => setShowAllBusiness(true)} />
-                        )}
                       </div>
                     </div>
                   </div>
@@ -263,10 +251,10 @@ const ResourceHub = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="card-body p-3">
-                        <div className={showAllEducation && filteredEdu.length > 12 ? 'rh-scroll rh-scroll-edu' : ''}>
+                      <div className="card-body p-3 position-relative">
+                        <div className="rh-scroll rh-scroll-edu" style={{ height: '450px', overflowY: 'auto' }}>
                           <div className="row g-3">
-                            {(showAllEducation ? filteredEdu : filteredEdu.slice(0, 12)).map((edu, i) => (
+                            {filteredEdu.map((edu, i) => (
                               <div className="col-6 col-md-4 col-xl-3" key={edu.id || i}>
                                 <div
                                   className="p-3 rounded-3 text-center rh-edu-card h-100 border border-light-subtle bg-white shadow-sm"
@@ -275,16 +263,13 @@ const ResourceHub = () => {
                                   <div className={`avatar-sm bg-${bgClass(edu.color)} rounded-3 d-flex align-items-center justify-content-center mx-auto mb-3`}>
                                     <i className={`${edu.icon} text-${colorClass(edu.color)} fs-20`}></i>
                                   </div>
-                                  <h6 className="mb-1 fw-bold fs-14 text-dark">{edu.title}</h6>
+                                  <h6 className="mb-1 semi-bold fs-14 text-dark">{edu.title}</h6>
                                   <p className="text-muted fs-11 mb-0 fw-medium opacity-75">{edu.sub}</p>
                                 </div>
                               </div>
                             ))}
                           </div>
                         </div>
-                        {!showAllEducation && filteredEdu.length > 12 && (
-                          <ViewMoreBtn label="Show More Articles" onClick={() => setShowAllEducation(true)} />
-                        )}
                       </div>
                     </div>
                   </div>
@@ -301,12 +286,13 @@ const ResourceHub = () => {
                     <div className="card-header border-bottom border-light p-3">
                       <h6 className="fw-bold text-dark mb-0 fs-14 text-uppercase">Download Assets</h6>
                     </div>
-                    <div className="card-body p-0">
-                      <div className={showAllAssets && documentItems.length > 4 ? 'rh-scroll rh-scroll-assets' : ''}>
-                        {(showAllAssets ? documentItems : documentItems.slice(0, 4)).map(doc => (
+                    <div className="card-body p-0 position-relative">
+                      <div className="rh-scroll rh-scroll-assets" style={{ height: '295px', overflowY: 'auto' }}>
+                        {documentItems.map(doc => (
                           <div
                             key={doc.id}
                             className="rh-asset-row list-group-item border-0 p-3 d-flex align-items-center justify-content-between"
+                            style={{ minHeight: '73px' }}
                             onClick={() => handleItemClick(doc.original)}
                           >
                             <div className="d-flex align-items-center flex-grow-1 pe-2">
@@ -323,13 +309,6 @@ const ResourceHub = () => {
                           </div>
                         ))}
                       </div>
-                      {!showAllAssets && documentItems.length > 4 && (
-                        <div className="rh-view-more px-3 pb-2">
-                          <button className="rh-view-more-btn" onClick={() => setShowAllAssets(true)}>
-                            View More Assets <i className="ri-arrow-down-s-line"></i>
-                          </button>
-                        </div>
-                      )}
                     </div>
                   </div>
 
@@ -342,9 +321,9 @@ const ResourceHub = () => {
                       <span className="badge bg-danger-subtle text-danger fs-10">{trainingVideos.length} Videos</span>
                     </div>
                     <div className="card-body p-3 pt-2 d-flex flex-column position-relative">
-                      <div className={`d-flex flex-column gap-2 flex-grow-1 ${showAllVideos && trainingVideos.length > 8 ? 'rh-scroll rh-scroll-videos' : ''}`}>
+                      <div className="rh-scroll rh-scroll-videos d-flex flex-column gap-2 flex-grow-1" style={{ height: '295px', overflowY: 'auto' }}>
                         {visibleVideos.map((video, i) => (
-                          <div key={video.id} className="rh-video-item d-flex align-items-center gap-3" onClick={() => handleItemClick(video.original)}>
+                          <div key={video.id} className="rh-video-item d-flex align-items-center gap-3" onClick={() => handleItemClick(video.original)} style={{ minHeight: '65px' }}>
                             <div className="rh-video-thumb">
                               <img
                                 src={video.thumb || video.original.file_url || `https://placehold.co/220x128/cccccc/white?text=Training +${i + 1}`}
@@ -354,26 +333,12 @@ const ResourceHub = () => {
                               <i className="ri-play-circle-fill rh-video-play"></i>
                             </div>
                             <div className="flex-grow-1 overflow-hidden">
-                              <p className="rh-video-title mb-0">{video.title}</p>
+                              <p className="rh-video-title mb-0 fs-13">{video.title}</p>
                               {video.subtitle && <p className="text-muted fs-11 mb-0 text-truncate">{video.subtitle}</p>}
-                              <div className="d-flex align-items-center gap-1 opacity-75">
-                                <span className="fs-10 text-muted">{video.views_info} • {video.date}</span>
-                              </div>
                             </div>
                           </div>
                         ))}
                       </div>
-                      {!showAllVideos && trainingVideos.length > 8 && (
-                        <div className="rh-load-more-floating">
-                          <button
-                            className="rh-view-more-btn bg-white px-3 py-1 rounded-pill shadow-sm"
-                            style={{ border: '1px solid #f0f0f5' }}
-                            onClick={() => setShowAllVideos(true)}
-                          >
-                            Load More Videos <i className="ri-arrow-down-s-line"></i>
-                          </button>
-                        </div>
-                      )}
                     </div>
                   </div>
 
