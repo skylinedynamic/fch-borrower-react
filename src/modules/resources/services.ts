@@ -12,5 +12,10 @@ export const downloadResource = async (id: number) => {
   });
   return response;
 };
-return response;
+
+export const fetchResourcePreview = async (id: number) => {
+  const response = await apiClient.get(`/borrower/resources/${id}/preview`, {
+    responseType: 'blob'
+  });
+  return response;
 };
