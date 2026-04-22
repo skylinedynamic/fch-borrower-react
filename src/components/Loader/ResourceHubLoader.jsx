@@ -4,7 +4,7 @@ const ResourceHubLoader = () => {
     return (
         <>
             {/* Metric Header Skeleton - Matching row g-3 */}
-            <div className="row g-3">
+            <div className="row g-4">
                 {[1, 2, 3, 4].map((_, i) => (
                     <div className="col-md-3" key={i}>
                         <div className="card shadow-sm border-0 rounded-2 bg-white dashboard-card">
@@ -20,9 +20,9 @@ const ResourceHubLoader = () => {
                 ))}
             </div>
 
-            <div className="row g-3">
+            <div className="row g-4">
                 <div className="col-lg-8">
-                    <div className="row g-3">
+                    <div className="row g-4">
 
                         {/* Category Sections Skeleton - Matching col-md-6 row g-3 */}
                         <div className="col-md-6">
@@ -86,7 +86,7 @@ const ResourceHubLoader = () => {
                                     </div>
                                 </div>
                                 <div className="card-body p-3">
-                                    <div className="row g-3">
+                                    <div className="row g-4">
                                         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((_, i) => (
                                             <div className="col-6 col-md-4 col-xl-3" key={i}>
                                                 <div className="p-3 rounded-3 text-center border border-light-subtle h-100 bg-white">
@@ -104,7 +104,7 @@ const ResourceHubLoader = () => {
                 </div>
 
                 <div className="col-lg-4">
-                    <div className="d-flex flex-column gap-3">
+                    <div className="d-flex flex-column gap-4">
                         {/* Asset Sidebar Skeleton - Matching p-3 gap-0 */}
                         <div className="card shadow-sm border-0 rounded-2 bg-white mb-0">
                             <div className="card-header border-bottom border-light p-3">
@@ -132,8 +132,8 @@ const ResourceHubLoader = () => {
                                 <div className="skeleton-rect sk-training-btn"></div>
                             </div>
                             <div className="card-body p-3 pt-2">
-                                <div className="d-flex flex-column gap-3">
-                                    {[1, 2, 3, 4].map((_, i) => (
+                                <div className="d-flex flex-column gap-4">
+                                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((_, i) => (
                                         <div className="d-flex align-items-center gap-3" key={i}>
                                             <div className="skeleton-rect rounded-2 flex-shrink-0 sk-vid-thumb"></div>
                                             <div className="flex-grow-1">

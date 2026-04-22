@@ -8,19 +8,50 @@ const BRAND = '#405189';
 
 const ResourceHub = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [eduSearch, setEduSearch] = useState('');
   const { data: resourcesData, isLoading } = useResources();
 
   const [modal, setModal] = useState(false);
   const [selectedResource, setSelectedResource] = useState(null);
+  const [modalType, setModalType] = useState('file'); // 'file' | 'video'
 
   const toggleModal = () => setModal(prev => !prev);
   const resources = resourcesData || {};
 
   /* ---- Handlers ---- */
+  const isVideoItem = (item) => {
+    if (!item) return false;
+    const link = item.link || item.external_url || item.url || '';
+    return (
+      item.resource_type === 'training_academy' ||
+      /youtu\.be|youtube\.com\/watch|youtube\.com\/embed|youtube\.com\/shorts/i.test(link) ||
+      /\.(mp4|webm|ogg|mov)$/i.test(link)
+    );
+  };
+
+  const getYoutubeEmbedUrl = (url) => {
+    if (!url) return '';
+    const m = url.match(/^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?v(?:i)?=|&v(?:i)?=))([^#&?]*).*/);
+    if (m && m[1].length === 11) return `https://www.youtube.com/embed/${m[1]}?autoplay=1&rel=0`;
+    return url;
+  };
+
   const handleItemClick = (item) => {
+    if (!item) return;
+
+    if (isVideoItem(item)) {
+      const link = item.link || item.external_url || item.url;
+      if (link) {
+        setSelectedResource(item);
+        setModalType('video');
+        setModal(true);
+        return;
+      }
+    }
+
     if (item.file_url) {
-      console.log(item);
       setSelectedResource(item);
+      setModalType('file');
       setModal(true);
       return;
     }
@@ -72,10 +103,11 @@ const ResourceHub = () => {
     return 'primary';
   };
 
-  const filterItems = (items) => {
+  const filterItems = (items, customSearch = null) => {
     if (!items) return [];
-    if (!searchTerm) return items;
-    const q = searchTerm.toLowerCase();
+    const query = customSearch !== null ? customSearch : searchTerm;
+    if (!query) return items;
+    const q = query.toLowerCase();
     return items.filter(it =>
       it.title.toLowerCase().includes(q) ||
       (it.subtitle && it.subtitle.toLowerCase().includes(q))
@@ -94,7 +126,7 @@ const ResourceHub = () => {
   const filteredLegal = filterItems(resources.legal_registration);
   const filteredBus = filterItems(resources.business_services);
 
-  const filteredEdu = filterItems(resources.education_help).map(item => ({
+  const filteredEdu = filterItems(resources.education_help, eduSearch).map(item => ({
     id: item.id, title: item.title, sub: item.subtitle,
     icon: item.icon || 'ri-book-line',
     color: getColorByIcon(item.icon || ''),
@@ -147,12 +179,12 @@ const ResourceHub = () => {
         {isLoading ? <ResourceHubLoader /> : (
           <>
             {/* ── Metric Cards ── */}
-            <div className="row g-3">
+            <div className="row g-4">
               {[
-                { label: 'Total Resources', value: filteredEdu.length + documentItems.length + trainingVideos.length, icon: 'ri-grid-fill' },
-                { label: 'Service Providers', value: (resources.business_services || []).length, icon: 'ri-briefcase-fill' },
-                { label: 'Categories Covered', value: '6', icon: 'ri-stack-fill', color: 'warning' },
-                { label: 'Quick Tools', value: documentItems.length, icon: 'ri-rocket-2-fill' },
+                { label: 'Total Resources', value: filteredEdu.length + documentItems.length + trainingVideos.length + filteredLegal.length + filteredBus.length, icon: 'ri-grid-fill', color: 'primary' },
+                { label: 'Education & Help', value: filteredEdu.length, icon: 'ri-book-open-line', color: 'info' },
+                { label: 'Training Academy', value: trainingVideos.length, icon: 'ri-video-line', color: 'danger' },
+                { label: 'Resource Categories', value: Object.keys(resources || {}).length, icon: 'ri-stack-line', color: 'warning' },
               ].map((stat, i) => (
                 <div className="col-md-3" key={i}>
                   <div className="card shadow-sm border-0 rounded-2 bg-white card-animate">
@@ -170,7 +202,7 @@ const ResourceHub = () => {
               ))}
             </div>
 
-            <div className="row g-3">
+            <div className="row g-4">
 
               {/* ── Left Column (8/12) ── */}
               <div className="col-lg-8">
@@ -178,12 +210,12 @@ const ResourceHub = () => {
 
                   {/* Legal & Registration */}
                   <div className="col-md-6">
-                    <div className="card shadow-sm border-0 rounded-2 bg-white d-flex flex-column">
+                    <div className="card shadow-sm border-0 rounded-2 bg-white d-flex flex-column mb-0">
                       <div className="card-header bg-transparent border-0 pt-3 px-3">
                         <h6 className="fw-bold mb-0 fs-15" style={{ color: BRAND }}>Legal & Registration</h6>
                       </div>
                       <div className="card-body p-3 pt-2 rh-cat-body position-relative mb-0">
-                        <div className="rh-scroll rh-scroll-sm" style={{ height: '290px', overflowY: 'auto', paddingRight: '4px' }}>
+                        <div className="rh-scroll rh-scroll-sm" style={{ height: '296px', overflowY: 'auto', paddingRight: '4px' }}>
                           <div className="rh-cat-list d-flex flex-column gap-2">
                             {filteredLegal.map(item => (
                               <div key={item.id} className="p-2 px-3 rounded-2 rh-luxe-item d-flex align-items-center" style={{ minHeight: '65px' }} onClick={() => handleItemClick(item)}>
@@ -204,12 +236,12 @@ const ResourceHub = () => {
 
                   {/* Business Services */}
                   <div className="col-md-6">
-                    <div className="card shadow-sm border-0 rounded-2 bg-white d-flex flex-column">
+                    <div className="card shadow-sm border-0 rounded-2 bg-white d-flex flex-column mb-0">
                       <div className="card-header bg-transparent border-0 pt-3 px-3">
                         <h6 className="fw-bold mb-0 fs-15" style={{ color: BRAND }}>Business Services</h6>
                       </div>
                       <div className="card-body p-3 pt-2 rh-cat-body position-relative mb-0">
-                        <div className="rh-scroll rh-scroll-sm" style={{ height: '290px', overflowY: 'auto', paddingRight: '4px' }}>
+                        <div className="rh-scroll rh-scroll-sm" style={{ height: '296px', overflowY: 'auto', paddingRight: '4px' }}>
                           <div className="rh-cat-list d-flex flex-column gap-2">
                             {filteredBus.map(item => (
                               <div key={item.id} className="p-2 px-3 rounded-2 rh-luxe-item d-flex align-items-center" style={{ minHeight: '65px' }} onClick={() => handleItemClick(item)}>
@@ -245,19 +277,19 @@ const ResourceHub = () => {
                               type="text"
                               className="form-control bg-white bg-opacity-10 border-white border-opacity-20 rounded-pill ps-5 py-2 fs-13 text-white shadow-none"
                               placeholder="Search Education & Help..."
-                              value={searchTerm}
-                              onChange={e => setSearchTerm(e.target.value)}
+                              value={eduSearch}
+                              onChange={e => setEduSearch(e.target.value)}
                             />
                           </div>
                         </div>
                       </div>
                       <div className="card-body p-3 position-relative">
-                        <div className="rh-scroll rh-scroll-edu" style={{ height: '450px', overflowY: 'auto' }}>
-                          <div className="row g-3">
+                        <div className="rh-scroll rh-scroll-edu" style={{ height: '470px', overflowY: 'auto' }}>
+                          <div className="row g-4">
                             {filteredEdu.map((edu, i) => (
                               <div className="col-6 col-md-4 col-xl-3" key={edu.id || i}>
                                 <div
-                                  className="p-3 rounded-3 text-center rh-edu-card h-100 border border-light-subtle bg-white shadow-sm"
+                                  className="p-3 rounded-3 text-center rh-edu-card h-100 bg-white"
                                   onClick={() => handleItemClick(edu.original)}
                                 >
                                   <div className={`avatar-sm bg-${bgClass(edu.color)} rounded-3 d-flex align-items-center justify-content-center mx-auto mb-3`}>
@@ -287,7 +319,7 @@ const ResourceHub = () => {
                       <h6 className="fw-bold text-dark mb-0 fs-14 text-uppercase">Download Assets</h6>
                     </div>
                     <div className="card-body p-0 position-relative">
-                      <div className="rh-scroll rh-scroll-assets" style={{ height: '295px', overflowY: 'auto' }}>
+                      <div className="rh-scroll rh-scroll-assets" style={{ height: '236px', overflowY: 'auto' }}>
                         {documentItems.map(doc => (
                           <div
                             key={doc.id}
@@ -301,11 +333,13 @@ const ResourceHub = () => {
                               </div>
                               <h6 className="mb-0 fs-13 fw-semibold text-dark text-truncate">{doc.title}</h6>
                             </div>
-                            <i
-                              className="ri-download-2-line rh-download-btn"
-                              onClick={e => { e.stopPropagation(); handleDownload(doc.original); }}
-                              title="Download"
-                            ></i>
+                            {doc.original.file_url && (
+                              <i
+                                className="ri-download-2-line rh-download-btn"
+                                onClick={e => { e.stopPropagation(); handleDownload(doc.original); }}
+                                title="Download"
+                              ></i>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -321,7 +355,7 @@ const ResourceHub = () => {
                       <span className="badge bg-danger-subtle text-danger fs-10">{trainingVideos.length} Videos</span>
                     </div>
                     <div className="card-body p-3 pt-2 d-flex flex-column position-relative">
-                      <div className="rh-scroll rh-scroll-videos d-flex flex-column gap-2 flex-grow-1" style={{ height: '295px', overflowY: 'auto' }}>
+                      <div className="rh-scroll rh-scroll-videos d-flex flex-column gap-2 flex-grow-1" style={{ height: '480px', overflowY: 'auto' }}>
                         {visibleVideos.map((video, i) => (
                           <div key={video.id} className="rh-video-item d-flex align-items-center gap-3" onClick={() => handleItemClick(video.original)} style={{ minHeight: '65px' }}>
                             <div className="rh-video-thumb">
@@ -332,9 +366,13 @@ const ResourceHub = () => {
                               <div className="rh-video-overlay"></div>
                               <i className="ri-play-circle-fill rh-video-play"></i>
                             </div>
-                            <div className="flex-grow-1 overflow-hidden">
-                              <p className="rh-video-title mb-0 fs-13">{video.title}</p>
+                            <div className="flex-grow-1 overflow-hidden pe-1">
+                              <p className="rh-video-title mb-0 fs-13 text-truncate">{video.title}</p>
                               {video.subtitle && <p className="text-muted fs-11 mb-0 text-truncate">{video.subtitle}</p>}
+                              <p className="text-muted fs-10 mb-0 opacity-75 mt-1">
+                                <i className="ri-calendar-event-line me-1"></i>
+                                {new Date(video.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </p>
                             </div>
                           </div>
                         ))}
@@ -349,62 +387,100 @@ const ResourceHub = () => {
         )}
       </div>
 
-      {/* ── PDF Preview Modal ── */}
+      {/* ── Resource Preview Modal ── */}
       {modal && selectedResource && (
         <div className="resource-modal-overlay" onClick={toggleModal}>
-          <div className="resource-modal-container" onClick={e => e.stopPropagation()}>
-            <div className="resource-modal-header">
+          <div
+            className={`resource-modal-container${modalType === 'video' ? ' resource-modal-video' : ''}`}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="resource-modal-header py-3 px-4">
               <div className="d-flex align-items-center min-width-0">
-                <div className="resource-modal-icon-wrapper">
-                  <i className="ri-file-pdf-2-fill fs-22" style={{ color: BRAND }}></i>
+                <div className={`resource-modal-icon-box me-3 ${modalType === 'video' ? 'bg-danger' : ''}`}>
+                  {modalType === 'video'
+                    ? <i className="ri-play-fill fs-20 text-white"></i>
+                    : <i className="ri-file-text-fill fs-20 text-white"></i>
+                  }
                 </div>
                 <div className="resource-modal-title-group">
-                  <h6 className="resource-modal-title">{selectedResource.title}</h6>
-                  <div className="d-flex align-items-center gap-2 mt-1">
-                    <span className="resource-modal-badge">PDF</span>
-                    {selectedResource.subtitle && (
-                      <span className="text-muted fs-12 text-truncate">{selectedResource.subtitle}</span>
-                    )}
-                  </div>
+                  <h6 className="resource-modal-title mb-0 fw-bold">{selectedResource.title}</h6>
+                  <p className="text-muted fs-12 mb-0">{selectedResource.subtitle || 'Resource Hub Preview'}</p>
                 </div>
               </div>
-              <button className="resource-modal-close" onClick={toggleModal}>
-                <i className="ri-close-line fs-18"></i>
-              </button>
+
+              {/* Header right-side actions */}
+              <div className="d-flex align-items-center gap-3 flex-shrink-0">
+                {modalType !== 'video' && selectedResource.file_url && (
+                  <button className="btn-primary-resource px-3 py-2 d-flex align-items-center" onClick={() => handleDownload()}>
+                    <i className="ri-download-2-line me-2"></i> Download
+                  </button>
+                )}
+                <button className="resource-modal-close-simple" onClick={toggleModal}>
+                  <i className="ri-close-line fs-24"></i>
+                </button>
+              </div>
             </div>
 
+            {/* Body */}
             <div className="resource-modal-body">
-              {selectedResource.file_url?.toLowerCase().endsWith('.pdf') ? (
+              {modalType === 'video' ? (
+                <iframe
+                  src={getYoutubeEmbedUrl(selectedResource.link || selectedResource.external_url || selectedResource.url || '')}
+                  className="resource-modal-iframe"
+                  title={selectedResource.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : selectedResource.file_url?.toLowerCase().endsWith('.pdf') ? (
                 <iframe
                   src={`${selectedResource.file_url}#toolbar=0&navpanes=0&scrollbar=1&view=FitH`}
                   className="resource-modal-iframe"
                   title={selectedResource.title}
                 />
+              ) : selectedResource.file_url ? (
+                <div className="resource-modal-empty">
+                  <div className="avatar-lg bg-light rounded-circle d-flex align-items-center justify-content-center">
+                    <i className="ri-file-3-line fs-32" style={{ color: BRAND }}></i>
+                  </div>
+                  <div className="text-center">
+                    <p className="fw-bold fs-15 text-dark mb-1">Preview Not Available</p>
+                    <p className="text-muted fs-13 mb-0">Click Download to save this file to your device.</p>
+                  </div>
+                </div>
               ) : (
                 <div className="resource-modal-empty">
                   <div className="avatar-lg bg-light rounded-circle d-flex align-items-center justify-content-center">
                     <i className="ri-file-warning-line fs-32 text-muted"></i>
                   </div>
                   <div className="text-center">
-                    <p className="fw-bold fs-15 text-dark mb-1">No Preview Available</p>
-                    <p className="text-muted fs-13 mb-0">Download the file to view it on your device.</p>
+                    <p className="fw-bold fs-15 text-dark mb-1">No Content Available</p>
+                    <p className="text-muted fs-13 mb-0">This resource has no file or link attached.</p>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="resource-modal-footer">
-              <div className="resource-modal-status">
-                <span className="resource-modal-status-dot"></span>
-                <span className="text-muted fs-12 fw-medium">Secure Document Preview</span>
+
+            {/* Footer — file modal: compact status only; video modal: status + close */}
+            {modalType === 'video' ? (
+              <div className="resource-modal-footer">
+                <div className="resource-modal-status">
+                  <span className="resource-modal-status-dot resource-modal-status-dot-video"></span>
+                  <span className="text-muted fs-12 fw-medium">Streaming Video</span>
+                </div>
+                <div className="resource-modal-btn-group">
+                  <button className="btn-secondary-resource" onClick={toggleModal}>Close</button>
+                </div>
               </div>
-              <div className="resource-modal-btn-group">
-                <button className="btn-secondary-resource" onClick={toggleModal}>Close</button>
-                <button className="btn-primary-resource" onClick={() => handleDownload()}>
-                  <i className="ri-download-2-line"></i> Download
-                </button>
+            ) : (
+              <div className="resource-modal-footer resource-modal-footer-sm">
+                <div className="resource-modal-status">
+                  <span className="resource-modal-status-dot"></span>
+                  <span className="text-muted fs-11 fw-medium">Secure Document Preview</span>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
