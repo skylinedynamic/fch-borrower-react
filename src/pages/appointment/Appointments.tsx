@@ -213,7 +213,7 @@ export default function Appointments() {
     <div className="page-content borrower-appointments-wrapper">
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="container-fluid">
-        <div className="row">
+        <div className="row mt-3">
           <div className="col-12">
             <div className="row">
               <div className="col-lg-4 col-xl-3">

@@ -45,7 +45,7 @@ export default function DashboardLoader() {
                     {/* Left Column (Main Content) */}
                     <div className="col-xl-9">
                         {/* Credit Score & Tier Skeleton */}
-                        <div className="row mb-4">
+                        <div className="row mb-3">
                             <div className="col-md-6">
                                 <div className="card dashboard-card border-0 shadow-sm h-100">
                                     <div className="card-header bg-transparent border-0 pb-0">
@@ -81,7 +81,7 @@ export default function DashboardLoader() {
                         </div>
 
                         {/* Pre-Qualification Table Skeleton */}
-                        <div className="card dashboard-card border-0 shadow-sm mb-4">
+                        <div className="card dashboard-card border-0 shadow-sm mb-3">
                             <div className="card-header bg-transparent border-0 d-flex align-items-center justify-content-between py-3 px-4">
                                 <div className="skeleton-line" style={{ width: '250px', height: '18px' }}></div>
                                 <div className="skeleton-line" style={{ width: '100px', height: '14px' }}></div>
@@ -134,7 +134,7 @@ export default function DashboardLoader() {
                         </div>
 
                         {/* Funding Applications Table Skeleton */}
-                        <div className="card dashboard-card border-0 shadow-sm mb-4">
+                        <div className="card dashboard-card border-0 shadow-sm mb-3">
                             <div className="card-header bg-transparent border-0 d-flex align-items-center justify-content-between py-3 px-4">
                                 <div className="skeleton-line" style={{ width: '250px', height: '18px' }}></div>
                                 <div className="skeleton-line" style={{ width: '100px', height: '14px' }}></div>
@@ -187,7 +187,7 @@ export default function DashboardLoader() {
                     {/* Right Column (Sidebar) */}
                     <div className="col-xl-3">
                         {/* Upcoming Meetings Skeleton */}
-                        <div className="card dashboard-card border-0 shadow-sm mb-4">
+                        <div className="card dashboard-card border-0 shadow-sm mb-3">
                             <div className="card-header bg-transparent border-0 py-3">
                                 <div className="skeleton-line" style={{ width: '160px', height: '18px' }}></div>
                             </div>

@@ -215,7 +215,7 @@ const ResourceHub = () => {
                         <h6 className="fw-bold mb-0 fs-15" style={{ color: BRAND }}>Legal & Registration</h6>
                       </div>
                       <div className="card-body p-3 pt-2 rh-cat-body position-relative mb-0">
-                        <div className="rh-scroll rh-scroll-sm" style={{ height: '296px', overflowY: 'auto', paddingRight: '4px' }}>
+                        <div className="rh-scroll rh-scroll-sm" style={{ height: filteredLegal.length > 4 ? '296px' : 'auto', overflowY: filteredLegal.length > 4 ? 'auto' : 'visible', paddingRight: '4px' }}>
                           <div className="rh-cat-list d-flex flex-column gap-2">
                             {filteredLegal.map(item => (
                               <div key={item.id} className="p-2 px-3 rounded-2 rh-luxe-item d-flex align-items-center" style={{ minHeight: '65px' }} onClick={() => handleItemClick(item)}>
@@ -241,7 +241,7 @@ const ResourceHub = () => {
                         <h6 className="fw-bold mb-0 fs-15" style={{ color: BRAND }}>Business Services</h6>
                       </div>
                       <div className="card-body p-3 pt-2 rh-cat-body position-relative mb-0">
-                        <div className="rh-scroll rh-scroll-sm" style={{ height: '296px', overflowY: 'auto', paddingRight: '4px' }}>
+                        <div className="rh-scroll rh-scroll-sm" style={{ height: filteredBus.length > 4 ? '296px' : 'auto', overflowY: filteredBus.length > 4 ? 'auto' : 'visible', paddingRight: '4px' }}>
                           <div className="rh-cat-list d-flex flex-column gap-2">
                             {filteredBus.map(item => (
                               <div key={item.id} className="p-2 px-3 rounded-2 rh-luxe-item d-flex align-items-center" style={{ minHeight: '65px' }} onClick={() => handleItemClick(item)}>

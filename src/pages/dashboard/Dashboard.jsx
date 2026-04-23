@@ -221,9 +221,9 @@ export default function Dashboard() {
                         </div>
                     </div>
                 )}
-                <div className="row mb-3 pb-1">
+                <div className="row">
                     <div className="col-12">
-                        <div className="d-flex align-items-lg-center flex-lg-row flex-column justify-content-between">
+                        <div className="d-flex align-items-lg-center flex-lg-row flex-column justify-content-between py-2">
                             <div className="flex-grow-1">
                                 <h4 className="fs-16 mb-1">Dashboard Overview</h4>
                                 <p className="text-muted mb-0 fs-13">Welcome back, {user?.name}! Here's what's happening with your business.</p>
@@ -314,7 +314,7 @@ export default function Dashboard() {
                         </div>
 
                         {/* Pre-Qualification Applications */}
-                        <div className="card dashboard-card border-0 shadow-sm mb-4">
+                        <div className="card dashboard-card border-0 shadow-sm mb-3">
                             <div className="card-header bg-transparent border-0 d-flex align-items-center justify-content-between py-3 px-4">
                                 <h5 className="card-title mb-0 flex-grow-1"><i className="ri-shield-check-line me-2 text-primary"></i>Pre-Qualification Applications</h5>
                                 <Button label="View All" icon="ri-arrow-right-line" iconPos="right" className="p-button-text p-button-sm fs-12 text-primary fw-bold" onClick={() => navigate('/my-applications')} />
@@ -344,7 +344,7 @@ export default function Dashboard() {
                         </div>
 
                         {/* Recent Funding Applications */}
-                        <div className="card dashboard-card border-0 shadow-sm mb-4">
+                        <div className="card dashboard-card border-0 shadow-sm mb-3">
                             <div className="card-header bg-transparent border-0 d-flex align-items-center justify-content-between py-3 px-4">
                                 <h5 className="card-title mb-0 flex-grow-1"><i className="ri-exchange-dollar-line me-2 text-primary"></i>Recent Funding Applications</h5>
                                 <Button label="View All" icon="ri-arrow-right-line" iconPos="right" className="p-button-text p-button-sm fs-12 text-primary fw-bold" onClick={() => navigate('/my-applications')} />
@@ -380,7 +380,7 @@ export default function Dashboard() {
                     <div className="col-xl-3">
 
                         {/* Upcoming Meetings/Tasks */}
-                        <div className="card dashboard-card border-0 shadow-sm mb-4">
+                        <div className="card dashboard-card border-0 shadow-sm mb-3">
                             <div className="card-header bg-transparent border-bottom py-3 px-4">
                                 <h5 className="card-title mb-0 flex-grow-1 fs-15 text-dark">Upcoming Meetings</h5>
                             </div>
@@ -435,7 +435,7 @@ export default function Dashboard() {
 
                         {/* Invoices */}
                         {invoicesData.length > 0 && (
-                            <div className="card dashboard-card border-0 shadow-sm mb-4">
+                            <div className="card dashboard-card border-0 shadow-sm mb-3">
                                 <div className="card-header bg-transparent border-0 py-3">
                                     <h5 className="card-title mb-0 flex-grow-1"><i className="ri-file-list-line me-2 text-danger"></i>Invoices</h5>
                                 </div>

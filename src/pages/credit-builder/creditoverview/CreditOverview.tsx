@@ -11,7 +11,7 @@ export default function CreditOverview() {
     const els = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     if (bootstrapLib && els.length) {
       els.forEach((el) => {
-        try { new bootstrapLib.Tooltip(el) } catch {}
+        try { new bootstrapLib.Tooltip(el) } catch { }
       })
     }
   }, [])
@@ -21,7 +21,7 @@ export default function CreditOverview() {
       <div className="container-fluid">
         <div className="row">
           <div className="col-12">
-            <div className="d-flex align-items-center mb-2">
+            <div className="d-flex align-items-center py-2">
               <div>
                 <h4 className="fs-20 mb-1">Credit Building Overview</h4>
                 <p className="text-muted mb-0">Tracks your business credit journey from startup to mature credit profile</p>

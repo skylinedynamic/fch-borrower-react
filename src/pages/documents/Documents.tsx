@@ -63,12 +63,12 @@ export default function Documents() {
       })
 
       setUploads(uploadsMap)
-      
+
       // Open first section by default only on initial load
       if (sectionNames.length > 0 && openSection === null) {
         setOpenSection(sectionNames[0])
       }
-      
+
       setLoading(false)
     } else if (typesError || docsError) {
       console.error('Failed to load data', typesError || docsError)
@@ -102,7 +102,7 @@ export default function Documents() {
           await submitFileSelection(filePaths, '/borrower/documents/upload', {
             document_type_id: docType.id
           })
-          
+
           await queryClient.invalidateQueries({ queryKey: queryKeys.documents.list() })
           toast.success(`${selectedFiles.length} file(s) attached to ${currentSection}`)
         } catch (error) {
@@ -155,7 +155,7 @@ export default function Documents() {
         entityType="borrowers"
         entityId={getUser()?.entity_id}
       />
-      
+
       <DeleteConfirmationModal
         show={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
@@ -163,7 +163,7 @@ export default function Documents() {
         loading={deleteDocumentMutation.isPending}
         text={`Are you sure you want to delete "${documentToDelete?.name}"? This action cannot be undone.`}
       />
-      
+
       <div className="container-fluid min-vh-70 pt-2">
         {loading ? (
           <div className="text-center mb-3">
