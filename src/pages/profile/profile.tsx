@@ -66,7 +66,7 @@ export default function Profile() {
 
   return (
     <div className="page-content profile-page">
-      <div className="container-fluid min-vh-70 pt-2">
+      <div className="container-fluid min-vh-70 pt-3">
         <div className="text-center mb-4">
           <h3 className="mb-1">Your Profile</h3>
           <div className="text-muted mx-auto intro-text">

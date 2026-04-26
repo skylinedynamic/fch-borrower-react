@@ -93,7 +93,7 @@ export default function CreditGuide() {
       <div className="container-fluid">
         <div className="row">
           <div className="col-12">
-            <div className="d-flex align-items-center mb-2">
+            <div className="d-flex align-items-center py-2">
               <div>
                 <h4 className="fs-20 mb-1">Credit Building Guide</h4>
                 <p className="text-muted mb-0">Follow a step-by-step path to establish, build, and monitor your business credit</p>
