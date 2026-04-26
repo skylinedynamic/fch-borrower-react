@@ -286,7 +286,7 @@ const ResourceHub = () => {
                   <div className="col-12">
                     <div className="card shadow-sm border-0 rounded-2 bg-white">
                       <div className="card-header border-0 p-3" style={{ background: 'linear-gradient(135deg, #405189 0%, #2a355a 100%)' }}>
-                        <div className="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-3">
+                        <div className="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-4">
                           <div className="flex-grow-1">
                             <h5 className="fw-bold text-white mb-1 fs-18">Education & Help</h5>
                             <p className="text-white opacity-75 mb-0 fs-13">
@@ -307,7 +307,7 @@ const ResourceHub = () => {
                       </div>
                       <div className="card-body p-3 position-relative">
                         <div className="rh-scroll rh-scroll-edu" style={{ height: '470px', overflowY: 'auto', overflowX: 'hidden' }}>
-                          <div className="row g-4">
+                          <div className="row g-3">
                             {filteredEdu.map((edu, i) => (
                               <div className="col-6 col-md-4 col-xl-3" key={edu.id || i}>
                                 <div
