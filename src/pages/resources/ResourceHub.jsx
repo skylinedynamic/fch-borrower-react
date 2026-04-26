@@ -306,7 +306,7 @@ const ResourceHub = () => {
                         </div>
                       </div>
                       <div className="card-body p-3 position-relative">
-                        <div className="rh-scroll rh-scroll-edu" style={{ height: '470px', overflowY: 'auto', overflowX: 'hidden' }}>
+                        <div className="rh-scroll rh-scroll-edu" style={{ overflowY: 'auto', overflowX: 'hidden' }}>
                           <div className="row g-3">
                             {filteredEdu.map((edu, i) => (
                               <div className="col-6 col-md-4 col-xl-3" key={edu.id || i}>
