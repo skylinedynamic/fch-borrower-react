@@ -6974,19 +6974,9 @@
 }
 
 /* --- Education cards --- */
-.rh-edu-card {
-  transition: all 0.2s ease;
-  cursor: pointer;
-  border: 1px solid #ced4da !important;
-  background: #fff;
-  position: relative;
-}
 
-.rh-edu-card:hover {
-  background: #fff !important;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1) !important;
-  transform: translateY(-5px);
-}
+
+
 
 .rh-edu-card:hover h6 {
   color: #405189;
@@ -7063,7 +7053,7 @@
 
 .rh-video-title {
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 500;
   color: #212529;
   line-height: 1.4;
   transition: color 0.15s ease;
@@ -7208,4 +7198,17 @@
 .resource-modal-footer-sm .resource-modal-status-dot {
   width: 6px;
   height: 6px;
+}
+
+.rh-edu-card {
+  cursor: pointer;
+  transition: all 0.25s ease-in-out;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border-color: #ced4da !important;
+}
+
+.rh-edu-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 28px rgba(0, 31, 63, 0.13) !important;
+  border-color: #ced4da !important;
 }
