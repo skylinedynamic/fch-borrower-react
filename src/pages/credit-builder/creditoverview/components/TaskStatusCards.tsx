@@ -175,7 +175,7 @@ export default function TaskStatusCards() {
                                 )}
                               </div>
                             </div>
-                           
+
                           </div>
                         </div>
                       ))}
@@ -236,7 +236,7 @@ export default function TaskStatusCards() {
                               <div className="task-subtitle">{task.subtitle}</div>
                             </div>
                           </div>
-                      
+
                         </div>
                         {task.rejection_reason && (
                           <div className="rejection-alert">

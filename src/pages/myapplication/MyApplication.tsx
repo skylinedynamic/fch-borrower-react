@@ -7,7 +7,7 @@ import RightSideSection from './components/RightSideSection'
 
 export default function MyApplication() {
   const { data: prequalData, isLoading: prequalLoading } = usePreQualificationRequests()
-  
+
   const [loading, setLoading] = useState(true)
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 700)
@@ -17,7 +17,7 @@ export default function MyApplication() {
   return (
     <div className="page-content myapplications-page">
       <div className="container-fluid">
-        <div className="d-flex align-items-center justify-content-between mb-3">
+        <div className="d-flex align-items-center justify-content-between py-2">
           <div>
             <h4 className="mb-1">My Applications</h4>
             <div className="text-muted">Track your funding applications and their current status</div>

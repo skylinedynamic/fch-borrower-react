@@ -32,10 +32,10 @@ export default function RightSideSection({ loading }: RightSideSectionProps) {
           ) : (
             <>
               <div className="advisor-media d-flex align-items-center gap-3 mb-2">
-                <img 
-                  src={advisor?.avatar || avatarImg} 
-                  alt="Advisor" 
-                  className="advisor-avatar-lg rounded-circle" 
+                <img
+                  src={advisor?.avatar || avatarImg}
+                  alt="Advisor"
+                  className="advisor-avatar-lg rounded-circle"
                 />
                 <div>
                   <div className="advisor-name">{advisor?.name || 'Advisor'}</div>

@@ -10,7 +10,7 @@ export default function CreditProgress() {
     const els = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     if (bootstrapLib && els.length) {
       els.forEach((el) => {
-        try { new bootstrapLib.Tooltip(el) } catch {}
+        try { new bootstrapLib.Tooltip(el) } catch { }
       })
     }
   })
@@ -52,20 +52,20 @@ export default function CreditProgress() {
         {/* Progress Bar */}
         <div className="progress progress-goldnavy" style={{ height: 16, position: 'relative' }}>
           <div className="progress-bar progress-animated" style={{ width: `${overallProgress}%` }}></div>
-          
+
           {/* Tier indicators on progress bar (skip first tier) */}
           {data.tiers.slice(1).map((tier, index) => {
             const actualIndex = index + 1
             const position = (actualIndex / totalTiers) * 100
             const isPastTier = actualIndex < currentTierIndex
             const isCurrentTier = tier.id === data.id
-            
-            const indicatorClass = isPastTier 
-              ? 'tier-indicator tier-indicator--completed' 
-              : isCurrentTier 
-              ? 'tier-indicator tier-indicator--current' 
-              : 'tier-indicator tier-indicator--future'
-            
+
+            const indicatorClass = isPastTier
+              ? 'tier-indicator tier-indicator--completed'
+              : isCurrentTier
+                ? 'tier-indicator tier-indicator--current'
+                : 'tier-indicator tier-indicator--future'
+
             return (
               <div
                 key={tier.id}
@@ -81,17 +81,16 @@ export default function CreditProgress() {
           {data.tiers.map((tier, index) => {
             const isCurrentTier = tier.id === data.id
             const isPastTier = index < currentTierIndex
-            
-            const iconClass = isPastTier 
-              ? 'tier-icon tier-icon--completed' 
-              : isCurrentTier 
-              ? 'tier-icon tier-icon--current' 
-              : 'tier-icon tier-icon--future'
-            
-            const labelClass = `tier-label ${isCurrentTier ? 'fw-bold' : ''} ${
-              isPastTier ? 'tier-label--completed' : isCurrentTier ? 'tier-label--current' : 'tier-label--future'
-            }`
-            
+
+            const iconClass = isPastTier
+              ? 'tier-icon tier-icon--completed'
+              : isCurrentTier
+                ? 'tier-icon tier-icon--current'
+                : 'tier-icon tier-icon--future'
+
+            const labelClass = `tier-label ${isCurrentTier ? 'fw-bold' : ''} ${isPastTier ? 'tier-label--completed' : isCurrentTier ? 'tier-label--current' : 'tier-label--future'
+              }`
+
             return (
               <div key={tier.id} className="tier-label-wrapper text-center">
                 <div className={`${iconClass} d-inline-flex align-items-center justify-content-center mb-1`}>
@@ -114,16 +113,16 @@ export default function CreditProgress() {
         <div className="mt-4">
           <h6 className="mb-1 fs-14">
             {data.name} - {data.title}{' '}
-            <span 
-              className="ms-1" 
-              data-bs-toggle="tooltip" 
-              data-bs-placement="top" 
-              data-bs-html="true" 
-              data-bs-custom-class="tooltip-info" 
+            <span
+              className="ms-1"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-html="true"
+              data-bs-custom-class="tooltip-info"
               title={`<strong>Why it matters:</strong> ${data.subtitle}`}
             >
-              <i 
-                className="ri-information-fill align-middle text-warning" 
+              <i
+                className="ri-information-fill align-middle text-warning"
                 style={{ backgroundColor: 'rgba(46,116,249,.12)', borderRadius: '50%', padding: 4 }}
               ></i>
             </span>

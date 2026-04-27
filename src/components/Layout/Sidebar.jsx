@@ -144,6 +144,7 @@ export default function Sidebar() {
             )}
 
             <LinkItem to="/documents" label="Documents" icon="ri-file-2-line" restricted={isRestricted} />
+            <LinkItem to="/resources" label="Resource Hub" icon="ri-book-read-line" />
             <LinkItem to="/appointment" label="Appointment" icon="ri-calendar-2-line" restricted={isRestricted} />
 
             <li className="nav-item">

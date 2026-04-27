@@ -900,3 +900,48 @@ File: Custom Css File
 .position-relative .change-request-btn:hover {
     transform: translateY(-52%) !important;
 }
+
+.sk-w-30p {
+    width: 30% !important;
+}
+
+.sk-w-40p {
+    width: 40% !important;
+}
+
+.sk-w-45p {
+    width: 45% !important;
+}
+
+.sk-w-50p {
+    width: 50% !important;
+}
+
+.sk-w-60p {
+    width: 60% !important;
+}
+
+.sk-w-70p {
+    width: 70% !important;
+}
+
+.sk-w-80p {
+    width: 80% !important;
+}
+
+.sk-w-90p {
+    width: 90% !important;
+}
+
+.rh-edu-card {
+    cursor: pointer;
+    transition: all 0.25s ease-in-out;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    border-color: #ced4da !important;
+}
+
+.rh-edu-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(0, 31, 63, 0.13) !important;
+    border-color: #ced4da !important;
+}
