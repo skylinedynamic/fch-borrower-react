@@ -489,14 +489,14 @@ File: Custom Css File
 }
 
 .rh-edu-card {
-  cursor: pointer;
-  transition: all 0.25s ease-in-out;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-  border-color: #ced4da !important;
+    cursor: pointer;
+    transition: all 0.25s ease-in-out;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    border-color: #ced4da !important;
 }
 
 .rh-edu-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 28px rgba(0, 31, 63, 0.13) !important;
-  border-color: #405189 !important;
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(0, 31, 63, 0.13) !important;
+    border-color: #ced4da !important;
 }

@@ -5,7 +5,6 @@ import { useResources, downloadResource } from '../../modules/resources';
 import ResourceHubLoader from "../../components/Loader/ResourceHubLoader";
 import { toast } from 'react-toastify';
 
-const BRAND = '#405189';
 
 const ResourceHub = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -232,17 +231,17 @@ const ResourceHub = () => {
 
                   {/* Legal & Registration */}
                   <div className="col-md-6">
-                    <div className="card shadow-sm border-0 rounded-2 bg-white d-flex flex-column mb-0">
+                    <div className="card shadow-sm border-0 rounded-2 bg-white d-flex flex-column mb-0 h-100">
                       <div className="card-header bg-transparent border-0 pt-3 px-3">
-                        <h6 className="fw-bold mb-0 fs-15" style={{ color: BRAND }}>Legal & Registration</h6>
+                        <h6 className="fw-bold mb-0 fs-15 rh-text-brand">Legal & Registration</h6>
                       </div>
-                      <div className="card-body p-3 pt-0 rh-cat-body position-relative mb-0">
-                        <div className="rh-scroll rh-scroll-sm" style={{ height: filteredLegal.length > 4 ? '296px' : 'auto', overflowY: filteredLegal.length > 4 ? 'auto' : 'visible', overflowX: 'hidden', paddingRight: '4px' }}>
+                      <div className="card-body p-3 pt-0 rh-cat-body position-relative mb-0 flex-grow-1">
+                        <div className={`rh-scroll rh-scroll-sm rh-h-310`}>
                           <div className="rh-cat-list d-flex flex-column gap-2">
                             {filteredLegal.map(item => (
-                              <div key={item.id} className="p-2 px-3 rounded-2 rh-luxe-item d-flex align-items-center" style={{ minHeight: '65px' }} onClick={() => handleItemClick(item)}>
-                                <div className="flex-shrink-0 avatar-xs rounded d-flex align-items-center justify-content-center me-3 rh-item-icon" style={{ backgroundColor: 'rgba(64,81,137,0.1)' }}>
-                                  <i className={`${item.icon || 'ri-article-line'} fs-18`} style={{ color: BRAND }}></i>
+                              <div key={item.id} className="p-2 px-3 rounded-2 rh-luxe-item d-flex align-items-center" onClick={() => handleItemClick(item)}>
+                                <div className="flex-shrink-0 avatar-xs rounded d-flex align-items-center justify-content-center me-3 rh-item-icon rh-icon-bg-light">
+                                  <i className={`${item.icon || 'ri-article-line'} fs-18 rh-text-brand`}></i>
                                 </div>
                                 <div className="flex-grow-1 overflow-hidden pe-1">
                                   <h6 className="mb-0 semi-bold fs-13 text-dark text-truncate">{item.title}</h6>
@@ -258,17 +257,17 @@ const ResourceHub = () => {
 
                   {/* Business Services */}
                   <div className="col-md-6">
-                    <div className="card shadow-sm border-0 rounded-2 bg-white d-flex flex-column mb-0">
+                    <div className="card shadow-sm border-0 rounded-2 bg-white d-flex flex-column mb-0 h-100">
                       <div className="card-header bg-transparent border-0 pt-3 px-3">
-                        <h6 className="fw-bold mb-0 fs-15" style={{ color: BRAND }}>Business Services</h6>
+                        <h6 className="fw-bold mb-0 fs-15 rh-text-brand">Business Services</h6>
                       </div>
-                      <div className="card-body p-3 pt-0 rh-cat-body position-relative mb-0">
-                        <div className="rh-scroll rh-scroll-sm" style={{ height: filteredBus.length > 4 ? '296px' : 'auto', overflowY: filteredBus.length > 4 ? 'auto' : 'visible', overflowX: 'hidden', paddingRight: '4px' }}>
+                      <div className="card-body p-3 pt-0 rh-cat-body position-relative mb-0 flex-grow-1">
+                        <div className={`rh-scroll rh-scroll-sm rh-h-310`}>
                           <div className="rh-cat-list d-flex flex-column gap-2">
                             {filteredBus.map(item => (
-                              <div key={item.id} className="p-2 px-3 rounded-2 rh-luxe-item d-flex align-items-center cursor-pointer" style={{ minHeight: '65px' }} onClick={() => handleFundabilityClick(item)}>
-                                <div className="flex-shrink-0 avatar-xs rounded d-flex align-items-center justify-content-center me-3 rh-item-icon" style={{ backgroundColor: 'rgba(64,81,137,0.1)' }}>
-                                  <i className={`${item.icon || 'ri-service-line'} fs-18`} style={{ color: BRAND }}></i>
+                              <div key={item.id} className="p-2 px-3 rounded-2 rh-luxe-item d-flex align-items-center cursor-pointer" onClick={() => handleFundabilityClick(item)}>
+                                <div className="flex-shrink-0 avatar-xs rounded d-flex align-items-center justify-content-center me-3 rh-item-icon rh-icon-bg-light">
+                                  <i className={`${item.icon || 'ri-service-line'} fs-18 rh-text-brand`}></i>
                                 </div>
                                 <div className="flex-grow-1 overflow-hidden pe-1">
                                   <h6 className="mb-0 semi-bold fs-13 text-dark text-truncate">{item.title}</h6>
@@ -285,7 +284,7 @@ const ResourceHub = () => {
                   {/* Education & Help */}
                   <div className="col-12">
                     <div className="card shadow-sm border-0 rounded-2 bg-white">
-                      <div className="card-header border-0 p-3" style={{ background: 'linear-gradient(135deg, #405189 0%, #2a355a 100%)' }}>
+                      <div className="card-header border-0 p-3 rh-card-header-gradient">
                         <div className="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-4">
                           <div className="flex-grow-1">
                             <h5 className="fw-bold text-white mb-1 fs-18">Education & Help</h5>
@@ -293,7 +292,7 @@ const ResourceHub = () => {
                               Detailed library of borrower education guides, credit building tips, and FAQs.
                             </p>
                           </div>
-                          <div className="search-box-premium position-relative" style={{ minWidth: 240 }}>
+                          <div className="search-box-premium position-relative">
                             <i className="ri-search-2-line text-white opacity-50 fs-16 position-absolute top-50 start-0 translate-middle-y ms-3"></i>
                             <input
                               type="text"
@@ -306,8 +305,8 @@ const ResourceHub = () => {
                         </div>
                       </div>
                       <div className="card-body p-3 position-relative">
-                        <div className="rh-scroll rh-scroll-edu" style={{ overflowY: 'auto', overflowX: 'hidden' }}>
-                          <div className="row g-3">
+                        <div className={`rh-scroll rh-scroll-edu ${filteredEdu.length > 12 ? 'rh-h-454' : ''}`}>
+                          <div className="row g-3 pe-1">
                             {filteredEdu.map((edu, i) => (
                               <div className="col-6 col-md-4 col-xl-3" key={edu.id || i}>
                                 <div
@@ -341,12 +340,11 @@ const ResourceHub = () => {
                       <h6 className="fw-bold text-dark mb-0 fs-14 ">Download Assets</h6>
                     </div>
                     <div className="card-body p-3 pt-0 rh-cat-body position-relative mb-0">
-                      <div className="rh-scroll rh-scroll-assets p-0" style={{ height: '200px', overflowY: 'auto', overflowX: 'hidden' }}>
+                      <div className={`rh-scroll rh-scroll-assets p-0 rh-h-200`}>
                         {documentItems.map(doc => (
                           <div
                             key={doc.id}
                             className="rh-asset-row list-group-item border-0 p-2 d-flex align-items-center justify-content-between"
-                            style={{ minHeight: '65px' }}
                             onClick={() => handleItemClick(doc.original)}
                           >
                             <div className="d-flex align-items-center flex-grow-1 pe-2">
@@ -377,9 +375,9 @@ const ResourceHub = () => {
                       <span className="badge bg-danger-subtle text-danger fs-10">{trainingVideos.length} Videos</span>
                     </div>
                     <div className="card-body p-3 pt-0 d-flex flex-column position-relative">
-                      <div className="rh-scroll rh-scroll-videos d-flex flex-column gap-2 flex-grow-1 p-0 pt-3" style={{ height: '480px', overflowY: 'auto', overflowX: 'hidden' }}>
+                      <div className={`rh-scroll rh-scroll-videos d-flex flex-column gap-2 flex-grow-1 p-0 pt-3 rh-h-480`}>
                         {visibleVideos.map((video, i) => (
-                          <div key={video.id} className="rh-video-item d-flex align-items-center gap-3" onClick={() => handleItemClick(video.original)} style={{ minHeight: '65px' }}>
+                          <div key={video.id} className="rh-video-item d-flex align-items-center gap-3" onClick={() => handleItemClick(video.original)}>
                             <div className="rh-video-thumb">
                               <img
                                 src={video.thumb || video.original.file_url || `https://placehold.co/220x128/cccccc/white?text=Training +${i + 1}`}
@@ -463,7 +461,7 @@ const ResourceHub = () => {
               ) : selectedResource.file_url ? (
                 <div className="resource-modal-empty">
                   <div className="avatar-lg bg-light rounded-circle d-flex align-items-center justify-content-center">
-                    <i className="ri-file-3-line fs-32" style={{ color: BRAND }}></i>
+                    <i className="ri-file-3-line fs-32 rh-text-brand"></i>
                   </div>
                   <div className="text-center">
                     <p className="fw-bold fs-15 text-dark mb-1">Preview Not Available</p>
@@ -517,7 +515,7 @@ const ResourceHub = () => {
                   <i className={`${activeFundabilityStep.icon} text-${colorClass(activeFundabilityStep.color)} fs-24`}></i>
                 </div>
                 <div>
-                  <h5 className="mb-0 fs-18 fw-bold text-dark">{activeFundabilityStep.title}</h5>
+                  <h5 className="mb-0 fs-18 fw-semibold text-dark">{activeFundabilityStep.title}</h5>
                 </div>
               </div>
             </ModalHeader>
@@ -525,7 +523,7 @@ const ResourceHub = () => {
               <div className="row g-4 mb-4">
                 <div className="col-lg-7">
                   <div className="mb-4 mb-lg-0">
-                    <h5 className="fw-bold text-dark mb-3 d-flex align-items-center">
+                    <h5 className="fw-semibold text-dark mb-3 d-flex align-items-center">
                       <i className="ri-article-line text-primary me-2 fs-18"></i> Overview
                     </h5>
                     <ul className="list-unstyled mb-0">
@@ -541,7 +539,7 @@ const ResourceHub = () => {
 
                 <div className="col-lg-5">
                   <div className="p-3 bg-primary-subtle bg-opacity-30 rounded-3 border border-primary border-opacity-10 h-100">
-                    <h5 className="fw-bold text-primary mb-2 d-flex align-items-center">
+                    <h5 className="fw-semibold text-primary mb-2 d-flex align-items-center">
                       <i className="ri-flashlight-line me-2"></i> Why It Matters
                     </h5>
                     <ul className="list-unstyled mb-0">
@@ -560,16 +558,16 @@ const ResourceHub = () => {
 
               {activeFundabilityStep.providers?.length > 0 ? (
                 <div className="recommended-providers-section">
-                  <h5 className="fw-bold text-dark mb-2 d-flex align-items-center">
+                  <h5 className="fw-semibold text-dark mb-2 d-flex align-items-center">
                     <i className="ri-shield-user-fill text-success me-2 fs-18"></i> Provider List
                   </h5>
-                  <div className="rh-scroll" style={{ maxHeight: '437px', overflowY: 'auto', overflowX: 'hidden', padding: '8px' }}>
+                  <div className={`rh-scroll rh-h-437`}>
                     <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 mx-n2">
                       {activeFundabilityStep.providers.map((provider, i) => (
                         <div className="col px-2" key={i}>
                           <div className="p-3 bg-white rounded-2 border border-light-subtle shadow-sm h-100 d-flex flex-column transition-all hover-shadow">
                             <div className="d-flex align-items-center justify-content-between mb-2">
-                              <h5 className="mb-0 fw-bold fs-14 text-dark">{provider.name}</h5>
+                              <h5 className="mb-0 fw-semibold fs-14 text-dark">{provider.name}</h5>
                               {provider.is_recommended && (
                                 <span className="badge bg-warning-subtle text-warning border-warning-subtle fs-10 rounded-pill">
                                   <i className="ri-star-fill"></i>
@@ -606,66 +604,6 @@ const ResourceHub = () => {
           </>
         )}
       </Modal>
-
-      <style dangerouslySetInnerHTML={{
-        __html: `
-        .rh-scroll::-webkit-scrollbar {
-            width: 5px;
-        }
-        .rh-scroll::-webkit-scrollbar-track {
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-        .rh-scroll::-webkit-scrollbar-thumb {
-            background: #dee2e6;
-            border-radius: 10px;
-        }
-        .rh-scroll::-webkit-scrollbar-thumb:hover {
-            background: #adb5bd;
-        }
-
-        .rh-luxe-item, .rh-edu-card, .rh-asset-row, .rh-video-item {
-            transition: all 0.25s ease-in-out;
-            cursor: pointer;
-        }
-
-        .rh-luxe-item:hover {
-            background-color: rgba(64,81,137,0.05) !important;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-        }
-
-        .rh-edu-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.08) !important;
-            border-color: #405189 !important;
-        }
-
-        .rh-asset-row:hover {
-            background-color: #f8f9fa !important;
-            transform: translateX(4px);
-        }
-
-        .rh-video-item:hover {
-            background-color: #f8f9fa;
-            transform: translateY(-2px);
-        }
-
-        .rh-video-item:hover .rh-video-play {
-            transform: translate(-50%, -50%) scale(1.2);
-            color: #ef4444;
-        }
-
-        .hover-shadow:hover {
-            transform: translateY(-4px) !important;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.12) !important;
-            z-index: 1000 !important;
-            position: relative !important;
-            border-color: transparent !important;
-        }
-
-       
-      `}} />
     </div>
   );
 };
