@@ -42,7 +42,7 @@ const ResourceDetailLoader = () => {
 
                                 <div className="vstack gap-1">
                                     {[1, 2, 3, 4, 5].map((i) => (
-                                        <div key={i} className="d-flex align-items-start gap-3 py-2 border-bottom border-light">
+                                        <div key={i} className="d-flex align-items-start gap-3 py-1 border-bottom border-light">
                                             <div className="skeleton-line sk-w-20 sk-h-20 rounded flex-shrink-0" style={{ width: '20px', height: '20px' }}></div>
                                             <div className="skeleton-line sk-w-90p sk-h-14 mt-1"></div>
                                         </div>
@@ -67,7 +67,7 @@ const ResourceDetailLoader = () => {
 
                                 <div className="vstack gap-1">
                                     {[1, 2, 3, 4, 5].map((i) => (
-                                        <div key={i} className="d-flex align-items-start gap-3 py-2 border-bottom border-light">
+                                        <div key={i} className="d-flex align-items-start gap-3 py-1 border-bottom border-light">
                                             <div className="skeleton-line sk-w-20 sk-h-20 rounded flex-shrink-0" style={{ width: '20px', height: '20px' }}></div>
                                             <div className="skeleton-line sk-w-90p sk-h-14 mt-1"></div>
                                         </div>
@@ -88,9 +88,9 @@ const ResourceDetailLoader = () => {
                             {[1, 2, 3, 4].map((i) => (
                                 <Card className="provider-card border-0 shadow-sm rounded-0 h-100" key={i}>
                                     <CardBody className="p-3">
-                                        <div className="d-flex align-items-center gap-3 mb-3">
-                                            <div className="skeleton-line rounded flex-shrink-0" style={{ width: '45px', height: '45px' }}></div>
-                                            <div className="flex-grow-1">
+                                        <div className="d-flex flex-column align-items-center gap-2 mb-3 mt-2">
+                                            <div className="skeleton-line rounded-0" style={{ width: '180px', height: '80px' }}></div>
+                                            <div className="w-100 text-start mt-1">
                                                 <div className="skeleton-line sk-w-120 sk-h-16"></div>
                                             </div>
                                         </div>

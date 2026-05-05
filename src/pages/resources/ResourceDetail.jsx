@@ -54,7 +54,7 @@ const ResourceDetail = () => {
                     <div className='col-12'>
                         {/* Refined Symmetrical Briefing */}
                         <Card className="border-0 shadow-sm mb-4 rounded-0">
-                            <CardBody className="p-4 p-md-5">
+                            <CardBody className="p-4 p-md-4">
                                 <Row className="g-0">
                                     {/* Service Overview */}
                                     <Col lg={6} className="pe-lg-5">
@@ -73,7 +73,7 @@ const ResourceDetail = () => {
                                         <div className="vstack gap-1">
                                             {resource.overview && resource.overview.length > 0 ? (
                                                 resource.overview.map((text, i) => (
-                                                    <div key={i} className="d-flex align-items-start gap-3 py-2 border-bottom border-light">
+                                                    <div key={i} className="d-flex align-items-start gap-3 py-1 border-bottom border-light">
                                                         <span className="badge bg-primary-subtle text-primary fw-bold fs-11 flex-shrink-0">{i + 1}</span>
                                                         <span className="text-dark fs-14">{text}</span>
                                                     </div>
@@ -104,7 +104,7 @@ const ResourceDetail = () => {
                                         <div className="vstack gap-1">
                                             {resource.impact && resource.impact.length > 0 ? (
                                                 resource.impact.map((text, i) => (
-                                                    <div key={i} className="d-flex align-items-start gap-3 py-2 border-bottom border-light">
+                                                    <div key={i} className="d-flex align-items-start gap-3 py-1 border-bottom border-light">
                                                         <span className="badge bg-info-subtle text-info fw-bold fs-11 flex-shrink-0">{i + 1}</span>
                                                         <span className="text-dark fs-14">{text}</span>
                                                     </div>
@@ -137,17 +137,17 @@ const ResourceDetail = () => {
                                                     </div>
                                                 )}
                                                 <CardBody className="p-3">
-                                                    <div className="d-flex align-items-center gap-3 mb-3 mt-2">
+                                                    <div className="d-flex flex-column align-items-center gap-2 mb-3 mt-2">
                                                         <div className="provider-logo-box bg-white shadow-sm rounded-0">
                                                             {provider.logo ? (
                                                                 <img src={provider.logo} alt={provider.name} />
                                                             ) : (
-                                                                <div className="avatar-xs d-flex align-items-center justify-content-center bg-light rounded-0">
-                                                                    <i className="ri-building-line text-muted"></i>
+                                                                <div className="d-flex align-items-center justify-content-center bg-light rounded-0 w-100 py-4">
+                                                                    <i className="ri-building-line text-muted fs-24"></i>
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        <div>
+                                                        <div className="w-100 text-start mt-1">
                                                             <h5 className="provider-title mb-0 fw-bold fs-14">{provider.name}</h5>
                                                         </div>
                                                     </div>
