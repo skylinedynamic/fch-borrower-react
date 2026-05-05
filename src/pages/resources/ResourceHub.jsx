@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { useResources, downloadResource } from '../../modules/resources';
 import ResourceHubLoader from "../../components/Loader/ResourceHubLoader";
@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 
 
 const ResourceHub = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [eduSearch, setEduSearch] = useState('');
   const { data: resourcesData, isLoading } = useResources();
@@ -31,9 +32,7 @@ const ResourceHub = () => {
   };
 
   const handleFundabilityClick = (item) => {
-    const stepData = getFundabilityData(item);
-    setActiveFundabilityStep(stepData);
-    setShowFundabilityModal(true);
+    navigate(`/resources/${item.id}`);
   };
 
   const toggleModal = () => setModal(prev => !prev);

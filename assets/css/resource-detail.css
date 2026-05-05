@@ -1,0 +1,111 @@
+.resource-detail-container {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.breadcrumb-item.active {
+    color: #4b38b3;
+    font-weight: 500;
+}
+
+.provider-card {
+    background: #fff;
+    border-radius: 0;
+    border: none;
+    box-shadow: 0 1px 2px rgba(56, 65, 74, 0.15);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.provider-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(56, 65, 74, 0.1);
+}
+
+.provider-card .card-body {
+    padding: 20px;
+    flex-grow: 1;
+}
+
+.provider-logo-box {
+    width: 60px;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none !important;
+}
+
+.provider-logo-box img {
+    max-width: 60px;
+    max-height: auto;
+    object-fit: contain;
+}
+
+.provider-card .provider-title {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.provider-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+.features-bullet-list {
+    margin-bottom: 0px;
+    padding-top: 15px;
+    border-top: 1px dashed #e9ebec;
+    list-style: none;
+    padding-left: 0;
+}
+
+.features-bullet-list li {
+    font-size: 12px;
+    color: #495057;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.features-bullet-list li::before {
+    content: "\eb7b";
+    /* ri-checkbox-circle-line */
+    font-family: 'remixicon';
+    color: #0ab39c;
+    font-size: 14px;
+}
+
+/* Recommended Ribbon - Right Side Flag */
+.provider-recommended-ribbon {
+    position: absolute;
+    top: 12px;
+    right: 0;
+    background-color: #20af9cb5;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px 4px 14px;
+    clip-path: polygon(10px 0%, 100% 0%, 100% 100%, 10px 100%, 0% 50%);
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    letter-spacing: 0.3px;
+}
