@@ -42,7 +42,7 @@
 }
 
 .provider-logo-box {
-    width: 180px;
+    width: 100px;
     height: auto;
     display: flex;
     align-items: center;
@@ -51,7 +51,7 @@
 }
 
 .provider-logo-box img {
-    max-width: 180px;
+    max-width: 100px;
     max-height: auto;
     object-fit: contain;
 }
