@@ -229,10 +229,10 @@ export default function CreditAccounts() {
                     </div>
                   </div>
 
-                  <h4 className="text-dark mb-2">Feature Locked</h4>
+                  <h4 className="text-dark mb-2">Tier 0 Completion Required</h4>
                   <p className="text-muted fs-14 mx-auto mb-4 fw-normal lh-base" style={{ maxWidth: '550px' }}>
-                    You must complete tier 0 for applying credit account.
-                    Please visit the Credit Builder dashboard to track your progress and unlock this feature.
+                    To unlock credit account applications, you must first complete the Foundation (Tier 0) requirements.
+                    Please visit the Credit Builder guide to track your progress and unlock this feature.
                   </p>
 
                   <div className="d-flex flex-column flex-sm-row align-items-center justify-content-center gap-3">
