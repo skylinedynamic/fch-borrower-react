@@ -6,6 +6,11 @@ export const fetchResources = async (): Promise<ResourceResponse> => {
   return data;
 };
 
+export const fetchResource = async (id: string | number): Promise<any> => {
+  const { data } = await apiClient.get<any>(`/borrower/resources/${id}`);
+  return data;
+};
+
 export const downloadResource = async (id: number) => {
   const response = await apiClient.get(`/borrower/resources/${id}/download`, {
     responseType: 'blob'

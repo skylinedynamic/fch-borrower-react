@@ -8,7 +8,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -33,22 +33,21 @@ jobs:
       - name: Deploy to EC2 & Restart Nginx
         uses: easingthemes/ssh-deploy@main
         env:
-          # Note: Using PROD_ prefixed secrets so they don't conflict with staging
           SSH_PRIVATE_KEY: ${{ secrets.PROD_EC2_SSH_KEY }}
           REMOTE_HOST: ${{ secrets.PROD_EC2_HOST }}
           REMOTE_USER: ${{ secrets.PROD_EC2_USER }}
           SOURCE: "dist/"
-          TARGET: "/var/www/client-portal-react"
-          SSH_CMD_ARGS: "-o StrictHostKeyChecking=no" 
+          TARGET: "/var/www/html/client-portal/dist"
+          SSH_CMD_ARGS: "-o StrictHostKeyChecking=no"
           SCRIPT_BEFORE: |
-            echo "Creating target directory if it doesn't exist..."
-            sudo mkdir -p /var/www/client-portal-react
-            echo "Temporarily giving SSH user permission to write to directory..."
-            sudo chown -R $(whoami):$(whoami) /var/www/client-portal-react
+            echo "Ensuring target directory exists..."
+            sudo mkdir -p /var/www/html/client-portal/dist
+            echo "Granting SSH user write access..."
+            sudo chown -R $(whoami):$(whoami) /var/www/html/client-portal/dist
           SCRIPT_AFTER: |
             echo "Setting correct directory permissions for Nginx..."
-            sudo chown -R www-data:www-data /var/www/client-portal-react || echo "Warning: chown failed, ignoring..."
-            
+            sudo chown -R www-data:www-data /var/www/html/client-portal || echo "Warning: chown failed, ignoring..."
+
             echo "Restarting Nginx..."
             sudo systemctl restart nginx
             echo "Nginx restarted successfully."
@@ -57,17 +56,33 @@ jobs:
         run: |
           echo "Ensuring the service is up..."
           sleep 5
-          # Smoke test url for production
-          PROD_URL="${{ secrets.PROD_WEB_URL || 'https://your-prod-domain.com' }}"
-          
-          if [ "$PROD_URL" == "https://your-prod-domain.com" ]; then
+          PROD_URL="${{ secrets.PROD_WEB_URL || 'https://app.fourcornerfunding.com/login' }}"
+
+          if [ "$PROD_URL" == "https://app.fourcornerfunding.com/login" ]; then
             echo "Disclaimer: Smoke test domain is not defined. Please add PROD_WEB_URL to GitHub Secrets."
           else
-            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PROD_URL")
+            HTTP_STATUS=$(curl -s -L -o /dev/null -w "%{http_code}" --max-time 10 "$PROD_URL" || echo "000")
             if [ "$HTTP_STATUS" -eq 200 ]; then
                echo "✅ Smoke test passed! Production server responded with HTTP $HTTP_STATUS."
             else
                echo "❌ Smoke test failed! Expected HTTP 200 but received $HTTP_STATUS."
+
+               echo "--- Attempting to fetch Nginx Debug Info ---"
+               echo "${{ secrets.PROD_EC2_SSH_KEY }}" > deploy_key
+               chmod 600 deploy_key
+
+               echo "--- Nginx Sites Configuration (Searching for domain) ---"
+               ssh -i deploy_key -o StrictHostKeyChecking=no ${{ secrets.PROD_EC2_USER }}@${{ secrets.PROD_EC2_HOST }} "sudo grep -r 'app.fourcornerfunding.com' /etc/nginx/sites-enabled/ || echo 'No matching config found.'"
+
+               echo "--- Directory Listing ---"
+               ssh -i deploy_key -o StrictHostKeyChecking=no ${{ secrets.PROD_EC2_USER }}@${{ secrets.PROD_EC2_HOST }} "ls -la /var/www/html/client-portal/dist"
+
+               echo "--- Nginx Error Logs ---"
+               ssh -i deploy_key -o StrictHostKeyChecking=no ${{ secrets.PROD_EC2_USER }}@${{ secrets.PROD_EC2_HOST }} "sudo tail -n 20 /var/log/nginx/error.log" || echo "Failed to fetch Nginx logs."
+
+               rm deploy_key
                exit 1
             fi
           fi
+
+

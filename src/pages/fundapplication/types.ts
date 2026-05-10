@@ -77,11 +77,11 @@ export type FundingRequest = {
   collateral: string
 }
 
-export type FileEntry = { 
+export type FileEntry = {
   name: string
   size: number
   type: string
-  file: File 
+  file: File
 }
 
 export type FederalCompliance = {
@@ -112,8 +112,8 @@ export type DisclosureConsent = {
   marketingOptIn: boolean
 }
 
-export type Attestation = { 
-  certify: boolean 
+export type Attestation = {
+  certify: boolean
 }
 
 export const docSections = [
