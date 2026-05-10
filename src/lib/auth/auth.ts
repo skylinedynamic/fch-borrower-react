@@ -52,7 +52,7 @@ export function getUserSubscription(): UserSubscription | null {
 
 export function setAuth(token?: string | null, user?: AuthUser | null, rememberMe: boolean = true): void {
   setAuthState({ token: token || undefined, user: user ?? null, rememberMe })
-  
+
   if (token) {
     if (rememberMe) {
       // Persistent cookie (e.g., 60 days)
@@ -82,36 +82,36 @@ export function checkSession(): void {
   // If we have a token but no session cookie, it means the browser was closed
   // and we should log the user out (unless rememberMe was true, in which case the cookie should have persisted)
   // However, since we set the cookie expiry based on rememberMe, existence of cookie is the source of truth for "should stay logged in"
-  
+
   // Edge case: If user manually cleared cookies but localStorage remains.
   // Or if session cookie expired (browser closed).
-  
+
   if (token && !sessionActive) {
     clearAuth()
   }
 }
 
 export async function refreshSubscription(): Promise<void> {
-    if (!isAuthenticated()) return
+  if (!isAuthenticated()) return
 
-    try {
-        const response = await getUserDetails()
-        if (response?.status && response?.data?.user) {
-            // Update store, keep existing token
-            const user = response.data.user
-            setUserSubscription({
-                enrollment_type: user.enrollment_type,
-                subscription_status: user.subscription_status,
-                first_payment_date: user.first_payment_date,
-                platform_fee_start_date: user.platform_fee_start_date,
-                next_installment_date: user.next_installment_date,
-                next_platform_fee_date: user.next_platform_fee_date,
-                enrollment_completed_at: user.enrollment_completed_at,
-                subscription_start_date: user.subscription_start_date,
-                subscription_end_date: user.subscription_end_date
-            })
-        }
-    } catch (error) {
-        console.error("Failed to refresh user details", error)
+  try {
+    const response = await getUserDetails()
+    if (response?.status && response?.data?.user) {
+      // Update store, keep existing token
+      const user = response.data.user
+      setUserSubscription({
+        enrollment_type: user.enrollment_type,
+        subscription_status: user.subscription_status,
+        first_payment_date: user.first_payment_date,
+        platform_fee_start_date: user.platform_fee_start_date,
+        next_installment_date: user.next_installment_date,
+        next_platform_fee_date: user.next_platform_fee_date,
+        enrollment_completed_at: user.enrollment_completed_at,
+        subscription_start_date: user.subscription_start_date,
+        subscription_end_date: user.subscription_end_date
+      })
     }
+  } catch (error) {
+    console.error("Failed to refresh user details", error)
+  }
 }
