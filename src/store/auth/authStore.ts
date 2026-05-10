@@ -11,6 +11,7 @@ export type AuthUser = {
   entity_type?: string
   entity_id?: string | number
   is_host?: number
+  current_tier?: number | null
   subscription_status?: string
   subscription_end_date?: string | null
   subscription_start_date?: string | null
@@ -55,7 +56,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       userSubscription: null,
       rememberMe: true,
-  setCredentials: ({ token, user, rememberMe }) => set(() => ({ token, user, rememberMe })),
+      setCredentials: ({ token, user, rememberMe }) => set(() => ({ token, user, rememberMe })),
       setUserData: (user) => set(() => ({ user })),
       setUserSubscription: (subscription) => set(() => ({ userSubscription: subscription })),
       clearCredentials: () => set(() => ({ token: undefined, user: null, userSubscription: null })),
@@ -82,6 +83,10 @@ export const getAuthState = () => {
 
 export const setAuthState = (payload: { token?: string; user?: AuthUser | null; rememberMe?: boolean }) => {
   useAuthStore.getState().setCredentials(payload)
+}
+
+export const setUserDataState = (user: AuthUser | null) => {
+  useAuthStore.getState().setUserData(user)
 }
 
 export const setUserSubscriptionState = (subscription: UserSubscription | null) => {

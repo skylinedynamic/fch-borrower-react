@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useCreditAccounts, useCreditAccountFilters, applyForCreditAccount } from '../../../modules/credit-accounts'
+import { useAuthStore } from '../../../store/auth/authStore'
 import VendorCardLoader from '../../../components/Loader/VendorCardLoader'
 import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { creditAccountStatusOptions } from '../../../config/creditAccountStatusOptions'
 import { toast } from 'react-toastify'
+import { refreshUser as refreshUserService } from '../../../modules/auth-profile/services'
 
 const API_STORAGE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace('/api/v1', '/storage/')
 
@@ -19,6 +22,22 @@ export default function CreditAccounts() {
     q: ''
   })
   const [page, setPage] = useState(1)
+
+  const { user, setUserData } = useAuthStore()
+  const isTierLocked = (user?.current_tier ?? 0) < 2
+
+  useEffect(() => {
+    const fetchFreshUser = async () => {
+      const response = await refreshUserService()
+      const freshUser = response?.user || response
+      if (freshUser && typeof freshUser === 'object') {
+        setUserData(freshUser)
+      }
+    }
+    fetchFreshUser()
+  }, [setUserData])
+
+
 
   // Fetch filter options from DB
   const { data: filterOptionsData } = useCreditAccountFilters()
@@ -60,7 +79,7 @@ export default function CreditAccounts() {
   const { data: accountsData, isLoading, refetch: refetchVendors } = useCreditAccounts({
     ...appliedFilters,
     page: page
-  })
+  }, { enabled: !isTierLocked })
 
   const handleUpdateStatus = async (id: number, status: string) => {
     try {
@@ -109,7 +128,7 @@ export default function CreditAccounts() {
       <div className="container-fluid">
 
         {/* Header Matching Profile Page Style */}
-        <div className="text-center mb-4">
+        <div className="text-center my-4">
           <h3 className="mb-1">Credit Accounts</h3>
           <div className="text-muted mx-auto intro-text">
             <span className="d-block">Apply to pre-vetted vendors for business credit. Filter by category or issuer</span>
@@ -135,6 +154,7 @@ export default function CreditAccounts() {
                         placeholder="Search here..."
                         value={localFilters.q}
                         onChange={(e) => setLocalFilters({ ...localFilters, q: e.target.value })}
+                        disabled={isTierLocked}
                       />
                     </div>
                   </div>
@@ -148,6 +168,7 @@ export default function CreditAccounts() {
                       optionLabel="name"
                       optionValue="id"
                       placeholder="All Categories"
+                      disabled={isTierLocked}
                       className="border-0 rounded-2 fs-13 vendor-filter-bg"
                     />
                   </div>
@@ -162,6 +183,7 @@ export default function CreditAccounts() {
                       optionValue="id"
                       placeholder="All Issuers"
                       searchable={true}
+                      disabled={isTierLocked}
                       className="border-0 rounded-2 fs-13 vendor-filter-bg"
                     />
                   </div>
@@ -171,12 +193,14 @@ export default function CreditAccounts() {
                     <button
                       className="btn vendor-filter-btn-apply d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13 shadow-sm"
                       onClick={handleApplyFilters}
+                      disabled={isTierLocked}
                     >
                       <i className="ri-equalizer-line"></i> Filters
                     </button>
                     <button
                       className="btn vendor-filter-btn-clear d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13"
                       onClick={handleResetFilters}
+                      disabled={isTierLocked}
                     >
                       <i className="ri-close-line"></i> Clear
                     </button>
@@ -189,7 +213,40 @@ export default function CreditAccounts() {
 
         {/* Colorful Premium Cards - Sharp Design */}
         <div className="row g-4">
-          {isLoading ? (
+          {isTierLocked ? (
+            <div className="col-12 mt-4">
+              <div className="no-result-elegant d-flex align-items-center justify-content-center rounded-1 overflow-hidden position-relative bg-white border border-light-subtle shadow-sm" style={{ minHeight: '400px' }}>
+                {/* Refined Geometric Background Elements */}
+                <div className="position-absolute top-0 start-0 w-100 h-100 opacity-25">
+                  <div className="position-absolute top-0 start-0 w-100 h-100" style={{ backgroundImage: 'radial-gradient(circle at 10% 20%, rgba(13,110,253,0.03) 0%, transparent 50%), radial-gradient(circle at 90% 80%, rgba(13,110,253,0.03) 0%, transparent 50%)' }}></div>
+                  <div className="position-absolute top-0 start-0 w-100 h-100" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%230d6efd\' fill-opacity=\'0.02\'%3E%3Cpath d=\'M0 40h40V0H0v40zM1 39h38V1H1v38z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }}></div>
+                </div>
+
+                <div className="text-center position-relative z-1 p-4">
+                  <div className="mb-4 position-relative d-inline-block">
+                    <div className="floating-icon-wrapper rounded-circle bg-warning-subtle d-flex align-items-center justify-content-center shadow-md" style={{ width: '100px', height: '100px' }}>
+                      <i className="ri-lock-password-line fs-48 text-warning opacity-75"></i>
+                    </div>
+                  </div>
+
+                  <h4 className="text-dark mb-2">Feature Locked</h4>
+                  <p className="text-muted fs-14 mx-auto mb-4 fw-normal lh-base" style={{ maxWidth: '550px' }}>
+                    You must complete tier 0 for applying credit account.
+                    Please visit the Credit Builder dashboard to track your progress and unlock this feature.
+                  </p>
+
+                  <div className="d-flex flex-column flex-sm-row align-items-center justify-content-center gap-3">
+                    <Link
+                      to="/credit-builder/guide"
+                      className="btn btn-primary px-4 py-2 rounded-3 fw-bold shadow-sm d-flex align-items-center gap-2 transition-all hover-translate-y fs-13"
+                    >
+                      <i className="ri-book-open-line fs-16"></i> Go to Guide
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : isLoading ? (
             <VendorCardLoader count={8} />
           ) : vendors.length ? (
             vendors.map((v: any) => (
