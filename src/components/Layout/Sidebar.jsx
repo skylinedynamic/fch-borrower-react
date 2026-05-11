@@ -4,9 +4,9 @@ import { clearAuth } from '../../lib/auth'
 import { logout } from '../../modules/auth/services'
 import { useAuthStore } from '../../store/auth'
 import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils'
-import faviconImg from '../../../assets/images/Favicon.png'
 import logoImg from '../../../assets/images/fch-logo-wide.png'
 import avatarDefault from '../../../assets/images/users/avatar-1.jpg'
+
 export default function Sidebar() {
   const navigate = useNavigate()
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 992 : false)
@@ -46,12 +46,23 @@ export default function Sidebar() {
   const toggleOpen = () => {
     const body = typeof document !== 'undefined' ? document.body : null
     const cls = 'vertical-sidebar-enable'
-    const next = !open
-    setOpen(next)
     if (body) {
-      if (next) body.classList.add(cls)
-      else body.classList.remove(cls)
+      const active = body.classList.contains(cls)
+      if (active) {
+        body.classList.remove(cls)
+        setOpen(false)
+      } else {
+        body.classList.add(cls)
+        setOpen(true)
+      }
     }
+  }
+
+  const closeSidebar = () => {
+    if (typeof document !== 'undefined') {
+      document.body.classList.remove('vertical-sidebar-enable')
+    }
+    setOpen(false)
   }
 
   const handleLogout = async (e) => {
@@ -62,6 +73,7 @@ export default function Sidebar() {
       console.error('Logout request failed', err)
     } finally {
       clearAuth()
+      if (isMobile) toggleOpen()
       navigate('/login', { replace: true })
     }
   }
@@ -73,7 +85,13 @@ export default function Sidebar() {
         end={end}
         className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}`}
         to={to}
-        onClick={(e) => restricted && e.preventDefault()}
+        onClick={(e) => {
+          if (restricted) {
+            e.preventDefault();
+          } else if (isMobile) {
+            closeSidebar();
+          }
+        }}
       >
         <i className={icon}></i> <span>{label} {restricted && <i className="ri-lock-line align-middle ms-1"></i>}</span>
       </NavLink>
@@ -82,27 +100,22 @@ export default function Sidebar() {
 
   return (
     <div className={menuClass}>
-      <div className="navbar-brand-box">
-        <a href="/" className="logo logo-dark">
+      <div className="navbar-brand-box text-start px-2" style={{ lineHeight: '50px' }}>
+        <a href="/" className="logo logo-light" onClick={() => isMobile && closeSidebar()}>
           <span className="logo-sm">
-            <img src={faviconImg} alt="" height="22" />
+            <img src={logoImg} alt="" height="50" />
           </span>
           <span className="logo-lg">
-            <img src={logoImg} alt="" width="200" height="auto" />
+            <img src={logoImg} alt="" style={{ height: '55px', width: 'auto', maxWidth: '200px' }} />
           </span>
         </a>
-        <a href="/" className="logo logo-light">
-          <span className="logo-sm">
-            <img src={faviconImg} alt="" height="40" />
-          </span>
-          <span className="logo-lg">
-            <img src={logoImg} alt="" width="200" height="auto" />
-          </span>
-        </a>
+
+
         <button type="button" className="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover" onClick={toggleOpen} aria-label="Toggle menu" aria-expanded={open}>
           <i className="ri-menu-line"></i>
         </button>
       </div>
+
 
       <div className="dropdown sidebar-user m-1 rounded">
         <button type="button" className="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -116,12 +129,12 @@ export default function Sidebar() {
         </button>
         <div className="dropdown-menu dropdown-menu-end">
           <h6 className="dropdown-header">Welcome Anna!</h6>
-          <a className="dropdown-item" href="#"><i className="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Profile</span></a>
-          <a className="dropdown-item" href="#"><i className="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Messages</span></a>
-          <a className="dropdown-item" href="#"><i className="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Help</span></a>
+          <Link className="dropdown-item" to="/profile" onClick={() => isMobile && closeSidebar()}><i className="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Profile</span></Link>
+          <a className="dropdown-item" href="#" onClick={() => isMobile && closeSidebar()}><i className="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Messages</span></a>
+          <a className="dropdown-item" href="#" onClick={() => isMobile && closeSidebar()}><i className="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Help</span></a>
           <div className="dropdown-divider"></div>
-          <a className="dropdown-item" href="#"><i className="mdi mdi-wallet text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Balance : <b>$5971.67</b></span></a>
-          <a className="dropdown-item" href="#"><span className="badge bg-success-subtle text-success mt-1 float-end">New</span><i className="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Settings</span></a>
+          <a className="dropdown-item" href="#" onClick={() => isMobile && closeSidebar()}><i className="mdi mdi-wallet text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Balance : <b>$5971.67</b></span></a>
+          <a className="dropdown-item" href="#" onClick={() => isMobile && closeSidebar()}><span className="badge bg-success-subtle text-success mt-1 float-end">New</span><i className="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Settings</span></a>
           <a className="dropdown-item" href="#" onClick={handleLogout}><i className="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Logout</span></a>
         </div>
       </div>
@@ -163,13 +176,13 @@ export default function Sidebar() {
               </button>
               <ul id="creditBuilderMenu" className={`navbar-nav submenu-collapse ${creditOpen ? 'open' : ''}`}>
                 <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/overview"><i className="ri-subtract-line"></i> <span>Overview</span></NavLink>
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/overview" onClick={() => isMobile && closeSidebar()}><i className="ri-subtract-line"></i> <span>Overview</span></NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/guide"><i className="ri-subtract-line"></i> <span>Step-By-Step Guide</span></NavLink>
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/guide" onClick={() => isMobile && closeSidebar()}><i className="ri-subtract-line"></i> <span>Step-By-Step Guide</span></NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/credit-accounts"><i className="ri-subtract-line"></i> <span>Credit Accounts</span></NavLink>
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/credit-accounts" onClick={() => isMobile && closeSidebar()}><i className="ri-subtract-line"></i> <span>Credit Accounts</span></NavLink>
                 </li>
                 {/* <li className="nav-item">
                   <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/progress-tracker"><i className="ri-subtract-line"></i> <span>Progress Tracker</span></NavLink>

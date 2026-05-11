@@ -11,7 +11,7 @@ export default function Payments() {
     const [payments, setPayments] = useState([]);
     const [stats, setStats] = useState(null);
     const [statsLoading, setStatsLoading] = useState(true);
-    
+
     // Pagination state
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
@@ -105,7 +105,7 @@ export default function Payments() {
             } else {
                 toast.error(response.message || 'Failed to fetch payments');
             }
-            
+
             // Also load stats with the same filter parameters
             loadStats({
                 date_from: dateFrom,
@@ -162,7 +162,8 @@ export default function Payments() {
     };
 
     return (
-        <div className="page-content">
+        <div className="page-content payments-page">
+
             <div className="container-fluid">
                 {/* Header */}
                 <div className="row pb-1 page-subheader-sticky bg-body">
@@ -191,7 +192,7 @@ export default function Payments() {
                     <div className="col-lg-12">
                         <div className="card">
                             <div className="card-body list-fluid-card">
-                                <PaymentFilters 
+                                <PaymentFilters
                                     searchText={searchText} setSearchText={setSearchText}
                                     selectedStatus={selectedStatus} setSelectedStatus={setSelectedStatus}
                                     dateRange={dateRange} setDateRange={setDateRange}
@@ -199,10 +200,10 @@ export default function Payments() {
                                     onClear={handleClearFilters}
                                     loading={loading}
                                 />
-                                
-                                <PaymentTable 
-                                    data={payments} 
-                                    loading={loading} 
+
+                                <PaymentTable
+                                    data={payments}
+                                    loading={loading}
                                     totalRecords={totalRecords}
                                     page={page}
                                     perPage={perPage}
