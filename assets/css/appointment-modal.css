@@ -288,14 +288,14 @@
     }
 
     .borrower-appointments-wrapper .time-slot-container {
-        flex-direction: column !important;
-        gap: 10px !important;
+        flex-direction: row !important;
+        gap: 8px !important;
     }
 
     .borrower-appointments-wrapper .time-slot-container .text-muted {
-        display: none !important;
-        /* Hide "to" on mobile to save space */
+        display: block !important;
     }
+
 }
 
 /* Arrow styling - Scoped */

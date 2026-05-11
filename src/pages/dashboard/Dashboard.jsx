@@ -13,6 +13,8 @@ import { useDashboard } from '../../modules/dashboard';
 import DashboardLoader from '../../components/Loader/DashboardLoader';
 
 
+
+
 export default function Dashboard() {
     const navigate = useNavigate();
     const user = useAuthStore((state) => state.user);
@@ -180,7 +182,8 @@ export default function Dashboard() {
     }
 
     return (
-        <div className="page-content">
+        <div className="page-content dashboard-page">
+
             <div className="container-fluid">
 
                 {/* --- Header Section --- */}

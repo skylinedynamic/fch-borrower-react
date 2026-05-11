@@ -2,12 +2,12 @@ import React from 'react';
 
 const ResourceHubLoader = () => {
     return (
-        <>
+        <div className="rh-loader">
             {/* Metric Header Skeleton - Matching row g-3 */}
             <div className="row g-4">
                 {[1, 2, 3, 4].map((_, i) => (
                     <div className="col-md-3" key={i}>
-                        <div className="card shadow-sm border-0 rounded-2 bg-white dashboard-card">
+                        <div className="card shadow-sm border-0 rounded-2 bg-white card-animate">
                             <div className="card-body py-3 px-4 d-flex align-items-center">
                                 <div className="avatar-md rounded d-flex align-items-center justify-content-center me-3 flex-shrink-0 skeleton-rect sk-metric-rect"></div>
                                 <div>
@@ -148,7 +148,7 @@ const ResourceHubLoader = () => {
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 
