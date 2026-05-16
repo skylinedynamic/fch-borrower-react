@@ -5,6 +5,7 @@ import StepNavigation from '../shared/StepNavigation'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 import { useSaveAttestation, useAttestation } from '../../../../modules/funding-application/queries'
 import { toast } from 'react-toastify'
+import { useBrandingStore } from '../../../../store/brandingStore'
 import ConfirmationModal from '../../../../components/GlobalModal/ConfirmationModal'
 
 interface AttestationStepProps {
@@ -23,6 +24,7 @@ export default function AttestationStep({
   loading,
 }: AttestationStepProps) {
   const navigate = useNavigate()
+  const { branding } = useBrandingStore()
   const [showModal, setShowModal] = useState(false)
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const [attestationId, setAttestationId] = useState<number | null>(null)
@@ -82,8 +84,7 @@ export default function AttestationStep({
               <p className="mb-3">
                 By signing below, I certify that all information provided in this application is true, complete, and
                 accurate to the best of my knowledge. I understand that providing false information may be a violation
-                of federal law (18 U.S.C. § 1001) and subject to criminal penalties. I authorize Four Corner Holdings,
-                LLC and its partners to obtain credit reports, verify the information provided, and share it with
+                of federal law (18 U.S.C. § 1001) and subject to criminal penalties. I authorize {branding?.site_name || 'Four Corner Holdings, LLC'} and its partners to obtain credit reports, verify the information provided, and share it with
                 funding partners as necessary.
               </p>
               <div className="form-check">

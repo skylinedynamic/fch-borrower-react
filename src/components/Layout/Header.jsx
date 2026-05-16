@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { clearAuth } from '../../lib/auth'
 import { useAuthStore } from '../../store/auth'
+import { useBrandingStore } from '../../store/brandingStore'
 import { logout } from '../../modules/auth/services'
 import avatarDefault from '../../../assets/images/users/avatar-default.jpg'
 import logoImg from '../../../assets/images/logo-dark.png'
@@ -10,6 +11,7 @@ import { useNavigate, Link } from 'react-router-dom'
 export default function Header() {
   const navigate = useNavigate()
   const storeUser = useAuthStore((state) => state.user)
+  const { branding } = useBrandingStore()
   const [user, setUser] = useState(null)
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
@@ -92,7 +94,7 @@ export default function Header() {
 
             <div className="navbar-brand-box horizontal-logo ms-2">
               <a href="/" className="logo">
-                <img src={logoImg} alt="" height="50" />
+                <img src={branding?.primary_logo || logoImg} alt="" height="50" />
               </a>
 
             </div>
