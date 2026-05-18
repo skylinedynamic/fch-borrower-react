@@ -5,6 +5,7 @@ import { logout } from '../../modules/auth/services'
 import { useAuthStore } from '../../store/auth'
 import { useBrandingStore } from '../../store/brandingStore'
 import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils'
+import { PARTNER_TYPES } from '../../config/partnerTypeOptions'
 import logoImg from '../../../assets/images/fch-logo-wide.png'
 import avatarDefault from '../../../assets/images/users/avatar-1.jpg'
 
@@ -155,7 +156,7 @@ export default function Sidebar() {
             <LinkItem to="/fund-application" label="Fund Application" icon="ri-hand-coin-line" restricted={isRestricted} />
             <LinkItem to="/my-applications" label="My Applications" icon="ri-file-list-line" restricted={isRestricted} />
 
-            {!!user?.is_host && (
+            {(!!user?.is_host || user?.partner_type === PARTNER_TYPES.WHITE_LABEL) && (
               <>
                 <LinkItem to="/invoices" label="Invoices" icon="ri-article-line" />
                 <LinkItem to="/payments" label="Payments" icon="ri-money-dollar-box-line" />
