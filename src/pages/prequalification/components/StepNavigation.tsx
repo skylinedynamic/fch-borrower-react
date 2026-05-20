@@ -11,60 +11,60 @@ export default function StepNavigation({ step, onTabClick, mobileOpenIdx, render
   return (
     <ul className="tab-chevrons">
       <li>
-        <button 
-          type="button" 
-          className={`tab-btn ${step===0?'active':''}`} 
+        <button
+          type="button"
+          className={`tab-btn ${step === 0 ? 'active' : ''}`}
           onClick={() => onTabClick(0)}
         >
           Personal Info
         </button>
-        {mobileOpenIdx===0 && (
+        {mobileOpenIdx === 0 && (
           <div className="p-3 d-block d-md-none">
             {renderStepSection(0)}
           </div>
         )}
       </li>
       <li>
-        <button 
-          type="button" 
-          className={`tab-btn ${step===1?'active':''}`} 
+        <button
+          type="button"
+          className={`tab-btn ${step === 1 ? 'active' : ''}`}
           onClick={() => onTabClick(1)}
           disabled={step < 0}
         >
           Business Details
         </button>
-        {mobileOpenIdx===1 && (
+        {mobileOpenIdx === 1 && (
           <div className="p-3 d-block d-md-none">
             {renderStepSection(1)}
           </div>
         )}
       </li>
       <li>
-        <button 
-          type="button" 
-          className={`tab-btn ${step===2?'active':''}`} 
+        <button
+          type="button"
+          className={`tab-btn ${step === 2 ? 'active' : ''}`}
           onClick={() => onTabClick(2)}
           disabled={step < 1}
         >
           Funding Needs
         </button>
-        {mobileOpenIdx===2 && (
+        {mobileOpenIdx === 2 && (
           <div className="p-3 d-block d-md-none">
             {renderStepSection(2)}
           </div>
         )}
       </li>
       <li>
-        <button 
-          type="button" 
-          className={`tab-btn ${step===3?'active':''}`} 
+        <button
+          type="button"
+          className={`tab-btn ${step === 3 ? 'active' : ''}`}
           onClick={() => onTabClick(3)}
           disabled={step < 2}
         >
           Review
         </button>
-        {mobileOpenIdx===3 && (
-          <div className="p-3 d-block d-md-none">
+        {mobileOpenIdx === 3 && (
+          <div className="d-block d-md-none">
             {renderStepSection(3)}
           </div>
         )}

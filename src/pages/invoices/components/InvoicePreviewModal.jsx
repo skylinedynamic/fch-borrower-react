@@ -3,6 +3,7 @@ import Modal from 'bootstrap/js/dist/modal';
 import { downloadInvoice, sendInvoice, fetchInvoiceDetails } from '../../../modules/invoice/services';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '../../../store/auth/authStore';
+import { useBrandingStore } from '../../../store/brandingStore';
 import InvoicePreviewSkeleton from './InvoicePreviewSkeleton';
 import invoiceLogo from '../../../../assets/images/logo-mail.png';
 
@@ -16,6 +17,7 @@ const formatCurrency = (amount) => {
 
 export default function InvoicePreviewModal({ show, onHide, invoice }) {
     const user = useAuthStore((state) => state.user);
+    const { branding: globalBranding } = useBrandingStore();
     const modalRef = useRef(null);
     const modalInstanceRef = useRef(null);
     const [downloadLoading, setDownloadLoading] = useState(false);
@@ -63,7 +65,7 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
         // Sync parent state when modal is closed via backdrop click or keyboard
         const handleHidden = () => onHide();
         modalRef.current.addEventListener('hidden.bs.modal', handleHidden);
-        
+
         return () => {
             modalRef.current?.removeEventListener('hidden.bs.modal', handleHidden);
             if (modalInstanceRef.current) {
@@ -131,17 +133,23 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
             setSendLoading(false);
         }
     };
-    
+
     // Use fullInvoice if available, otherwise fallback to the row-level invoice
     const displayInvoice = fullInvoice || invoice;
 
+    // Resolve dynamic branding for invoice
+    const invoiceBranding = displayInvoice?.branding || {};
+    const displayLogo = globalBranding?.primary_logo_full_url || invoiceBranding.primary_logo_full_url || invoiceLogo;
+    const displaySiteName = globalBranding?.site_name || invoiceBranding.site_name || 'Four Corner Holdings LLC';
+    const displayAddress = invoiceBranding.address || globalBranding?.copyright_text || 'California, United States';
+
     // Calculations - only if displayInvoice exists
-    const amount = displayInvoice ? (typeof displayInvoice.payable_amount_sub === 'string' 
-        ? parseFloat(displayInvoice.payable_amount_sub) 
-        : displayInvoice.payable_amount_sub || (typeof displayInvoice.payment_amount === 'string' 
-            ? parseFloat(displayInvoice.payment_amount) 
+    const amount = displayInvoice ? (typeof displayInvoice.payable_amount_sub === 'string'
+        ? parseFloat(displayInvoice.payable_amount_sub)
+        : displayInvoice.payable_amount_sub || (typeof displayInvoice.payment_amount === 'string'
+            ? parseFloat(displayInvoice.payment_amount)
             : displayInvoice.payment_amount || 0)) : 0;
-    
+
     const subtotal = amount;
 
     return (
@@ -163,7 +171,7 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
                                         <div className="card-header border-bottom-dashed p-4">
                                             <div className="d-flex flex-column flex-sm-row align-items-center">
                                                 <div className="flex-grow-1 text-center text-sm-start">
-                                                    <img src={invoiceLogo} className="card-logo card-logo-dark" alt="logo dark" height="65" />
+                                                    <img src={displayLogo} className="card-logo card-logo-dark" alt="logo dark" height="65" />
                                                 </div>
                                                 <div className="flex-shrink-0 mt-sm-0 mt-4 text-center text-sm-end">
                                                     <h6 className="mb-1"><span className="text-muted fw-normal">Invoice No:</span> <span id="legal-register-no" className="fw-semibold"> #{displayInvoice.invoice_id || displayInvoice.id}</span></h6>
@@ -176,8 +184,8 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
                                             <div className="row g-3">
                                                 <div className="col-6">
                                                     <h6 className="text-muted text-uppercase fw-semibold mb-3">Address</h6>
-                                                    <p className="text-muted mb-1">Four Corner Holdings LLC</p>
-                                                    <p className="text-muted mb-0">California, United States</p>
+                                                    <p className="text-muted mb-1">{displaySiteName}</p>
+                                                    <p className="text-muted mb-0">{displayAddress}</p>
                                                 </div>
                                                 <div className="col-6 text-end">
                                                     <h6 className="text-muted text-uppercase fw-semibold mb-3">Billing Address</h6>
@@ -276,8 +284,8 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
                                                     Cancel
                                                 </button>
                                                 <div className="hstack gap-2 flex-wrap">
-                                                    <button 
-                                                        className="btn btn-primary shadow-sm" 
+                                                    <button
+                                                        className="btn btn-primary shadow-sm"
                                                         onClick={handleDownload}
                                                         disabled={downloadLoading}
                                                     >

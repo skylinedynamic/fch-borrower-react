@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 // FullCalendar Imports
 import FullCalendar from '@fullcalendar/react';
@@ -213,10 +214,28 @@ export default function Appointments() {
     <div className="page-content borrower-appointments-wrapper">
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="container-fluid">
-        <div className="row mt-3">
+        {/* Header with Breadcrumbs - Applied to both views */}
+        <div className="row pb-1 page-subheader-sticky bg-body">
+          <div className="col-12">
+            <div className="d-flex align-items-center justify-content-between flex-row py-2">
+              <div className="flex-grow-1">
+                <h4 className="fs-20 mb-1">Appointments</h4>
+                <nav aria-label="breadcrumb">
+                  <ol className="breadcrumb m-0 fs-12 text-muted">
+                    <li className="breadcrumb-item"><Link to="/" className="text-muted">Dashboard</Link></li>
+                    <li className="breadcrumb-item active text-primary font-weight-bold" aria-current="page">Appointments</li>
+                  </ol>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row">
           <div className="col-12">
             <div className="row">
               <div className="col-lg-4 col-xl-3">
+
                 <div className="card card-h-100 mb-4">
                   <div className="card-body">
                     <button className="btn btn-primary w-100" id="btn-new-event" onClick={() => handleNewEvent()}><i className="mdi mdi-plus"></i> Create New Appointment</button>
@@ -227,7 +246,7 @@ export default function Appointments() {
                   <h4 className="fs-18 mb-1" style={{ color: '#313a46' }}>Upcoming Appointment</h4>
                   <p className="text-muted fs-13">Don't miss scheduled appointments</p>
                 </div>
-                <div className="pe-2 me-n1 mb-3" data-simplebar style={{ height: "750px" }}>
+                <div className="pe-2 me-n1 mb-3" data-simplebar style={{ height: window.innerWidth < 768 ? 'auto' : "750px" }}>
                   <div id="upcoming-event-list">
                     {loading && (
                       <>
@@ -255,10 +274,18 @@ export default function Appointments() {
                       </>
                     )}
                     {!loading && upcomingEvents.length === 0 && (
-                      <div className="text-center py-5">
-                        <p className="text-muted">No upcoming events found</p>
+                      <div className="card border-dashed border-light bg-light bg-opacity-25 mb-4">
+                        <div className="card-body text-center py-4">
+                          <div className="avatar-md bg-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3 shadow-sm border border-light">
+                            <i className="ri-calendar-event-line fs-24 text-muted opacity-50"></i>
+                          </div>
+                          <h6 className="fw-semibold text-dark mb-1 d-none d-md-block">No Upcoming Events</h6>
+                          <h6 className="fw-semibold text-dark mb-1 d-block d-md-none fs-15">There is no schedule found</h6>
+                          <p className="text-muted fs-12 mb-0">Use the button above to book your next session.</p>
+                        </div>
                       </div>
                     )}
+
                     {!loading && upcomingEvents.map(evt => {
                       const s = new Date(evt.start);
                       const e = evt.end ? new Date(evt.end) : null;
@@ -342,36 +369,46 @@ export default function Appointments() {
                 <div className="card card-h-100">
                   <div className="card-body">
                     {loading ? (
-                      <div style={{ minHeight: '750px' }} className="placeholder-glow">
+                      <div style={{ minHeight: window.innerWidth < 768 ? '400px' : '750px' }} className="placeholder-glow">
                         <div className="d-flex justify-content-between mb-4">
                           <div className="d-flex gap-1">
                             <span className="placeholder rounded bg-secondary-subtle" style={{ width: '30px', height: '35px' }}></span>
                             <span className="placeholder rounded bg-secondary-subtle" style={{ width: '30px', height: '35px' }}></span>
                             <span className="placeholder rounded bg-secondary-subtle" style={{ width: '60px', height: '35px' }}></span>
                           </div>
-                          <span className="placeholder rounded bg-secondary-subtle col-3" style={{ height: '35px' }}></span>
+                          <span className="placeholder rounded bg-secondary-subtle col-3 d-none d-md-block" style={{ height: '35px' }}></span>
                           <div className="d-flex gap-1">
                             <span className="placeholder rounded bg-secondary-subtle" style={{ width: '60px', height: '35px' }}></span>
                             <span className="placeholder rounded bg-secondary-subtle" style={{ width: '60px', height: '35px' }}></span>
-                            <span className="placeholder rounded bg-secondary-subtle" style={{ width: '60px', height: '35px' }}></span>
-                            <span className="placeholder rounded bg-secondary-subtle" style={{ width: '60px', height: '35px' }}></span>
+                            <span className="placeholder rounded bg-secondary-subtle d-none d-md-block" style={{ width: '60px', height: '35px' }}></span>
                           </div>
                         </div>
 
-                        <div className="border rounded">
-                          <div className="d-flex border-bottom">
+                        <div className="border rounded overflow-hidden">
+                          {/* Header Row: 7 equal columns */}
+                          <div className="d-flex border-bottom bg-light bg-opacity-50" style={{ height: '40px' }}>
                             {[...Array(7)].map((_, i) => (
-                              <div key={i} className="flex-fill border-end p-2 text-center">
-                                <span className="placeholder rounded bg-secondary-subtle w-50"></span>
+                              <div
+                                key={i}
+                                className={`text-center d-flex align-items-center justify-content-center ${i < 6 ? 'border-end' : ''}`}
+                                style={{ flex: '1 1 0%', padding: '0 8px' }}
+                              >
+                                <span className="placeholder rounded bg-secondary-subtle w-50" style={{ height: '10px' }}></span>
                               </div>
                             ))}
                           </div>
+
+                          {/* Grid Body: 5 rows of 7 equal columns */}
                           {[...Array(5)].map((_, row) => (
-                            <div key={row} className="d-flex border-bottom" style={{ height: '100px' }}>
+                            <div key={row} className="d-flex border-bottom" style={{ height: window.innerWidth < 768 ? '60px' : '100px' }}>
                               {[...Array(7)].map((_, col) => (
-                                <div key={col} className="flex-fill border-end p-1">
+                                <div
+                                  key={col}
+                                  className={`p-1 ${col < 6 ? 'border-end' : ''}`}
+                                  style={{ flex: '1 1 0%', padding: '8px' }}
+                                >
                                   {((row + col) % 5 === 0) && (
-                                    <div className="rounded bg-secondary-subtle mt-3 mx-1" style={{ height: '20px', opacity: 0.5 }}></div>
+                                    <div className="rounded bg-secondary-subtle mt-2 mx-1" style={{ height: '15px', opacity: 0.4 }}></div>
                                   )}
                                 </div>
                               ))}
@@ -380,7 +417,9 @@ export default function Appointments() {
                         </div>
                       </div>
                     ) : (
-                      <div id="calendar" style={{ minHeight: '750px' }}>
+
+
+                      <div id="calendar">
                         <FullCalendar
                           ref={calendarRef}
                           plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin, bootstrap5Plugin]}

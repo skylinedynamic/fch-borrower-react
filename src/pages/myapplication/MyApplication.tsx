@@ -26,14 +26,15 @@ export default function MyApplication() {
         </div>
 
         <div className="row g-4">
-          <div className="col-xl-8 col-xxl-9 order-2 order-xl-1">
+          <div className="col-xl-8 col-xxl-9 order-1">
             <PreQualificationRequests loading={prequalLoading} data={prequalData?.data || []} />
             <FundingApplications />
           </div>
 
-          <div className="col-xl-4 col-xxl-3 order-1 order-xl-2">
+          <div className="col-xl-4 col-xxl-3 order-2">
             <RightSideSection loading={loading} />
           </div>
+
 
           <div className="col-12 d-xl-none order-3">
             <div className="card app-card mt-0 ad-card">

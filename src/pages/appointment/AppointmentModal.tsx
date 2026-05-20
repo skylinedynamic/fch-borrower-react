@@ -805,7 +805,7 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
 
                                     <div className="col-12 position-relative px-0 mb-2" style={{ minHeight: '38px' }}>
                                         <div className="row mx-0">
-                                            <div className="col-md-6 col-12 mb-3 px-2">
+                                            <div className="col-12 mb-3 px-2">
                                                 <label className="form-label fs-13 fw-semibold">Event Date <span className="text-danger">*</span></label>
                                                 <div className="input-group">
                                                     <input type="text" ref={dateInputRef} id="event-start-date-modal"
@@ -815,7 +815,9 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
                                                     {formErrors.appointment_date && <div className="invalid-feedback d-block mt-1" style={{ position: 'absolute', bottom: '-22px', left: '0', fontSize: '10px' }}>{formErrors.appointment_date}</div>}
                                                 </div>
                                             </div>
-                                            <div className="col-md-6 col-12 mb-3 px-2">
+                                            <div className="col-12 mb-3 px-2">
+
+
                                                 <label className="form-label fs-13 fw-semibold">Time Slot <span className="text-danger">*</span></label>
                                                 <div className="d-flex align-items-center gap-2 time-slot-container">
                                                     <Dropdown value={formData.timeStart} options={TIME_SLOTS}

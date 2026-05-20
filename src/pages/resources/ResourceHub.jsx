@@ -185,7 +185,7 @@ const ResourceHub = () => {
             <div className="d-flex align-items-center justify-content-between py-2">
               <div className="flex-grow-1">
                 <h4 className="fs-20 mb-1">Resource Hub</h4>
-                <nav aria-label="breadcrumb" className="d-none d-sm-block">
+                <nav aria-label="breadcrumb" className="">
                   <ol className="breadcrumb m-0">
                     <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>
                     <li className="breadcrumb-item active fw-medium" aria-current="page">Resource Hub</li>
@@ -451,21 +451,53 @@ const ResourceHub = () => {
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
-              ) : selectedResource.file_url?.toLowerCase().endsWith('.pdf') ? (
-                <iframe
-                  src={`${selectedResource.file_url}#toolbar=0&navpanes=0&scrollbar=1&view=FitH`}
-                  className="resource-modal-iframe"
-                  title={selectedResource.title}
-                />
               ) : selectedResource.file_url ? (
-                <div className="resource-modal-empty">
-                  <div className="avatar-lg bg-light rounded-circle d-flex align-items-center justify-content-center">
-                    <i className="ri-file-3-line fs-32 rh-text-brand"></i>
+                <div className="d-flex flex-column h-100">
+                  {/* Mobile-only view: Clean, full-height portal */}
+                  <div className="d-flex d-md-none flex-column align-items-center justify-content-center flex-grow-1 p-4 text-center bg-white">
+                    <div className="mb-4">
+                      <div className="avatar-xl bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3 shadow-sm border border-white border-4">
+                        <i className={`${selectedResource.file_url?.toLowerCase().endsWith('.pdf') ? 'ri-file-pdf-fill text-danger' : 'ri-file-text-line text-primary'} display-4`}></i>
+                      </div>
+                      <h5 className="fw-bold fs-18 text-dark mb-2">Secure Document Portal</h5>
+                      <p className="text-muted fs-13 mb-4 px-3">
+                        This document is ready for viewing. Click below to open it in your mobile viewer.
+                      </p>
+                    </div>
+
+                    <a
+                      href={selectedResource.file_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-primary d-flex align-items-center justify-content-center gap-2 py-3 px-5 rounded-pill shadow-lg w-100"
+                      style={{ maxWidth: '280px' }}
+                    >
+                      <i className="ri-external-link-line fs-18"></i>
+                      <span className="fw-bold">Open Document</span>
+                    </a>
                   </div>
-                  <div className="text-center">
-                    <p className="fw-bold fs-15 text-dark mb-1">Preview Not Available</p>
-                    <p className="text-muted fs-13 mb-0">Click Download to save this file to your device.</p>
-                  </div>
+
+                  {/* Desktop View: Keep original logic where ONLY PDFs show iframe */}
+                  {selectedResource.file_url?.toLowerCase().endsWith('.pdf') ? (
+                    <iframe
+                      src={`${selectedResource.file_url}#toolbar=0&navpanes=0&scrollbar=1&view=FitH`}
+                      className="resource-modal-iframe d-none d-md-block flex-grow-1"
+                      title={selectedResource.title}
+                      width="100%"
+                      height="100%"
+                    />
+                  ) : (
+                    <div className="resource-modal-empty flex-grow-1 d-none d-md-flex">
+                      <div className="avatar-lg bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3">
+                        <i className="ri-file-3-line fs-32 rh-text-brand"></i>
+                      </div>
+                      <div className="text-center">
+                        <p className="fw-bold fs-15 text-dark mb-1">Preview Not Available</p>
+                        <p className="text-muted fs-13 mb-0">Click Download to save this file to your device.</p>
+                      </div>
+                    </div>
+                  )}
+
                 </div>
               ) : (
                 <div className="resource-modal-empty">

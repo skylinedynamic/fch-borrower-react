@@ -69,6 +69,13 @@ export function setAuth(token?: string | null, user?: AuthUser | null, rememberM
 export function clearAuth(): void {
   clearAuthState()
   eraseCookie(COOKIE_NAME)
+
+  // Clear branding on logout
+  import('../../store/brandingStore').then(({ clearBranding }) => {
+    clearBranding()
+    // Reset title to default
+    document.title = 'Four Corner Funding'
+  })
 }
 
 export function isAuthenticated(): boolean {
@@ -102,6 +109,9 @@ export async function refreshSubscription(): Promise<void> {
       setUserSubscription({
         enrollment_type: user.enrollment_type,
         subscription_status: user.subscription_status,
+        partner_type: user.partner_type,
+        partner_invoice_status: user.partner_invoice_status,
+        partner_payment_for_me: user.partner_payment_for_me,
         first_payment_date: user.first_payment_date,
         platform_fee_start_date: user.platform_fee_start_date,
         next_installment_date: user.next_installment_date,
