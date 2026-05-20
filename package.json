@@ -22,6 +22,7 @@
     "bootstrap": "^5.3.8",
     "chart.js": "^4.5.1",
     "flatpickr": "^4.6.13",
+    "framer-motion": "^12.39.0",
     "jquery": "^3.7.1",
     "primeicons": "^7.0.0",
     "primereact": "^10.9.7",
