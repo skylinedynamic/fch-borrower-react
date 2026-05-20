@@ -65,7 +65,7 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
         // Sync parent state when modal is closed via backdrop click or keyboard
         const handleHidden = () => onHide();
         modalRef.current.addEventListener('hidden.bs.modal', handleHidden);
-        
+
         return () => {
             modalRef.current?.removeEventListener('hidden.bs.modal', handleHidden);
             if (modalInstanceRef.current) {
@@ -133,23 +133,23 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
             setSendLoading(false);
         }
     };
-    
+
     // Use fullInvoice if available, otherwise fallback to the row-level invoice
     const displayInvoice = fullInvoice || invoice;
 
     // Resolve dynamic branding for invoice
     const invoiceBranding = displayInvoice?.branding || {};
-    const displayLogo = globalBranding?.primary_logo || invoiceBranding.primary_logo || invoiceLogo;
+    const displayLogo = globalBranding?.primary_logo_full_url || invoiceBranding.primary_logo_full_url || invoiceLogo;
     const displaySiteName = globalBranding?.site_name || invoiceBranding.site_name || 'Four Corner Holdings LLC';
     const displayAddress = invoiceBranding.address || globalBranding?.copyright_text || 'California, United States';
 
     // Calculations - only if displayInvoice exists
-    const amount = displayInvoice ? (typeof displayInvoice.payable_amount_sub === 'string' 
-        ? parseFloat(displayInvoice.payable_amount_sub) 
-        : displayInvoice.payable_amount_sub || (typeof displayInvoice.payment_amount === 'string' 
-            ? parseFloat(displayInvoice.payment_amount) 
+    const amount = displayInvoice ? (typeof displayInvoice.payable_amount_sub === 'string'
+        ? parseFloat(displayInvoice.payable_amount_sub)
+        : displayInvoice.payable_amount_sub || (typeof displayInvoice.payment_amount === 'string'
+            ? parseFloat(displayInvoice.payment_amount)
             : displayInvoice.payment_amount || 0)) : 0;
-    
+
     const subtotal = amount;
 
     return (
@@ -284,8 +284,8 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
                                                     Cancel
                                                 </button>
                                                 <div className="hstack gap-2 flex-wrap">
-                                                    <button 
-                                                        className="btn btn-primary shadow-sm" 
+                                                    <button
+                                                        className="btn btn-primary shadow-sm"
                                                         onClick={handleDownload}
                                                         disabled={downloadLoading}
                                                     >

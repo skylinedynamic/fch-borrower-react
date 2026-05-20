@@ -69,7 +69,7 @@ export function setAuth(token?: string | null, user?: AuthUser | null, rememberM
 export function clearAuth(): void {
   clearAuthState()
   eraseCookie(COOKIE_NAME)
-  
+
   // Clear branding on logout
   import('../../store/brandingStore').then(({ clearBranding }) => {
     clearBranding()
@@ -122,34 +122,5 @@ export async function refreshSubscription(): Promise<void> {
     }
   } catch (error) {
     console.error("Failed to refresh user details", error)
-  }
-}
-export async function loadGlobalConfig(): Promise<void> {
-  const { fetchGlobalConfigurations } = await import('../../modules/auth/services')
-  const { setBranding } = await import('../../store/brandingStore')
-  
-  try {
-    const config = await fetchGlobalConfigurations()
-    if (config?.branding) {
-      setBranding(config.branding)
-      
-      // Dynamic Title & Favicon
-      const pageTitle = config.branding.meta_title || config.branding.site_name;
-      if (pageTitle) {
-        document.title = pageTitle;
-      }
-      
-      if (config.branding.favicon) {
-        let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
-        if (!link) {
-          link = document.createElement('link');
-          link.rel = 'icon';
-          document.getElementsByTagName('head')[0].appendChild(link);
-        }
-        link.href = config.branding.favicon;
-      }
-    }
-  } catch (error) {
-    console.error("Failed to load global configurations", error)
   }
 }

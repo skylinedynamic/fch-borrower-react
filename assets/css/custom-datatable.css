@@ -1,3 +1,8 @@
+:root {
+    --primary-color: var(--primary-color);
+    --secondary-color: var(--secondary-color);
+}
+
 .p-datatable.p-datatable-sm .p-datatable-tbody > tr > td:not(:first-child)
  {
     padding: 1rem 0.5rem;

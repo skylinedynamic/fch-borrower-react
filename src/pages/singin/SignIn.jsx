@@ -58,16 +58,7 @@ export default function SignIn() {
 
   return (
     <Auth
-      colClass="col-xl-9 col-lg-9 col-md-10"
-      belowCard={(
-        <div className="mt-4 text-center">
-          <p className="mb-0 text-white">
-            Don't have an account?{' '}
-            <Link className="fw-semibold text-warning text-decoration-underline" to="/signup">Sign up</Link>
-          </p>
-        </div>
-      )}
-    >
+      colClass="col-xl-9 col-lg-9 col-md-10">
       <div className="signin-page">
         <div className="row g-2">
           <div className="col-md-6 p-4 d-flex flex-column justify-content-center">

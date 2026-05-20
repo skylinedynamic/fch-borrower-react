@@ -21,9 +21,9 @@ export default function Sidebar() {
   const isRestricted = isSubscriptionRestricted(userSubscription)
 
   // Resolved logos for different sidebar states
-  const primaryLogo = branding?.primary_logo || logoImg
-  const secondaryLogo = branding?.secondary_logo || branding?.favicon || logoImg
-  const displayLogo = primaryLogo
+  const primaryLogo = branding?.primary_logo_full_url || logoImg
+  const secondaryLogo = branding?.secondary_logo_full_url || branding?.favicon_full_url || branding?.favicon || logoImg
+  const displayLogo = isMobile ? secondaryLogo : primaryLogo
   const compactLogo = secondaryLogo
 
   // Cleaned up unused context
@@ -108,6 +108,14 @@ export default function Sidebar() {
   return (
     <div className={menuClass}>
       <div className="navbar-brand-box text-start px-2" style={{ lineHeight: '50px' }}>
+        <a href="/" className="logo logo-dark" onClick={() => isMobile && closeSidebar()}>
+          <span className="logo-sm">
+            <img src={compactLogo} alt="" height="50" />
+          </span>
+          <span className="logo-lg">
+            <img src={displayLogo} alt="" style={{ height: '55px', width: 'auto', maxWidth: '200px' }} />
+          </span>
+        </a>
         <a href="/" className="logo logo-light" onClick={() => isMobile && closeSidebar()}>
           <span className="logo-sm">
             <img src={compactLogo} alt="" height="50" />

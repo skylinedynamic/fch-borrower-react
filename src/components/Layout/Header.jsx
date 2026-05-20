@@ -93,10 +93,12 @@ export default function Header() {
             </button>
 
             <div className="navbar-brand-box horizontal-logo ms-2">
-              <a href="/" className="logo">
-                <img src={branding?.primary_logo || logoImg} alt="" height="50" />
+              <a href="/" className="logo logo-dark">
+                <img src={branding?.primary_logo_full_url || logoImg} alt="" height="50" />
               </a>
-
+              <a href="/" className="logo logo-light">
+                <img src={branding?.primary_logo_full_url || logoImg} alt="" height="50" />
+              </a>
             </div>
           </div>
 
