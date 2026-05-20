@@ -37,6 +37,7 @@ export type UserSubscription = {
   subscription_end_date?: string | null
   partner_type?: string | null
   partner_invoice_status?: string | null
+  partner_payment_for_me?: boolean
   [key: string]: unknown
 }
 
