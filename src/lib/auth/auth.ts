@@ -111,6 +111,7 @@ export async function refreshSubscription(): Promise<void> {
         subscription_status: user.subscription_status,
         partner_type: user.partner_type,
         partner_invoice_status: user.partner_invoice_status,
+        partner_payment_for_me: user.partner_payment_for_me,
         first_payment_date: user.first_payment_date,
         platform_fee_start_date: user.platform_fee_start_date,
         next_installment_date: user.next_installment_date,
