@@ -1,3 +1,8 @@
+:root {
+    --primary-color: var(--primary-color);
+    --secondary-color: var(--secondary-color);
+}
+
 .resource-detail-container {
     animation: fadeIn 0.5s ease-out;
 }

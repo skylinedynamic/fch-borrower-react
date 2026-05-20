@@ -1,3 +1,8 @@
+:root {
+    --primary-color: var(--primary-color);
+    --secondary-color: var(--secondary-color);
+}
+
 /*
 Template Name: proop - Admin & Dashboard Template
 Author: Themesbrand
@@ -7,7 +12,7 @@ File: Custom Css File
 */
 
 .navbar-menu {
-    background: #001F3F;
+    background: var(--primary-color);
 }
 
 
@@ -86,7 +91,7 @@ File: Custom Css File
 }
 
 #roles-permissions-page .count-badge.solid {
-    background: #d4af37;
+    background: var(--secondary-color);
     box-shadow: 0 2px 6px rgba(0, 0, 0, .06);
 }
 
@@ -584,7 +589,7 @@ File: Custom Css File
     height: 8px;
     border-radius: 50%;
     display: inline-block;
-    background-color: #405189;
+    background-color: var(--primary-color);
 }
 
 .dot-pending {
@@ -636,11 +641,11 @@ File: Custom Css File
 }
 
 .ribbon-requested {
-    background-color: #405189;
+    background-color: var(--primary-color);
 }
 
 .ribbon-requested::after {
-    border-color: transparent transparent transparent #405189;
+    border-color: transparent transparent transparent var(--primary-color);
 }
 
 .ribbon-processing {
@@ -677,7 +682,7 @@ File: Custom Css File
 }
 
 .tag-moderate {
-    background: linear-gradient(135deg, #405189 0%, #364473 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, #364473 100%);
 }
 
 .tag-hard {
@@ -734,7 +739,7 @@ File: Custom Css File
 }
 
 .status-glass-requested {
-    color: #405189;
+    color: var(--primary-color);
 }
 
 .status-glass-processing {
@@ -780,11 +785,11 @@ File: Custom Css File
 }
 
 .bookmark-moderate {
-    background-color: #405189;
+    background-color: var(--primary-color);
 }
 
 .bookmark-moderate::after {
-    border-top-color: #405189;
+    border-top-color: var(--primary-color);
 }
 
 .bookmark-hard {
@@ -799,14 +804,14 @@ File: Custom Css File
 
 /* Subtle Button Variations (Hardcoded for maximum compatibility) */
 .btn-primary-subtle {
-    color: #405189 !important;
+    color: var(--primary-color) !important;
     background-color: rgba(64, 81, 137, 0.1) !important;
     border-color: transparent !important;
 }
 
 .btn-primary-subtle:hover {
     color: #fff !important;
-    background-color: #405189 !important;
+    background-color: var(--primary-color) !important;
 }
 
 .btn-success-subtle {
@@ -962,4 +967,11 @@ File: Custom Css File
     transform: translateY(-5px);
     box-shadow: 0 12px 28px rgba(0, 31, 63, 0.13) !important;
     border-color: #ced4da !important;
+}
+
+.navbar-menu {
+
+    background: var(--primary-color) !important;
+    border-right: 1px solid var(--primary-color) !important;
+
 }

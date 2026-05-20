@@ -1,3 +1,8 @@
+:root {
+    --primary-color: var(--primary-color);
+    --secondary-color: var(--secondary-color);
+}
+
 /* Responsive Styles for Mobile - Dashboard Only */
 
 

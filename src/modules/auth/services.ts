@@ -35,7 +35,7 @@ export async function login(email: string, password: string, remember: boolean =
         subscription_start_date: user.subscription_start_date,
         subscription_end_date: user.subscription_end_date
       })
-      
+
       return { token, user }
     }
 
@@ -91,14 +91,16 @@ export async function resetPassword(payload: {
   }
 }
 
-export async function fetchGlobalConfigurations(): Promise<any> {
-    try {
-        const res = await apiClient.get('/common/global-configurations')
-        if (res?.data?.status === true) {
-            return res.data.data
-        }
-        return null
-    } catch (err) {
-        return null
+
+
+export async function fetchThemeConfigurations(): Promise<any> {
+  try {
+    const res = await apiClient.get('/common/get-theme')
+    if (res?.data?.status === true) {
+      return res.data.data
     }
+    return null
+  } catch (err) {
+    return null
+  }
 }

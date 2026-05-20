@@ -5,12 +5,12 @@ import Dashboard from '../src/pages/dashboard/Dashboard.jsx'
 import SignIn from '../src/pages/singin/SignIn.jsx'
 import ForgotPassword from '../src/pages/singin/ForgotPassword.jsx'
 import ResetPassword from '../src/pages/singin/ResetPassword.jsx'
-import SignUp from '../src/pages/singin/SignUp.jsx'
+// import SignUp from '../src/pages/singin/SignUp.jsx'
 import CreditGuide from '../src/pages/credit-builder/creditguide/CreditGuide.tsx'
 import FundApplication from '../src/pages/fundapplication/FundApplication.tsx'
 import PreQualification from '../src/pages/prequalification/PreQualification.tsx'
 import Documents from '../src/pages/documents/Documents.tsx'
-import { ProtectedRoute, GuestRoute, HostRoute, checkSession, refreshSubscription, loadGlobalConfig } from './lib/auth'
+import { ProtectedRoute, GuestRoute, HostRoute, checkSession, refreshSubscription, isAuthenticated } from './lib/auth'
 import Profile from '../src/pages/profile/profile.tsx'
 import MyApplication from '../src/pages/myapplication/MyApplication.tsx'
 import Invoices from '../src/pages/invoices/Invoices.jsx'
@@ -28,16 +28,50 @@ import 'react-toastify/dist/ReactToastify.css'
 import GlobalModals from './components/Common/Modals/GlobalModals'
 import DownloadAgreement from './pages/agreement/DownloadAgreement.jsx'
 import ErrorPage from './pages/Utility/ErrorPage.jsx'
-
+import { fetchBorrowerTheme } from './modules/settings/services'
+import { useBrandingStore } from './store/brandingStore'
 
 export default function App() {
+  const { setBranding } = useBrandingStore()
+
   useEffect(() => {
     // Check session immediately on app load
     checkSession();
     // Refresh user details to ensure permissions/subscription are up to date
     refreshSubscription();
-    // Load branding configurations
-    loadGlobalConfig();
+    // Load dynamic branding configurations
+    if (isAuthenticated()) {
+      fetchBorrowerTheme().then(res => {
+        if (res?.data?.branding) {
+          setBranding(res.data.branding);
+          const branding = res.data.branding;
+
+          // Dynamic Title & Favicon
+          const pageTitle = branding.meta_title || branding.site_name;
+          if (pageTitle) {
+            document.title = pageTitle;
+          }
+
+          if (branding.favicon_full_url || branding.favicon) {
+            let link = document.querySelector("link[rel~='icon']");
+            if (!link) {
+              link = document.createElement('link');
+              link.rel = 'icon';
+              document.getElementsByTagName('head')[0].appendChild(link);
+            }
+            link.href = branding.favicon_full_url || branding.favicon;
+          }
+
+          // Dynamic Colors
+          if (branding.primary_color) {
+            document.documentElement.style.setProperty('--primary-color', branding.primary_color);
+          }
+          if (branding.secondary_color) {
+            document.documentElement.style.setProperty('--secondary-color', branding.secondary_color);
+          }
+        }
+      }).catch(console.error);
+    }
 
     // Set up periodic session validation (every 5 minutes)
     const intervalId = setInterval(() => {
@@ -53,7 +87,7 @@ export default function App() {
       <Routes>
         <Route element={<GuestRoute />}>
           <Route path="login" element={<SignIn />} />
-          <Route path="signup" element={<SignUp />} />
+          {/* <Route path="signup" element={<SignUp />} /> */}
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password" element={<ResetPassword />} />
         </Route>

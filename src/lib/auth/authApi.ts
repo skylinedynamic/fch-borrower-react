@@ -24,7 +24,10 @@ export async function getUserDetails(): Promise<any> {
         const data = res?.data
         if (data?.status === true) {
             if (data?.data?.user?.is_refresh) {
-                return await refreshUser();
+                const refreshedUser = await refreshUser();
+                if (refreshedUser) {
+                    return { status: true, data: { user: refreshedUser } };
+                }
             }
             return data
         }
