@@ -91,3 +91,14 @@ export async function resetPassword(payload: {
   }
 }
 
+export async function fetchGlobalConfigurations(): Promise<any> {
+    try {
+        const res = await apiClient.get('/common/global-configurations')
+        if (res?.data?.status === true) {
+            return res.data.data
+        }
+        return null
+    } catch (err) {
+        return null
+    }
+}

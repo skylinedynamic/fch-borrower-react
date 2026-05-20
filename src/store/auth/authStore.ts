@@ -35,6 +35,8 @@ export type UserSubscription = {
   enrollment_completed_at?: string | null
   subscription_start_date?: string | null
   subscription_end_date?: string | null
+  partner_type?: string | null
+  partner_invoice_status?: string | null
   [key: string]: unknown
 }
 

@@ -3,7 +3,9 @@ import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
 import { clearAuth } from '../../lib/auth'
 import { logout } from '../../modules/auth/services'
 import { useAuthStore } from '../../store/auth'
+import { useBrandingStore } from '../../store/brandingStore'
 import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils'
+import { PARTNER_TYPES } from '../../config/partnerTypeOptions'
 import logoImg from '../../../assets/images/fch-logo-wide.png'
 import avatarDefault from '../../../assets/images/users/avatar-1.jpg'
 
@@ -12,12 +14,17 @@ export default function Sidebar() {
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 992 : false)
   const [open, setOpen] = useState(false)
   const location = useLocation()
-
-  const { pathname } = location
+  const { branding } = useBrandingStore()
 
   const user = useAuthStore((state) => state.user)
   const userSubscription = useAuthStore((state) => state.userSubscription)
   const isRestricted = isSubscriptionRestricted(userSubscription)
+
+  // Resolved logos for different sidebar states
+  const primaryLogo = branding?.primary_logo || logoImg
+  const secondaryLogo = branding?.secondary_logo || branding?.favicon || logoImg
+  const displayLogo = primaryLogo
+  const compactLogo = secondaryLogo
 
   // Cleaned up unused context
   const [creditOpen, setCreditOpen] = useState(() => {
@@ -103,10 +110,10 @@ export default function Sidebar() {
       <div className="navbar-brand-box text-start px-2" style={{ lineHeight: '50px' }}>
         <a href="/" className="logo logo-light" onClick={() => isMobile && closeSidebar()}>
           <span className="logo-sm">
-            <img src={logoImg} alt="" height="50" />
+            <img src={compactLogo} alt="" height="50" />
           </span>
           <span className="logo-lg">
-            <img src={logoImg} alt="" style={{ height: '55px', width: 'auto', maxWidth: '200px' }} />
+            <img src={displayLogo} alt="" style={{ height: '55px', width: 'auto', maxWidth: '200px' }} />
           </span>
         </a>
 
@@ -149,7 +156,7 @@ export default function Sidebar() {
             <LinkItem to="/fund-application" label="Fund Application" icon="ri-hand-coin-line" restricted={isRestricted} />
             <LinkItem to="/my-applications" label="My Applications" icon="ri-file-list-line" restricted={isRestricted} />
 
-            {!!user?.is_host && (
+            {(!!user?.is_host || user?.partner_type === PARTNER_TYPES.WHITE_LABEL) && (
               <>
                 <LinkItem to="/invoices" label="Invoices" icon="ri-article-line" />
                 <LinkItem to="/payments" label="Payments" icon="ri-money-dollar-box-line" />
@@ -184,12 +191,6 @@ export default function Sidebar() {
                 <li className="nav-item">
                   <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/credit-accounts" onClick={() => isMobile && closeSidebar()}><i className="ri-subtract-line"></i> <span>Credit Accounts</span></NavLink>
                 </li>
-                {/* <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/progress-tracker"><i className="ri-subtract-line"></i> <span>Progress Tracker</span></NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/resources"><i className="ri-subtract-line"></i> <span>Resources</span></NavLink>
-                </li> */}
               </ul>
             </li>
 

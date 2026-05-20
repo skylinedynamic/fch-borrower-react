@@ -10,7 +10,7 @@ import CreditGuide from '../src/pages/credit-builder/creditguide/CreditGuide.tsx
 import FundApplication from '../src/pages/fundapplication/FundApplication.tsx'
 import PreQualification from '../src/pages/prequalification/PreQualification.tsx'
 import Documents from '../src/pages/documents/Documents.tsx'
-import { ProtectedRoute, GuestRoute, HostRoute, checkSession, refreshSubscription } from './lib/auth'
+import { ProtectedRoute, GuestRoute, HostRoute, checkSession, refreshSubscription, loadGlobalConfig } from './lib/auth'
 import Profile from '../src/pages/profile/profile.tsx'
 import MyApplication from '../src/pages/myapplication/MyApplication.tsx'
 import Invoices from '../src/pages/invoices/Invoices.jsx'
@@ -36,6 +36,8 @@ export default function App() {
     checkSession();
     // Refresh user details to ensure permissions/subscription are up to date
     refreshSubscription();
+    // Load branding configurations
+    loadGlobalConfig();
 
     // Set up periodic session validation (every 5 minutes)
     const intervalId = setInterval(() => {

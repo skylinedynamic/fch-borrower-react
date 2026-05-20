@@ -1,5 +1,6 @@
 import { UserSubscription } from './auth';
-import { SUBSCRIPTION_STATUS_TYPES } from '../../config/partnerTypeOptions';
+import { SUBSCRIPTION_STATUS_TYPES, PARTNER_TYPES } from '../../config/partnerTypeOptions';
+import { STATUS_PAID } from '../../config/invoiceConfig';
 
 /**
  * Helper: convert string date to midnight Date object, or null
@@ -16,6 +17,16 @@ const toDate = (d?: string | null) => {
  */
 export function isSubscriptionRestricted(subscription: UserSubscription | null | undefined): boolean {
     if (!subscription) return false;
+
+    // 1. Check White-Label Partner enrollment fee status
+    const partnerType = String(subscription.partner_type).toLowerCase();
+    const invoiceStatus = String(subscription.partner_invoice_status).toLowerCase();
+
+    if (partnerType === PARTNER_TYPES.WHITE_LABEL.toLowerCase()) {
+        if (invoiceStatus !== STATUS_PAID.toLowerCase()) {
+            return true;
+        }
+    }
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);

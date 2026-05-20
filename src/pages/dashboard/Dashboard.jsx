@@ -9,6 +9,7 @@ import { Chart } from 'primereact/chart';
 import { useAuthStore } from '../../store/auth';
 import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils';
 import { INVOICE_STATUS_TYPES } from '../../config/invoiceStatusOptions';
+import { PARTNER_TYPES } from '../../config/partnerTypeOptions';
 import { useDashboard } from '../../modules/dashboard';
 import DashboardLoader from '../../components/Loader/DashboardLoader';
 
@@ -117,6 +118,8 @@ export default function Dashboard() {
     }) || [];
 
     const pendingInvoices = invoicesData.filter(invoice => invoice.status !== INVOICE_STATUS_TYPES.PAID);
+    const isWL = user?.partner_type === PARTNER_TYPES.WHITE_LABEL;
+    const showAlert = (isRestricted || isWL) && pendingInvoices.length > 0;
 
 
     // Credit Score Mock Data (keep as mock since not in API)
@@ -187,7 +190,7 @@ export default function Dashboard() {
             <div className="container-fluid">
 
                 {/* --- Header Section --- */}
-                {isRestricted && pendingInvoices.length > 0 && (
+                {showAlert && (
                     <div className="row mb-4">
                         <div className="col-12">
                             <div className="card bg-danger-subtle border-0 shadow-sm border-start border-danger border-3">

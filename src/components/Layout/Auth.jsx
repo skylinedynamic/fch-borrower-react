@@ -2,11 +2,17 @@ import React from 'react'
 import { useLocation } from 'react-router-dom'
 import formBg from '../../../assets/images/form-bg.png'
 import logoImg from '../../../assets/images/fch-logo-wide.png'
+import { useBrandingStore } from '../../store/brandingStore'
 
 export default function Auth({ header, children, belowCard, colClass = 'col-xl-5 col-lg-6 col-md-8', bodyClass }) {
   const location = useLocation()
+  const { branding } = useBrandingStore()
   const isSignup = location?.pathname === '/signup'
   const cardMarginClass = isSignup ? 'mt-4 mt-md-0' : 'mt-0'
+
+  const displayLogo = branding?.primary_logo || logoImg
+  const displaySiteName = branding?.is_white_label ? (branding?.meta_title || branding?.site_name || 'Four Corner Funding') : 'Four Corner Funding'
+
   return (
     <div className="auth-page-wrapper" style={{minHeight:'100vh',backgroundImage:`url(${formBg})`,backgroundSize:'cover',backgroundPosition:'center',backgroundRepeat:'no-repeat'}}>
 
@@ -18,7 +24,7 @@ export default function Auth({ header, children, belowCard, colClass = 'col-xl-5
 
                <div className="text-center mb-5">
                 <a href="/" className="d-inline-block auth-logo">
-                  <img src={logoImg} alt="FourCorner" width="250" height="auto" />
+                  <img src={displayLogo} alt={displaySiteName} width="250" height="auto" />
                 </a>
               </div>
 
@@ -43,7 +49,9 @@ export default function Auth({ header, children, belowCard, colClass = 'col-xl-5
           <div className="row">
             <div className="col-lg-12">
               <div className="text-center">
-                <p className="mb-0 text-muted">&copy; {new Date().getFullYear()} Four Corner Funding. All rights reserved.</p>
+                <p className="mb-0 text-muted">
+                  {branding?.copyright_text || `© ${new Date().getFullYear()} ${displaySiteName}. All rights reserved.`}
+                </p>
               </div>
             </div>
           </div>

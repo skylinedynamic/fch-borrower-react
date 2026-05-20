@@ -3,6 +3,7 @@ import { toast } from 'react-toastify'
 import './AgreementSignModal.css'
 import { useAuthStore } from '../../store/auth/authStore'
 import { useCheckAgreementSign, useSubmitAgreementSign } from '../../modules/agreement/queries'
+import { useBrandingStore } from '../../store/brandingStore'
 import { AgreementSignModalLoader } from '../Loader/AgreementLoader.jsx'
 
 const AgreementSignModal = () => {
@@ -13,6 +14,8 @@ const AgreementSignModal = () => {
   const [isSuccess, setIsSuccess] = useState(false)
   const iframeRef = useRef(null)
   const { user, setCredentials } = useAuthStore()
+  const { branding } = useBrandingStore()
+  const siteName = branding?.is_white_label ? (branding?.meta_title || branding?.site_name || 'Four Corner Funding') : 'Four Corner Funding'
   
   const { data: checkData, isLoading: loadingCheck } = useCheckAgreementSign()
   const submitSignature = useSubmitAgreementSign()
@@ -193,14 +196,14 @@ const AgreementSignModal = () => {
               <div className="asm-brand-icon">
                 <i className="ri-shield-keyhole-fill"></i>
               </div>
-              <div className="asm-brand-name">Four Corner Funding</div>
+              <div className="asm-brand-name">{siteName}</div>
             </div>
 
             <div className="asm-step-box">
               <div className="asm-step-num">Compliance Protocol</div>
               <h2 className="asm-step-title">Platform Security & Verification</h2>
               <p className="asm-step-desc">
-                Welcome to <strong>Four Corner Funding</strong>. To ensure a compliant and secure environment for all financial operations, we require every partner to certify they have reviewed our cooperation agreement.
+                Welcome to <strong>{siteName}</strong>. To ensure a compliant and secure environment for all financial operations, we require every partner to certify they have reviewed our cooperation agreement.
               </p>
             </div>
 
@@ -229,7 +232,7 @@ const AgreementSignModal = () => {
             </div>
 
             <div className="asm-side-footer">
-              Copyright © {new Date().getFullYear()} Four Corner Funding. All rights reserved.
+              {branding?.copyright_text || `Copyright © ${new Date().getFullYear()} ${siteName}. All rights reserved.`}
             </div>
           </div>
 
