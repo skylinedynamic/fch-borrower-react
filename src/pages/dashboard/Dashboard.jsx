@@ -117,9 +117,11 @@ export default function Dashboard() {
         };
     }) || [];
 
-    const pendingInvoices = invoicesData.filter(invoice => invoice.status !== INVOICE_STATUS_TYPES.PAID);
-    const isWL = user?.partner_type === PARTNER_TYPES.WHITE_LABEL;
-    const showAlert = (isRestricted || isWL) && pendingInvoices.length > 0;
+    const pendingInvoices = invoicesData.filter(invoice => String(invoice.status || '').trim().toLowerCase() !== INVOICE_STATUS_TYPES.PAID.toLowerCase());
+    const partnerType = String(user?.partner_type || '').trim().toLowerCase();
+    const isWL = partnerType.includes('white') || partnerType === PARTNER_TYPES.WHITE_LABEL.toLowerCase();
+    const isCertified = partnerType.includes('certified') || partnerType === PARTNER_TYPES.CERTIFIED.toLowerCase();
+    const showAlert = (isRestricted || isWL || isCertified) && pendingInvoices.length > 0;
 
 
     // Credit Score Mock Data (keep as mock since not in API)

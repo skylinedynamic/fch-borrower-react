@@ -102,12 +102,8 @@ export default function App() {
           }>
             <Route index element={<Dashboard />} />
             <Route path="dashboard" element={<Dashboard />} />
-
-            <Route element={<HostRoute />}>
-              <Route path="invoices" element={<Invoices />} />
-              <Route path="payments" element={<Payments />} />
-            </Route>
-
+            <Route path="invoices" element={<Invoices />} />
+            <Route path="payments" element={<Payments />} />
             <Route path="change-password" element={<ChangePassword />} />
 
             <Route path="pre-qualification" element={<PreQualification />} />
