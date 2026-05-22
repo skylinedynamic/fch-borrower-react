@@ -21,8 +21,8 @@ export default function Sidebar() {
   const isRestricted = isSubscriptionRestricted(userSubscription)
 
   // Resolved logos for different sidebar states
-  const primaryLogo = branding?.primary_logo_full_url || logoImg
-  const secondaryLogo = branding?.secondary_logo_full_url || branding?.favicon_full_url || branding?.favicon || logoImg
+  const primaryLogo = branding?.primary_logo_full_url 
+  const secondaryLogo = branding?.secondary_logo_full_url 
   const displayLogo = isMobile ? secondaryLogo : primaryLogo
   const compactLogo = secondaryLogo
 
