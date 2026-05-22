@@ -21,7 +21,13 @@ export function isSubscriptionRestricted(subscription: UserSubscription | null |
     // 1. Check White-Label Partner enrollment fee status
     const partnerType = String(subscription.partner_type).toLowerCase();
 
-    if (partnerType === PARTNER_TYPES.WHITE_LABEL.toLowerCase() && !subscription.partner_payment_for_me) {
+    if (
+        [
+            PARTNER_TYPES.WHITE_LABEL.toLowerCase(),
+            PARTNER_TYPES.CERTIFIED.toLowerCase()
+        ].includes(partnerType) &&
+        !subscription.partner_payment_for_me
+    ) {
         return true;
     }
 

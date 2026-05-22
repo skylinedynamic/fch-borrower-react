@@ -21,8 +21,8 @@ export default function Sidebar() {
   const isRestricted = isSubscriptionRestricted(userSubscription)
 
   // Resolved logos for different sidebar states
-  const primaryLogo = branding?.primary_logo_full_url || logoImg
-  const secondaryLogo = branding?.secondary_logo_full_url || branding?.favicon_full_url || branding?.favicon || logoImg
+  const primaryLogo = branding?.primary_logo_full_url 
+  const secondaryLogo = branding?.secondary_logo_full_url 
   const displayLogo = isMobile ? secondaryLogo : primaryLogo
   const compactLogo = secondaryLogo
 
@@ -163,13 +163,8 @@ export default function Sidebar() {
             <LinkItem to="/pre-qualification" label="Pre Qualification" icon="ri-clipboard-line" restricted={isRestricted} />
             <LinkItem to="/fund-application" label="Fund Application" icon="ri-hand-coin-line" restricted={isRestricted} />
             <LinkItem to="/my-applications" label="My Applications" icon="ri-file-list-line" restricted={isRestricted} />
-
-            {(!!user?.is_host || user?.partner_type === PARTNER_TYPES.WHITE_LABEL) && (
-              <>
-                <LinkItem to="/invoices" label="Invoices" icon="ri-article-line" />
-                <LinkItem to="/payments" label="Payments" icon="ri-money-dollar-box-line" />
-              </>
-            )}
+            <LinkItem to="/invoices" label="Invoices" icon="ri-article-line" />
+            <LinkItem to="/payments" label="Payments" icon="ri-money-dollar-box-line" />
 
             <LinkItem to="/documents" label="Documents" icon="ri-file-2-line" restricted={isRestricted} />
             <LinkItem to="/resources" label="Resource Hub" icon="ri-book-read-line" />

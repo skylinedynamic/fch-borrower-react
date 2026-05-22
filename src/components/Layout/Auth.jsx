@@ -37,8 +37,8 @@ export default function Auth({ header, children, belowCard, colClass = 'col-xl-5
       })
   }, [])
 
-  const displayLogo = settings?.primary_logo_full_url || logoImg
-  const displaySiteName = settings?.site_name || 'Four Corner Funding'
+  const displayLogo = settings?.primary_logo_full_url
+  const displaySiteName = settings?.site_name
 
   return (
     <div className="auth-page-wrapper" style={{ minHeight: '100vh', backgroundImage: `url(${formBg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
