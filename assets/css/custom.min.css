@@ -1163,7 +1163,7 @@
   position: relative;
   width: 100%;
   background: #dadcdf;
-  color: var(--primary-color);
+  color: #000;
   border: none;
   padding: 12px 24px;
   text-align: center;
@@ -1177,7 +1177,7 @@
 }
 
 .profile-page .tab-btn.active {
-  background: linear-gradient(90deg, var(--primary-color) 0%, #173a6a 100%);
+  background: var(--primary-color) ;
   background-size: 200% 100%;
   animation: tabShift 0.6s ease both, tabActivate 0.18s ease-out both;
   color: #fff;
@@ -1196,7 +1196,7 @@
   top: 0;
   width: 12px;
   height: 100%;
-  background: linear-gradient(90deg, #163968 0%, #163967 100%);
+  background: var(--primary-color);
   background-size: 200% 100%;
   animation: tabShift 0.6s ease both;
   clip-path: polygon(0 0, 100% 50%, 0 100%);
@@ -3546,9 +3546,43 @@ span.flatpickr-weekday {
   background: #fff !important;
 }
 
-/* Time picker */
-.flatpickr-time {
-  border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
+/* Flatpickr input-group wrapper */
+.input-group-flatpickr {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.input-group-flatpickr > .form-control,
+.input-group-flatpickr > input.flatpickr-input {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.input-group-flatpickr > .input-group-text {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  display: flex;
+  align-items: center;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #6b7280;
+  background-color: #f3f4f6;
+  border: 1px solid #d0d5dd;
+  border-left: 0;
+}
+
+.input-group-flatpickr > .form-control.is-invalid {
+  border-color: var(--vz-danger, #dc3545) !important;
+}
+
+.input-group-flatpickr > .form-control.is-invalid + .input-group-text {
+  border-color: var(--vz-danger, #dc3545) !important;
+  color: var(--vz-danger, #dc3545);
 }
 
 .dropdown-menu.show {

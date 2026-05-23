@@ -975,3 +975,8 @@ File: Custom Css File
     border-right: 1px solid var(--primary-color) !important;
 
 }
+
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}

@@ -1,3 +1,8 @@
+:root {
+  --primary-color: var(--primary-color);
+  --secondary-color: var(--secondary-color);
+}
+
 .borrower-appointments-wrapper .letter-spacing-1 {
     letter-spacing: 0.5px;
 }
@@ -355,8 +360,8 @@
 
 .borrower-appointments-wrapper .fc-prev-button,
 .borrower-appointments-wrapper .fc-next-button {
-    background-color: #3b4b7a !important;
-    border-color: #3b4b7a !important;
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
     color: #fff !important;
     padding: 2px 8px !important;
     height: 32px !important;

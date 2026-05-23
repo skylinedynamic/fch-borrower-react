@@ -241,7 +241,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit, isEditi
                   <label className="form-label">
                     Date of Birth <span className="text-danger">*</span>
                   </label>
-                  <div className="input-group">
+                  <div className="input-group-flatpickr">
                     <Flatpickr
                       className={`form-control ${hasError('date_of_birth') ? 'is-invalid' : ''}`}
                       value={coDraft.dob}
@@ -260,7 +260,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit, isEditi
                       placeholder="Select date of birth"
                     />
                     <span className="input-group-text">
-                      <i className="pi pi-calendar"></i>
+                      <i className="ri-calendar-line"></i>
                     </span>
                   </div>
                   {hasError('date_of_birth') && <div className="invalid-feedback d-block">{getError('date_of_birth')}</div>}

@@ -151,7 +151,7 @@ export default function PreQualification() {
 
   return (
     <div className="page-content prequalification-page">
-      <div className="container-fluid min-vh-70 pt-2">
+      <div className="container-fluid min-vh-70 pt-4">
         <div className="text-center mb-4">
           <>
             <h3 className="mb-1">Prequalify to Build Your Business Credit. Access the Right Capital.</h3>

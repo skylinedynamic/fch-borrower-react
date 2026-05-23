@@ -377,15 +377,15 @@ File: Main Css File
 }
 
 [data-theme=default] .card-radio .form-check-label[for=themeColor-02] {
-  background-color: #066b5e;
+  background-color: var(--primary-color);
 }
 
 [data-theme=default] .card-radio .form-check-label[for=themeColor-03] {
-  background-color: #5147a3;
+  background-color: var(--primary-color);
 }
 
 [data-theme=default] .card-radio .form-check-label[for=themeColor-04] {
-  background-color: #2a5fc1;
+  background-color: var(--primary-color);
 }
 
 [data-theme=corporate] {
@@ -3341,7 +3341,7 @@ File: Main Css File
 
 .navbar-menu .navbar-nav .nav-link:hover .icon-dual {
   color: var(--vz-vertical-menu-item-hover-color);
-  fill: rgba(64, 81, 137, 0.16);
+  fill: rgba(var(--vz-primary-rgb), 0.16);
 }
 
 .navbar-menu .navbar-nav .nav-link[data-bs-toggle=collapse]:after {
@@ -3365,7 +3365,7 @@ File: Main Css File
 
 .navbar-menu .navbar-nav .nav-link[data-bs-toggle=collapse][aria-expanded=true] .icon-dual {
   color: var(--vz-vertical-menu-item-hover-color);
-  fill: rgba(64, 81, 137, 0.16);
+  fill: rgba(var(--vz-primary-rgb), 0.16);
 }
 
 .navbar-menu .navbar-nav .nav-link[data-bs-toggle=collapse][aria-expanded=true]:after {
@@ -5204,7 +5204,7 @@ File: Main Css File
 }
 
 .waves-effect.waves-primary .waves-ripple {
-  background-color: rgba(64, 81, 137, 0.4);
+  background-color: rgba(var(--vz-primary-rgb), 0.4);
 }
 
 .waves-effect.waves-success .waves-ripple {
@@ -9067,7 +9067,7 @@ a {
 }
 
 .dropdownmenu-primary .dropdown-item:is(:focus, :hover, .active) {
-  background-color: rgba(64, 81, 137, 0.07);
+  background-color: rgba(var(--vz-primary-rgb), 0.07);
   color: var(--primary-color);
 }
 
@@ -11746,7 +11746,7 @@ div.code-toolbar>.toolbar button {
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out !important;
   border-radius: 0.2rem !important;
-  border: 1px solid rgba(64, 81, 137, 0.35) !important;
+  border: 1px solid rgba(var(--vz-primary-rgb), 0.35) !important;
   background-color: transparent;
   color: var(--primary-color) !important;
   -webkit-box-shadow: none !important;
@@ -13415,7 +13415,7 @@ button.gridjs-sort-desc {
 
 .pagination-next:hover,
 .pagination-prev:hover {
-  color: #7283bd;
+  color: var(--vz-primary-text-emphasis);
 }
 
 .pagination-next.disabled,

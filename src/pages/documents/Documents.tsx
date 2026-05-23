@@ -164,7 +164,7 @@ export default function Documents() {
         text={`Are you sure you want to delete "${documentToDelete?.name}"? This action cannot be undone.`}
       />
 
-      <div className="container-fluid min-vh-70 pt-2">
+      <div className="container-fluid min-vh-70 pt-4">
         {loading ? (
           <div className="text-center mb-3">
             <div className="d-flex flex-column align-items-center">
