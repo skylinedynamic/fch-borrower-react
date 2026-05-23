@@ -9,6 +9,7 @@ import TabLoader from '../../../components/Loader/TabLoader'
 import { countries as countriesData } from '../../../data/countries'
 
 import { formatPhoneNumber, formatLast4SSN, unformatPhoneNumber, formatZipCode } from '../../../utils/formatters'
+import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
 import { useAuth } from '../../../hooks/useAuth'
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import { LOCKED_PERSONAL_FIELDS } from '../../../config/profileLockFields'
@@ -590,15 +591,16 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
               onChange={(dates, dateStr) => {
                 onChange({ ...data, date_of_birth: dateStr })
               }}
-              options={{
-                dateFormat: "Y-m-d",
-                altInput: true,
-                altFormat: "j M, Y",
-                maxDate: "today",
-                yearDropdown: true,
-                yearRange: "1900:" + new Date().getFullYear(),
-                clickOpens: !isFieldLocked('date_of_birth')
-              } as any}
+                options={{
+                  dateFormat: "Y-m-d",
+                  altInput: true,
+                  altFormat: "j M, Y",
+                  maxDate: "today",
+                  yearRange: "1900:" + new Date().getFullYear(),
+                  monthSelectorType: "dropdown",
+                  clickOpens: !isFieldLocked('date_of_birth'),
+                  plugins: [yearDropdownPlugin(1900)],
+                } as any}
               placeholder="Select date of birth"
               disabled={isFieldLocked('date_of_birth')}
             />
@@ -695,7 +697,9 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
                   altInput: true,
                   altFormat: "j M, Y",
                   maxDate: "today",
-                  static: true
+                  monthSelectorType: "dropdown",
+                  static: true,
+                  plugins: [yearDropdownPlugin(1900)],
                 }}
                 placeholder="Select date of birth"
               />

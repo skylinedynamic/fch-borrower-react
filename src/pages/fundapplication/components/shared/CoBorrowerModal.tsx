@@ -7,6 +7,7 @@ import { getCountryCodeByName, getPhoneCodeByName } from '../../../../utils/coun
 import { formatPhoneNumber, formatSSN, unformatSSN } from '../../../../utils/formatters'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
+import { yearDropdownPlugin } from '../../../../utils/flatpickrPlugins'
 import { toast } from 'react-toastify'
 
 type CoBorrowerModalProps = {
@@ -252,8 +253,10 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit, isEditi
                         altInput: true,
                         altFormat: "m-d-Y",
                         maxDate: "today",
-                        // yearDropdown: true,
-                      }}
+                        yearRange: "1900:" + new Date().getFullYear(),
+                        monthSelectorType: "dropdown",
+                        plugins: [yearDropdownPlugin(1900)],
+                      } as any}
                       placeholder="Select date of birth"
                     />
                     <span className="input-group-text">

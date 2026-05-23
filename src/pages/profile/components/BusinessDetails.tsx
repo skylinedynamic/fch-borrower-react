@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState, useRef } from 'react'
 import { toast } from 'react-toastify'
 import TabLoader from '../../../components/Loader/TabLoader'
 import { formatPhoneNumber, formatDUNS, formatEIN, unformatEIN, unformatPhoneNumber, formatZipCode } from '../../../utils/formatters'
+import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/flatpickr.css'
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
@@ -564,9 +565,10 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
                 altInput: true,
                 altFormat: "j M, Y",
                 maxDate: "today",
-                yearDropdown: true,
                 yearRange: "1900:" + new Date().getFullYear(),
-                clickOpens: !isFieldLocked('business_start_date')
+                monthSelectorType: "dropdown",
+                clickOpens: !isFieldLocked('business_start_date'),
+                plugins: [yearDropdownPlugin(1900)],
               } as any}
               placeholder="Select business start date"
               disabled={isFieldLocked('business_start_date')}
@@ -726,7 +728,9 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
                   altInput: true,
                   altFormat: "j M, Y",
                   maxDate: "today",
-                  static: true
+                  monthSelectorType: "dropdown",
+                  static: true,
+                  plugins: [yearDropdownPlugin(1900)],
                 }}
                 placeholder="Select business start date"
               />

@@ -1772,7 +1772,7 @@
 }
 
 .flatpickr-months {
-  background: #163968;
+  background: var(--primary-color);
   color: #fff;
   padding: 12px 0;
 }

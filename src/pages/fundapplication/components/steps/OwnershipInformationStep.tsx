@@ -12,6 +12,7 @@ import { citizenshipOptions } from '../../../../data/profile'
 import { toast } from 'react-toastify'
 import { formatPhoneNumber, formatSSN, unformatSSN } from '../../../../utils/formatters'
 import { getCountryCodeByName, getPhoneCodeByName, getCountryNameByCode, getDefaultCountry } from '../../../../utils/countryHelpers'
+import { yearDropdownPlugin } from '../../../../utils/flatpickrPlugins'
 
 interface OwnershipInformationStepProps {
   owner: OwnerInfo
@@ -297,7 +298,10 @@ export default function OwnershipInformationStep({
               altInput: true,
               altFormat: 'j M, Y',
               maxDate: 'today',
-            }}
+              yearRange: '1900:' + new Date().getFullYear(),
+              monthSelectorType: 'dropdown',
+              plugins: [yearDropdownPlugin(1900)],
+            } as any}
             placeholder="Select date of birth"
           />
           {hasError('date_of_birth') && <div className="invalid-feedback d-block">{getFieldError('date_of_birth')}</div>}
