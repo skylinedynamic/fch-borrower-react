@@ -15,6 +15,14 @@ File: Custom Css File
     background: var(--primary-color);
 }
 
+/* Auth page logo base */
+.auth-logo-img {
+    max-width: 250px;
+    width: auto;
+    height: 70px;
+    display: block;
+    object-fit: contain;
+}
 
 /* Roles & Permissions page scoped styles */
 
