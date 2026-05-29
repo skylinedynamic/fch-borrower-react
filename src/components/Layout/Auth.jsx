@@ -30,6 +30,17 @@ export default function Auth({ header, children, belowCard, colClass = 'col-xl-5
           if (data.secondary_color) {
             document.documentElement.style.setProperty('--secondary-color', data.secondary_color)
           }
+          const faviconUrl = data.favicon_full_url || data.favicon || data.website_favicon
+          if (faviconUrl && faviconUrl !== 'null') {
+            document.querySelectorAll("link[rel~='icon']").forEach(el => el.remove())
+            const link = document.createElement('link')
+            link.rel = 'icon'
+            link.href = faviconUrl.includes('?') ? `${faviconUrl}&_t=${Date.now()}` : `${faviconUrl}?_t=${Date.now()}`
+            document.head.appendChild(link)
+          }
+          if (data.site_name || data.meta_title) {
+            document.title = data.meta_title || data.site_name
+          }
         }
       })
       .catch((err) => {

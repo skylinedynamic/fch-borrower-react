@@ -10,7 +10,8 @@ import CreditGuide from '../src/pages/credit-builder/creditguide/CreditGuide.tsx
 import FundApplication from '../src/pages/fundapplication/FundApplication.tsx'
 import PreQualification from '../src/pages/prequalification/PreQualification.tsx'
 import Documents from '../src/pages/documents/Documents.tsx'
-import { ProtectedRoute, GuestRoute, HostRoute, checkSession, refreshSubscription, isAuthenticated } from './lib/auth'
+import { ProtectedRoute, GuestRoute, HostRoute, checkSession, refreshSubscription } from './lib/auth'
+import { useAuthStore } from './store/auth'
 import Profile from '../src/pages/profile/profile.tsx'
 import MyApplication from '../src/pages/myapplication/MyApplication.tsx'
 import Invoices from '../src/pages/invoices/Invoices.jsx'
@@ -33,53 +34,54 @@ import { useBrandingStore } from './store/brandingStore'
 
 export default function App() {
   const { setBranding } = useBrandingStore()
+  const token = useAuthStore((state) => state.token)
+
+  const loadBranding = () => {
+    fetchBorrowerTheme().then(res => {
+      if (res?.data?.branding) {
+        setBranding(res.data.branding);
+        const branding = res.data.branding;
+
+        const pageTitle = branding.meta_title || branding.site_name;
+        if (pageTitle) {
+          document.title = pageTitle;
+        }
+
+        const faviconUrl = branding.favicon_full_url || branding.favicon;
+        if (faviconUrl && faviconUrl !== 'null') {
+          document.querySelectorAll("link[rel~='icon']").forEach(el => el.remove());
+          const link = document.createElement('link');
+          link.rel = 'icon';
+          link.href = faviconUrl.includes('?') ? `${faviconUrl}&_t=${Date.now()}` : `${faviconUrl}?_t=${Date.now()}`;
+          document.head.appendChild(link);
+        }
+
+        if (branding.primary_color) {
+          document.documentElement.style.setProperty('--primary-color', branding.primary_color);
+        }
+        if (branding.secondary_color) {
+          document.documentElement.style.setProperty('--secondary-color', branding.secondary_color);
+        }
+      }
+    }).catch(console.error);
+  }
 
   useEffect(() => {
-    // Check session immediately on app load
     checkSession();
-    // Refresh user details to ensure permissions/subscription are up to date
-    refreshSubscription();
-    // Load dynamic branding configurations
-    if (isAuthenticated()) {
-      fetchBorrowerTheme().then(res => {
-        if (res?.data?.branding) {
-          setBranding(res.data.branding);
-          const branding = res.data.branding;
 
-          // Dynamic Title & Favicon
-          const pageTitle = branding.meta_title || branding.site_name;
-          if (pageTitle) {
-            document.title = pageTitle;
-          }
-
-          if (branding.favicon_full_url || branding.favicon) {
-            let link = document.querySelector("link[rel~='icon']");
-            if (!link) {
-              link = document.createElement('link');
-              link.rel = 'icon';
-              document.getElementsByTagName('head')[0].appendChild(link);
-            }
-            link.href = branding.favicon_full_url || branding.favicon;
-          }
-
-          // Dynamic Colors
-          if (branding.primary_color) {
-            document.documentElement.style.setProperty('--primary-color', branding.primary_color);
-          }
-          if (branding.secondary_color) {
-            document.documentElement.style.setProperty('--secondary-color', branding.secondary_color);
-          }
-        }
-      }).catch(console.error);
-    }
-
-    // Set up periodic session validation (every 5 minutes)
     const intervalId = setInterval(() => {
       checkSession();
-    }, 5 * 60 * 1000); // 5 minutes
+    }, 5 * 60 * 1000);
 
     return () => clearInterval(intervalId);
   }, []);
+
+  useEffect(() => {
+    if (token) {
+      refreshSubscription();
+      loadBranding();
+    }
+  }, [token]);
 
   return (
     <>
