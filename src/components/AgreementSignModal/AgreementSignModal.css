@@ -421,3 +421,44 @@
     max-width: 95%;
   }
 }
+
+@media (max-width: 768px) {
+  .asm-main-wrapper {
+    padding: 0 !important;
+  }
+
+  .asm-modal-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+  }
+
+  .asm-content-header {
+    padding: 16px 12px !important;
+  }
+
+  .asm-action-footer {
+    padding: 16px 12px !important;
+  }
+
+  .asm-action-flex {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .asm-checkbox-container {
+    width: 100% !important;
+  }
+
+  .asm-checkbox-label {
+    font-size: 13.5px !important;
+  }
+
+  .asm-btn-submit {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}

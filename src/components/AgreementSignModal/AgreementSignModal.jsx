@@ -101,8 +101,25 @@ const AgreementSignModal = () => {
                   font-weight: 700;
                   letter-spacing: 2px;
                }
-               body { margin: 15px !important; }
-               @media print { @page { size: A4; margin: 15mm; } .page-break { height: 0 !important; background: transparent !important; margin: 0 !important; page-break-before: always !important; break-before: page !important; } }
+                body { margin: 15px !important; }
+                @media print { @page { size: A4; margin: 15mm; } .page-break { height: 0 !important; background: transparent !important; margin: 0 !important; page-break-before: always !important; break-before: page !important; } }
+                 .p-parties-grid, .p-sig-grid { display: flex !important; flex-wrap: wrap !important; }
+                 @media (max-width: 793px) {
+                   body { padding: 8px !important; background: #fff !important; margin: 0 !important; }
+                   .page-sep { display: none !important; }
+                   .doc { 
+                     width: 100% !important; 
+                     height: auto !important; 
+                     min-height: auto !important; 
+                     padding: 15px !important; 
+                     box-shadow: none !important; 
+                     overflow: visible !important; 
+                   }
+                   .p-parties-grid, .p-sig-grid { display: block !important; }
+                   .p-logo-img { max-width: 100% !important; }
+                   .col-md-6 { width: 100% !important; margin-bottom: 12px !important; }
+                   .col-md-6:last-child { margin-bottom: 0 !important; }
+                 }
              `;
           head.appendChild(style);
 
@@ -125,29 +142,112 @@ const AgreementSignModal = () => {
                 } else {
                   parent.classList.remove('is-invalid');
                 }
+              if (firstInvalid) {
+                if (typeof firstInvalid.focus === 'function') {
+                  try { firstInvalid.focus(); } catch(e) {}
+                }
+                var target = firstInvalid.closest('.p-field') || firstInvalid;
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
               }
-              if (firstInvalid) firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
               return { valid: valid };
             };
 
-            window.getFilledHTML = function() {
-              var clone = document.documentElement.cloneNode(true);
-              var scripts = clone.querySelectorAll('script, #force-premium-css');
-              scripts.forEach(s => s.remove());
-              
-              // Sync values for inputs/textareas
-              var sourceInputs = document.querySelectorAll('input, textarea, select');
-              var cloneInputs = clone.querySelectorAll('input, textarea, select');
-              for (var i = 0; i < sourceInputs.length; i++) {
-                if (sourceInputs[i].type === 'checkbox' || sourceInputs[i].type === 'radio') {
-                  cloneInputs[i].setAttribute('checked', sourceInputs[i].checked ? 'checked' : '');
-                } else {
-                  cloneInputs[i].setAttribute('value', sourceInputs[i].value);
-                  cloneInputs[i].innerHTML = sourceInputs[i].value;
+             window.getFilledHTML = function() {
+               var clone = document.documentElement.cloneNode(true);
+               var scripts = clone.querySelectorAll('script');
+               scripts.forEach(s => s.remove());
+               
+               // Sync values for inputs/textareas
+               var sourceInputs = document.querySelectorAll('input, textarea, select');
+               var cloneInputs = clone.querySelectorAll('input, textarea, select');
+               for (var i = 0; i < sourceInputs.length; i++) {
+                 var srcInp = sourceInputs[i];
+                 var cloneInp = cloneInputs[i];
+                 if (!srcInp || !cloneInp) continue;
+
+                 if (srcInp.type === 'file' || srcInp.id === 'preview-upload') {
+                   cloneInp.remove();
+                   continue;
+                 }
+
+                 if (srcInp.type === 'checkbox' || srcInp.type === 'radio') {
+                   if (srcInp.checked) {
+                     cloneInp.setAttribute('checked', 'checked');
+                   } else {
+                     cloneInp.removeAttribute('checked');
+                   }
+                 } else {
+                   cloneInp.setAttribute('value', srcInp.value);
+                   if (srcInp.tagName === 'TEXTAREA') {
+                     cloneInp.innerHTML = srcInp.value;
+                   }
+                 }
+               }
+               return clone.outerHTML;
+             };
+
+            function attachDropzone() {
+              if (window.__dzAttached) return;
+              window.__dzAttached = true;
+              document.addEventListener('click', function(e) {
+                var dropzone = e.target.closest('.preview-dropzone');
+                if (dropzone) {
+                  var blockId = dropzone.getAttribute('data-block-id');
+                  if (blockId && window.parent && typeof window.parent.__openFmForBlock === 'function') {
+                    window.parent.__openFmForBlock(blockId);
+                    return;
+                  }
+                  var upld = document.getElementById('preview-upload');
+                  if (!upld) {
+                    upld = document.createElement('input');
+                    upld.type = 'file';
+                    upld.id = 'preview-upload';
+                    upld.style.display = 'none';
+                    upld.accept = 'image/*';
+                    document.body.appendChild(upld);
+                  }
+                  upld.click();
+                  upld.onchange = function(ev) {
+                    var file = ev.target.files[0];
+                    if (file) {
+                      var r = new FileReader();
+                      r.onload = function(rev) {
+                        var input = dropzone.querySelector('input');
+                        if (!input) {
+                          input = document.createElement('input');
+                          input.type = 'text';
+                          input.className = 'p-input';
+                          input.style.position = 'absolute';
+                          input.style.left = '0'; input.style.top = '0'; input.style.width = '0'; input.style.height = '0'; input.style.opacity = '0'; input.style.pointerEvents = 'none';
+                          dropzone.appendChild(input);
+                        }
+                        input.value = rev.target.result;
+                        var child = dropzone.firstChild;
+                        while (child) {
+                          var next = child.nextSibling;
+                          if (child !== input) { dropzone.removeChild(child); }
+                          child = next;
+                        }
+                        var img = document.createElement('img');
+                        img.src = rev.target.result;
+                        img.style.maxHeight = '100%';
+                        img.style.maxWidth = '100%';
+                        img.style.borderRadius = '4px';
+                        dropzone.insertBefore(img, input);
+                        dropzone.style.border = 'none';
+                        dropzone.style.background = 'transparent';
+                        dropzone.style.padding = '0';
+                        var event = document.createEvent('HTMLEvents');
+                        event.initEvent('change', true, false);
+                        input.dispatchEvent(event);
+                      };
+                      r.readAsDataURL(file);
+                    }
+                  };
                 }
-              }
-              return clone.outerHTML;
-            };
+              });
+            }
+            attachDropzone();
           `;
           head.appendChild(script);
         }
@@ -181,6 +281,15 @@ const AgreementSignModal = () => {
       setIsLoading(false)
     }
   }
+
+  const srcDoc = React.useMemo(() => {
+    if (!template) return '';
+    let html = template.template_html;
+    if (window.innerWidth < 794) {
+      html = html.replace(/function paginate\(\)\s*\{/, 'function paginate() { return; /* disabled on mobile */');
+    }
+    return html;
+  }, [template]);
 
   if (loadingCheck && visible) return <AgreementSignModalLoader />;
 
@@ -273,7 +382,7 @@ const AgreementSignModal = () => {
                     ref={iframeRef}
                     className="asm-iframe"
                     title="Agreement Content"
-                    srcDoc={template.template_html}
+                    srcDoc={srcDoc}
                   />
                 </div>
 
