@@ -86,11 +86,11 @@ export default function Sidebar() {
   }
 
   // Helper for rendering nav links
-  const LinkItem = ({ to, label, icon, restricted, end }) => (
+  const LinkItem = ({ to, label, icon, restricted, end, highlight }) => (
     <li className="nav-item">
       <NavLink
         end={end}
-        className={({ isActive }) => `nav-link menu-link${isActive ? ' active' : ''}`}
+        className={({ isActive }) => `nav-link menu-link${isActive ? (highlight ? ' active bg-warning text-dark fw-bold' : ' active') : ''}`}
         to={to}
         onClick={(e) => {
           if (restricted) {
@@ -169,6 +169,8 @@ export default function Sidebar() {
             <LinkItem to="/documents" label="Documents" icon="ri-file-2-line" restricted={isRestricted} />
             <LinkItem to="/resources" label="Resource Hub" icon="ri-book-read-line" />
             <LinkItem to="/appointment" label="Appointment" icon="ri-calendar-2-line" restricted={isRestricted} />
+
+            <LinkItem to="/funding" label="Funding" icon="ri-money-dollar-circle-line" restricted={isRestricted} highlight={true} />
 
             <li className="nav-item">
               <button
