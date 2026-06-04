@@ -6,7 +6,7 @@ import CustomDropdown from '../../../../components/Common/CustomDropdown'
 import { entityTypes, industryTypes, yearsInBusinessOptions } from '../../../../data/profile'
 import { countries as countriesData } from '../../../../data/countries'
 import { useBusinessInfo, useSaveBusinessInfo } from '../../../../modules/funding-application/queries'
-import { formatPhoneNumber } from '../../../../utils/formatters'
+import { formatPhoneNumber, formatNumber } from '../../../../utils/formatters'
 import { getCountryCodeByName, getPhoneCodeByName, formatCountryDisplay, getCountryCodeFromDisplay } from '../../../../utils/countryHelpers'
 import { toast } from 'react-toastify'
 
@@ -418,7 +418,7 @@ export default function BusinessInformationStep({
           className={`form-control ${hasError('number_of_employees') ? 'is-invalid' : ''}`}
           placeholder="Enter number of employees"
           value={business.employees}
-          onChange={(e) => setBusiness((prev) => ({ ...prev, employees: e.target.value }))}
+          onChange={(e) => setBusiness((prev) => ({ ...prev, employees: formatNumber(e.target.value) }))}
         />
         {hasError('number_of_employees') && (
           <div className="invalid-feedback">{getFieldError('number_of_employees')}</div>

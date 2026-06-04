@@ -2,6 +2,7 @@ import React from 'react'
 import { Modal, ModalBody, ModalHeader, Badge, ModalFooter } from 'reactstrap'
 import { FundingApplication } from '../../../modules/my-application/types'
 import { formatSSN } from '../../../utils/formatters'
+import { FUNDING_APPLICATION_STATUS_CLASS_MAP } from '../../../config/funding'
 
 interface FundingApplicationDetailsModalProps {
   isOpen: boolean
@@ -48,7 +49,9 @@ export default function FundingApplicationDetailsModal({ isOpen, toggle, applica
     <Modal isOpen={isOpen} toggle={toggle} size="lg" centered scrollable className="zoomIn">
       <ModalHeader toggle={toggle} className="border-bottom-0 pb-0">
         Funding Application Details
-        <Badge color={application.status === 'Submitted' ? 'success' : 'warning'} pill className="ms-2 fs-12 text-uppercase">{application.status}</Badge>
+        <span className={`badge rounded-pill ms-2 fs-12 text-uppercase ${FUNDING_APPLICATION_STATUS_CLASS_MAP[application.status] || 'bg-secondary-subtle text-secondary'}`}>
+          {application.status}
+        </span>
       </ModalHeader>
       <ModalBody className="p-4 bg-light-subtle">
         {/* Business Information */}

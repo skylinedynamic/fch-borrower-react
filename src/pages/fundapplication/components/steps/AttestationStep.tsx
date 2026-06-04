@@ -72,7 +72,7 @@ export default function AttestationStep({
   const getApiError = (field: string): string | undefined => validationErrors[field]
 
   if (loading || isApiLoading) {
-    return <FormSkeleton fieldCount={1} />
+    return <FormSkeleton fieldCount={2} />
   }
 
   return (

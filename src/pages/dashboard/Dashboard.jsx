@@ -10,6 +10,7 @@ import { useAuthStore } from '../../store/auth';
 import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils';
 import { INVOICE_STATUS_TYPES } from '../../config/invoiceStatusOptions';
 import { PARTNER_TYPES } from '../../config/partnerTypeOptions';
+import { FUNDING_APPLICATION_STATUS_CLASS_MAP } from '../../config/funding';
 import { useDashboard } from '../../modules/dashboard';
 import DashboardLoader from '../../components/Loader/DashboardLoader';
 
@@ -152,6 +153,13 @@ export default function Dashboard() {
     const formatCurrency = (value) => value.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 });
     const requestedAmountTemplate = (rowData) => <span className="text-dark fs-13">{formatCurrency(rowData.requested_amount)}</span>;
     const fundedAmountTemplate = (rowData) => <span className="text-dark fs-13">{formatCurrency(rowData.funded_amount)}</span>;
+    const fundingStatusBodyTemplate = (rowData) => {
+        const customClass = FUNDING_APPLICATION_STATUS_CLASS_MAP[rowData.status];
+        const badgeClass = customClass 
+            ? customClass 
+            : `bg-${rowData.status_class}-subtle text-${rowData.status_class}`;
+        return <span className={`badge ${badgeClass} px-3 py-1 rounded-pill fw-bold fs-10 text-uppercase shadow-sm`}>{rowData.status}</span>;
+    };
     const statusBodyTemplate = (rowData) => {
         return <span className={`badge bg-${rowData.status_class}-subtle text-${rowData.status_class} px-3 py-1 rounded-pill fw-bold fs-10 text-uppercase shadow-sm`}>{rowData.status}</span>;
     };
@@ -366,7 +374,7 @@ export default function Dashboard() {
                                         <Column field="industry_type" header="Industry" body={(rowData) => <span className="text-dark fs-13">{rowData.industry_type}</span>} className="py-3"></Column>
                                         <Column field="requested_amount" header="Requested Amount" body={requestedAmountTemplate} className="py-3"></Column>
                                         <Column field="funded_amount" header="Funded Amount" body={fundedAmountTemplate} className="py-3"></Column>
-                                        <Column field="status" header="Status" body={statusBodyTemplate} className="py-3"></Column>
+                                        <Column field="status" header="Status" body={fundingStatusBodyTemplate} className="py-3"></Column>
                                     </DataTable>
                                 ) : (
                                     <div className="text-center py-4">

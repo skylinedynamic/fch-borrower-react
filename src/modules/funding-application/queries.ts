@@ -55,36 +55,34 @@ export const useSaveDisclosuresConsent = () => {
 }
 
 export const useSaveFederalCompliance = () => {
-   const queryClient = useQueryClient()
-   return useMutation({
-     mutationFn: saveFederalCompliance,
-     onSuccess: () => {
-       queryClient.invalidateQueries({ queryKey: queryKeys.fundingApplication.federalCompliance() })
-     },
-   })
- }
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: saveFederalCompliance,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.fundingApplication.federalCompliance() })
+    },
+  })
+}
 
- export const useSaveAttestation = () => {
-    const queryClient = useQueryClient()
-    return useMutation({
-      mutationFn: saveAttestation,
-      // No query key to invalidate as there is no fetchAttestation yet, but keeping structure clean
-    })
-  }
+export const useSaveAttestation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: saveAttestation,
+    // No query key to invalidate as there is no fetchAttestation yet, but keeping structure clean
+  })
+}
 
-  export const useAttestation = () => {
-   return useQuery({
-     queryKey: ['attestation'], // Ideally this would be in queryKeys factory
-     queryFn: fetchAttestation,
-     staleTime: 1000 * 60 * 5,
-   })
- }
+export const useAttestation = () => {
+  return useQuery({
+    queryKey: ['attestation'], // Ideally this would be in queryKeys factory
+    queryFn: fetchAttestation,
+  })
+}
 
 export const useBusinessInfo = () => {
   return useQuery({
     queryKey: queryKeys.fundingApplication.businessInfo(),
     queryFn: fetchBusinessInfo,
-    staleTime: 1000 * 60 * 5, // 5 minutes
   })
 }
 
@@ -92,7 +90,6 @@ export const useOwnershipInfo = () => {
   return useQuery({
     queryKey: queryKeys.fundingApplication.ownershipInfo(),
     queryFn: fetchOwnershipInfo,
-    staleTime: 1000 * 60 * 5,
   })
 }
 
@@ -100,7 +97,6 @@ export const useFinancialInfo = () => {
   return useQuery({
     queryKey: queryKeys.fundingApplication.financialInfo(),
     queryFn: fetchFinancialInfo,
-    staleTime: 1000 * 60 * 5,
   })
 }
 
@@ -108,7 +104,6 @@ export const useDisclosuresConsent = () => {
   return useQuery({
     queryKey: queryKeys.fundingApplication.disclosuresConsent(),
     queryFn: fetchDisclosuresConsent,
-    staleTime: 1000 * 60 * 5,
   })
 }
 
@@ -116,7 +111,6 @@ export const useFundingRequest = (options?: { enabled?: boolean }) => {
   return useQuery<FundingRequestData>({
     queryKey: queryKeys.fundingApplication.fundingRequest(),
     queryFn: fetchFundingRequest,
-    staleTime: 1000 * 60 * 5,
     enabled: options?.enabled,
   })
 }
@@ -125,7 +119,6 @@ export const useFederalCompliance = () => {
   return useQuery({
     queryKey: queryKeys.fundingApplication.federalCompliance(),
     queryFn: fetchFederalCompliance,
-    staleTime: 1000 * 60 * 5,
   })
 }
 
@@ -133,7 +126,6 @@ export const useFundingApplicationDocuments = (id: number | null, options?: { en
   return useQuery<FundingApplicationDocument[]>({
     queryKey: queryKeys.fundingApplication.documents(id),
     queryFn: () => fetchFundingApplicationDocuments(id!),
-    staleTime: 1000 * 60 * 5,
     enabled: options?.enabled !== undefined ? options.enabled && !!id : !!id,
   })
 }

@@ -94,7 +94,7 @@ export default function ConfirmationModal({
               <div className="hstack gap-2 justify-content-center">
                 <button
                   type="button"
-                  className="btn btn-link link-secondary fw-medium"
+                  className="btn btn-light fw-medium"
                   onClick={onClose}
                   disabled={loading}
                 >

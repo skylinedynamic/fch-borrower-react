@@ -1,14 +1,18 @@
 import React, { useState } from 'react'
 import { TableRowsLoader } from '../../../components/Loader/TableRowsLoader'
 import type { PreQualificationRequest } from '../../../modules/my-application/types'
+import type { Meta } from '../../../modules/my-application/types'
+import GlobalPagination from '../../../components/Paginations/GlobalPagination'
 import PreQualificationDetailsModal from './PreQualificationDetailsModal'
 
 interface PreQualificationRequestsProps {
   loading: boolean
   data: PreQualificationRequest[]
+  meta?: Meta
+  onPageChange?: (page: number) => void
 }
 
-export default function PreQualificationRequests({ loading, data }: PreQualificationRequestsProps) {
+export default function PreQualificationRequests({ loading, data, meta, onPageChange }: PreQualificationRequestsProps) {
   const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null)
   const [detailsModalOpen, setDetailsModalOpen] = useState(false)
 
@@ -84,6 +88,9 @@ export default function PreQualificationRequests({ loading, data }: PreQualifica
               </tbody>
             </table>
           </div>
+          {meta && meta.total > 5 && onPageChange && (
+            <GlobalPagination meta={meta} onPageChange={onPageChange} />
+          )}
         </div>
       </div>
 

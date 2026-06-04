@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import Modal from 'bootstrap/js/dist/modal'
 
 interface DeleteConfirmationModalProps {
@@ -93,7 +94,7 @@ export default function DeleteConfirmationModal({
     }
   }, [])
 
-  return (
+  const modalContent = (
     <div
       className="modal fade flip"
       ref={modalRef}
@@ -117,7 +118,7 @@ export default function DeleteConfirmationModal({
               </p>
               <div className="hstack gap-2 justify-content-center remove">
                 <button
-                  className="btn btn-link link-success fw-medium"
+                  className="btn btn-light fw-medium"
                   onClick={onClose}
                   disabled={loading}
                 >
@@ -149,4 +150,8 @@ export default function DeleteConfirmationModal({
       </div>
     </div>
   )
+
+  if (typeof document === 'undefined') return null
+
+  return createPortal(modalContent, document.body)
 }

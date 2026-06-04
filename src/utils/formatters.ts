@@ -172,3 +172,23 @@ export const unformatEIN = (value: string): string => {
   if (!value) return ''
   return value.replace(/\D/g, '').slice(0, 9)
 }
+
+/**
+ * Formats a generic number input to ensure only digits are present
+ * @param value The raw input string
+ * @returns The formatted string
+ */
+export const formatNumber = (value: string): string => {
+  if (!value) return ''
+  return value.replace(/\D/g, '')
+}
+
+/**
+ * Removes formatting from a generic number string
+ * @param value The formatted string
+ * @returns The raw numeric string
+ */
+export const unformatNumber = (value: string): string => {
+  if (!value) return ''
+  return value.replace(/\D/g, '')
+}

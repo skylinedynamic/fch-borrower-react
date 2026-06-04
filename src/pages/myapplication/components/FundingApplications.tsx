@@ -2,10 +2,13 @@ import React, { useState } from 'react'
 import { useFundingApplications } from '../../../modules/my-application/queries'
 import type { FundingApplication } from '../../../modules/my-application/types'
 import { TableRowsLoader } from '../../../components/Loader/TableRowsLoader'
+import GlobalPagination from '../../../components/Paginations/GlobalPagination'
 import FundingApplicationDetailsModal from './FundingApplicationDetailsModal'
+import { FUNDING_APPLICATION_STATUS_CLASS_MAP } from '../../../config/funding'
 
 export default function FundingApplications() {
-  const { data, isLoading } = useFundingApplications()
+  const [page, setPage] = useState(1)
+  const { data, isLoading } = useFundingApplications(page, 5)
   const [selectedApplication, setSelectedApplication] = useState<FundingApplication | null>(null)
   const [detailsModalOpen, setDetailsModalOpen] = useState(false)
 
@@ -16,8 +19,10 @@ export default function FundingApplications() {
     setDetailsModalOpen(true)
   }
 
-  const statusClass = (s: string) =>
-    s === 'Submitted' ? 'badge rounded-pill bg-success-subtle text-success' : 'badge rounded-pill bg-warning-subtle text-warning'
+  const statusClass = (s: string) => {
+    const customClass = FUNDING_APPLICATION_STATUS_CLASS_MAP[s];
+    return customClass ? `badge rounded-pill ${customClass}` : 'badge rounded-pill bg-secondary-subtle text-secondary';
+  }
 
   // Map API data to table rows
   const rows = data?.data || []
@@ -80,6 +85,9 @@ export default function FundingApplications() {
               </tbody>
             </table>
           </div>
+          {data?.meta && data.meta.total > 5 && (
+            <GlobalPagination meta={data.meta} onPageChange={setPage} />
+          )}
         </div>
       </div>
 
