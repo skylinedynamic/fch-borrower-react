@@ -24,6 +24,7 @@ import CreditResources from '../src/pages/credit-builder/creditresources/CreditR
 import ResourceHub from '../src/pages/resources/ResourceHub.jsx'
 import ResourceDetail from '../src/pages/resources/ResourceDetail.jsx'
 import Funding from '../src/pages/funding/Funding.tsx'
+import FundingDetail from '../src/pages/funding/components/FundingDetail.tsx'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import GlobalModals from './components/Common/Modals/GlobalModals'
@@ -112,6 +113,7 @@ export default function App() {
             <Route path="my-applications" element={<MyApplication />} />
             <Route path="appointment" element={<Appointments />} />
             <Route path="funding" element={<Funding />} />
+            <Route path="funding/:id" element={<FundingDetail />} />
 
             <Route path="credit-builder">
               <Route index element={<CreditOverview />} />

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FUNDING_ICON_MAP } from '../../../config/funding';
 import { getFundingColorStyles } from '../../../config/fundingColor';
 
@@ -83,9 +84,10 @@ const FundingCard: React.FC<FundingCardProps> = ({
     apr,
 }) => {
     const [hovered, setHovered] = useState(false);
+    const navigate = useNavigate();
     const iconClass = resolveIcon(icon);
     const colors = resolveColor(icon_color);
-    const destination = action_url || `/funding`;
+    const destination = action_url || `/funding/${id}`;
 
     // Merge accounts + credit_accounts into one deduplicated list (max 3 shown)
     const allAccounts = Array.from(new Set([...accounts, ...credit_accounts])).slice(0, 3);
@@ -95,7 +97,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
 
     return (
         <div
-            onClick={() => (window.location.href = destination)}
+            onClick={() => navigate(destination)}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
             style={{
