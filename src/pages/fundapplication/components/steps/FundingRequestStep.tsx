@@ -7,6 +7,8 @@ import { purposeOfFundingOptions, fundingTypeOptions, timeframeOptions, collater
 import { useFundingRequest, useSaveFundingRequest } from '../../../../modules/funding-application/queries'
 import { toast } from 'react-toastify'
 import { formatCurrency, unformatCurrency } from '../../../../utils/formatters'
+import { useQuery } from '@tanstack/react-query'
+import { fetchBorrowerFunding } from '../../../../modules/funding/services'
 
 interface FundingRequestStepProps {
   funding: FundingRequest
@@ -30,6 +32,24 @@ export default function FundingRequestStep({
   const [fundingRequestId, setFundingRequestId] = useState<number | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
+  const urlApprovedFunding = new URLSearchParams(window.location.search).get('approved_funding')
+
+  // Fetch approved funding options
+  const { data: fundingOptionsData } = useQuery({
+    queryKey: ['borrower-funding'],
+    queryFn: fetchBorrowerFunding
+  })
+
+  const approvedFundingOptions = React.useMemo(() => {
+    if (!fundingOptionsData?.data?.groups) return []
+    return fundingOptionsData.data.groups.flatMap((g: any) => 
+      g.sequencings.map((seq: any) => ({
+        label: seq.name,
+        value: seq.name
+      }))
+    )
+  }, [fundingOptionsData])
+
   // Memoized save handler
   const handleSave = useCallback(async (): Promise<boolean> => {
     setValidationErrors({})
@@ -39,6 +59,7 @@ export default function FundingRequestStep({
       requested_amount: unformatCurrency(funding.requestedAmount) || null,
       purpose_of_funds: funding.purpose || null,
       preferred_funding_type: funding.fundingType || null,
+      approved_funding: funding.approvedFunding || null,
       timeframe_needed: funding.timeframe || null,
       collateral_available: funding.collateral || null,
       purpose_note: funding.purpose === FUNDING_PURPOSE_OTHER ? (funding.purposeNote || null) : null,
@@ -76,11 +97,18 @@ export default function FundingRequestStep({
       setFunding({
         ...funding,
         requestedAmount: apiData.requested_amount ? formatCurrency(apiData.requested_amount) : '',
-        purpose: apiData.purpose_of_funds || '',
-        fundingType: apiData.preferred_funding_type || '',
+        purpose: apiData.purpose_of_funds || funding.purpose,
+        approvedFunding: urlApprovedFunding || apiData.approved_funding || funding.approvedFunding,
+        fundingType: apiData.preferred_funding_type || funding.fundingType,
         timeframe: apiData.timeframe_needed || '',
         collateral: apiData.collateral_available || '',
         purposeNote: apiData.purpose_note || '',
+      })
+    } else if (urlApprovedFunding && !funding.approvedFunding) {
+      // If no API data yet, but we have a URL param, pre-fill it immediately
+      setFunding({
+        ...funding,
+        approvedFunding: urlApprovedFunding
       })
     }
   }, [isSuccess, apiData])
@@ -167,6 +195,26 @@ export default function FundingRequestStep({
           {hasError('purpose_note') && <div className="invalid-feedback">{getFieldError('purpose_note')}</div>}
         </div>
       )}
+
+      <div className="col-md-6">
+        <label className="form-label">
+          Approved Funding <span className="text-danger">*</span>
+        </label>
+        <CustomDropdown
+          value={funding.approvedFunding}
+          onChange={(value) => setFunding({ ...funding, approvedFunding: value })}
+          options={approvedFundingOptions}
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select approved funding"
+          className={`w-100 ${hasError('approved_funding') ? 'is-invalid' : ''}`}
+          searchable
+          disabled={!!urlApprovedFunding}
+        />
+        {hasError('approved_funding') && (
+          <div className="invalid-feedback d-block">{getFieldError('approved_funding')}</div>
+        )}
+      </div>
 
       <div className="col-md-6">
         <label className="form-label">

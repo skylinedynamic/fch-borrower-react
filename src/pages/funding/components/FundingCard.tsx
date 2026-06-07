@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FUNDING_ICON_MAP } from '../../../config/funding';
 import { getFundingColorStyles } from '../../../config/fundingColor';
 
@@ -15,7 +16,8 @@ interface FundingCardProps {
     tags?: string[];
     accounts?: string[];
     credit_accounts?: string[];
-    apr?: string;
+    engine_status?: string;
+    engine_status_label?: string;
 }
 
 const resolveIcon = (icon: any): string => {
@@ -36,7 +38,6 @@ const resolveIcon = (icon: any): string => {
     }
 
     const generated = `ri-${alt}-line`;
-    console.info('FundingCard: unknown icon value, using fallback', { raw: icon, generated });
     return generated;
 };
 
@@ -45,10 +46,11 @@ const resolveColor = (color: any): { bg: string; text: string } => {
 };
 
 // ─── Small pill badge ─────────────────────────────────────────────────────────
-const Pill: React.FC<{ label: string; bg?: string; color?: string }> = ({
+const Pill: React.FC<{ label: string; bg?: string; color?: string; style?: React.CSSProperties }> = ({
     label,
     bg = '#f0f3f7',
     color = '#4b5563',
+    style
 }) => (
     <span
         style={{
@@ -61,6 +63,7 @@ const Pill: React.FC<{ label: string; bg?: string; color?: string }> = ({
             letterSpacing: '0.01em',
             whiteSpace: 'nowrap',
             flexShrink: 0,
+            ...style
         }}
     >
         {label}
@@ -81,11 +84,30 @@ const FundingCard: React.FC<FundingCardProps> = ({
     accounts = [],
     credit_accounts = [],
     apr,
+    engine_status = 'Active',
+    engine_status_label = 'Eligible Now',
 }) => {
     const [hovered, setHovered] = useState(false);
+    const navigate = useNavigate();
     const iconClass = resolveIcon(icon);
     const colors = resolveColor(icon_color);
-    const destination = action_url || `/funding`;
+    
+    // Ensure action_url is a valid path or external URL, otherwise fallback to default
+    const isValidUrl = action_url && (action_url.startsWith('/') || action_url.startsWith('http'));
+    const destination = isValidUrl ? action_url : `/funding/${id}`;
+
+    // Status visual map
+    const getStatusStyle = () => {
+        switch (engine_status) {
+            case 'Warning': return { bg: '#fff3cd', color: '#856404' }; // Conditional
+            case 'Review': return { bg: '#cce5ff', color: '#004085' };  // Manual Review
+            case 'Greyed Out': return { bg: '#e2e3e5', color: '#383d41' }; // Better Fit Later
+            default: return { bg: '#d4edda', color: '#155724' }; // Active
+        }
+    };
+
+    const statusStyle = getStatusStyle();
+    const isGreyedOut = engine_status === 'Greyed Out';
 
     // Merge accounts + credit_accounts into one deduplicated list (max 3 shown)
     const allAccounts = Array.from(new Set([...accounts, ...credit_accounts])).slice(0, 3);
@@ -95,8 +117,16 @@ const FundingCard: React.FC<FundingCardProps> = ({
 
     return (
         <div
-            onClick={() => (window.location.href = destination)}
-            onMouseEnter={() => setHovered(true)}
+            onClick={() => {
+                if (!isGreyedOut) {
+                    if (destination.startsWith('http')) {
+                        window.open(destination, '_blank');
+                    } else {
+                        navigate(destination);
+                    }
+                }
+            }}
+            onMouseEnter={() => !isGreyedOut && setHovered(true)}
             onMouseLeave={() => setHovered(false)}
             style={{
                 display: 'flex',
@@ -106,34 +136,43 @@ const FundingCard: React.FC<FundingCardProps> = ({
                 border: `1px solid ${hovered ? '#c5d0de' : '#e8ecf0'}`,
                 borderRadius: 12,
                 padding: '16px 18px',
-                cursor: 'pointer',
+                cursor: isGreyedOut ? 'not-allowed' : 'pointer',
                 transition: 'box-shadow 0.18s, border-color 0.18s, transform 0.15s',
-                boxShadow: hovered
+                boxShadow: hovered && !isGreyedOut
                     ? '0 6px 20px rgba(0,0,0,0.09)'
                     : '0 1px 4px rgba(0,0,0,0.05)',
-                transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
+                transform: hovered && !isGreyedOut ? 'translateY(-2px)' : 'translateY(0)',
                 userSelect: 'none',
                 width: '100%',
                 height: '100%',
                 minHeight: 110,
+                opacity: isGreyedOut ? 0.6 : 1,
+                position: 'relative'
             }}
         >
+            {engine_status !== 'Active' && (
+                <div style={{ position: 'absolute', top: -10, right: 10 }}>
+                    <Pill label={engine_status_label} bg={statusStyle.bg} color={statusStyle.color} style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} />
+                </div>
+            )}
+
             {/* ── Icon Badge ─────────────────────────────────────────────── */}
             <div
                 style={{
                     width: 44,
                     height: 44,
                     borderRadius: 10,
-                    background: colors.bg,
+                    background: isGreyedOut ? '#f0f3f7' : colors.bg,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     alignSelf: 'flex-start',
                     flexShrink: 0,
                     marginTop: 2,
+                    filter: isGreyedOut ? 'grayscale(100%)' : 'none'
                 }}
             >
-                <i className={iconClass} style={{ fontSize: 21, color: colors.text }} />
+                <i className={iconClass} style={{ fontSize: 21, color: isGreyedOut ? '#6c757d' : colors.text }} />
             </div>
 
             {/* ── Text Content ───────────────────────────────────────────── */}

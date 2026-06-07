@@ -72,6 +72,7 @@ export type FundingRequest = {
   requestedAmount: string
   purpose: string
   purposeNote?: string
+  approvedFunding: string
   fundingType: string
   timeframe: string
   collateral: string
