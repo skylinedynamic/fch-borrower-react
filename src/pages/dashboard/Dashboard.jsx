@@ -13,6 +13,7 @@ import { PARTNER_TYPES } from '../../config/partnerTypeOptions';
 import { FUNDING_APPLICATION_STATUS_CLASS_MAP } from '../../config/funding';
 import { useDashboard } from '../../modules/dashboard';
 import DashboardLoader from '../../components/Loader/DashboardLoader';
+import '../credit-builder/capital-access/PremiumDesign.css';
 
 
 
@@ -275,6 +276,57 @@ export default function Dashboard() {
                 <div className="row mt-3">
                     {/* --- Left Column (Main Content) --- */}
                     <div className="col-xl-9">
+
+                        {/* Capital Access Entry Widget */}
+                        <div className="ca-dashboard-widget mb-4">
+                            <div className="card-body p-4">
+                                <div className="row align-items-center g-4">
+                                    <div className="col-md-5">
+                                        <div className="d-flex align-items-center gap-2 mb-3">
+                                            <div className="avatar-xs flex-shrink-0">
+                                                <span className="avatar-title bg-primary-subtle text-primary rounded-circle fs-16">
+                                                    <i className="ri-pulse-line"></i>
+                                                </span>
+                                            </div>
+                                            <span className="ca-metric-label mb-0 fs-11">Funding Readiness</span>
+                                        </div>
+                                        <div className="d-flex align-items-end mb-3">
+                                            <h1 className="fw-bold mb-0 lh-1" style={{ fontSize: '52px', letterSpacing: '-2px', color: 'var(--vz-primary)' }}>82</h1>
+                                            <div className="ms-3 mb-1">
+                                                <span className="ca-badge ca-badge-success"><i className="ri-checkbox-circle-fill"></i> Fundable</span>
+                                            </div>
+                                        </div>
+                                        <div className="ca-progress mt-2">
+                                            <div className="ca-progress-bar" style={{ width: '82%' }}></div>
+                                        </div>
+                                        <div className="d-flex justify-content-between mt-1">
+                                            <span className="text-muted fs-11">Score 300</span>
+                                            <span className="text-muted fs-11">850</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="col-md-4">
+                                        <div className="ca-metric text-center">
+                                            <span className="ca-metric-label">Est. Total Capital Access</span>
+                                            <p className="ca-metric-value primary mb-1" style={{ fontSize: '22px' }}>$150,000+</p>
+                                            <p className="text-muted fs-12 mb-0">Across all eligible plays</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="col-md-3">
+                                        <p className="text-muted fs-12 mb-3">Ready to start building business credit through strategic card placement.</p>
+                                        <Button
+                                            label="Choose Strategy"
+                                            icon="ri-arrow-right-line"
+                                            iconPos="right"
+                                            className="ca-btn ca-btn-primary w-100 justify-content-center"
+                                            style={{ border: 'none' }}
+                                            onClick={() => navigate('/credit-builder/strategy')}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Credit & Tier Section */}
                         <div className="row mb-4">
