@@ -133,6 +133,7 @@ const FundingDetail = () => {
     useEffect(() => {
         fetchFundingDetail(id)
             .then(res => {
+                console.log(res);
                 if (res.status) setData(res.data);
                 else toast.error(res.message || 'Failed to load funding details');
             })
@@ -166,36 +167,41 @@ const FundingDetail = () => {
         subtitle,
         amount_range,
         terms,
-        speed_to_funds,
-        uses,
-        qualify_reasons = [],
-        missing_documents = [],
-        readiness_factors = [],
+        description,
         icon,
         icon_color,
-        eligibility_status,
-        eligibility_label,
+        engine_status = 'Active',
+        engine_status_label = 'Eligible Now',
+        requirements = [],
     } = data;
 
     const colors = getFundingColorStyles(icon_color);
     const iconClass = resolveIcon(icon);
 
-    // Eligibility badge config
-    const eligible = (eligibility_status || 'likely_eligible').toLowerCase();
-    const eligibleCfg: Record<string, { bg: string; color: string; label: string }> = {
-        likely_eligible: { bg: '#e8f9f0', color: '#1a7a4a', label: 'Likely Eligible' },
-        eligible: { bg: '#e8f9f0', color: '#1a7a4a', label: 'Eligible' },
-        not_eligible: { bg: '#fee2e2', color: '#991b1b', label: 'Not Eligible' },
-        review_needed: { bg: '#fef3c7', color: '#92400e', label: 'Review Needed' },
+    // Status visual map
+    const getStatusStyle = () => {
+        switch (engine_status) {
+            case 'Warning': return { bg: '#fff3cd', color: '#856404' }; // Conditional
+            case 'Review': return { bg: '#cce5ff', color: '#004085' };  // Manual Review
+            case 'Greyed Out': return { bg: '#e2e3e5', color: '#383d41' }; // Better Fit Later
+            default: return { bg: '#d4edda', color: '#155724' }; // Active
+        }
     };
-    const eligBadge = eligibleCfg[eligible] || eligibleCfg['likely_eligible'];
+    const eligBadge = getStatusStyle();
 
-    const metaItems = [
-        { label: 'Recommended Range', value: amount_range },
-        { label: 'Term', value: terms },
-        { label: 'Speed to Funds', value: speed_to_funds },
-        { label: 'Uses', value: uses },
-    ];
+    const metaItems = [];
+    if (amount_range) metaItems.push({ label: 'Recommended Range', value: amount_range });
+    if (terms) metaItems.push({ label: 'Term', value: terms });
+
+    // Fallback if empty
+    if (metaItems.length === 0) {
+        metaItems.push({ label: 'Recommended Range', value: '—' });
+        metaItems.push({ label: 'Term', value: '—' });
+    }
+
+    const reqItems = requirements;
+
+    const isGreyedOut = engine_status === 'Greyed Out';
 
     return (
         <div className="page-content">
@@ -220,7 +226,7 @@ const FundingDetail = () => {
                 </div>
 
                 {/* ── Main Card ─────────────────────────────────────────────── */}
-                <div className="card border-0 shadow-sm" style={{ borderRadius: 12, overflow: 'hidden' }}>
+                <div className="card border-0 shadow-sm" style={{ borderRadius: 12, overflow: 'hidden', opacity: isGreyedOut ? 0.8 : 1 }}>
                     <div className="card-body p-4">
 
                         {/* ── Header: Icon + Title + Eligibility Badge ──────── */}
@@ -231,13 +237,14 @@ const FundingDetail = () => {
                                     width: 52,
                                     height: 52,
                                     borderRadius: '50%',
-                                    background: colors.bg,
+                                    background: isGreyedOut ? '#f0f3f7' : colors.bg,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     flexShrink: 0,
+                                    filter: isGreyedOut ? 'grayscale(100%)' : 'none'
                                 }}>
-                                    <i className={iconClass} style={{ fontSize: 26, color: colors.text }} />
+                                    <i className={iconClass} style={{ fontSize: 26, color: isGreyedOut ? '#6c757d' : colors.text }} />
                                 </div>
                                 <div>
                                     <h4 className="mb-1 fw-bold" style={{ fontSize: 18, color: '#0f1b2d' }}>{name}</h4>
@@ -259,13 +266,12 @@ const FundingDetail = () => {
                                     borderRadius: 6,
                                     letterSpacing: '0.01em',
                                 }}>
-                                    {eligibility_label || eligBadge.label}
+                                    {engine_status_label}
                                 </span>
-                                {/* <p className="text-muted mb-0 mt-1" style={{ fontSize: 11 }}>High Match</p> */}
                             </div>
                         </div>
 
-                        {/* ── 4-Column Meta Row ─────────────────────────────── */}
+                        {/* ── Meta Row ─────────────────────────────── */}
                         <div
                             className="row g-0 mb-4"
                             style={{
@@ -277,11 +283,11 @@ const FundingDetail = () => {
                             {metaItems.map((m, i) => (
                                 <div
                                     key={i}
-                                    className="col-md-3 col-sm-6"
+                                    className="col"
                                     style={{
                                         padding: '14px 18px',
-                                        borderRight: i < 3 ? '1px solid #e8ecf0' : 'none',
-                                        borderBottom: '0',
+                                        borderRight: i < metaItems.length - 1 ? '1px solid #e8ecf0' : 'none',
+                                        borderBottom: 'none',
                                     }}
                                 >
                                     <p style={{
@@ -308,136 +314,58 @@ const FundingDetail = () => {
                             ))}
                         </div>
 
-                        {/* ── Two-Column Body ───────────────────────────────── */}
-                        <div className="row g-3">
+                        {/* ── Body: Description ───────────────────────────────── */}
+                        {description &&
+                            <div className="row g-3 mb-4">
+                                <div className="col-12">
+                                    <div style={{
+                                        border: '1px solid #e8ecf0',
+                                        borderRadius: 8,
+                                        padding: '18px 20px',
+                                        height: '100%',
+                                    }}>
+                                        <h6 style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d', marginBottom: 14 }}>
+                                            Description
+                                        </h6>
+                                        {description ? (
+                                            <div style={{ fontSize: 13, color: '#374151', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: description }} />
+                                        ) : (
+                                            <p style={{ fontSize: 13, color: '#9ca3af', margin: 0 }}>No description available.</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        }
 
-                            {/* Left: Why You May Qualify */}
-                            <div className="col-md-6">
-                                <div style={{
-                                    border: '1px solid #e8ecf0',
-                                    borderRadius: 8,
-                                    padding: '18px 20px',
-                                    height: '100%',
-                                }}>
-                                    <h6 style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d', marginBottom: 14 }}>
-                                        Why You May Qualify
-                                    </h6>
-
-                                    {/* Qualify reasons */}
-                                    {qualify_reasons.length > 0 ? qualify_reasons.map((r: string, i: number) => (
-                                        <div key={i} style={{
-                                            display: 'flex',
-                                            alignItems: 'flex-start',
-                                            gap: 10,
-                                            marginBottom: 10,
-                                        }}>
-                                            <span style={{
-                                                width: 18,
-                                                height: 18,
-                                                borderRadius: '50%',
-                                                background: '#e8f9f0',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                flexShrink: 0,
-                                                marginTop: 1,
-                                            }}>
-                                                <i className="ri-check-line" style={{ fontSize: 10, color: '#1a7a4a' }} />
-                                            </span>
-                                            <span style={{ fontSize: 13, color: '#374151', lineHeight: 1.4 }}>{r}</span>
-                                        </div>
-                                    )) : (
-                                        <p style={{ fontSize: 13, color: '#9ca3af' }}>No qualifying reasons listed.</p>
-                                    )}
-
-                                    {/* Missing Documents */}
-                                    {missing_documents.length > 0 && (
-                                        <div style={{
-                                            marginTop: 16,
-                                            paddingTop: 16,
-                                            borderTop: '1px solid #e8ecf0',
-                                        }}>
-                                            <div style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: 8,
-                                                marginBottom: 10,
-                                            }}>
-                                                <span style={{
-                                                    width: 18,
-                                                    height: 18,
-                                                    borderRadius: '50%',
-                                                    background: '#fee2e2',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    flexShrink: 0,
-                                                }}>
-                                                    <i className="ri-close-line" style={{ fontSize: 10, color: '#991b1b' }} />
-                                                </span>
-                                                <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>
-                                                    Missing Documents
-                                                </span>
-                                            </div>
-                                            {missing_documents.map((d: string, i: number) => (
-                                                <div key={i} style={{
-                                                    display: 'flex',
-                                                    alignItems: 'flex-start',
-                                                    gap: 10,
-                                                    paddingLeft: 4,
-                                                    marginBottom: 6,
-                                                }}>
-                                                    <span style={{
-                                                        width: 5,
-                                                        height: 5,
-                                                        borderRadius: '50%',
-                                                        background: '#9ca3af',
-                                                        flexShrink: 0,
-                                                        marginTop: 6,
-                                                    }} />
-                                                    <span style={{ fontSize: 13, color: '#6b7280' }}>{d}</span>
+                        {/* ── Requirements & Visibility Rules ─────────────────────────────── */}
+                        {reqItems.length > 0 && (
+                            <div className="row g-3 mb-4">
+                                <div className="col-12">
+                                    <div style={{
+                                        border: '1px solid #e8ecf0',
+                                        borderRadius: 8,
+                                        padding: '18px 20px',
+                                        background: '#fff',
+                                    }}>
+                                        <h6 style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d', marginBottom: 18 }}>
+                                            Requirements & Visibility Rules
+                                        </h6>
+                                        <div className="row g-4">
+                                            {reqItems.map((req, i) => (
+                                                <div key={i} className="col-md-3 col-sm-6">
+                                                    <p style={{ margin: 0, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#9ca3af', marginBottom: 4 }}>
+                                                        {req.label}
+                                                    </p>
+                                                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#1e293b', wordBreak: 'break-word', lineHeight: 1.35 }}>
+                                                        {req.value}
+                                                    </p>
                                                 </div>
                                             ))}
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
                             </div>
-
-                            {/* Right: Readiness Factors */}
-                            <div className="col-md-6">
-                                <div style={{
-                                    border: '1px solid #e8ecf0',
-                                    borderRadius: 8,
-                                    padding: '18px 20px',
-                                    height: '100%',
-                                }}>
-                                    <h6 style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d', marginBottom: 14 }}>
-                                        Readiness Factors
-                                    </h6>
-
-                                    {readiness_factors.length > 0 ? readiness_factors.map((f: any, i: number) => (
-                                        <div
-                                            key={i}
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                paddingTop: 10,
-                                                paddingBottom: 10,
-                                                borderBottom: i < readiness_factors.length - 1
-                                                    ? '1px solid #f1f5f9'
-                                                    : 'none',
-                                            }}
-                                        >
-                                            <span style={{ fontSize: 13, color: '#374151' }}>{f.label}</span>
-                                            <ReadinessBadge status={f.status} />
-                                        </div>
-                                    )) : (
-                                        <p style={{ fontSize: 13, color: '#9ca3af' }}>No readiness factors available.</p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                        )}
 
                     </div>
 
@@ -454,34 +382,36 @@ const FundingDetail = () => {
                     }}>
                         <div>
                             <p style={{ margin: 0, fontWeight: 700, fontSize: 13, color: '#0f1b2d' }}>
-                                Next Step
+                                {isGreyedOut ? 'Currently Unavailable' : 'Next Step'}
                             </p>
                             <p style={{ margin: 0, fontSize: 12, color: '#6b7280', marginTop: 2 }}>
-                                Start your funding review by providing a few details and uploading missing documents.
+                                {isGreyedOut ? 'You do not meet the minimum requirements for this funding option at this time.' : 'Start your funding review by providing a few details and uploading missing documents.'}
                             </p>
                         </div>
-                        <Link
-                            to={`/funding/${id}/review`}
-                            style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 8,
-                                background: '#1d4ed8',
-                                color: '#fff',
-                                fontWeight: 600,
-                                fontSize: 13,
-                                padding: '10px 20px',
-                                borderRadius: 8,
-                                textDecoration: 'none',
-                                flexShrink: 0,
-                                transition: 'background 0.15s',
-                            }}
-                            onMouseEnter={e => (e.currentTarget.style.background = '#1e40af')}
-                            onMouseLeave={e => (e.currentTarget.style.background = '#1d4ed8')}
-                        >
-                            Start Funding Review
-                            <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />
-                        </Link>
+                        {!isGreyedOut && (
+                            <Link
+                                to={`/fund-application?slug=${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}&approved_funding=${encodeURIComponent(name)}`}
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 8,
+                                    background: '#1d4ed8',
+                                    color: '#fff',
+                                    fontWeight: 600,
+                                    fontSize: 13,
+                                    padding: '10px 20px',
+                                    borderRadius: 8,
+                                    textDecoration: 'none',
+                                    flexShrink: 0,
+                                    transition: 'background 0.15s',
+                                }}
+                                onMouseEnter={e => (e.currentTarget.style.background = '#1e40af')}
+                                onMouseLeave={e => (e.currentTarget.style.background = '#1d4ed8')}
+                            >
+                                Start Funding Review
+                                <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />
+                            </Link>
+                        )}
                     </div>
                 </div>
 

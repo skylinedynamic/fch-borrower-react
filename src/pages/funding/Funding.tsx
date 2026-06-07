@@ -360,6 +360,8 @@ const Funding = () => {
                                             accounts={seq.accounts}
                                             credit_accounts={seq.credit_accounts}
                                             apr={seq.apr}
+                                            engine_status={seq.engine_status}
+                                            engine_status_label={seq.engine_status_label}
                                         />
                                     </div>
                                 ))}

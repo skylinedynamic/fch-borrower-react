@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-toastify'
+import { useLocation } from 'react-router-dom'
 
 // Components
 import BusinessInformationStep from './components/steps/BusinessInformationStep'
@@ -131,11 +132,31 @@ export default function FundApplication() {
   const [funding, setFunding] = useState<FundingRequest>({
     requestedAmount: '',
     purpose: '',
+    approvedFunding: '',
     fundingType: '',
     timeframe: '',
     collateral: '',
     purposeNote: '',
   })
+
+  const location = useLocation()
+
+  // Initialize funding state from query parameters
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search)
+    const purposeParam = searchParams.get('purpose')
+    const typeParam = searchParams.get('funding_type')
+    const approvedParam = searchParams.get('approved_funding')
+
+    if (purposeParam || typeParam || approvedParam) {
+      setFunding(prev => ({
+        ...prev,
+        purpose: purposeParam || prev.purpose,
+        approvedFunding: approvedParam || prev.approvedFunding,
+        fundingType: typeParam || prev.fundingType,
+      }))
+    }
+  }, [location.search])
 
   const [federal, setFederal] = useState<FederalCompliance>({
     legalBusinessName: '',
