@@ -13,9 +13,6 @@ interface FundingCardProps {
     amount_range?: string;
     terms?: string;
     action_url?: string;
-    tags?: string[];
-    accounts?: string[];
-    credit_accounts?: string[];
     engine_status?: string;
     engine_status_label?: string;
 }
@@ -80,10 +77,6 @@ const FundingCard: React.FC<FundingCardProps> = ({
     amount_range,
     terms,
     action_url,
-    tags = [],
-    accounts = [],
-    credit_accounts = [],
-    apr,
     engine_status = 'Active',
     engine_status_label = 'Eligible Now',
 }) => {
@@ -99,21 +92,20 @@ const FundingCard: React.FC<FundingCardProps> = ({
     // Status visual map
     const getStatusStyle = () => {
         switch (engine_status) {
-            case 'Warning': return { bg: '#fff3cd', color: '#856404' }; // Conditional
-            case 'Review': return { bg: '#cce5ff', color: '#004085' };  // Manual Review
-            case 'Greyed Out': return { bg: '#e2e3e5', color: '#383d41' }; // Better Fit Later
-            default: return { bg: '#d4edda', color: '#155724' }; // Active
+            case 'Warning': return { bg: '#fffbeb', color: '#d97706' }; // Conditional
+            case 'Review': return { bg: '#ecfdf5', color: '#10b981' };  // Review -> Likely Eligible
+            case 'Greyed Out': return { bg: '#f3f4f6', color: '#4b5563' }; // Better Fit Later
+            default: return { bg: '#ecfdf5', color: '#10b981' }; // Active (Likely Eligible)
         }
     };
 
     const statusStyle = getStatusStyle();
     const isGreyedOut = engine_status === 'Greyed Out';
-
-    // Merge accounts + credit_accounts into one deduplicated list (max 3 shown)
-    const allAccounts = Array.from(new Set([...accounts, ...credit_accounts])).slice(0, 3);
-
-    // Tags shown as pills (max 3)
-    const visibleTags = (tags ?? []).slice(0, 3);
+    
+    // Convert generic "Eligible Now" and "Manual Review Required" to the design's "Likely Eligible"
+    const displayLabel = (engine_status_label === 'Eligible Now' || engine_status_label === 'Manual Review Required') 
+        ? 'Likely Eligible' 
+        : engine_status_label;
 
     return (
         <div
@@ -150,12 +142,6 @@ const FundingCard: React.FC<FundingCardProps> = ({
                 position: 'relative'
             }}
         >
-            {engine_status !== 'Active' && (
-                <div style={{ position: 'absolute', top: -10, right: 10 }}>
-                    <Pill label={engine_status_label} bg={statusStyle.bg} color={statusStyle.color} style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} />
-                </div>
-            )}
-
             {/* ── Icon Badge ─────────────────────────────────────────────── */}
             <div
                 style={{
@@ -219,58 +205,39 @@ const FundingCard: React.FC<FundingCardProps> = ({
                     {subtitle || '\u00A0'}
                 </p>
 
-                {/* Accounts / credit accounts */}
-                {allAccounts.length > 0 && (
-                    <div
-                        style={{
-                            fontSize: 11,
-                            color: '#6b7e93',
-                            lineHeight: 1.35,
-                            overflow: 'hidden',
-                            whiteSpace: 'nowrap',
-                            textOverflow: 'ellipsis',
-                        }}
-                    >
-                        {allAccounts.join(' · ')}
-                    </div>
-                )}
-
-                {/* Bottom row: amount_range + tags/terms + apr */}
+                {/* Bottom row: amount_range + status badge */}
                 <div
                     style={{
                         display: 'flex',
-                        gap: 6,
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
+                        flexDirection: 'column',
+                        gap: 8,
                         marginTop: 'auto',
-                        paddingTop: 4,
+                        paddingTop: 8,
                     }}
                 >
-                    {amount_range && (
-                        <span
-                            style={{
-                                fontSize: 12,
-                                fontWeight: 700,
-                                color: '#2563eb',
-                                letterSpacing: '0.01em',
-                                flexShrink: 0,
-                            }}
-                        >
-                            {amount_range}
-                        </span>
-                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        {amount_range && (
+                            <span
+                                style={{
+                                    fontSize: 13,
+                                    fontWeight: 700,
+                                    color: '#2563eb',
+                                    letterSpacing: '0.01em',
+                                    flexShrink: 0,
+                                }}
+                            >
+                                {amount_range}
+                            </span>
+                        )}
 
-                    {apr && (
-                        <Pill label={apr} bg="#e8f5e9" color="#2e7d32" />
-                    )}
+                        {terms && (
+                            <Pill label={terms} bg={colors.bg} color={colors.text} />
+                        )}
+                    </div>
 
-                    {terms && (
-                        <Pill label={terms} bg={colors.bg} color={colors.text} />
-                    )}
-
-                    {visibleTags.map((tag, idx) => (
-                        <Pill key={idx} label={tag} bg="#f0f3f7" color="#4b5563" />
-                    ))}
+                    <div style={{ alignSelf: 'flex-start' }}>
+                        <Pill label={displayLabel} bg={statusStyle.bg} color={statusStyle.color} style={{ fontSize: 11.5, padding: '4px 10px' }} />
+                    </div>
                 </div>
             </div>
 
