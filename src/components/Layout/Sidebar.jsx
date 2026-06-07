@@ -194,6 +194,9 @@ export default function Sidebar() {
                 <li className="nav-item">
                   <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/credit-accounts" onClick={() => isMobile && closeSidebar()}><i className="ri-subtract-line"></i> <span>Credit Accounts</span></NavLink>
                 </li>
+                <li className="nav-item">
+                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/strategy" onClick={() => isMobile && closeSidebar()}><i className="ri-subtract-line"></i> <span>Capital Access</span></NavLink>
+                </li>
               </ul>
             </li>
 
