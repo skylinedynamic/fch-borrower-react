@@ -4,7 +4,6 @@ import { fetchBorrowerFunding } from '../../modules/funding/services';
 import FundingCard from './components/FundingCard';
 import FundingLoader from '../../components/Loader/FundingLoader';
 import { toast } from 'react-toastify';
-import { Dropdown } from 'primereact/dropdown';
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
 interface StatCardProps { icon: string; label: string; value: string; color: string; }
@@ -25,79 +24,30 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color }) => (
     </div>
 );
 
-// ─── Dynamic stat card config ─────────────────────────────────────────────────
-// Each entry maps an API stats field to display properties.
-// formatMoney: divide by 1M and format as $X.XXM  |  formatCount: display as-is
+// ─── Stat config ──────────────────────────────────────────────────────────────
 const formatMoney = (v: any) => `$${((Number(v) || 0) / 1_000_000).toFixed(2)}M`;
 const formatCount = (v: any) => `${Number(v) || 0}`;
 
 interface StatConfig {
-    key: string;           // key in the stats object from the API
-    label: string;         // fallback label if API doesn't supply one
-    labelKey?: string;     // optional API key for a dynamic label
+    key: string;
+    label: string;
+    labelKey?: string;
     icon: string;
     color: string;
     format: (v: any) => string;
 }
 
 const STAT_CONFIG: StatConfig[] = [
-    {
-        key: 'total_approved',
-        label: 'Total Approved',
-        labelKey: 'total_approved_label',
-        icon: 'ri-money-dollar-circle-line',
-        color: 'success',
-        format: formatMoney,
-    },
-    {
-        key: 'total_funded',
-        label: 'Total Funded',
-        labelKey: 'total_funded_label',
-        icon: 'ri-file-text-line',
-        color: 'info',
-        format: formatMoney,
-    },
-    {
-        key: 'total_options',
-        label: 'Funding Options',
-        labelKey: 'total_options_label',
-        icon: 'ri-line-chart-line',
-        color: 'primary',
-        format: formatCount,
-    },
-    {
-        key: 'total_groups',
-        label: 'Funding Groups',
-        labelKey: 'total_groups_label',
-        icon: 'ri-group-line',
-        color: 'warning',
-        format: formatCount,
-    },
+    { key: 'total_approved', label: 'Total Approved', labelKey: 'total_approved_label', icon: 'ri-money-dollar-circle-line', color: 'success', format: formatMoney },
+    { key: 'total_funded',   label: 'Total Funded',   labelKey: 'total_funded_label',   icon: 'ri-file-text-line',           color: 'info',    format: formatMoney },
+    { key: 'total_options',  label: 'Funding Options', labelKey: 'total_options_label', icon: 'ri-line-chart-line',          color: 'primary', format: formatCount },
+    { key: 'total_groups',   label: 'Funding Groups',  labelKey: 'total_groups_label',  icon: 'ri-group-line',               color: 'warning', format: formatCount },
 ];
-
-// ─── Filter Bar (reference style) ─────────────────────────────────────────────
-const selectStyle: React.CSSProperties = {
-    height: 38,
-    padding: '0 32px 0 12px',
-    border: '1px solid #dee2e6',
-    borderRadius: 6,
-    background: '#fff',
-    fontSize: 13,
-    color: '#495057',
-    cursor: 'pointer',
-    outline: 'none',
-    appearance: 'none',
-    WebkitAppearance: 'none',
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'right 10px center',
-    minWidth: 160,
-};
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 const Funding = () => {
-    const [loading, setLoading] = useState(true);
-    const [data, setData] = useState<any>(null);
+    const [loading, setLoading]       = useState(true);
+    const [data, setData]             = useState<any>(null);
     const [activeType, setActiveType] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -123,32 +73,17 @@ const Funding = () => {
     if (loading) return <FundingLoader />;
 
     const { groups = [], types = [], stats = {} } = data || {};
+
     const allTypes = [{ id: 'all', name: 'All Categories' }, ...types];
     const hasFilter = searchQuery.trim() !== '' || activeType !== 'all';
 
+    // ── Search filter: only checks fields returned by the API
     const matchesQuery = (seq: any, q: string) => {
         if (!q) return true;
-        q = q.toLowerCase();
-
-        // Check common string fields first
-        const checkString = (val: any) => typeof val === 'string' && val.toLowerCase().includes(q);
-
-        if (checkString(seq.name) || checkString(seq.subtitle) || checkString(seq.amount_range) || checkString(seq.terms)) {
-            return true;
-        }
-
-        // Check arrays (tags, accounts, etc.)
-        const maybeArray = (val: any) => Array.isArray(val) && val.some((it: any) => String(it).toLowerCase().includes(q));
-        if (maybeArray(seq.tags) || maybeArray(seq.accounts) || maybeArray(seq.credit_accounts)) return true;
-
-        // Fallback: scan top-level primitive values for a match
-        for (const k in seq) {
-            const v = seq[k];
-            if (typeof v === 'string' && v.toLowerCase().includes(q)) return true;
-            if (typeof v === 'number' && String(v).includes(q)) return true;
-            if (Array.isArray(v) && v.some(item => String(item).toLowerCase().includes(q))) return true;
-        }
-
+        const lq = q.toLowerCase();
+        const str = (v: any) => typeof v === 'string' && v.toLowerCase().includes(lq);
+        if (str(seq.name) || str(seq.subtitle) || str(seq.amount_range) || str(seq.terms) || str(seq.description)) return true;
+        if (Array.isArray(seq.uses) && seq.uses.some((u: any) => String(u).toLowerCase().includes(lq))) return true;
         return false;
     };
 
@@ -156,9 +91,8 @@ const Funding = () => {
         .map((group: any) => ({
             ...group,
             sequencings: group.sequencings.filter((seq: any) => {
-                const matchesTab = activeType === 'all' || seq.funding_type_id?.toString() === activeType;
-                const q = searchQuery.toLowerCase().trim();
-                const matchesSearch = matchesQuery(seq, q);
+                const matchesTab    = activeType === 'all' || seq.funding_type_id?.toString() === activeType;
+                const matchesSearch = matchesQuery(seq, searchQuery.trim());
                 return matchesTab && matchesSearch;
             }),
         }))
@@ -170,7 +104,7 @@ const Funding = () => {
         <div className="page-content">
             <div className="container-fluid">
 
-                {/* ── Sticky Subheader / Breadcrumb ─────────────────────────── */}
+                {/* ── Breadcrumb ──────────────────────────────────────────── */}
                 <div className="row page-subheader-sticky bg-body">
                     <div className="col-12">
                         <div className="d-flex align-items-center justify-content-between py-2">
@@ -187,7 +121,7 @@ const Funding = () => {
                     </div>
                 </div>
 
-                {/* ── Stat Cards — fully dynamic from API stats ──────────── */}
+                {/* ── Stat Cards ──────────────────────────────────────────── */}
                 <div className="row g-4">
                     {STAT_CONFIG.map((cfg) => (
                         <StatCard
@@ -200,9 +134,9 @@ const Funding = () => {
                     ))}
                 </div>
 
-                {/* ── Filter Bar (reference-style flat row) ─────────────────── */}
+                {/* ── Filter Bar ──────────────────────────────────────────── */}
                 <div
-                    className="mt-0 mb-2"
+                    className="mt-3 mb-2"
                     style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -227,19 +161,14 @@ const Funding = () => {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             style={{
-                                width: '100%',
-                                height: 38,
-                                paddingLeft: 32,
-                                paddingRight: searchQuery ? 30 : 10,
-                                border: '1px solid #dee2e6',
-                                borderRadius: 6,
-                                fontSize: 13,
-                                color: '#212529',
-                                background: '#fff',
-                                outline: 'none',
+                                width: '100%', height: 38,
+                                paddingLeft: 32, paddingRight: searchQuery ? 30 : 10,
+                                border: '1px solid #dee2e6', borderRadius: 6,
+                                fontSize: 13, color: '#212529',
+                                background: '#fff', outline: 'none',
                             }}
                             onFocus={(e) => (e.target.style.borderColor = '#6c757d')}
-                            onBlur={(e) => (e.target.style.borderColor = '#dee2e6')}
+                            onBlur={(e)  => (e.target.style.borderColor = '#dee2e6')}
                         />
                         {searchQuery && (
                             <button
@@ -257,46 +186,49 @@ const Funding = () => {
                         )}
                     </div>
 
-                    {/* Type Select */}
-                        
-                    <div style={{ position: 'relative', flexShrink: 0 }}>
-                        <Dropdown
+                    {/* Category native select — no external dependency */}
+                    <div style={{ flexShrink: 0 }}>
+                        <select
                             value={activeType}
-                            options={allTypes.map((t: any) => ({
-                                label: t.id === 'all' ? 'All Categories' : t.name,
-                                value: t.id === 'all' ? 'all' : t.id.toString(),
-                            }))}
-                            onChange={(e) => setActiveType(e.value)}
-                            placeholder="All Categories"
-                            optionLabel="label"
-                            optionValue="value"
-                            className="w-100"
+                            onChange={(e) => setActiveType(e.target.value)}
                             style={{
-                                height: '38px',
-                                minWidth: '160px',
+                                height: 38, padding: '0 32px 0 12px',
+                                border: '1px solid #dee2e6', borderRadius: 6,
+                                background: '#fff', fontSize: 13,
+                                color: '#495057', cursor: 'pointer',
+                                outline: 'none', appearance: 'none',
+                                WebkitAppearance: 'none',
+                                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'right 10px center',
+                                minWidth: 160,
                             }}
-                        />
+                        >
+                            {allTypes.map((t: any) => (
+                                <option key={t.id} value={t.id === 'all' ? 'all' : t.id.toString()}>
+                                    {t.id === 'all' ? 'All Categories' : t.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
-                    {/* Filters Button */}
+                    {/* Filters button */}
                     <button
                         style={{
                             display: 'flex', alignItems: 'center', gap: 6,
                             height: 38, padding: '0 14px',
                             border: 'none', borderRadius: 6,
-                            background: '#6c757d',
-                            color: '#fff',
+                            background: '#6c757d', color: '#fff',
                             fontSize: 13, fontWeight: 500,
                             cursor: 'pointer', flexShrink: 0,
                             whiteSpace: 'nowrap',
                         }}
-                        onClick={() => {}}
                     >
                         <i className="ri-equalizer-line" style={{ fontSize: 14 }} />
                         Filters
                     </button>
 
-                    {/* × Clear */}
+                    {/* Clear filters */}
                     {hasFilter && (
                         <button
                             onClick={clearAll}
@@ -315,7 +247,7 @@ const Funding = () => {
                     )}
                 </div>
 
-                {/* ── Empty State ────────────────────────────────────────────── */}
+                {/* ── Empty State ──────────────────────────────────────────── */}
                 {filteredGroups.length === 0 ? (
                     <div className="card border-0 shadow-sm">
                         <div className="card-body text-center py-5">
@@ -327,7 +259,7 @@ const Funding = () => {
                     </div>
                 ) : (
                     filteredGroups.map((group: any) => (
-                        <div key={group.id} className="mb-3">
+                        <div key={group.id} className="mb-4">
                             {/* Group header */}
                             <div className="d-flex align-items-center gap-2 mb-3">
                                 <h5 className="mb-0 fw-bold fs-15 text-dark">{group.name}</h5>
@@ -340,12 +272,12 @@ const Funding = () => {
                                 </span>
                             </div>
 
-                            {/* Cards grid — equal-height rows via d-flex + align-items-stretch */}
+                            {/* Cards grid */}
                             <div className="row g-3">
                                 {group.sequencings.map((seq: any) => (
                                     <div
-                                        className="col-xxl-3 col-xl-4 col-lg-4 col-md-6 d-flex align-items-stretch"
                                         key={seq.id}
+                                        className="col-xxl-3 col-xl-4 col-lg-4 col-md-6 d-flex align-items-stretch"
                                     >
                                         <FundingCard
                                             id={seq.id}
@@ -356,10 +288,6 @@ const Funding = () => {
                                             amount_range={seq.amount_range}
                                             terms={seq.terms}
                                             action_url={seq.action_url}
-                                            tags={seq.tags}
-                                            accounts={seq.accounts}
-                                            credit_accounts={seq.credit_accounts}
-                                            apr={seq.apr}
                                             engine_status={seq.engine_status}
                                             engine_status_label={seq.engine_status_label}
                                         />
