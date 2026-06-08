@@ -84,7 +84,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
     const navigate = useNavigate();
     const iconClass = resolveIcon(icon);
     const colors = resolveColor(icon_color);
-    
+
     // Ensure action_url is a valid path or external URL, otherwise fallback to default
     const isValidUrl = action_url && (action_url.startsWith('/') || action_url.startsWith('http'));
     const destination = isValidUrl ? action_url : `/funding/${id}`;
@@ -101,10 +101,10 @@ const FundingCard: React.FC<FundingCardProps> = ({
 
     const statusStyle = getStatusStyle();
     const isGreyedOut = engine_status === 'Greyed Out';
-    
+
     // Convert generic "Eligible Now" and "Manual Review Required" to the design's "Likely Eligible"
-    const displayLabel = (engine_status_label === 'Eligible Now' || engine_status_label === 'Manual Review Required') 
-        ? 'Likely Eligible' 
+    const displayLabel = (engine_status_label === 'Eligible Now' || engine_status_label === 'Manual Review Required')
+        ? 'Likely Eligible'
         : engine_status_label;
 
     return (
@@ -122,148 +122,123 @@ const FundingCard: React.FC<FundingCardProps> = ({
             onMouseLeave={() => setHovered(false)}
             style={{
                 display: 'flex',
-                alignItems: 'stretch',
-                gap: 14,
+                flexDirection: 'column',
                 background: '#ffffff',
-                border: `1px solid ${hovered ? '#c5d0de' : '#e8ecf0'}`,
-                borderRadius: 12,
-                padding: '16px 18px',
+                border: `1.5px solid ${hovered && !isGreyedOut ? '#3b82f6' : '#e8ecf0'}`,
+                borderRadius: 4,
+                padding: '16px',
                 cursor: isGreyedOut ? 'not-allowed' : 'pointer',
-                transition: 'box-shadow 0.18s, border-color 0.18s, transform 0.15s',
+                transition: 'all 0.2s ease',
                 boxShadow: hovered && !isGreyedOut
-                    ? '0 6px 20px rgba(0,0,0,0.09)'
-                    : '0 1px 4px rgba(0,0,0,0.05)',
+                    ? '0 8px 20px rgba(59, 130, 246, 0.08)'
+                    : '0 2px 4px rgba(0,0,0,0.02)',
                 transform: hovered && !isGreyedOut ? 'translateY(-2px)' : 'translateY(0)',
                 userSelect: 'none',
                 width: '100%',
                 height: '100%',
-                minHeight: 110,
+                minHeight: 150,
                 opacity: isGreyedOut ? 0.6 : 1,
                 position: 'relative'
             }}
         >
-            {/* ── Icon Badge ─────────────────────────────────────────────── */}
-            <div
-                style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 10,
-                    background: isGreyedOut ? '#f0f3f7' : colors.bg,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    alignSelf: 'flex-start',
-                    flexShrink: 0,
-                    marginTop: 2,
-                    filter: isGreyedOut ? 'grayscale(100%)' : 'none'
-                }}
-            >
-                <i className={iconClass} style={{ fontSize: 21, color: isGreyedOut ? '#6c757d' : colors.text }} />
-            </div>
-
-            {/* ── Text Content ───────────────────────────────────────────── */}
-            <div
-                style={{
-                    flex: 1,
-                    minWidth: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 4,
-                }}
-            >
-                {/* Name */}
-                <p
-                    style={{
-                        margin: 0,
-                        fontWeight: 600,
-                        fontSize: 14,
-                        color: '#0f1b2d',
-                        lineHeight: 1.25,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                    }}
-                >
-                    {name}
-                </p>
-
-                {/* Subtitle — always 2-line reserved space */}
-                <p
-                    style={{
-                        margin: 0,
-                        fontSize: 12,
-                        color: subtitle ? '#7a8b9a' : 'transparent',
-                        lineHeight: 1.4,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        minHeight: 34,
-                    } as React.CSSProperties}
-                >
-                    {subtitle || '\u00A0'}
-                </p>
-
-                {/* Bottom row: amount_range + status badge */}
+            {/* ── Top Section: Icon & Text ───────────────────────────────────────────── */}
+            <div style={{ display: 'flex', gap: 14, marginBottom: 20 }}>
+                {/* Icon Badge */}
                 <div
                     style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 12,
+                        background: isGreyedOut ? '#f0f3f7' : colors.bg,
                         display: 'flex',
-                        flexDirection: 'column',
-                        gap: 8,
-                        marginTop: 'auto',
-                        paddingTop: 8,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        filter: isGreyedOut ? 'grayscale(100%)' : 'none'
                     }}
                 >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                        {amount_range && (
-                            <span
-                                style={{
-                                    fontSize: 13,
-                                    fontWeight: 700,
-                                    color: '#2563eb',
-                                    letterSpacing: '0.01em',
-                                    flexShrink: 0,
-                                }}
-                            >
-                                {amount_range}
-                            </span>
-                        )}
+                    <i className={iconClass} style={{ fontSize: 22, color: isGreyedOut ? '#6c757d' : colors.text }} />
+                </div>
 
-                        {terms && (
-                            <Pill label={terms} bg={colors.bg} color={colors.text} />
-                        )}
-                    </div>
-
-                    <div style={{ alignSelf: 'flex-start' }}>
-                        <Pill label={displayLabel} bg={statusStyle.bg} color={statusStyle.color} style={{ fontSize: 11.5, padding: '4px 10px' }} />
-                    </div>
+                {/* Text Content */}
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4, marginTop: 2 }}>
+                    <p
+                        style={{
+                            margin: 0,
+                            fontWeight: 700,
+                            fontSize: 15,
+                            color: '#0f1b2d',
+                            lineHeight: 1.25,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                        }}
+                    >
+                        {name}
+                    </p>
+                    <p
+                        style={{
+                            margin: 0,
+                            fontSize: 13,
+                            color: subtitle ? '#6b7280' : 'transparent',
+                            lineHeight: 1.45,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                        }}
+                    >
+                        {subtitle || '\u00A0'}
+                    </p>
                 </div>
             </div>
 
-            {/* ── Arrow Button ───────────────────────────────────────────── */}
-            <div
-                style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: '50%',
-                    background: hovered ? '#1e2b3c' : '#f0f3f7',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    alignSelf: 'center',
-                    transition: 'background 0.18s',
-                }}
-            >
-                <i
-                    className="ri-arrow-right-s-line"
+            {/* ── Bottom Section: Amount, Status & Arrow ────────────────────────────── */}
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 'auto' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {amount_range && (
+                        <span
+                            style={{
+                                fontSize: 15,
+                                fontWeight: 700,
+                                color: '#1d4ed8',
+                                letterSpacing: '0.01em',
+                            }}
+                        >
+                            {amount_range}
+                        </span>
+                    )}
+                    <div style={{ alignSelf: 'flex-start' }}>
+                        <Pill label={displayLabel} bg={statusStyle.bg} color={statusStyle.color} style={{ fontSize: 12, padding: '5px 12px' }} />
+                    </div>
+                </div>
+
+                {/* Arrow Button */}
+                <div
                     style={{
-                        fontSize: 17,
-                        color: hovered ? '#ffffff' : '#6b7e93',
-                        transition: 'color 0.18s',
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        border: '1.5px solid #e5e7eb',
+                        background: '#ffffff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        transition: 'all 0.2s',
+                        borderColor: hovered && !isGreyedOut ? '#3b82f6' : '#e5e7eb',
                     }}
-                />
+                >
+                    <i
+                        className="ri-arrow-right-s-line"
+                        style={{
+                            fontSize: 18,
+                            color: hovered && !isGreyedOut ? '#3b82f6' : '#9ca3af',
+                            transition: 'color 0.2s',
+                        }}
+                    />
+                </div>
             </div>
         </div>
     );

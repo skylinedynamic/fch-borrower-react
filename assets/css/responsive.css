@@ -427,6 +427,16 @@
         margin-top: 8px !important;
     }
 
+    /* Funding Page Responsive Fixes */
+    .funding-page {
+        padding-top: 85px !important;
+    }
+
+    .funding-page .container-fluid {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+
     /* My Applications Page Responsive Fixes */
     .myapplications-page {
         padding-top: 85px !important;

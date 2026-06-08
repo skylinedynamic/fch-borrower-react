@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { fetchBorrowerFunding } from '../../modules/funding/services';
 import FundingCard from './components/FundingCard';
 import FundingLoader from '../../components/Loader/FundingLoader';
+import CustomDropdown from '../../components/Common/CustomDropdown';
 import { toast } from 'react-toastify';
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
@@ -101,7 +102,7 @@ const Funding = () => {
     const clearAll = () => { setSearchQuery(''); setActiveType('all'); };
 
     return (
-        <div className="page-content">
+        <div className="page-content funding-page">
             <div className="container-fluid">
 
                 {/* ── Breadcrumb ──────────────────────────────────────────── */}
@@ -134,117 +135,67 @@ const Funding = () => {
                     ))}
                 </div>
 
-                {/* ── Filter Bar ──────────────────────────────────────────── */}
-                <div
-                    className="mt-3 mb-2"
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 10,
-                        background: '#fff',
-                        border: '1px solid #dee2e6',
-                        borderRadius: 8,
-                        padding: '8px 14px',
-                        flexWrap: 'wrap',
-                    }}
-                >
-                    {/* Search */}
-                    <div style={{ position: 'relative', flex: '1 1 200px', minWidth: 180 }}>
-                        <i className="ri-search-line" style={{
-                            position: 'absolute', left: 10, top: '50%',
-                            transform: 'translateY(-50%)',
-                            color: '#adb5bd', fontSize: 14, pointerEvents: 'none',
-                        }} />
-                        <input
-                            type="text"
-                            placeholder="Search here"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            style={{
-                                width: '100%', height: 38,
-                                paddingLeft: 32, paddingRight: searchQuery ? 30 : 10,
-                                border: '1px solid #dee2e6', borderRadius: 6,
-                                fontSize: 13, color: '#212529',
-                                background: '#fff', outline: 'none',
-                            }}
-                            onFocus={(e) => (e.target.style.borderColor = '#6c757d')}
-                            onBlur={(e)  => (e.target.style.borderColor = '#dee2e6')}
-                        />
-                        {searchQuery && (
+                {/* ── Search & Filter Bar ────────────────────────────────────────── */}
+                <div className="row mt-4 mb-2">
+                  <div className="col-12">
+                    <div className="card shadow-sm border-0 bg-white mb-2">
+                      <div className="card-body p-3">
+                        <div className="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-3">
+                          <div className="flex-grow-1">
+                            <div className="row g-3">
+                              {/* Search Field (col-9) */}
+                              <div className="col-12 col-md-9">
+                                <div className="input-group vendor-filter-input-group border-0 transition-all shadow-sm-hover bg-light rounded" style={{ backgroundColor: '#f3f6f9' }}>
+                                  <span className="input-group-text bg-transparent border-0 pe-1">
+                                    <i className="ri-search-line text-muted opacity-75"></i>
+                                  </span>
+                                  <input
+                                    type="text"
+                                    className="form-control bg-transparent border-0 ps-1 fs-13 shadow-none"
+                                    placeholder="Search here..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Category Dropdown (col-3) */}
+                              <div className="col-12 col-md-3">
+                                <div className="h-100">
+                                  <CustomDropdown
+                                    options={allTypes.map(t => ({ id: t.id.toString(), name: t.name }))}
+                                    value={activeType}
+                                    onChange={(val) => { setActiveType(val.toString()); setSearchQuery(''); }}
+                                    optionLabel="name"
+                                    optionValue="id"
+                                    placeholder="All Categories"
+                                    className="border-0 rounded-2 fs-13 vendor-filter-bg h-100 w-100"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="d-flex gap-2 flex-shrink-0">
                             <button
-                                onClick={() => setSearchQuery('')}
-                                style={{
-                                    position: 'absolute', right: 8, top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    background: 'none', border: 'none',
-                                    cursor: 'pointer', color: '#adb5bd',
-                                    display: 'flex', padding: 0, fontSize: 15,
-                                }}
+                              className="btn btn-warning d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13 shadow-sm text-white"
                             >
-                                <i className="ri-close-circle-fill" />
+                              <i className="ri-equalizer-fill align-bottom"></i> Filters
                             </button>
-                        )}
+                            {hasFilter && (
+                              <button
+                                className="btn-clear d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13"
+                                onClick={clearAll}
+                              >
+                                <i className="ri-close-line align-bottom"></i> Clear
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-
-                    {/* Category native select — no external dependency */}
-                    <div style={{ flexShrink: 0 }}>
-                        <select
-                            value={activeType}
-                            onChange={(e) => setActiveType(e.target.value)}
-                            style={{
-                                height: 38, padding: '0 32px 0 12px',
-                                border: '1px solid #dee2e6', borderRadius: 6,
-                                background: '#fff', fontSize: 13,
-                                color: '#495057', cursor: 'pointer',
-                                outline: 'none', appearance: 'none',
-                                WebkitAppearance: 'none',
-                                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-                                backgroundRepeat: 'no-repeat',
-                                backgroundPosition: 'right 10px center',
-                                minWidth: 160,
-                            }}
-                        >
-                            {allTypes.map((t: any) => (
-                                <option key={t.id} value={t.id === 'all' ? 'all' : t.id.toString()}>
-                                    {t.id === 'all' ? 'All Categories' : t.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Filters button */}
-                    <button
-                        style={{
-                            display: 'flex', alignItems: 'center', gap: 6,
-                            height: 38, padding: '0 14px',
-                            border: 'none', borderRadius: 6,
-                            background: '#6c757d', color: '#fff',
-                            fontSize: 13, fontWeight: 500,
-                            cursor: 'pointer', flexShrink: 0,
-                            whiteSpace: 'nowrap',
-                        }}
-                    >
-                        <i className="ri-equalizer-line" style={{ fontSize: 14 }} />
-                        Filters
-                    </button>
-
-                    {/* Clear filters */}
-                    {hasFilter && (
-                        <button
-                            onClick={clearAll}
-                            style={{
-                                display: 'flex', alignItems: 'center', gap: 4,
-                                background: 'none', border: 'none',
-                                cursor: 'pointer', color: '#6c757d',
-                                fontSize: 13, fontWeight: 500,
-                                padding: '0 4px', flexShrink: 0,
-                                whiteSpace: 'nowrap',
-                            }}
-                        >
-                            <i className="ri-close-line" style={{ fontSize: 15 }} />
-                            Clear
-                        </button>
-                    )}
+                  </div>
                 </div>
 
                 {/* ── Empty State ──────────────────────────────────────────── */}
