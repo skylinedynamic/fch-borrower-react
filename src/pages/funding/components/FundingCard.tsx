@@ -57,6 +57,15 @@ const Pill: React.FC<{ label: string; bg?: string; color?: string; className?: s
     </span>
 );
 
+// ─── Read a CSS variable from :root at runtime ────────────────────────────────
+const getCSSVar = (name: string, fallback: string): string => {
+    if (typeof window !== 'undefined') {
+        const val = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        if (val) return val;
+    }
+    return fallback;
+};
+
 // ─── Component ────────────────────────────────────────────────────────────────
 const FundingCard: React.FC<FundingCardProps> = ({
     id,
@@ -78,18 +87,18 @@ const FundingCard: React.FC<FundingCardProps> = ({
     const isValidUrl = action_url && (action_url.startsWith('/') || action_url.startsWith('http'));
     const destination = isValidUrl ? action_url : `/funding/${id}`;
 
-    // Status visual map
-    const getStatusStyle = () => {
+    // Status visual map — null = use secondary CSS class (.funding-pill-eligible)
+    const getStatusStyle = (): { bg: string; color: string } | null => {
         switch (engine_status) {
-            case 'Warning': return { bg: '#fffbeb', color: '#d97706' }; // Conditional
-            case 'Review': return { bg: '#ecfdf5', color: '#10b981' };  // Review -> Likely Eligible
+            case 'Warning':    return { bg: '#fffbeb', color: '#d97706' }; // Conditional
             case 'Greyed Out': return { bg: '#f3f4f6', color: '#4b5563' }; // Better Fit Later
-            case 'Hidden': return { bg: '#fee2e2', color: '#ef4444' }; // Not Eligible
-            default: return { bg: '#ecfdf5', color: '#10b981' }; // Active (Likely Eligible)
+            case 'Hidden':     return { bg: '#fee2e2', color: '#ef4444' }; // Not Eligible
+            default:           return null; // Active / Review → Likely Eligible = secondary color
         }
     };
 
     const statusStyle = getStatusStyle();
+    const isEligible = statusStyle === null;
     const isGreyedOut = engine_status === 'Greyed Out' || engine_status === 'Hidden';
 
     // Convert generic "Eligible Now" and "Manual Review Required" to the design's "Likely Eligible"
@@ -143,7 +152,24 @@ const FundingCard: React.FC<FundingCardProps> = ({
                         </span>
                     )}
                     <div style={{ alignSelf: 'flex-start' }}>
-                        <Pill label={displayLabel} bg={statusStyle.bg} color={statusStyle.color} className="large-pill" />
+                        {isEligible ? (() => {
+                            const sec = getCSSVar('--secondary-color', '#1cbfca');
+                            return (
+                                <Pill
+                                    label={displayLabel}
+                                    bg={`${sec}1a`}
+                                    color={sec}
+                                    className="large-pill"
+                                />
+                            );
+                        })() : (
+                            <Pill
+                                label={displayLabel}
+                                bg={statusStyle!.bg}
+                                color={statusStyle!.color}
+                                className="large-pill"
+                            />
+                        )}
                     </div>
                 </div>
 

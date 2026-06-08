@@ -11,15 +11,15 @@ import { toast } from 'react-toastify';
 interface StatCardProps { icon: string; label: string; value: string; color: string; }
 
 const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color }) => (
-    <div className="col-xl-3 col-md-6">
+    <div className="col-6 col-md-6 col-xl-3 funding-stat-card-col">
         <div className="card shadow-sm border-0 rounded-2 bg-white card-animate">
-            <div className="card-body py-3 px-4 d-flex align-items-center">
-                <div className={`avatar-md bg-${color}-subtle rounded d-flex align-items-center justify-content-center me-3 flex-shrink-0`}>
-                    <i className={`${icon} text-${color} fs-24`}></i>
+            <div className="card-body py-3 px-4 d-flex align-items-center funding-stat-card-body">
+                <div className={`avatar-md bg-${color}-subtle rounded d-flex align-items-center justify-content-center me-3 flex-shrink-0 funding-stat-card-icon`}>
+                    <i className={`${icon} text-${color} fs-24 funding-stat-card-icon-i`}></i>
                 </div>
                 <div>
-                    <p className="text-muted mb-0 fs-13 fw-medium text-uppercase">{label}</p>
-                    <h4 className="mb-0 fw-bold text-dark fs-22 lh-1">{value}</h4>
+                    <p className="text-muted mb-0 fs-13 fw-medium text-uppercase funding-stat-card-label">{label}</p>
+                    <h4 className="mb-0 fw-bold text-dark fs-22 lh-1 funding-stat-card-value">{value}</h4>
                 </div>
             </div>
         </div>
@@ -124,7 +124,7 @@ const Funding = () => {
                 </div>
 
                 {/* ── Stat Cards ──────────────────────────────────────────── */}
-                <div className="row g-4">
+                <div className="row g-4 funding-stats-row">
                     {STAT_CONFIG.map((cfg) => (
                         <StatCard
                             key={cfg.key}
@@ -137,7 +137,7 @@ const Funding = () => {
                 </div>
 
                 {/* ── Search & Filter Bar ────────────────────────────────────────── */}
-                <div className="row mb-3">
+                <div className="row mb-3 funding-filter-row">
                     <div className="col-12">
                         <div className="card shadow-sm border-0 bg-white mb-2">
                             <div className="card-body p-3">
@@ -227,7 +227,7 @@ const Funding = () => {
                             </div>
 
                             {/* Cards grid */}
-                            <div className="row g-3">
+                            <div className="row g-3 funding-cards-row">
                                 {group.sequencings.map((seq: any) => (
                                     <div
                                         key={seq.id}
