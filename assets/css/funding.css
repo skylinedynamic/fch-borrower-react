@@ -206,3 +206,53 @@
 .funding-card:hover:not(.funding-card-disabled) .funding-card-arrow i {
     color: var(--primary-color);
 }
+
+/* ─── Funding Detail Page Overrides ──────────────────────────────────── */
+.funding-detail-badge {
+    display: inline-block;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 6px 18px;
+    border-radius: 24px;
+    letter-spacing: 0.01em;
+}
+
+.funding-detail-badge-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1.5px solid #f6d860;
+}
+
+.funding-detail-badge-greyed-out {
+    background: #e2e3e5;
+    color: #383d41;
+    border: 1.5px solid #d6d8db;
+}
+
+.funding-detail-badge-active,
+.funding-detail-badge-review {
+    background: color-mix(in srgb, var(--secondary-color) 12%, white);
+    color: var(--secondary-color);
+    border: 1.5px solid color-mix(in srgb, var(--secondary-color) 30%, white);
+}
+
+.funding-detail-btn-review {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--primary-color);
+    color: #ffffff !important;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 11px 22px;
+    border-radius: 8px;
+    text-decoration: none;
+    flex-shrink: 0;
+    transition: opacity 0.15s ease;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-color) 25%, transparent);
+}
+
+.funding-detail-btn-review:hover {
+    opacity: 0.9;
+    color: #ffffff !important;
+}
