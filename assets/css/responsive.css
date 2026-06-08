@@ -1342,6 +1342,410 @@
         height: 45px !important;
     }
 
+    /* ========================================================= 
+       CAPITAL ACCESS MODULE — Mobile Responsive
+       Covers: CapitalAccess, StrategySelection, PlayOverview,
+               PlayRoadmap, StepDetail, PreFlightChecklist, PlayCompletion
+    ========================================================= */
+    .capital-access-page {
+        padding-top: 75px !important;
+    }
+
+    .capital-access-page .container-fluid {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+
+    .capital-access-page .ca-page-wrap {
+        margin: 12px auto 0 !important;
+        padding-bottom: 24px !important;
+    }
+
+    .capital-access-page .page-subheader-sticky {
+        position: static !important;
+        background: transparent !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        margin-bottom: 12px !important;
+    }
+
+    .capital-access-page .page-subheader-sticky h4 {
+        font-size: 1.1rem !important;
+        margin-bottom: 4px !important;
+    }
+
+    .capital-access-page .ca-page-subtitle {
+        font-size: 0.8rem !important;
+        line-height: 1.4 !important;
+        padding: 0 5px !important;
+    }
+
+    /* --- General typography --- */
+    .capital-access-page .fs-22 { font-size: 1.15rem !important; }
+    .capital-access-page .fs-20 { font-size: 1.1rem !important; }
+    .capital-access-page .fs-18 { font-size: 1rem !important; }
+    .capital-access-page .fs-17 { font-size: 1rem !important; }
+    .capital-access-page .fs-16 { font-size: 0.95rem !important; }
+    .capital-access-page .fs-15 { font-size: 0.9rem !important; }
+    .capital-access-page .fs-14 { font-size: 12px !important; }
+    .capital-access-page .fs-13 { font-size: 11px !important; }
+    .capital-access-page .fs-12 { font-size: 10px !important; }
+    .capital-access-page .fs-11 { font-size: 10px !important; }
+
+    /* --- Cards & Headers --- */
+    .capital-access-page .ca-card,
+    .capital-access-page .ca-hero-card {
+        margin-bottom: 16px !important;
+    }
+
+    .capital-access-page .ca-hero-header,
+    .capital-access-page .ca-card-header {
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+        padding: 14px 16px !important;
+    }
+
+    /* Force text containers to shrink so they stay beside the icon */
+    .capital-access-page .ca-hero-header .flex-grow-1,
+    .capital-access-page .ca-card-header .flex-grow-1 {
+        flex: 1 1 0% !important;
+        min-width: 0 !important;
+    }
+
+    /* Push badge to its own line on mobile so title gets full width */
+    .capital-access-page .ca-hero-header .ca-badge,
+    .capital-access-page .ca-card-header .ca-badge {
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-top: 4px !important;
+        justify-content: center !important;
+    }
+
+    .capital-access-page .ca-card-body {
+        padding: 16px !important;
+    }
+
+    .capital-access-page .ca-hero-card .ca-card-body {
+        padding: 16px !important;
+    }
+
+    /* --- Metrics --- */
+    .capital-access-page .ca-metric {
+        padding: 12px !important;
+    }
+
+    .capital-access-page .ca-metric-value {
+        font-size: 18px !important;
+    }
+
+    .capital-access-page .ca-metric-label {
+        font-size: 9px !important;
+    }
+
+    /* Reduce gutter and stack metric columns */
+    .capital-access-page .row.g-3 {
+        --bs-gutter-y: 0.5rem !important;
+    }
+
+    .capital-access-page .row.g-3 > .col-sm-4,
+    .capital-access-page .row.g-3 > .col-md-4 {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* --- Strategy Rows --- */
+    .capital-access-page .ca-strategy-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        padding: 14px 16px !important;
+    }
+
+    .capital-access-page .ca-strategy-row-metrics {
+        justify-content: space-between !important;
+        width: 100% !important;
+        border-top: 1px dashed #e8e8e8 !important;
+        padding-top: 10px !important;
+        margin-top: 4px !important;
+        gap: 10px !important;
+    }
+
+    .capital-access-page .ca-strategy-row-metrics > div {
+        flex: 1 !important;
+        text-align: center !important;
+    }
+
+    .capital-access-page .ca-strategy-row-metrics .ri-arrow-right-s-line {
+        display: none !important;
+    }
+
+    /* --- Stepper & Roadmap --- */
+    .capital-access-page .ca-stepper {
+        padding-left: 36px !important;
+    }
+
+    .capital-access-page .ca-stepper-line {
+        left: 17px !important;
+    }
+
+    .capital-access-page .ca-step {
+        margin-bottom: 12px !important;
+    }
+
+    .capital-access-page .ca-step-dot {
+        left: -36px !important;
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 11px !important;
+        top: 8px !important;
+    }
+
+    .capital-access-page .ca-step-card {
+        padding: 12px 14px !important;
+    }
+
+    .capital-access-page .ca-step-card > .d-flex.align-items-center.justify-content-between {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+
+    .capital-access-page .ca-step-card > .d-flex > .d-flex.align-items-center.gap-3 {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .capital-access-page .ca-step-card .ms-3.flex-shrink-0 {
+        margin-left: 0 !important;
+        align-self: flex-end !important;
+    }
+
+    .capital-access-page .ca-step-card .ca-btn {
+        width: auto !important;
+        padding: 6px 12px !important;
+        font-size: 11px !important;
+    }
+
+    /* --- Summary Box --- */
+    .capital-access-page .ca-summary-box {
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 14px !important;
+        padding: 14px 16px !important;
+    }
+
+    .capital-access-page .ca-summary-box .text-end {
+        text-align: center !important;
+    }
+
+    .capital-access-page .ca-summary-box .d-flex.flex-column.align-items-sm-end {
+        align-items: center !important;
+    }
+
+    .capital-access-page .ca-summary-box .ca-progress {
+        width: 100% !important;
+        max-width: 240px !important;
+        margin: 0 auto !important;
+    }
+
+    /* --- Checklist --- */
+    .capital-access-page .ca-checklist-item {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+        padding: 14px 16px !important;
+    }
+
+    .capital-access-page .ca-checklist-item .ca-badge {
+        align-self: flex-end !important;
+    }
+
+    /* --- Option Group (StepDetail) --- */
+    .capital-access-page .ca-option-group {
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+
+    .capital-access-page .ca-option label {
+        padding: 14px 10px !important;
+        font-size: 12px !important;
+        flex-direction: row !important;
+        justify-content: flex-start !important;
+        gap: 10px !important;
+    }
+
+    .capital-access-page .ca-option label i {
+        font-size: 20px !important;
+    }
+
+    /* --- Buttons --- */
+    .capital-access-page .ca-btn {
+        width: 100% !important;
+        padding: 10px 16px !important;
+        font-size: 13px !important;
+    }
+
+    /* Button rows */
+    .capital-access-page .ca-card-body > .d-flex.gap-3 {
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+
+    .capital-access-page .ca-card-body > .d-flex.align-items-center.justify-content-between.gap-3 {
+        flex-direction: column-reverse !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+    }
+
+    .capital-access-page .ca-card.text-center .ca-card-body > .d-flex.gap-3.justify-content-center {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+    }
+
+    /* --- Step Detail Specific --- */
+    .capital-access-page .ca-why-box {
+        padding: 12px 14px !important;
+    }
+
+    .capital-access-page .ca-why-box p {
+        font-size: 12px !important;
+    }
+
+    .capital-access-page .ca-req-item {
+        padding: 10px 12px !important;
+        font-size: 12px !important;
+    }
+
+    .capital-access-page .ca-card .row.g-2 > .col-4,
+    .capital-access-page .ca-card .row.g-3 > .col-3,
+    .capital-access-page .ca-card .row.g-3 > .col-6,
+    .capital-access-page .ca-card .row.g-3 > .col-4 {
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+    }
+
+    .capital-access-page .ca-step-metrics .ca-metric {
+        padding: 8px 4px !important;
+    }
+
+    .capital-access-page .ca-step-metrics .ca-metric-value {
+        font-size: 10px !important;
+        font-weight: 400 !important;
+    }
+
+    .capital-access-page .ca-step-metrics .ca-metric-label {
+        font-size: 7.5px !important;
+        letter-spacing: 0.05em !important;
+        margin-bottom: 3px !important;
+    }
+
+    .capital-access-page .input-group {
+        flex-wrap: nowrap !important;
+    }
+
+    /* --- Completion Page --- */
+    .capital-access-page .ca-card.text-center .ca-card-body {
+        padding: 32px 20px !important;
+    }
+
+    .capital-access-page .ca-completion-icon {
+        width: 64px !important;
+        height: 64px !important;
+        font-size: 32px !important;
+        margin-bottom: 16px !important;
+    }
+
+    .capital-access-page .ca-card.text-center h3 {
+        font-size: 1.15rem !important;
+    }
+
+    .capital-access-page .ca-card .row.g-3 > .col-4 {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+        margin-bottom: 8px !important;
+    }
+
+    .capital-access-page .ca-card .row.g-3 > .col-4:last-child {
+        margin-bottom: 0 !important;
+    }
+
+    /* --- Main CapitalAccess Program Cards --- */
+    .capital-access-page .card.shadow-sm.border-0.h-100 {
+        margin-bottom: 16px !important;
+    }
+
+    .capital-access-page .card.shadow-sm.border-0.h-100 .card-body.p-4 {
+        padding: 16px !important;
+    }
+
+    .capital-access-page .card.shadow-sm.border-0.h-100 .d-flex.justify-content-between.align-items-start.mb-2 {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .capital-access-page .card.shadow-sm.border-0.h-100 .badge {
+        align-self: flex-start !important;
+        font-size: 10px !important;
+    }
+
+    /* Metric rows inside program cards: keep row but shrink text */
+    .capital-access-page .card.shadow-sm.border-0.h-100 .d-flex.align-items-center.justify-content-between.mb-1 span,
+    .capital-access-page .card.shadow-sm.border-0.h-100 .d-flex.align-items-center.justify-content-between.mb-1 .fw-bold {
+        font-size: 11px !important;
+        white-space: nowrap !important;
+    }
+
+    /* Bottom action row (avatars + button) */
+    .capital-access-page .card.shadow-sm.border-0.h-100 .mt-auto > .d-flex.align-items-center.justify-content-between {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+
+    .capital-access-page .card.shadow-sm.border-0.h-100 .mt-auto .btn {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+    }
+
+    .capital-access-page .card.shadow-sm.border-0.h-100 .avatar-group-item img,
+    .capital-access-page .card.shadow-sm.border-0.h-100 .avatar-group-item > div {
+        width: 32px !important;
+        height: 22px !important;
+    }
+
+    /* --- Locked / Empty State --- */
+    .capital-access-page .no-result-elegant {
+        min-height: 320px !important;
+        padding: 20px !important;
+    }
+
+    .capital-access-page .no-result-elegant .floating-icon-wrapper {
+        width: 72px !important;
+        height: 72px !important;
+    }
+
+    .capital-access-page .no-result-elegant h4 {
+        font-size: 1rem !important;
+    }
+
+    .capital-access-page .no-result-elegant p {
+        font-size: 12px !important;
+    }
+
+    .capital-access-page .no-result-elegant .btn {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+
     /* Ensure body doesn't overflow horizontally on mobile */
     body {
         overflow-x: hidden;

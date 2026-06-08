@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
-import { formatCurrency } from './mockPlayData';
-import './PremiumDesign.css';
+
+
 
 export default function StepDetail() {
   const location = useLocation();
@@ -33,10 +33,10 @@ export default function StepDetail() {
   };
 
   return (
-    <div className="page-content">
+    <div className="page-content capital-access-page">
       <div className="container-fluid">
 
-        <div className="ca-page-wrap" style={{ maxWidth: '680px' }}>
+        <div className="ca-page-wrap">
           {/* ── Page Header ── */}
           <div className="row pb-1 page-subheader-sticky bg-body mb-3">
             <div className="col-12">
@@ -71,32 +71,29 @@ export default function StepDetail() {
                   {/* Why box */}
                   <div className="ca-why-box mb-4">
                     <p className="fw-semibold fs-13 mb-1" style={{ color: 'var(--vz-primary)' }}>
-                      <i className="ri-information-line me-1"></i> Why This Card?
+                      <i className="ri-lightbulb-line me-1"></i> Why This Card?
                     </p>
                     <p className="mb-0">{step.why}</p>
                   </div>
 
                   {/* Metrics */}
-                  <div className="row g-3 mb-4">
+                  <div className="row g-2 mb-4 ca-step-metrics">
                     <div className="col-4">
                       <div className="ca-metric">
                         <span className="ca-metric-label">Approval Odds</span>
-                        <p className="ca-metric-value success mb-0">{step.approval_odds}%</p>
+                        <p className="ca-metric-value success mb-0">{step.approval_odds}</p>
                       </div>
                     </div>
                     <div className="col-4">
                       <div className="ca-metric">
                         <span className="ca-metric-label">Est. Limit</span>
-                        <p className="ca-metric-value mb-0" style={{ fontSize: '15px' }}>
-                          {formatCurrency(step.exposure_min)}
-                          <span className="text-muted fw-normal fs-11"> – {formatCurrency(step.exposure_max)}</span>
-                        </p>
+                        <p className="ca-metric-value mb-0">{step.exposure}</p>
                       </div>
                     </div>
                     <div className="col-4">
                       <div className="ca-metric">
                         <span className="ca-metric-label">Hard Pull</span>
-                        <p className="ca-metric-value mb-0" style={{ fontSize: '15px' }}>{step.hard_pull}</p>
+                        <p className="ca-metric-value mb-0">{step.hard_pull}</p>
                       </div>
                     </div>
                   </div>

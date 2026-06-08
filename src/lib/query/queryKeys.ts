@@ -43,6 +43,11 @@ export const queryKeys = {
     tierTaskList: () => [...queryKeys.creditBuilder.all, 'tierTaskList'] as const,
     taskOverview: () => [...queryKeys.creditBuilder.all, 'taskOverview'] as const,
   },
+  capitalAccess: {
+    all: ['capitalAccess'] as const,
+    strategies: () => [...queryKeys.capitalAccess.all, 'strategies'] as const,
+    detail: (id: string | number) => [...queryKeys.capitalAccess.all, 'detail', id] as const,
+  },
   documents: {
     all: ['documents'] as const,
     types: () => [...queryKeys.documents.all, 'types'] as const,

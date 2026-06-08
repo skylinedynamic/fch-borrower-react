@@ -988,3 +988,756 @@ File: Custom Css File
     background-color: var(--primary-color) !important;
     border-color: var(--primary-color) !important;
 }
+
+
+/* ============================================================
+   Capital Access — Design System
+   ============================================================ */
+
+/* ─── CSS Tokens ─────────────────────────────────────────── */
+:root {
+    --ca-primary: var(--vz-primary, #405189);
+    --ca-primary-light: rgba(64, 81, 137, 0.08);
+    --ca-primary-mid: rgba(64, 81, 137, 0.18);
+    --ca-success: var(--vz-success, #0ab39c);
+    --ca-success-light: rgba(10, 179, 156, 0.08);
+    --ca-danger: var(--vz-danger, #f06548);
+    --ca-danger-light: rgba(240, 101, 72, 0.08);
+    --ca-warning: #e49b0f;
+    --ca-warning-light: rgba(228, 155, 15, 0.1);
+    --ca-border: var(--vz-border-color, #e3e6eb);
+    --ca-card-bg: var(--vz-card-bg, #ffffff);
+    --ca-radius: 4px;
+    --ca-shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.06);
+    --ca-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --ca-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* ─── Page Wrapper ───────────────────────────────────────── */
+.ca-page-wrap {
+    max-width: 1080px;
+    margin: 28px auto 0;
+    padding-bottom: 60px;
+}
+
+/* ─── Page Title Block ───────────────────────────────────── */
+.ca-page-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1a1f36;
+    letter-spacing: -0.02em;
+    margin: 0 0 6px;
+    line-height: 1.2;
+}
+
+.ca-page-subtitle {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* ─── Breadcrumb ─────────────────────────────────────────── */
+.breadcrumb-item {
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.breadcrumb-item a {
+    font-weight: 500;
+    color: #6b7280 !important;
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.breadcrumb-item a:hover {
+    color: var(--ca-primary) !important;
+}
+
+.breadcrumb-item.active {
+    font-weight: 700;
+    color: var(--ca-primary) !important;
+}
+
+/* ─── Section Labels ─────────────────────────────────────── */
+.ca-section-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #6b7280;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ca-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--ca-border);
+}
+
+/* ─── HERO Card (recommended) ────────────────────────────── */
+.ca-hero-card {
+    border: 1.5px solid var(--ca-primary);
+    border-radius: var(--ca-radius);
+    overflow: hidden;
+    background: var(--ca-card-bg);
+    position: relative;
+    box-shadow: var(--ca-shadow-md);
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+    margin-bottom: 28px;
+}
+
+.ca-hero-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--ca-primary), rgba(64, 81, 137, 0.45));
+    z-index: 1;
+}
+
+.ca-hero-card:hover {
+    box-shadow: var(--ca-shadow-lg);
+    transform: translateY(-1px);
+}
+
+.ca-hero-header {
+    padding: 18px 22px;
+    background: var(--ca-primary-light);
+    border-bottom: 1px solid var(--ca-primary-mid);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+/* ─── Standard Card ──────────────────────────────────────── */
+.ca-card {
+    background: var(--ca-card-bg);
+    border: 1px solid var(--ca-border);
+    border-radius: var(--ca-radius);
+    overflow: hidden;
+    box-shadow: var(--ca-shadow-sm);
+    transition: box-shadow 0.25s ease;
+    margin-bottom: 24px;
+}
+
+.ca-card:hover {
+    box-shadow: var(--ca-shadow-md);
+}
+
+.ca-card-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--ca-border);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.ca-card-body {
+    padding: 22px;
+}
+
+/* ─── Strategy List Row ──────────────────────────────────── */
+.ca-strategy-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    border: 1px solid var(--ca-border);
+    border-left: 3px solid transparent;
+    border-radius: var(--ca-radius);
+    background: var(--ca-card-bg);
+    text-decoration: none;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    box-shadow: var(--ca-shadow-sm);
+}
+
+.ca-strategy-row:hover {
+    border-color: var(--ca-primary);
+    border-left-color: var(--ca-primary);
+    background: var(--ca-primary-light);
+    transform: translateX(4px);
+    box-shadow: var(--ca-shadow-md);
+}
+
+.ca-strategy-row:active {
+    transform: translateX(2px);
+}
+
+/* ─── Metric Boxes ───────────────────────────────────────── */
+.ca-metric {
+    padding: 14px 16px;
+    border-radius: var(--ca-radius);
+    background: #f8f9fc !important;
+    border: 1px solid #e3e6eb !important;
+    text-align: center;
+    height: 100%;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.ca-metric::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+    transition: background-color 0.22s ease;
+}
+
+.ca-metric:hover {
+    border-color: var(--ca-primary) !important;
+    background: #fff !important;
+    box-shadow: 0 4px 14px rgba(64, 81, 137, 0.1);
+    transform: translateY(-2px);
+}
+
+.ca-metric:hover::after {
+    background: var(--ca-primary);
+}
+
+.ca-metric.ca-metric-success:hover::after {
+    background: var(--ca-success);
+}
+
+.ca-metric-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #6b7280 !important;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.ca-metric-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1a1f36 !important;
+    line-height: 1.15;
+    margin: 0;
+    letter-spacing: -0.025em;
+}
+
+.ca-metric-value.primary {
+    color: var(--ca-primary) !important;
+}
+
+.ca-metric-value.success {
+    color: var(--ca-success) !important;
+}
+
+/* ─── Roadmap Stepper ────────────────────────────────────── */
+.ca-stepper {
+    position: relative;
+    padding-left: 56px;
+}
+
+.ca-stepper-line {
+    position: absolute;
+    left: 27px;
+    top: 24px;
+    bottom: 24px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--ca-primary) 0%, var(--ca-border) 100%);
+    border-radius: 2px;
+}
+
+.ca-step {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 14px;
+    z-index: 1;
+}
+
+.ca-step-dot {
+    position: absolute;
+    left: -47px;
+    top: 8px;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid var(--ca-border);
+    background: var(--ca-card-bg);
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2;
+}
+
+.ca-step-dot.active {
+    border-color: var(--ca-primary);
+    background: var(--ca-primary);
+    color: #fff;
+    box-shadow: 0 0 0 4px rgba(64, 81, 137, 0.14), 0 4px 10px rgba(64, 81, 137, 0.18);
+}
+
+.ca-step-dot.completed {
+    border-color: var(--ca-success);
+    background: var(--ca-success);
+    color: #fff;
+    box-shadow: 0 0 0 3px rgba(10, 179, 156, 0.14);
+}
+
+.ca-step-card {
+    flex: 1;
+    padding: 14px 18px;
+    border: 1px solid var(--ca-border);
+    border-left: 3px solid transparent;
+    border-radius: var(--ca-radius);
+    background: var(--ca-card-bg);
+    text-decoration: none;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    display: block;
+    cursor: pointer;
+    box-shadow: var(--ca-shadow-sm);
+}
+
+.ca-step-card:hover:not(.locked) {
+    border-color: var(--ca-primary);
+    border-left-color: var(--ca-primary);
+    background: var(--ca-primary-light);
+    transform: translateX(4px);
+    box-shadow: var(--ca-shadow-md);
+}
+
+.ca-step-card.active {
+    border-color: var(--ca-primary);
+    border-left-color: var(--ca-primary);
+    background: var(--ca-primary-light);
+    box-shadow: 0 2px 10px rgba(64, 81, 137, 0.1);
+}
+
+.ca-step-card.locked {
+    background: #f8f9fc;
+    border-color: var(--ca-border);
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.ca-step-card.locked h6,
+.ca-step-card.locked .text-muted,
+.ca-step-card.locked p {
+    color: #9ca3af !important;
+}
+
+.ca-step-card.locked .ca-badge-warning {
+    background: var(--ca-border);
+    color: #9ca3af;
+}
+
+/* ─── Radio Option Cards ─────────────────────────────────── */
+.ca-option-group {
+    display: flex;
+    gap: 10px;
+}
+
+.ca-option {
+    flex: 1;
+}
+
+.ca-option input[type="radio"] {
+    display: none;
+}
+
+.ca-option label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 12px;
+    border: 1.5px solid var(--ca-border);
+    border-radius: var(--ca-radius);
+    cursor: pointer;
+    background: var(--ca-card-bg);
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 700;
+    font-size: 13px;
+    color: #9ca3af;
+    text-align: center;
+    gap: 7px;
+    box-shadow: var(--ca-shadow-sm);
+}
+
+.ca-option label i {
+    font-size: 26px;
+}
+
+.ca-option label:hover {
+    border-color: var(--ca-primary);
+    background: var(--ca-primary-light);
+    color: var(--ca-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--ca-shadow-md);
+}
+
+.ca-option input:checked + label {
+    border-color: var(--ca-primary);
+    background: var(--ca-primary-light);
+    color: var(--ca-primary);
+    box-shadow: 0 0 0 3px rgba(64, 81, 137, 0.14), var(--ca-shadow-sm);
+    transform: translateY(-2px);
+}
+
+.ca-option.ca-option-success input:checked + label {
+    border-color: var(--ca-success);
+    background: var(--ca-success-light);
+    color: var(--ca-success);
+    box-shadow: 0 0 0 3px rgba(10, 179, 156, 0.14);
+}
+
+.ca-option.ca-option-danger input:checked + label {
+    border-color: var(--ca-danger);
+    background: var(--ca-danger-light);
+    color: var(--ca-danger);
+    box-shadow: 0 0 0 3px rgba(240, 101, 72, 0.14);
+}
+
+/* ─── Buttons ────────────────────────────────────────────── */
+.ca-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 20px;
+    border-radius: var(--ca-radius);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    line-height: 1.5;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+}
+
+.ca-btn-primary {
+    background: var(--ca-primary);
+    color: #fff !important;
+    border-color: var(--ca-primary);
+    box-shadow: 0 2px 8px rgba(64, 81, 137, 0.25);
+}
+
+.ca-btn-primary:hover {
+    background: #364674;
+    border-color: #364674;
+    color: #fff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(64, 81, 137, 0.28);
+}
+
+.ca-btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(64, 81, 137, 0.2);
+}
+
+.ca-btn-outline {
+    background: transparent;
+    color: #6b7280 !important;
+    border-color: var(--ca-border);
+}
+
+.ca-btn-outline:hover {
+    background: #f8f9fc;
+    color: #1a1f36 !important;
+    border-color: #9ca3af;
+    transform: translateY(-1px);
+}
+
+/* ─── Badges ─────────────────────────────────────────────── */
+.ca-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 30px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.ca-badge-primary {
+    background: var(--ca-primary-light);
+    color: var(--ca-primary);
+}
+
+.ca-badge-success {
+    background: var(--ca-success-light);
+    color: var(--ca-success);
+}
+
+.ca-badge-warning {
+    background: var(--ca-warning-light);
+    color: var(--ca-warning);
+}
+
+/* ─── Checklist Items ────────────────────────────────────── */
+.ca-checklist-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border: 1px solid var(--ca-border);
+    border-left: 3px solid transparent;
+    border-radius: var(--ca-radius);
+    background: var(--ca-card-bg);
+    margin-bottom: 8px;
+    transition: all 0.22s ease;
+    box-shadow: var(--ca-shadow-sm);
+}
+
+.ca-checklist-item:last-child {
+    margin-bottom: 0;
+}
+
+.ca-checklist-item:hover {
+    border-color: var(--ca-success);
+    border-left-color: var(--ca-success);
+    background: var(--ca-success-light);
+    transform: translateX(4px);
+    box-shadow: var(--ca-shadow-md);
+}
+
+/* ─── Requirement Items ──────────────────────────────────── */
+.ca-req-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: var(--ca-radius);
+    background: #f8f9fc;
+    border: 1px solid var(--ca-border);
+    margin-bottom: 8px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #374151;
+    transition: all 0.18s;
+}
+
+.ca-req-item:hover {
+    border-color: rgba(10, 179, 156, 0.3);
+    background: var(--ca-success-light);
+}
+
+.ca-req-item i {
+    color: var(--ca-success);
+    font-size: 17px;
+    flex-shrink: 0;
+}
+
+/* ─── Progress Bar ───────────────────────────────────────── */
+.ca-progress {
+    height: 6px;
+    border-radius: 6px;
+    background: var(--ca-border);
+    overflow: hidden;
+}
+
+.ca-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--ca-primary) 0%, rgba(64, 81, 137, 0.65) 100%);
+    border-radius: 6px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Why / Info Box ─────────────────────────────────────── */
+.ca-why-box {
+    padding: 14px 18px;
+    border-radius: var(--ca-radius);
+    background: var(--ca-primary-light);
+    border-left: 3px solid var(--ca-primary);
+    margin-bottom: 20px;
+}
+
+.ca-why-box p {
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: #374151 !important;
+    margin: 0;
+}
+
+/* ─── Completion Icon ────────────────────────────────────── */
+.ca-completion-icon {
+    width: 82px;
+    height: 82px;
+    border-radius: 50%;
+    background: var(--ca-success-light);
+    border: 2px solid rgba(10, 179, 156, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 40px;
+    color: var(--ca-success);
+    animation: ca-pop-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 6px 24px rgba(10, 179, 156, 0.15);
+}
+
+@keyframes ca-pop-in {
+    from { transform: scale(0.4); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ─── Summary Box ────────────────────────────────────────── */
+.ca-summary-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 22px;
+    border-radius: var(--ca-radius);
+    background: #f8f9fc;
+    border: 1px solid var(--ca-border);
+    box-shadow: var(--ca-shadow-sm);
+}
+
+/* ─── Dashboard Entry Widget ─────────────────────────────── */
+.ca-dashboard-widget {
+    background: var(--ca-card-bg);
+    border: 1px solid var(--ca-border);
+    border-radius: var(--ca-radius);
+    overflow: hidden;
+    position: relative;
+    box-shadow: var(--ca-shadow-sm);
+    transition: box-shadow 0.22s, transform 0.22s;
+}
+
+.ca-dashboard-widget:hover {
+    box-shadow: var(--ca-shadow-md);
+    transform: translateY(-1px);
+}
+
+.ca-dashboard-widget::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--ca-primary), rgba(64, 81, 137, 0.4));
+}
+
+/* ─── Divider ────────────────────────────────────────────── */
+.ca-divider {
+    border: 0;
+    height: 1px;
+    background: var(--ca-border);
+    margin: 20px 0;
+}
+
+/* ─── Step Number Chip ───────────────────────────────────── */
+.ca-step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: var(--ca-primary-light);
+    color: var(--ca-primary);
+    font-size: 11px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+/* ─── Icon Avatar ────────────────────────────────────────── */
+.ca-icon-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    background: var(--ca-primary-light);
+    color: var(--ca-primary);
+    border: 1px solid var(--ca-primary-mid);
+}
+
+.ca-icon-avatar.success {
+    background: var(--ca-success-light);
+    color: var(--ca-success);
+    border-color: rgba(10, 179, 156, 0.2);
+}
+
+/* ─── Stat Strip / Chip ──────────────────────────────────── */
+.ca-stat-strip {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.ca-stat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #f1f3f9;
+    color: #374151;
+    border: 1px solid var(--ca-border);
+}
+
+.ca-stat-chip i { font-size: 13px; }
+
+/* ─── Responsive ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .ca-page-wrap { margin: 16px auto 0; padding-bottom: 40px; }
+    .ca-card-body { padding: 16px; }
+    .ca-card-header { padding: 14px 16px; }
+    .ca-hero-header { padding: 14px 16px; }
+    .ca-metric-value { font-size: 18px; }
+}
+
+@media (max-width: 576px) {
+    .ca-hero-header { flex-direction: column; }
+    .ca-option-group { flex-direction: column; }
+    .ca-summary-box { flex-direction: column; gap: 12px; text-align: center; }
+    .ca-strategy-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .ca-strategy-row .ca-btn { width: 100%; justify-content: center; }
+    .ca-stepper { padding-left: 44px; }
+    .ca-step-dot { left: -37px; width: 30px; height: 30px; font-size: 12px; }
+}
+
+/* ─── Text Overrides ─────────────────────────────────────── */
+.ca-page-wrap .text-muted { color: #6b7280 !important; }
+.ca-section-label { color: #6b7280 !important; font-weight: 700 !important; }
+.ca-step-card:not(.locked) h6 { color: #1a1f36 !important; font-weight: 700 !important; }
+.ca-step-card:not(.locked) p,
+.ca-step-card:not(.locked) small { color: #6b7280 !important; }
+.ca-strategy-row h6 { color: #1a1f36 !important; font-weight: 700 !important; }
+.ca-strategy-row p,
+.ca-strategy-row small { color: #6b7280 !important; }
+.ca-card-header h5,
+.ca-card-header h6 { color: #1a1f36 !important; font-weight: 700 !important; letter-spacing: -0.01em; }
+.ca-hero-header h5,
+.ca-hero-header h6 { color: #1a1f36 !important; font-weight: 800 !important; letter-spacing: -0.015em; }
+
+/* ─── Step Detail Metrics (Desktop) ────────────────────────── */
+.ca-step-metrics .ca-metric-value {
+    font-size: 15px;
+    font-weight: 700;
+}

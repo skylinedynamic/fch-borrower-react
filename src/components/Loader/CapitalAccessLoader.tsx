@@ -1,0 +1,429 @@
+import React from 'react'
+
+interface CapitalAccessLoaderProps {
+  type?: 'list' | 'detail' | 'roadmap' | 'checklist'
+}
+
+/* ─── Reusable skeleton primitives ─────────────────────────── */
+const SkLine = ({
+  w = '100%',
+  h = 16,
+  radius = 6,
+  mb = 0,
+  mx = '',
+}: {
+  w?: string | number
+  h?: number
+  radius?: number
+  mb?: number
+  mx?: string
+}) => (
+  <div
+    className="skeleton-line"
+    style={{
+      width: typeof w === 'number' ? `${w}px` : w,
+      height: `${h}px`,
+      borderRadius: `${radius}px`,
+      marginBottom: mb ? `${mb}px` : undefined,
+      marginLeft: mx === 'auto' ? 'auto' : undefined,
+      marginRight: mx === 'auto' ? 'auto' : undefined,
+    }}
+  />
+)
+
+const SkCircle = ({ size = 48 }: { size?: number }) => (
+  <div
+    className="skeleton-line"
+    style={{
+      width: `${size}px`,
+      height: `${size}px`,
+      borderRadius: '50%',
+      flexShrink: 0,
+    }}
+  />
+)
+
+const SkRect = ({
+  w = '100%',
+  h = 48,
+  radius = 8,
+  mb = 0,
+}: {
+  w?: string | number
+  h?: number
+  radius?: number
+  mb?: number
+}) => (
+  <div
+    className="skeleton-line"
+    style={{
+      width: typeof w === 'number' ? `${w}px` : w,
+      height: `${h}px`,
+      borderRadius: `${radius}px`,
+      marginBottom: mb ? `${mb}px` : undefined,
+    }}
+  />
+)
+
+/* ─── Metric block (label + big value) ─────────────────────── */
+const SkMetric = () => (
+  <div
+    style={{
+      padding: '16px',
+      borderRadius: '8px',
+      background: 'rgba(0,0,0,0.03)',
+      border: '1px solid rgba(0,0,0,0.07)',
+      height: '100%',
+    }}
+  >
+    <SkLine w="55%" h={11} mb={10} />
+    <SkLine w="70%" h={32} />
+  </div>
+)
+
+/* ─── Card shell ────────────────────────────────────────────── */
+const SkCard = ({
+  children,
+  mb = 20,
+}: {
+  children: React.ReactNode
+  mb?: number
+}) => (
+  <div
+    style={{
+      background: 'var(--vz-card-bg, #fff)',
+      border: '1px solid var(--vz-border-color, #e9ebec)',
+      borderRadius: '6px',
+      overflow: 'hidden',
+      boxShadow: 'var(--vz-card-box-shadow)',
+      marginBottom: mb,
+    }}
+  >
+    {children}
+  </div>
+)
+
+const SkCardHeader = ({ children }: { children: React.ReactNode }) => (
+  <div
+    style={{
+      padding: '16px 20px',
+      borderBottom: '1px solid var(--vz-border-color, #e9ebec)',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 14,
+    }}
+  >
+    {children}
+  </div>
+)
+
+const SkCardBody = ({
+  children,
+  pad = 20,
+}: {
+  children: React.ReactNode
+  pad?: number
+}) => <div style={{ padding: pad }}>{children}</div>
+
+/* ═══════════════════════════════════════════════════════════
+   LIST  (strategy selection page)
+   ═══════════════════════════════════════════════════════════ */
+function ListLoader() {
+  return (
+    <>
+      {/* Recommended / Hero card */}
+      <div className="mb-4">
+        <SkLine w={160} h={16} mb={12} />
+        <SkCard mb={0}>
+          <SkCardHeader>
+            <SkCircle size={52} />
+            <div style={{ flex: 1 }}>
+              <SkLine w="45%" h={20} mb={8} />
+              <SkLine w="70%" h={14} />
+            </div>
+            <SkRect w={100} h={34} radius={20} />
+          </SkCardHeader>
+          <SkCardBody>
+            <div className="row g-3 mb-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="col-sm-4">
+                  <SkMetric />
+                </div>
+              ))}
+            </div>
+            <SkLine w="100%" h={14} mb={6} />
+            <SkLine w="80%" h={14} />
+          </SkCardBody>
+        </SkCard>
+      </div>
+
+      {/* Other strategies list */}
+      <SkLine w={150} h={16} mb={12} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {[1, 2, 3].map((n) => (
+          <div
+            key={n}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '16px 18px',
+              border: '1px solid var(--vz-border-color, #e9ebec)',
+              borderLeft: '3px solid transparent',
+              borderRadius: '6px',
+              background: 'var(--vz-card-bg, #fff)',
+              boxShadow: 'var(--vz-card-box-shadow)',
+              gap: 16,
+            }}
+          >
+            <div
+              style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1 }}
+            >
+              <SkCircle size={48} />
+              <div style={{ flex: 1 }}>
+                <SkLine w="50%" h={17} mb={8} />
+                <SkLine w="75%" h={13} />
+              </div>
+            </div>
+            <SkRect w={110} h={32} radius={20} />
+          </div>
+        ))}
+      </div>
+    </>
+  )
+}
+
+/* ─── DETAIL  (strategy detail / about page) ─────────────────── */
+function DetailLoader() {
+  return (
+    <SkCard>
+      <SkCardHeader>
+        <SkCircle size={52} />
+        <div style={{ flex: 1 }}>
+          <SkLine w="40%" h={22} mb={8} />
+          <SkLine w="65%" h={14} />
+        </div>
+        <SkRect w={100} h={34} radius={20} />
+      </SkCardHeader>
+      <SkCardBody>
+        {/* Metrics row */}
+        <div
+          className="row g-3 mb-4 pb-4"
+          style={{ borderBottom: '1px solid var(--vz-border-color, #e9ebec)' }}
+        >
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="col-md-4">
+              <SkMetric />
+            </div>
+          ))}
+        </div>
+
+        {/* Why section */}
+        <SkLine w={140} h={18} mb={12} />
+        <div
+          style={{
+            padding: '14px 18px',
+            borderRadius: '6px',
+            background: 'rgba(64,81,137,0.035)',
+            borderLeft: '3px solid rgba(64,81,137,0.3)',
+            marginBottom: 20,
+          }}
+        >
+          <SkLine w="100%" h={14} mb={8} />
+          <SkLine w="90%" h={14} mb={8} />
+          <SkLine w="60%" h={14} />
+        </div>
+
+        {/* Requirements */}
+        <SkLine w={160} h={18} mb={12} />
+        {[1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '12px 14px',
+              borderRadius: '6px',
+              background: 'var(--vz-secondary-bg, #f3f6f9)',
+              border: '1px solid var(--vz-border-color, #e9ebec)',
+              marginBottom: 8,
+            }}
+          >
+            <SkCircle size={24} />
+            <SkLine w="65%" h={14} />
+            <SkRect w={80} h={26} radius={16} />
+          </div>
+        ))}
+      </SkCardBody>
+    </SkCard>
+  )
+}
+
+/* ─── CHECKLIST  (checklist / apply page) ─────────────────────── */
+function ChecklistLoader() {
+  return (
+    <SkCard>
+      <SkCardHeader>
+        <SkCircle size={52} />
+        <div style={{ flex: 1 }}>
+          <SkLine w="45%" h={20} mb={8} />
+          <SkLine w="70%" h={14} />
+        </div>
+      </SkCardHeader>
+      <SkCardBody>
+        {/* Progress bar area */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: 8,
+          }}
+        >
+          <SkLine w={100} h={13} />
+          <SkLine w={60} h={13} />
+        </div>
+        <SkRect w="100%" h={7} radius={4} mb={24} />
+
+        {/* Checklist items */}
+        <SkLine w={180} h={18} mb={14} />
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div
+            key={i}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '14px 16px',
+              border: '1px solid var(--vz-border-color, #e9ebec)',
+              borderLeft: '3px solid transparent',
+              borderRadius: '6px',
+              marginBottom: 8,
+              gap: 12,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
+              <SkCircle size={28} />
+              <SkLine w="60%" h={15} />
+            </div>
+            <SkRect w={90} h={30} radius={16} />
+          </div>
+        ))}
+
+        {/* Action button */}
+        <div style={{ marginTop: 24, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <SkRect w={110} h={40} radius={6} />
+          <SkRect w={140} h={40} radius={6} />
+        </div>
+      </SkCardBody>
+    </SkCard>
+  )
+}
+
+/* ─── ROADMAP  (play roadmap / stepper page) ─────────────────── */
+function RoadmapLoader() {
+  return (
+    <>
+      {/* Summary bar */}
+      <SkCard mb={20}>
+        <SkCardBody pad={16}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+            {[1, 2, 3].map((i) => (
+              <div key={i} style={{ flex: 1 }}>
+                <SkMetric />
+              </div>
+            ))}
+          </div>
+        </SkCardBody>
+      </SkCard>
+
+      {/* Roadmap steps */}
+      <SkCard>
+        <SkCardHeader>
+          <div style={{ flex: 1 }}>
+            <SkLine w="40%" h={20} mb={8} />
+            <SkLine w="55%" h={14} />
+          </div>
+          <SkRect w={120} h={32} radius={20} />
+        </SkCardHeader>
+        <SkCardBody>
+          {/* Stepper */}
+          <div style={{ paddingLeft: 54, position: 'relative' }}>
+            {/* Vertical line */}
+            <div
+              style={{
+                position: 'absolute',
+                left: 27,
+                top: 24,
+                bottom: 24,
+                width: 2,
+                background: 'var(--vz-border-color, #ced4da)',
+                borderRadius: 2,
+              }}
+            />
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                style={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 16,
+                  marginBottom: 16,
+                  zIndex: 1,
+                }}
+              >
+                {/* Dot */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: -45,
+                    top: 6,
+                  }}
+                >
+                  <SkCircle size={36} />
+                </div>
+                {/* Step card */}
+                <div
+                  style={{
+                    flex: 1,
+                    padding: '14px 16px',
+                    border: '1px solid var(--vz-border-color, #e9ebec)',
+                    borderLeft: '3px solid transparent',
+                    borderRadius: 6,
+                    background: 'var(--vz-card-bg, #fff)',
+                    boxShadow: 'var(--vz-card-box-shadow)',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: 8,
+                    }}
+                  >
+                    <SkLine w="45%" h={18} />
+                    <SkRect w={90} h={26} radius={14} />
+                  </div>
+                  <SkLine w="70%" h={13} mb={6} />
+                  <SkLine w="50%" h={13} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </SkCardBody>
+      </SkCard>
+    </>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EXPORT
+   ═══════════════════════════════════════════════════════════ */
+export default function CapitalAccessLoader({ type = 'list' }: CapitalAccessLoaderProps) {
+  if (type === 'detail') return <DetailLoader />
+  if (type === 'checklist') return <ChecklistLoader />
+  if (type === 'roadmap') return <RoadmapLoader />
+  return <ListLoader />
+}

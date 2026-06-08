@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
 import { formatCurrency } from './mockPlayData';
-import './PremiumDesign.css';
+
 
 export default function PlayCompletion() {
   const location = useLocation();
@@ -21,10 +21,10 @@ export default function PlayCompletion() {
     .length;
 
   return (
-    <div className="page-content">
+    <div className="page-content capital-access-page">
       <div className="container-fluid">
 
-        <div className="ca-page-wrap" style={{ maxWidth: '620px' }}>
+        <div className="ca-page-wrap">
           {/* ── Page Header ── */}
           <div className="row pb-1 page-subheader-sticky bg-body mb-3">
             <div className="col-12">
