@@ -114,17 +114,18 @@ const FundingLoader = () => {
                 </div>
 
                 {/* ── Filter Bar Skeleton ────────────────────────────────── */}
-                <div
-                    className="mt-3 mb-2"
-                    style={{
-                        display: 'flex', alignItems: 'center', gap: 10,
-                        background: '#fff', border: '1px solid #dee2e6',
-                        borderRadius: 8, padding: '8px 14px',
-                    }}
-                >
-                    <div className="skeleton-line" style={{ flex: '1 1 200px', height: 38, borderRadius: 6 }} />
-                    <div className="skeleton-line" style={{ width: 160, height: 38, borderRadius: 6 }} />
-                    <div className="skeleton-line" style={{ width: 90, height: 38, borderRadius: 6 }} />
+                <div className="row mb-2">
+                  <div className="col-12">
+                    <div className="card shadow-sm border-0 bg-white mb-2">
+                      <div className="card-body p-3">
+                        <div className="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-3">
+                            <div className="skeleton-line" style={{ flex: '1 1 200px', height: 40, borderRadius: 6 }} />
+                            <div className="skeleton-line flex-shrink-0" style={{ width: 220, height: 40, borderRadius: 6 }} />
+                            <div className="skeleton-line flex-shrink-0" style={{ width: 100, height: 40, borderRadius: 6 }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* ── Group Skeletons — all use the same SkeletonCard ───── */}

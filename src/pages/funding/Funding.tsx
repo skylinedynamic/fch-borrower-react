@@ -40,15 +40,15 @@ interface StatConfig {
 
 const STAT_CONFIG: StatConfig[] = [
     { key: 'total_approved', label: 'Total Approved', labelKey: 'total_approved_label', icon: 'ri-money-dollar-circle-line', color: 'success', format: formatMoney },
-    { key: 'total_funded',   label: 'Total Funded',   labelKey: 'total_funded_label',   icon: 'ri-file-text-line',           color: 'info',    format: formatMoney },
-    { key: 'total_options',  label: 'Funding Options', labelKey: 'total_options_label', icon: 'ri-line-chart-line',          color: 'primary', format: formatCount },
-    { key: 'total_groups',   label: 'Funding Groups',  labelKey: 'total_groups_label',  icon: 'ri-group-line',               color: 'warning', format: formatCount },
+    { key: 'total_funded', label: 'Total Funded', labelKey: 'total_funded_label', icon: 'ri-file-text-line', color: 'info', format: formatMoney },
+    { key: 'total_options', label: 'Funding Options', labelKey: 'total_options_label', icon: 'ri-line-chart-line', color: 'primary', format: formatCount },
+    { key: 'total_groups', label: 'Funding Groups', labelKey: 'total_groups_label', icon: 'ri-group-line', color: 'warning', format: formatCount },
 ];
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 const Funding = () => {
-    const [loading, setLoading]       = useState(true);
-    const [data, setData]             = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [data, setData] = useState<any>(null);
     const [activeType, setActiveType] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -92,7 +92,7 @@ const Funding = () => {
         .map((group: any) => ({
             ...group,
             sequencings: group.sequencings.filter((seq: any) => {
-                const matchesTab    = activeType === 'all' || seq.funding_type_id?.toString() === activeType;
+                const matchesTab = activeType === 'all' || seq.funding_type_id?.toString() === activeType;
                 const matchesSearch = matchesQuery(seq, searchQuery.trim());
                 return matchesTab && matchesSearch;
             }),
@@ -136,76 +136,82 @@ const Funding = () => {
                 </div>
 
                 {/* ── Search & Filter Bar ────────────────────────────────────────── */}
-                <div className="row mt-4 mb-2">
-                  <div className="col-12">
-                    <div className="card shadow-sm border-0 bg-white mb-2">
-                      <div className="card-body p-3">
-                        <div className="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-3">
-                          <div className="flex-grow-1">
-                            <div className="row g-3">
-                              {/* Search Field (col-9) */}
-                              <div className="col-12 col-md-9">
-                                <div className="input-group vendor-filter-input-group border-0 transition-all shadow-sm-hover bg-light rounded" style={{ backgroundColor: '#f3f6f9' }}>
-                                  <span className="input-group-text bg-transparent border-0 pe-1">
-                                    <i className="ri-search-line text-muted opacity-75"></i>
-                                  </span>
-                                  <input
-                                    type="text"
-                                    className="form-control bg-transparent border-0 ps-1 fs-13 shadow-none"
-                                    placeholder="Search here..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                  />
-                                </div>
-                              </div>
+                <div className="row mb-2">
+                    <div className="col-12">
+                        <div className="card shadow-sm border-0 bg-white mb-2">
+                            <div className="card-body p-3">
+                                <div className="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-3">
+                                    <div className="flex-grow-1">
+                                        <div className="row g-3">
+                                            {/* Search Field (col-9) */}
+                                            <div className="col-12 col-md-9">
+                                                <div className="input-group vendor-filter-input-group border-0 transition-all shadow-sm-hover bg-light rounded" style={{ backgroundColor: '#f3f6f9' }}>
+                                                    <span className="input-group-text bg-transparent border-0 pe-1">
+                                                        <i className="ri-search-line text-muted opacity-75"></i>
+                                                    </span>
+                                                    <input
+                                                        type="text"
+                                                        className="form-control bg-transparent border-0 ps-1 fs-13 shadow-none"
+                                                        placeholder="Search here..."
+                                                        value={searchQuery}
+                                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
 
-                              {/* Category Dropdown (col-3) */}
-                              <div className="col-12 col-md-3">
-                                <div className="h-100">
-                                  <CustomDropdown
-                                    options={allTypes.map(t => ({ id: t.id.toString(), name: t.name }))}
-                                    value={activeType}
-                                    onChange={(val) => { setActiveType(val.toString()); setSearchQuery(''); }}
-                                    optionLabel="name"
-                                    optionValue="id"
-                                    placeholder="All Categories"
-                                    className="border-0 rounded-2 fs-13 vendor-filter-bg h-100 w-100"
-                                  />
+                                            {/* Category Dropdown (col-3) */}
+                                            <div className="col-12 col-md-3">
+                                                <div className="h-100">
+                                                    <CustomDropdown
+                                                        options={allTypes.map(t => ({ id: t.id.toString(), name: t.name }))}
+                                                        value={activeType}
+                                                        onChange={(val) => { setActiveType(val.toString()); setSearchQuery(''); }}
+                                                        optionLabel="name"
+                                                        optionValue="id"
+                                                        placeholder="All Categories"
+                                                        className="border-0 rounded-2 fs-13 vendor-filter-bg h-100 w-100"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="d-flex gap-2 flex-shrink-0">
+                                        <button
+                                            className="btn btn-warning d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13 shadow-sm text-white"
+                                        >
+                                            <i className="ri-equalizer-fill align-bottom"></i> Filters
+                                        </button>
+                                        {hasFilter && (
+                                            <button
+                                                className="btn-clear d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13"
+                                                onClick={clearAll}
+                                            >
+                                                <i className="ri-close-line align-bottom"></i> Clear
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
-                              </div>
                             </div>
-                          </div>
-
-                          {/* Action Buttons */}
-                          <div className="d-flex gap-2 flex-shrink-0">
-                            <button
-                              className="btn btn-warning d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13 shadow-sm text-white"
-                            >
-                              <i className="ri-equalizer-fill align-bottom"></i> Filters
-                            </button>
-                            {hasFilter && (
-                              <button
-                                className="btn-clear d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13"
-                                onClick={clearAll}
-                              >
-                                <i className="ri-close-line align-bottom"></i> Clear
-                              </button>
-                            )}
-                          </div>
                         </div>
-                      </div>
                     </div>
-                  </div>
                 </div>
 
                 {/* ── Empty State ──────────────────────────────────────────── */}
                 {filteredGroups.length === 0 ? (
-                    <div className="card border-0 shadow-sm">
-                        <div className="card-body text-center py-5">
-                            <i className="ri-search-eye-line fs-1 text-muted d-block mb-3" />
-                            <h6 className="fw-semibold text-dark mb-1">No funding options found</h6>
-                            <p className="text-muted fs-13 mb-3">Try adjusting your search or filter.</p>
-                            <button onClick={clearAll} className="btn btn-dark btn-sm">Reset Filters</button>
+                    <div className="row">
+                        <div className="col-12">
+                            <div className="card border-0 shadow-sm">
+                                <div className="card-body text-center d-flex flex-column justify-content-center align-items-center" style={{ minHeight: '500px' }}>
+                                    <div style={{ background: '#f8f9fa', borderRadius: '50%', width: 80, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                                        <i className="ri-search-eye-line text-muted" style={{ fontSize: '2.5rem' }} />
+                                    </div>
+                                    <h4 className="fw-bold text-dark mb-2 fs-4">No funding options found</h4>
+                                    <p className="text-muted fs-15 mb-4">Try adjusting your search or filter to see more results.</p>
+                                    <button onClick={clearAll} className="btn btn-dark px-4 py-2 fw-medium shadow-sm">Reset Filters</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 ) : (

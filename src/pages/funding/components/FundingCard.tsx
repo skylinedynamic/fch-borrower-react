@@ -95,12 +95,13 @@ const FundingCard: React.FC<FundingCardProps> = ({
             case 'Warning': return { bg: '#fffbeb', color: '#d97706' }; // Conditional
             case 'Review': return { bg: '#ecfdf5', color: '#10b981' };  // Review -> Likely Eligible
             case 'Greyed Out': return { bg: '#f3f4f6', color: '#4b5563' }; // Better Fit Later
+            case 'Hidden': return { bg: '#fee2e2', color: '#ef4444' }; // Not Eligible
             default: return { bg: '#ecfdf5', color: '#10b981' }; // Active (Likely Eligible)
         }
     };
 
     const statusStyle = getStatusStyle();
-    const isGreyedOut = engine_status === 'Greyed Out';
+    const isGreyedOut = engine_status === 'Greyed Out' || engine_status === 'Hidden';
 
     // Convert generic "Eligible Now" and "Manual Review Required" to the design's "Likely Eligible"
     const displayLabel = (engine_status_label === 'Eligible Now' || engine_status_label === 'Manual Review Required')
