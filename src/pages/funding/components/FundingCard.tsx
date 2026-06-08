@@ -43,25 +43,15 @@ const resolveColor = (color: any): { bg: string; text: string } => {
 };
 
 // ─── Small pill badge ─────────────────────────────────────────────────────────
-const Pill: React.FC<{ label: string; bg?: string; color?: string; style?: React.CSSProperties }> = ({
+const Pill: React.FC<{ label: string; bg?: string; color?: string; className?: string }> = ({
     label,
     bg = '#f0f3f7',
     color = '#4b5563',
-    style
+    className = ''
 }) => (
     <span
-        style={{
-            fontSize: 11,
-            fontWeight: 600,
-            background: bg,
-            color,
-            padding: '2px 9px',
-            borderRadius: 20,
-            letterSpacing: '0.01em',
-            whiteSpace: 'nowrap',
-            flexShrink: 0,
-            ...style
-        }}
+        className={`funding-pill ${className}`}
+        style={{ background: bg, color }}
     >
         {label}
     </span>
@@ -80,7 +70,6 @@ const FundingCard: React.FC<FundingCardProps> = ({
     engine_status = 'Active',
     engine_status_label = 'Eligible Now',
 }) => {
-    const [hovered, setHovered] = useState(false);
     const navigate = useNavigate();
     const iconClass = resolveIcon(icon);
     const colors = resolveColor(icon_color);
@@ -110,6 +99,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
 
     return (
         <div
+            className={`funding-card ${isGreyedOut ? 'funding-card-disabled' : ''}`}
             onClick={() => {
                 if (!isGreyedOut) {
                     if (destination.startsWith('http')) {
@@ -119,76 +109,25 @@ const FundingCard: React.FC<FundingCardProps> = ({
                     }
                 }
             }}
-            onMouseEnter={() => !isGreyedOut && setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            style={{
-                display: 'flex',
-                flexDirection: 'column',
-                background: '#ffffff',
-                border: `1.5px solid ${hovered && !isGreyedOut ? '#3b82f6' : '#e8ecf0'}`,
-                borderRadius: 4,
-                padding: '16px',
-                cursor: isGreyedOut ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s ease',
-                boxShadow: hovered && !isGreyedOut
-                    ? '0 8px 20px rgba(59, 130, 246, 0.08)'
-                    : '0 2px 4px rgba(0,0,0,0.02)',
-                transform: hovered && !isGreyedOut ? 'translateY(-2px)' : 'translateY(0)',
-                userSelect: 'none',
-                width: '100%',
-                height: '100%',
-                minHeight: 150,
-                opacity: isGreyedOut ? 0.6 : 1,
-                position: 'relative'
-            }}
         >
             {/* ── Top Section: Icon & Text ───────────────────────────────────────────── */}
-            <div style={{ display: 'flex', gap: 14, marginBottom: 20 }}>
+            <div className="funding-card-top">
                 {/* Icon Badge */}
                 <div
-                    style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 12,
-                        background: isGreyedOut ? '#f0f3f7' : colors.bg,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                        filter: isGreyedOut ? 'grayscale(100%)' : 'none'
-                    }}
+                    className={`funding-card-icon-wrapper ${isGreyedOut ? 'disabled' : ''}`}
+                    style={!isGreyedOut ? { background: colors.bg } : {}}
                 >
-                    <i className={iconClass} style={{ fontSize: 22, color: isGreyedOut ? '#6c757d' : colors.text }} />
+                    <i className={iconClass} style={!isGreyedOut ? { color: colors.text } : {}} />
                 </div>
 
                 {/* Text Content */}
-                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4, marginTop: 2 }}>
-                    <p
-                        style={{
-                            margin: 0,
-                            fontWeight: 700,
-                            fontSize: 15,
-                            color: '#0f1b2d',
-                            lineHeight: 1.25,
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
-                        }}
-                    >
+                <div className="funding-card-text-content">
+                    <p className="funding-card-title">
                         {name}
                     </p>
                     <p
-                        style={{
-                            margin: 0,
-                            fontSize: 13,
-                            color: subtitle ? '#6b7280' : 'transparent',
-                            lineHeight: 1.45,
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
-                        }}
+                        className="funding-card-subtitle"
+                        style={{ color: subtitle ? '#6b7280' : 'transparent' }}
                     >
                         {subtitle || '\u00A0'}
                     </p>
@@ -196,49 +135,21 @@ const FundingCard: React.FC<FundingCardProps> = ({
             </div>
 
             {/* ── Bottom Section: Amount, Status & Arrow ────────────────────────────── */}
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 'auto' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div className="funding-card-bottom">
+                <div className="funding-card-meta">
                     {amount_range && (
-                        <span
-                            style={{
-                                fontSize: 15,
-                                fontWeight: 700,
-                                color: '#1d4ed8',
-                                letterSpacing: '0.01em',
-                            }}
-                        >
+                        <span className="funding-card-amount">
                             {amount_range}
                         </span>
                     )}
                     <div style={{ alignSelf: 'flex-start' }}>
-                        <Pill label={displayLabel} bg={statusStyle.bg} color={statusStyle.color} style={{ fontSize: 12, padding: '5px 12px' }} />
+                        <Pill label={displayLabel} bg={statusStyle.bg} color={statusStyle.color} className="large-pill" />
                     </div>
                 </div>
 
                 {/* Arrow Button */}
-                <div
-                    style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: '50%',
-                        border: '1.5px solid #e5e7eb',
-                        background: '#ffffff',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                        transition: 'all 0.2s',
-                        borderColor: hovered && !isGreyedOut ? '#3b82f6' : '#e5e7eb',
-                    }}
-                >
-                    <i
-                        className="ri-arrow-right-s-line"
-                        style={{
-                            fontSize: 18,
-                            color: hovered && !isGreyedOut ? '#3b82f6' : '#9ca3af',
-                            transition: 'color 0.2s',
-                        }}
-                    />
+                <div className="funding-card-arrow">
+                    <i className="ri-arrow-right-s-line" />
                 </div>
             </div>
         </div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import '../../../assets/css/funding.css';
 import { Link } from 'react-router-dom';
 import { fetchBorrowerFunding } from '../../modules/funding/services';
 import FundingCard from './components/FundingCard';
@@ -136,7 +137,7 @@ const Funding = () => {
                 </div>
 
                 {/* ── Search & Filter Bar ────────────────────────────────────────── */}
-                <div className="row mb-2">
+                <div className="row mb-3">
                     <div className="col-12">
                         <div className="card shadow-sm border-0 bg-white mb-2">
                             <div className="card-body p-3">
@@ -203,9 +204,9 @@ const Funding = () => {
                     <div className="row">
                         <div className="col-12">
                             <div className="card border-0 shadow-sm">
-                                <div className="card-body text-center d-flex flex-column justify-content-center align-items-center" style={{ minHeight: '500px' }}>
-                                    <div style={{ background: '#f8f9fa', borderRadius: '50%', width: 80, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                                        <i className="ri-search-eye-line text-muted" style={{ fontSize: '2.5rem' }} />
+                                <div className="card-body text-center d-flex flex-column justify-content-center align-items-center funding-empty-state">
+                                    <div className="funding-empty-state-icon">
+                                        <i className="ri-search-eye-line text-muted" />
                                     </div>
                                     <h4 className="fw-bold text-dark mb-2 fs-4">No funding options found</h4>
                                     <p className="text-muted fs-15 mb-4">Try adjusting your search or filter to see more results.</p>
@@ -220,11 +221,7 @@ const Funding = () => {
                             {/* Group header */}
                             <div className="d-flex align-items-center gap-2 mb-3">
                                 <h5 className="mb-0 fw-bold fs-15 text-dark">{group.name}</h5>
-                                <span style={{
-                                    fontSize: 11, fontWeight: 600,
-                                    background: '#eef2ff', color: '#3b52d4',
-                                    padding: '2px 8px', borderRadius: 20,
-                                }}>
+                                <span className="funding-group-count">
                                     {group.sequencings.length}
                                 </span>
                             </div>
