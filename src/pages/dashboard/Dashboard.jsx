@@ -12,7 +12,7 @@ import { INVOICE_STATUS_TYPES } from '../../config/invoiceStatusOptions';
 import { PARTNER_TYPES } from '../../config/partnerTypeOptions';
 import { useDashboard } from '../../modules/dashboard';
 import DashboardLoader from '../../components/Loader/DashboardLoader';
-import '../credit-builder/capital-access/PremiumDesign.css';
+
 
 
 

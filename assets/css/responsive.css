@@ -1332,6 +1332,109 @@
         height: 45px !important;
     }
 
+    /* ========================================================= 
+       CAPITAL ACCESS MODULE (StrategySelection, Roadmap, etc)
+    ========================================================= */
+    .capital-access-page {
+        padding-top: 75px !important;
+    }
+    .capital-access-page .ca-page-wrap {
+        margin: 12px auto 0 !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        padding-bottom: 24px !important;
+    }
+    .capital-access-page .ca-hero-header {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+        padding: 12px 15px !important;
+    }
+    .capital-access-page .ca-hero-header .ca-badge {
+        align-self: flex-start !important;
+        margin-left: 0 !important;
+    }
+    .capital-access-page .ca-card-body {
+        padding: 15px !important;
+    }
+    .capital-access-page .ca-card-header {
+        padding: 12px 15px !important;
+    }
+    .capital-access-page .ca-strategy-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+        padding: 12px 15px !important;
+    }
+    .capital-access-page .ca-strategy-row-metrics {
+        justify-content: space-between !important;
+        border-top: 1px dashed #e8e8e8 !important;
+        padding-top: 8px !important;
+        margin-top: 4px !important;
+        width: 100% !important;
+    }
+    .capital-access-page .ca-stepper {
+        padding-left: 32px !important;
+    }
+    .capital-access-page .ca-stepper-line {
+        left: 15px !important;
+    }
+    .capital-access-page .ca-step-dot {
+        left: -32px !important;
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 12px !important;
+        top: 8px !important;
+    }
+    .capital-access-page .ca-step-card {
+        padding: 10px 12px !important;
+    }
+    .capital-access-page .ca-step-card .d-flex.align-items-center.gap-3 {
+        gap: 8px !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+    .capital-access-page .ca-step-card .ca-badge {
+        align-self: flex-start !important;
+    }
+    .capital-access-page .ca-summary-box {
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 12px !important;
+        padding: 12px 15px !important;
+    }
+    .capital-access-page .ca-summary-box .text-end {
+        text-align: center !important;
+    }
+    .capital-access-page .ca-summary-box .text-end > div {
+        margin: 0 auto !important;
+    }
+    .capital-access-page .ca-option-group {
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+    .capital-access-page .ca-btn {
+        width: 100% !important;
+        padding: 10px 15px !important;
+    }
+    .capital-access-page .d-flex.gap-3 {
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+    .capital-access-page .d-flex.justify-content-between {
+        flex-direction: column-reverse !important;
+        gap: 10px !important;
+    }
+    .capital-access-page .ca-checklist-item {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+        padding: 12px 15px !important;
+    }
+    .capital-access-page .ca-checklist-item .ca-badge {
+        align-self: flex-end !important;
+    }
+
     /* Ensure body doesn't overflow horizontally on mobile */
     body {
         overflow-x: hidden;
