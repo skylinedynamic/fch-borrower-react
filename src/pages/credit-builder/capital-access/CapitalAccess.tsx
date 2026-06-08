@@ -57,7 +57,7 @@ export default function CapitalAccess() {
   }, [])
 
   return (
-    <div className="page-content">
+    <div className="page-content capital-access-page">
       <div className="container-fluid">
         {/* Header Matching Profile Page Style */}
         <div className="text-center my-4">

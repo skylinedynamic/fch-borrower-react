@@ -1015,7 +1015,7 @@ File: Custom Css File
 
 /* ─── Page Wrapper ───────────────────────────────────────── */
 .ca-page-wrap {
-    max-width: 900px;
+    max-width: 1080px;
     margin: 28px auto 0;
     padding-bottom: 60px;
 }
@@ -1734,4 +1734,10 @@ File: Custom Css File
 .ca-card-header h5,
 .ca-card-header h6 { color: #1a1f36 !important; font-weight: 700 !important; letter-spacing: -0.01em; }
 .ca-hero-header h5,
-.ca-hero-header h6 { color: #1a1f36 !important; font-weight: 800 !important; letter-spacing: -0.015em; }
+.ca-hero-header h6 { color: #1a1f36 !important; font-weight: 800 !important; letter-spacing: -0.015em; }
+
+/* ─── Step Detail Metrics (Desktop) ────────────────────────── */
+.ca-step-metrics .ca-metric-value {
+    font-size: 15px;
+    font-weight: 700;
+}

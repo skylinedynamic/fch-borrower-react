@@ -36,7 +36,7 @@ export default function StepDetail() {
     <div className="page-content capital-access-page">
       <div className="container-fluid">
 
-        <div className="ca-page-wrap" style={{ maxWidth: '680px' }}>
+        <div className="ca-page-wrap">
           {/* ── Page Header ── */}
           <div className="row pb-1 page-subheader-sticky bg-body mb-3">
             <div className="col-12">
@@ -77,25 +77,23 @@ export default function StepDetail() {
                   </div>
 
                   {/* Metrics */}
-                  <div className="row g-3 mb-4">
-                    <div className="col-3">
+                  <div className="row g-2 mb-4 ca-step-metrics">
+                    <div className="col-4">
                       <div className="ca-metric">
                         <span className="ca-metric-label">Approval Odds</span>
                         <p className="ca-metric-value success mb-0">{step.approval_odds}</p>
                       </div>
                     </div>
-                    <div className="col-6">
+                    <div className="col-4">
                       <div className="ca-metric">
                         <span className="ca-metric-label">Est. Limit</span>
-                        <p className="ca-metric-value mb-0" style={{ fontSize: '13px', whiteSpace: 'nowrap' }}>
-                          {step.exposure}
-                        </p>
+                        <p className="ca-metric-value mb-0">{step.exposure}</p>
                       </div>
                     </div>
-                    <div className="col-3">
+                    <div className="col-4">
                       <div className="ca-metric">
                         <span className="ca-metric-label">Hard Pull</span>
-                        <p className="ca-metric-value mb-0" style={{ fontSize: '15px' }}>{step.hard_pull}</p>
+                        <p className="ca-metric-value mb-0">{step.hard_pull}</p>
                       </div>
                     </div>
                   </div>
