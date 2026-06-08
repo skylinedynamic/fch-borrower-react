@@ -43,29 +43,28 @@ const resolveColor = (color: any): { bg: string; text: string } => {
 };
 
 // ─── Small pill badge ─────────────────────────────────────────────────────────
-const Pill: React.FC<{ label: string; bg?: string; color?: string; style?: React.CSSProperties }> = ({
+const Pill: React.FC<{ label: string; bg?: string; color?: string; className?: string }> = ({
     label,
     bg = '#f0f3f7',
     color = '#4b5563',
-    style
+    className = ''
 }) => (
     <span
-        style={{
-            fontSize: 11,
-            fontWeight: 600,
-            background: bg,
-            color,
-            padding: '2px 9px',
-            borderRadius: 20,
-            letterSpacing: '0.01em',
-            whiteSpace: 'nowrap',
-            flexShrink: 0,
-            ...style
-        }}
+        className={`funding-pill ${className}`}
+        style={{ background: bg, color }}
     >
         {label}
     </span>
 );
+
+// ─── Read a CSS variable from :root at runtime ────────────────────────────────
+const getCSSVar = (name: string, fallback: string): string => {
+    if (typeof window !== 'undefined') {
+        const val = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        if (val) return val;
+    }
+    return fallback;
+};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const FundingCard: React.FC<FundingCardProps> = ({
@@ -80,35 +79,36 @@ const FundingCard: React.FC<FundingCardProps> = ({
     engine_status = 'Active',
     engine_status_label = 'Eligible Now',
 }) => {
-    const [hovered, setHovered] = useState(false);
     const navigate = useNavigate();
     const iconClass = resolveIcon(icon);
     const colors = resolveColor(icon_color);
-    
+
     // Ensure action_url is a valid path or external URL, otherwise fallback to default
     const isValidUrl = action_url && (action_url.startsWith('/') || action_url.startsWith('http'));
     const destination = isValidUrl ? action_url : `/funding/${id}`;
 
-    // Status visual map
-    const getStatusStyle = () => {
+    // Status visual map — null = use secondary CSS class (.funding-pill-eligible)
+    const getStatusStyle = (): { bg: string; color: string } | null => {
         switch (engine_status) {
-            case 'Warning': return { bg: '#fffbeb', color: '#d97706' }; // Conditional
-            case 'Review': return { bg: '#ecfdf5', color: '#10b981' };  // Review -> Likely Eligible
+            case 'Warning':    return { bg: '#fffbeb', color: '#d97706' }; // Conditional
             case 'Greyed Out': return { bg: '#f3f4f6', color: '#4b5563' }; // Better Fit Later
-            default: return { bg: '#ecfdf5', color: '#10b981' }; // Active (Likely Eligible)
+            case 'Hidden':     return { bg: '#fee2e2', color: '#ef4444' }; // Not Eligible
+            default:           return null; // Active / Review → Likely Eligible = secondary color
         }
     };
 
     const statusStyle = getStatusStyle();
-    const isGreyedOut = engine_status === 'Greyed Out';
-    
+    const isEligible = statusStyle === null;
+    const isGreyedOut = engine_status === 'Greyed Out' || engine_status === 'Hidden';
+
     // Convert generic "Eligible Now" and "Manual Review Required" to the design's "Likely Eligible"
-    const displayLabel = (engine_status_label === 'Eligible Now' || engine_status_label === 'Manual Review Required') 
-        ? 'Likely Eligible' 
+    const displayLabel = (engine_status_label === 'Eligible Now' || engine_status_label === 'Manual Review Required')
+        ? 'Likely Eligible'
         : engine_status_label;
 
     return (
         <div
+            className={`funding-card ${isGreyedOut ? 'funding-card-disabled' : ''}`}
             onClick={() => {
                 if (!isGreyedOut) {
                     if (destination.startsWith('http')) {
@@ -118,152 +118,65 @@ const FundingCard: React.FC<FundingCardProps> = ({
                     }
                 }
             }}
-            onMouseEnter={() => !isGreyedOut && setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            style={{
-                display: 'flex',
-                alignItems: 'stretch',
-                gap: 14,
-                background: '#ffffff',
-                border: `1px solid ${hovered ? '#c5d0de' : '#e8ecf0'}`,
-                borderRadius: 12,
-                padding: '16px 18px',
-                cursor: isGreyedOut ? 'not-allowed' : 'pointer',
-                transition: 'box-shadow 0.18s, border-color 0.18s, transform 0.15s',
-                boxShadow: hovered && !isGreyedOut
-                    ? '0 6px 20px rgba(0,0,0,0.09)'
-                    : '0 1px 4px rgba(0,0,0,0.05)',
-                transform: hovered && !isGreyedOut ? 'translateY(-2px)' : 'translateY(0)',
-                userSelect: 'none',
-                width: '100%',
-                height: '100%',
-                minHeight: 110,
-                opacity: isGreyedOut ? 0.6 : 1,
-                position: 'relative'
-            }}
         >
-            {/* ── Icon Badge ─────────────────────────────────────────────── */}
-            <div
-                style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 10,
-                    background: isGreyedOut ? '#f0f3f7' : colors.bg,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    alignSelf: 'flex-start',
-                    flexShrink: 0,
-                    marginTop: 2,
-                    filter: isGreyedOut ? 'grayscale(100%)' : 'none'
-                }}
-            >
-                <i className={iconClass} style={{ fontSize: 21, color: isGreyedOut ? '#6c757d' : colors.text }} />
-            </div>
-
-            {/* ── Text Content ───────────────────────────────────────────── */}
-            <div
-                style={{
-                    flex: 1,
-                    minWidth: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 4,
-                }}
-            >
-                {/* Name */}
-                <p
-                    style={{
-                        margin: 0,
-                        fontWeight: 600,
-                        fontSize: 14,
-                        color: '#0f1b2d',
-                        lineHeight: 1.25,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                    }}
-                >
-                    {name}
-                </p>
-
-                {/* Subtitle — always 2-line reserved space */}
-                <p
-                    style={{
-                        margin: 0,
-                        fontSize: 12,
-                        color: subtitle ? '#7a8b9a' : 'transparent',
-                        lineHeight: 1.4,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        minHeight: 34,
-                    } as React.CSSProperties}
-                >
-                    {subtitle || '\u00A0'}
-                </p>
-
-                {/* Bottom row: amount_range + status badge */}
+            {/* ── Top Section: Icon & Text ───────────────────────────────────────────── */}
+            <div className="funding-card-top">
+                {/* Icon Badge */}
                 <div
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 8,
-                        marginTop: 'auto',
-                        paddingTop: 8,
-                    }}
+                    className={`funding-card-icon-wrapper ${isGreyedOut ? 'disabled' : ''}`}
+                    style={!isGreyedOut ? { background: colors.bg } : {}}
                 >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                        {amount_range && (
-                            <span
-                                style={{
-                                    fontSize: 13,
-                                    fontWeight: 700,
-                                    color: '#2563eb',
-                                    letterSpacing: '0.01em',
-                                    flexShrink: 0,
-                                }}
-                            >
-                                {amount_range}
-                            </span>
-                        )}
+                    <i className={iconClass} style={!isGreyedOut ? { color: colors.text } : {}} />
+                </div>
 
-                        {terms && (
-                            <Pill label={terms} bg={colors.bg} color={colors.text} />
-                        )}
-                    </div>
-
-                    <div style={{ alignSelf: 'flex-start' }}>
-                        <Pill label={displayLabel} bg={statusStyle.bg} color={statusStyle.color} style={{ fontSize: 11.5, padding: '4px 10px' }} />
-                    </div>
+                {/* Text Content */}
+                <div className="funding-card-text-content">
+                    <p className="funding-card-title">
+                        {name}
+                    </p>
+                    <p
+                        className="funding-card-subtitle"
+                        style={{ color: subtitle ? '#6b7280' : 'transparent' }}
+                    >
+                        {subtitle || '\u00A0'}
+                    </p>
                 </div>
             </div>
 
-            {/* ── Arrow Button ───────────────────────────────────────────── */}
-            <div
-                style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: '50%',
-                    background: hovered ? '#1e2b3c' : '#f0f3f7',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    alignSelf: 'center',
-                    transition: 'background 0.18s',
-                }}
-            >
-                <i
-                    className="ri-arrow-right-s-line"
-                    style={{
-                        fontSize: 17,
-                        color: hovered ? '#ffffff' : '#6b7e93',
-                        transition: 'color 0.18s',
-                    }}
-                />
+            {/* ── Bottom Section: Amount, Status & Arrow ────────────────────────────── */}
+            <div className="funding-card-bottom">
+                <div className="funding-card-meta">
+                    {amount_range && (
+                        <span className="funding-card-amount">
+                            {amount_range}
+                        </span>
+                    )}
+                    <div style={{ alignSelf: 'flex-start' }}>
+                        {isEligible ? (() => {
+                            const sec = getCSSVar('--secondary-color', '#1cbfca');
+                            return (
+                                <Pill
+                                    label={displayLabel}
+                                    bg={`${sec}1a`}
+                                    color={sec}
+                                    className="large-pill"
+                                />
+                            );
+                        })() : (
+                            <Pill
+                                label={displayLabel}
+                                bg={statusStyle!.bg}
+                                color={statusStyle!.color}
+                                className="large-pill"
+                            />
+                        )}
+                    </div>
+                </div>
+
+                {/* Arrow Button */}
+                <div className="funding-card-arrow">
+                    <i className="ri-arrow-right-s-line" />
+                </div>
             </div>
         </div>
     );

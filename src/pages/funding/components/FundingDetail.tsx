@@ -159,16 +159,7 @@ const FundingDetail = () => {
     const iconClass = resolveIcon(icon);
     const isGreyedOut = engine_status === 'Greyed Out';
 
-    // Eligibility badge style
-    const getEligStyle = () => {
-        switch (engine_status) {
-            case 'Warning':    return { bg: '#fff3cd', color: '#856404', border: '#f6d860' };
-            case 'Review':     return { bg: '#d4f5e3', color: '#0f6b38', border: '#a3e6c4' }; // Review -> Likely Eligible
-            case 'Greyed Out': return { bg: '#e2e3e5', color: '#383d41', border: '#d6d8db' };
-            default:           return { bg: '#d4f5e3', color: '#0f6b38', border: '#a3e6c4' }; // Active
-        }
-    };
-    const eligStyle = getEligStyle();
+
 
     // Meta row items
     const metaItems = [
@@ -187,13 +178,22 @@ const FundingDetail = () => {
                 {/* ── Breadcrumb ─────────────────────────────────────────────── */}
                 <div className="row page-subheader-sticky bg-body">
                     <div className="col-12">
-                        <div className="d-flex align-items-center justify-content-between py-2">
-                            <nav aria-label="breadcrumb">
-                                <ol className="breadcrumb m-0">
-                                    <li className="breadcrumb-item"><Link to="/funding">Funding Options</Link></li>
-                                    <li className="breadcrumb-item active fw-medium" aria-current="page">{name}</li>
-                                </ol>
-                            </nav>
+                        <div className="d-flex align-items-center justify-content-between flex-row py-2">
+                            <div className="flex-grow-1">
+                                <h4 className="fs-20 mb-1">{name}</h4>
+                                <nav aria-label="breadcrumb">
+                                    <ol className="breadcrumb m-0">
+                                        <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>
+                                        <li className="breadcrumb-item"><Link to="/funding">Funding Options</Link></li>
+                                        <li className="breadcrumb-item active fw-medium" aria-current="page">{name}</li>
+                                    </ol>
+                                </nav>
+                            </div>
+                            <div className="mt-0">
+                                <Link to="/funding" className="btn btn-primary fw-medium">
+                                    <i className="ri-arrow-left-line me-1 align-bottom"></i> Back
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -222,21 +222,11 @@ const FundingDetail = () => {
 
                             {/* Eligibility badge — pill style matching reference */}
                             <div className="text-end flex-shrink-0">
-                                <div style={{
-                                    display: 'inline-block',
-                                    background: eligStyle.bg,
-                                    color: eligStyle.color,
-                                    border: `1.5px solid ${eligStyle.border}`,
-                                    fontWeight: 700,
-                                    fontSize: 13,
-                                    padding: '6px 18px',
-                                    borderRadius: 24,
-                                    letterSpacing: '0.01em',
-                                }}>
+                                <div className={`funding-detail-badge funding-detail-badge-${engine_status.toLowerCase().replace(' ', '-')}`}>
                                     {(engine_status_label === 'Eligible Now' || engine_status_label === 'Manual Review Required') ? 'Likely Eligible' : engine_status_label}
                                 </div>
                                 {(engine_status === 'Active' || engine_status === 'Review') && (
-                                    <p className="mb-0 mt-1 text-muted" style={{ fontSize: 11, textAlign: 'right' }}>High Match</p>
+                                    <p className="mb-0 mt-1 text-muted" style={{ fontSize: 11, textAlign: 'right', fontWeight: 'bold' }}>High Match</p>
                                 )}
                             </div>
                         </div>
@@ -365,17 +355,7 @@ const FundingDetail = () => {
                         {!isGreyedOut && (
                             <Link
                                 to={`/fund-application?slug=${ctaSlug}&approved_funding=${encodeURIComponent(name)}`}
-                                style={{
-                                    display: 'inline-flex', alignItems: 'center', gap: 8,
-                                    background: '#1d4ed8', color: '#fff',
-                                    fontWeight: 600, fontSize: 14,
-                                    padding: '11px 22px', borderRadius: 8,
-                                    textDecoration: 'none', flexShrink: 0,
-                                    transition: 'background 0.15s',
-                                    boxShadow: '0 2px 8px rgba(29,78,216,0.25)',
-                                }}
-                                onMouseEnter={e => (e.currentTarget.style.background = '#1e40af')}
-                                onMouseLeave={e => (e.currentTarget.style.background = '#1d4ed8')}
+                                className="funding-detail-btn-review"
                             >
                                 Start Funding Review
                                 <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />

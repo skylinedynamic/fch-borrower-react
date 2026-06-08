@@ -1,23 +1,25 @@
 import React, { useEffect, useState } from 'react';
+import '../../../assets/css/funding.css';
 import { Link } from 'react-router-dom';
 import { fetchBorrowerFunding } from '../../modules/funding/services';
 import FundingCard from './components/FundingCard';
 import FundingLoader from '../../components/Loader/FundingLoader';
+import CustomDropdown from '../../components/Common/CustomDropdown';
 import { toast } from 'react-toastify';
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
 interface StatCardProps { icon: string; label: string; value: string; color: string; }
 
 const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color }) => (
-    <div className="col-xl-3 col-md-6">
+    <div className="col-6 col-md-6 col-xl-3 funding-stat-card-col">
         <div className="card shadow-sm border-0 rounded-2 bg-white card-animate">
-            <div className="card-body py-3 px-4 d-flex align-items-center">
-                <div className={`avatar-md bg-${color}-subtle rounded d-flex align-items-center justify-content-center me-3 flex-shrink-0`}>
-                    <i className={`${icon} text-${color} fs-24`}></i>
+            <div className="card-body py-3 px-4 d-flex align-items-center funding-stat-card-body">
+                <div className={`avatar-md bg-${color}-subtle rounded d-flex align-items-center justify-content-center me-3 flex-shrink-0 funding-stat-card-icon`}>
+                    <i className={`${icon} text-${color} fs-24 funding-stat-card-icon-i`}></i>
                 </div>
                 <div>
-                    <p className="text-muted mb-0 fs-13 fw-medium text-uppercase">{label}</p>
-                    <h4 className="mb-0 fw-bold text-dark fs-22 lh-1">{value}</h4>
+                    <p className="text-muted mb-0 fs-13 fw-medium text-uppercase funding-stat-card-label">{label}</p>
+                    <h4 className="mb-0 fw-bold text-dark fs-22 lh-1 funding-stat-card-value">{value}</h4>
                 </div>
             </div>
         </div>
@@ -39,15 +41,15 @@ interface StatConfig {
 
 const STAT_CONFIG: StatConfig[] = [
     { key: 'total_approved', label: 'Total Approved', labelKey: 'total_approved_label', icon: 'ri-money-dollar-circle-line', color: 'success', format: formatMoney },
-    { key: 'total_funded',   label: 'Total Funded',   labelKey: 'total_funded_label',   icon: 'ri-file-text-line',           color: 'info',    format: formatMoney },
-    { key: 'total_options',  label: 'Funding Options', labelKey: 'total_options_label', icon: 'ri-line-chart-line',          color: 'primary', format: formatCount },
-    { key: 'total_groups',   label: 'Funding Groups',  labelKey: 'total_groups_label',  icon: 'ri-group-line',               color: 'warning', format: formatCount },
+    { key: 'total_funded', label: 'Total Funded', labelKey: 'total_funded_label', icon: 'ri-file-text-line', color: 'info', format: formatMoney },
+    { key: 'total_options', label: 'Funding Options', labelKey: 'total_options_label', icon: 'ri-line-chart-line', color: 'primary', format: formatCount },
+    { key: 'total_groups', label: 'Funding Groups', labelKey: 'total_groups_label', icon: 'ri-group-line', color: 'warning', format: formatCount },
 ];
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 const Funding = () => {
-    const [loading, setLoading]       = useState(true);
-    const [data, setData]             = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [data, setData] = useState<any>(null);
     const [activeType, setActiveType] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -91,7 +93,7 @@ const Funding = () => {
         .map((group: any) => ({
             ...group,
             sequencings: group.sequencings.filter((seq: any) => {
-                const matchesTab    = activeType === 'all' || seq.funding_type_id?.toString() === activeType;
+                const matchesTab = activeType === 'all' || seq.funding_type_id?.toString() === activeType;
                 const matchesSearch = matchesQuery(seq, searchQuery.trim());
                 return matchesTab && matchesSearch;
             }),
@@ -101,7 +103,7 @@ const Funding = () => {
     const clearAll = () => { setSearchQuery(''); setActiveType('all'); };
 
     return (
-        <div className="page-content">
+        <div className="page-content funding-page">
             <div className="container-fluid">
 
                 {/* ── Breadcrumb ──────────────────────────────────────────── */}
@@ -122,7 +124,7 @@ const Funding = () => {
                 </div>
 
                 {/* ── Stat Cards ──────────────────────────────────────────── */}
-                <div className="row g-4">
+                <div className="row g-4 funding-stats-row">
                     {STAT_CONFIG.map((cfg) => (
                         <StatCard
                             key={cfg.key}
@@ -134,127 +136,83 @@ const Funding = () => {
                     ))}
                 </div>
 
-                {/* ── Filter Bar ──────────────────────────────────────────── */}
-                <div
-                    className="mt-3 mb-2"
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 10,
-                        background: '#fff',
-                        border: '1px solid #dee2e6',
-                        borderRadius: 8,
-                        padding: '8px 14px',
-                        flexWrap: 'wrap',
-                    }}
-                >
-                    {/* Search */}
-                    <div style={{ position: 'relative', flex: '1 1 200px', minWidth: 180 }}>
-                        <i className="ri-search-line" style={{
-                            position: 'absolute', left: 10, top: '50%',
-                            transform: 'translateY(-50%)',
-                            color: '#adb5bd', fontSize: 14, pointerEvents: 'none',
-                        }} />
-                        <input
-                            type="text"
-                            placeholder="Search here"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            style={{
-                                width: '100%', height: 38,
-                                paddingLeft: 32, paddingRight: searchQuery ? 30 : 10,
-                                border: '1px solid #dee2e6', borderRadius: 6,
-                                fontSize: 13, color: '#212529',
-                                background: '#fff', outline: 'none',
-                            }}
-                            onFocus={(e) => (e.target.style.borderColor = '#6c757d')}
-                            onBlur={(e)  => (e.target.style.borderColor = '#dee2e6')}
-                        />
-                        {searchQuery && (
-                            <button
-                                onClick={() => setSearchQuery('')}
-                                style={{
-                                    position: 'absolute', right: 8, top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    background: 'none', border: 'none',
-                                    cursor: 'pointer', color: '#adb5bd',
-                                    display: 'flex', padding: 0, fontSize: 15,
-                                }}
-                            >
-                                <i className="ri-close-circle-fill" />
-                            </button>
-                        )}
+                {/* ── Search & Filter Bar ────────────────────────────────────────── */}
+                <div className="row mb-3 funding-filter-row">
+                    <div className="col-12">
+                        <div className="card shadow-sm border-0 bg-white mb-2">
+                            <div className="card-body p-3">
+                                <div className="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-3">
+                                    <div className="flex-grow-1">
+                                        <div className="row g-3">
+                                            {/* Search Field (col-9) */}
+                                            <div className="col-12 col-md-9">
+                                                <div className="input-group vendor-filter-input-group border-0 transition-all shadow-sm-hover bg-light rounded" style={{ backgroundColor: '#f3f6f9' }}>
+                                                    <span className="input-group-text bg-transparent border-0 pe-1">
+                                                        <i className="ri-search-line text-muted opacity-75"></i>
+                                                    </span>
+                                                    <input
+                                                        type="text"
+                                                        className="form-control bg-transparent border-0 ps-1 fs-13 shadow-none"
+                                                        placeholder="Search here..."
+                                                        value={searchQuery}
+                                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Category Dropdown (col-3) */}
+                                            <div className="col-12 col-md-3">
+                                                <div className="h-100">
+                                                    <CustomDropdown
+                                                        options={allTypes.map(t => ({ id: t.id.toString(), name: t.name }))}
+                                                        value={activeType}
+                                                        onChange={(val) => { setActiveType(val.toString()); setSearchQuery(''); }}
+                                                        optionLabel="name"
+                                                        optionValue="id"
+                                                        placeholder="All Categories"
+                                                        className="border-0 rounded-2 fs-13 vendor-filter-bg h-100 w-100"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="d-flex gap-2 flex-shrink-0">
+                                        <button
+                                            className="btn btn-warning d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13 shadow-sm text-white"
+                                        >
+                                            <i className="ri-equalizer-fill align-bottom"></i> Filters
+                                        </button>
+                                        {hasFilter && (
+                                            <button
+                                                className="btn-clear d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13"
+                                                onClick={clearAll}
+                                            >
+                                                <i className="ri-close-line align-bottom"></i> Clear
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-
-                    {/* Category native select — no external dependency */}
-                    <div style={{ flexShrink: 0 }}>
-                        <select
-                            value={activeType}
-                            onChange={(e) => setActiveType(e.target.value)}
-                            style={{
-                                height: 38, padding: '0 32px 0 12px',
-                                border: '1px solid #dee2e6', borderRadius: 6,
-                                background: '#fff', fontSize: 13,
-                                color: '#495057', cursor: 'pointer',
-                                outline: 'none', appearance: 'none',
-                                WebkitAppearance: 'none',
-                                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-                                backgroundRepeat: 'no-repeat',
-                                backgroundPosition: 'right 10px center',
-                                minWidth: 160,
-                            }}
-                        >
-                            {allTypes.map((t: any) => (
-                                <option key={t.id} value={t.id === 'all' ? 'all' : t.id.toString()}>
-                                    {t.id === 'all' ? 'All Categories' : t.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Filters button */}
-                    <button
-                        style={{
-                            display: 'flex', alignItems: 'center', gap: 6,
-                            height: 38, padding: '0 14px',
-                            border: 'none', borderRadius: 6,
-                            background: '#6c757d', color: '#fff',
-                            fontSize: 13, fontWeight: 500,
-                            cursor: 'pointer', flexShrink: 0,
-                            whiteSpace: 'nowrap',
-                        }}
-                    >
-                        <i className="ri-equalizer-line" style={{ fontSize: 14 }} />
-                        Filters
-                    </button>
-
-                    {/* Clear filters */}
-                    {hasFilter && (
-                        <button
-                            onClick={clearAll}
-                            style={{
-                                display: 'flex', alignItems: 'center', gap: 4,
-                                background: 'none', border: 'none',
-                                cursor: 'pointer', color: '#6c757d',
-                                fontSize: 13, fontWeight: 500,
-                                padding: '0 4px', flexShrink: 0,
-                                whiteSpace: 'nowrap',
-                            }}
-                        >
-                            <i className="ri-close-line" style={{ fontSize: 15 }} />
-                            Clear
-                        </button>
-                    )}
                 </div>
 
                 {/* ── Empty State ──────────────────────────────────────────── */}
                 {filteredGroups.length === 0 ? (
-                    <div className="card border-0 shadow-sm">
-                        <div className="card-body text-center py-5">
-                            <i className="ri-search-eye-line fs-1 text-muted d-block mb-3" />
-                            <h6 className="fw-semibold text-dark mb-1">No funding options found</h6>
-                            <p className="text-muted fs-13 mb-3">Try adjusting your search or filter.</p>
-                            <button onClick={clearAll} className="btn btn-dark btn-sm">Reset Filters</button>
+                    <div className="row">
+                        <div className="col-12">
+                            <div className="card border-0 shadow-sm">
+                                <div className="card-body text-center d-flex flex-column justify-content-center align-items-center funding-empty-state">
+                                    <div className="funding-empty-state-icon">
+                                        <i className="ri-search-eye-line text-muted" />
+                                    </div>
+                                    <h4 className="fw-bold text-dark mb-2 fs-4">No funding options found</h4>
+                                    <p className="text-muted fs-15 mb-4">Try adjusting your search or filter to see more results.</p>
+                                    <button onClick={clearAll} className="btn btn-dark px-4 py-2 fw-medium shadow-sm">Reset Filters</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 ) : (
@@ -263,17 +221,13 @@ const Funding = () => {
                             {/* Group header */}
                             <div className="d-flex align-items-center gap-2 mb-3">
                                 <h5 className="mb-0 fw-bold fs-15 text-dark">{group.name}</h5>
-                                <span style={{
-                                    fontSize: 11, fontWeight: 600,
-                                    background: '#eef2ff', color: '#3b52d4',
-                                    padding: '2px 8px', borderRadius: 20,
-                                }}>
+                                <span className="funding-group-count">
                                     {group.sequencings.length}
                                 </span>
                             </div>
 
                             {/* Cards grid */}
-                            <div className="row g-3">
+                            <div className="row g-3 funding-cards-row">
                                 {group.sequencings.map((seq: any) => (
                                     <div
                                         key={seq.id}

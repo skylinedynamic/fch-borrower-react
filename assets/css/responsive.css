@@ -427,6 +427,16 @@
         margin-top: 8px !important;
     }
 
+    /* Funding Page Responsive Fixes */
+    .funding-page {
+        padding-top: 85px !important;
+    }
+
+    .funding-page .container-fluid {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+
     /* My Applications Page Responsive Fixes */
     .myapplications-page {
         padding-top: 85px !important;
@@ -1343,5 +1353,62 @@
     .auth-logo-img {
         max-width: 150px !important;
         height: 38px !important;
+    }
+}
+
+/* ─── Funding Page: Mobile responsive ──────────────────────────────────── */
+@media (max-width: 576px) {
+
+    /* ── Stat cards row mobile overrides ── */
+    .funding-page .funding-stats-row {
+        margin-top: 0.75rem !important;
+        row-gap: 0.5rem !important;
+    }
+
+    .funding-page .funding-stats-row > * {
+        margin-top: 0 !important;
+        padding-right: 0.3rem !important;
+        padding-left: 0.3rem !important;
+    }
+
+    /* ── Stat card body: compact on mobile ── */
+    .funding-stats-row .funding-stat-card-body {
+        padding: 10px 12px !important;
+    }
+
+    /* ── Stat card icon: smaller ── */
+    .funding-stats-row .funding-stat-card-icon {
+        width: 36px !important;
+        height: 36px !important;
+        margin-right: 0.6rem !important;
+    }
+
+    .funding-stats-row .funding-stat-card-icon-i {
+        font-size: 18px !important;
+    }
+
+    /* ── Stat card label: visible & small ── */
+    .funding-stats-row .funding-stat-card-label {
+        font-size: 10px !important;
+        white-space: normal !important;
+        overflow: visible !important;
+        line-height: 1.2 !important;
+    }
+
+    /* ── Stat card value: smaller ── */
+    .funding-stats-row .funding-stat-card-value {
+        font-size: 16px !important;
+    }
+
+    /* ── Funding cards: 1 per row ── */
+    .funding-page .funding-cards-row > [class*="col-"] {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* ── Section spacing: tighten search & cards gap ── */
+    .funding-page .funding-filter-row {
+        margin-top: 0.6rem !important;
+        margin-bottom: 0.5rem !important;
     }
 }

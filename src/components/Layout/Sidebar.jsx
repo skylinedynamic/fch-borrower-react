@@ -170,7 +170,7 @@ export default function Sidebar() {
             <LinkItem to="/resources" label="Resource Hub" icon="ri-book-read-line" />
             <LinkItem to="/appointment" label="Appointment" icon="ri-calendar-2-line" restricted={isRestricted} />
 
-            <LinkItem to="/funding" label="Funding" icon="ri-money-dollar-circle-line" restricted={isRestricted} highlight={true} />
+            <LinkItem to="/funding" label="Funding" icon="ri-money-dollar-circle-line" restricted={isRestricted} />
 
             <li className="nav-item">
               <button
