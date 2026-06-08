@@ -187,13 +187,22 @@ const FundingDetail = () => {
                 {/* ── Breadcrumb ─────────────────────────────────────────────── */}
                 <div className="row page-subheader-sticky bg-body">
                     <div className="col-12">
-                        <div className="d-flex align-items-center justify-content-between py-2">
-                            <nav aria-label="breadcrumb">
-                                <ol className="breadcrumb m-0">
-                                    <li className="breadcrumb-item"><Link to="/funding">Funding Options</Link></li>
-                                    <li className="breadcrumb-item active fw-medium" aria-current="page">{name}</li>
-                                </ol>
-                            </nav>
+                        <div className="d-flex align-items-center justify-content-between flex-row py-2">
+                            <div className="flex-grow-1">
+                                <h4 className="fs-20 mb-1">{name}</h4>
+                                <nav aria-label="breadcrumb">
+                                    <ol className="breadcrumb m-0">
+                                        <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>
+                                        <li className="breadcrumb-item"><Link to="/funding">Funding Options</Link></li>
+                                        <li className="breadcrumb-item active fw-medium" aria-current="page">{name}</li>
+                                    </ol>
+                                </nav>
+                            </div>
+                            <div className="mt-0">
+                                <Link to="/funding" className="btn btn-primary fw-medium">
+                                    <i className="ri-arrow-left-line me-1 align-bottom"></i> Back
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>
