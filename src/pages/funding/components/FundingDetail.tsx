@@ -354,7 +354,7 @@ const FundingDetail = () => {
                         </div>
                         {!isGreyedOut && (
                             <Link
-                                to={`/fund-application?slug=${ctaSlug}&approved_funding=${encodeURIComponent(name)}`}
+                                to={`/funding/${id}/review`}
                                 className="funding-detail-btn-review"
                             >
                                 Start Funding Review
