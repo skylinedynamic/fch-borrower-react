@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { fetchFundingDetail } from '../../../modules/funding/services';
+import { fetchFundingDetail, fetchReadinessFactors, fetchQualifyReasons } from '../../../modules/funding/services';
 import { FUNDING_ICON_MAP } from '../../../config/funding';
 import { getFundingColorStyles } from '../../../config/fundingColor';
 import { toast } from 'react-toastify';
@@ -105,16 +105,24 @@ const FundingDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [data, setData] = useState<any>(null);
+    const [dynamicReadiness, setDynamicReadiness] = useState<any[]>([]);
+    const [dynamicQualifyReasons, setDynamicQualifyReasons] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchFundingDetail(id)
-            .then(res => {
-                if (res.status) setData(res.data);
-                else toast.error(res.message || 'Failed to load funding details');
-            })
-            .catch(() => toast.error('Failed to load funding details'))
-            .finally(() => setLoading(false));
+        setLoading(true);
+        Promise.all([
+            fetchFundingDetail(id),
+            fetchReadinessFactors(id).catch(() => ({ status: false, data: [] })),
+            fetchQualifyReasons(id).catch(() => ({ status: false, data: [] }))
+        ]).then(([detailRes, readinessRes, qualifyRes]) => {
+            if (detailRes.status) setData(detailRes.data);
+            else toast.error(detailRes.message || 'Failed to load funding details');
+
+            if (readinessRes?.status) setDynamicReadiness(readinessRes.data);
+            if (qualifyRes?.status) setDynamicQualifyReasons(qualifyRes.data);
+        }).catch(() => toast.error('Failed to load funding details'))
+        .finally(() => setLoading(false));
     }, [id]);
 
     if (loading) return <FundingDetailLoader />;
@@ -264,7 +272,19 @@ const FundingDetail = () => {
                                     <h6 style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d', marginBottom: 16 }}>
                                         Why You May Qualify
                                     </h6>
-                                    {qualify_reasons.length > 0 ? (
+                                    {dynamicQualifyReasons.length > 0 ? (
+                                        <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                            {dynamicQualifyReasons.map((r: any, i: number) => {
+                                                const isGood = r.status === 'Good' || r.status === 'Strong';
+                                                return (
+                                                    <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: '#374151' }}>
+                                                        <i className={isGood ? "ri-checkbox-circle-fill" : "ri-close-circle-fill"} style={{ color: isGood ? '#16a34a' : '#dc2626', fontSize: 16, marginTop: 1, flexShrink: 0 }} />
+                                                        {r.label}
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                    ) : qualify_reasons.length > 0 ? (
                                         <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
                                             {qualify_reasons.map((r: string, i: number) => (
                                                 <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: '#374151' }}>
@@ -278,14 +298,18 @@ const FundingDetail = () => {
                                     )}
 
                                     {/* Missing Documents section inside qualify panel */}
-                                    {missing_documents.length > 0 && (
-                                        <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #f0f3f7' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                                    {(() => {
+                                        const docsFactor = dynamicReadiness.find((f: any) => f.label === 'Documents' && f.missing_docs && f.missing_docs.length > 0);
+                                        const currentMissingDocs = docsFactor?.missing_docs || missing_documents;
+                                        
+                                        return currentMissingDocs.length > 0 && (
+                                            <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #f0f3f7' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                                                 <i className="ri-error-warning-fill" style={{ color: '#dc2626', fontSize: 16 }} />
                                                 <span style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d' }}>Missing Documents</span>
                                             </div>
                                             <ul style={{ margin: 0, padding: '0 0 0 4px', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                                {missing_documents.map((doc: string, i: number) => (
+                                                {currentMissingDocs.map((doc: string, i: number) => (
                                                     <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#4b5563' }}>
                                                         <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#9ca3af', flexShrink: 0, display: 'inline-block' }} />
                                                         {doc}
@@ -293,7 +317,8 @@ const FundingDetail = () => {
                                                 ))}
                                             </ul>
                                         </div>
-                                    )}
+                                        );
+                                    })()}
                                 </div>
                             </div>
 
@@ -303,7 +328,16 @@ const FundingDetail = () => {
                                     <h6 style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d', marginBottom: 16 }}>
                                         Readiness Factors
                                     </h6>
-                                    {readiness_factors.length > 0 ? (
+                                    {dynamicReadiness.length > 0 ? (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                            {dynamicReadiness.map((f: any, i: number) => (
+                                                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                                                    <span style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>{f.label}</span>
+                                                    <ReadinessBadge status={f.status} />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : readiness_factors.length > 0 ? (
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                                             {readiness_factors.map((f: any, i: number) => (
                                                 <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>

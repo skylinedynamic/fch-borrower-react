@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { apiClient } from '../../lib/http/apiClient';
 import { fetchFundingDetail } from '../../modules/funding/services';
-import FundingLoader from '../../components/Loader/FundingLoader';
+import WizardLoader from '../../components/Loader/WizardLoader';
 
 const steps = [
     { id: 1, label: 'Review' },
@@ -93,7 +93,7 @@ const FundingReviewWizard = () => {
         }
     };
 
-    if (loading) return <FundingLoader />;
+    if (loading) return <WizardLoader />;
 
     if (!fundingDetail) {
         return (
