@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { apiClient } from '../../lib/http/apiClient';
 import { fetchFundingDetail } from '../../modules/funding/services';
+import FundingLoader from '../../components/Loader/FundingLoader';
 
 const steps = [
     { id: 1, label: 'Review' },
@@ -25,6 +26,7 @@ const FundingReviewWizard = () => {
         requested_amount: '',
         use_of_funds: 'Working Capital',
     });
+    const [errors, setErrors] = useState<any>({});
 
     useEffect(() => {
         if (id) {
@@ -46,6 +48,22 @@ const FundingReviewWizard = () => {
     }, [id]);
 
     const handleNext = () => {
+        if (currentStep === 1) {
+            let newErrors: any = {};
+            if (!formData.requested_amount) {
+                newErrors.requested_amount = 'Requested amount is required';
+            } else if (isNaN(Number(formData.requested_amount))) {
+                newErrors.requested_amount = 'Requested amount must be a number';
+            } else if (Number(formData.requested_amount) < 0) {
+                newErrors.requested_amount = 'Requested amount cannot be negative';
+            }
+
+            if (Object.keys(newErrors).length > 0) {
+                setErrors(newErrors);
+                return;
+            }
+            setErrors({});
+        }
         if (currentStep < 4) setCurrentStep(prev => prev + 1);
     };
 
@@ -75,15 +93,7 @@ const FundingReviewWizard = () => {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="page-content d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
-                <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        );
-    }
+    if (loading) return <FundingLoader />;
 
     if (!fundingDetail) {
         return (
@@ -97,7 +107,7 @@ const FundingReviewWizard = () => {
     return (
         <div className="page-content" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
             <div className="container-fluid" style={{ maxWidth: '800px' }}>
-                
+
                 {/* ── Breadcrumb ─────────────────────────────────────────────── */}
                 <div className="row page-subheader-sticky bg-body">
                     <div className="col-12">
@@ -113,11 +123,7 @@ const FundingReviewWizard = () => {
                                     </ol>
                                 </nav>
                             </div>
-                            <div className="mt-0">
-                                <Link to={`/funding/${id}`} className="btn btn-primary fw-medium">
-                                    <i className="ri-arrow-left-line me-1 align-bottom"></i> Back
-                                </Link>
-                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -135,11 +141,11 @@ const FundingReviewWizard = () => {
                                         <div style={{ flex: 1, height: '2px', backgroundColor: isCompleted ? '#2563eb' : 'transparent', zIndex: 1 }}></div>
                                     )}
                                     <div className="d-flex flex-column align-items-center position-relative" style={{ zIndex: 2, background: '#f9fafb', padding: '0 10px' }}>
-                                        <div 
+                                        <div
                                             className={`rounded-circle d-flex align-items-center justify-content-center fw-bold`}
-                                            style={{ 
-                                                width: '28px', 
-                                                height: '28px', 
+                                            style={{
+                                                width: '28px',
+                                                height: '28px',
                                                 fontSize: '12px',
                                                 backgroundColor: isActive || isCompleted ? '#2563eb' : '#fff',
                                                 color: isActive || isCompleted ? '#fff' : '#6b7280',
@@ -148,11 +154,11 @@ const FundingReviewWizard = () => {
                                         >
                                             {step.id}
                                         </div>
-                                        <span 
-                                            className="mt-2 position-absolute" 
-                                            style={{ 
-                                                top: '30px', 
-                                                fontSize: '13px', 
+                                        <span
+                                            className="mt-2 position-absolute"
+                                            style={{
+                                                top: '30px',
+                                                fontSize: '13px',
                                                 fontWeight: isActive ? 600 : 500,
                                                 color: isActive || isCompleted ? '#111827' : '#6b7280',
                                                 whiteSpace: 'nowrap'
@@ -172,13 +178,13 @@ const FundingReviewWizard = () => {
 
                 <div className="card shadow-sm border-0 mt-5" style={{ borderRadius: '16px', overflow: 'hidden' }}>
                     <div className="card-body p-5">
-                        
+
                         {/* Step 1: Review Summary */}
                         {currentStep === 1 && (
                             <div>
                                 <h4 className="fw-bold mb-2">Funding Review Summary</h4>
                                 <p className="text-muted mb-4 fs-15">Please confirm your request details</p>
-                                
+
                                 <div className="border rounded-3 p-4 mb-4 bg-white shadow-sm">
                                     <div className="row mb-4">
                                         <div className="col-12 mb-3">
@@ -201,27 +207,31 @@ const FundingReviewWizard = () => {
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div className="row g-4 mb-4">
                                     <div className="col-md-6">
                                         <label className="form-label text-muted fs-13">Requested Amount</label>
                                         <div className="input-group">
-                                            <span className="input-group-text bg-white border-end-0">$</span>
-                                            <input 
-                                                type="number" 
-                                                className="form-control border-start-0 ps-0" 
+                                            <span className={`input-group-text bg-white ${errors.requested_amount ? 'border-danger' : 'border-end-0'}`}>$</span>
+                                            <input
+                                                type="number"
+                                                className={`form-control border-start-0 ps-0 ${errors.requested_amount ? 'border-danger' : ''}`}
                                                 placeholder="100,000"
                                                 value={formData.requested_amount}
-                                                onChange={(e) => setFormData({...formData, requested_amount: e.target.value})}
+                                                onChange={(e) => {
+                                                    setFormData({ ...formData, requested_amount: e.target.value });
+                                                    if (errors.requested_amount) setErrors({ ...errors, requested_amount: null });
+                                                }}
                                             />
                                         </div>
+                                        {errors.requested_amount && <div className="text-danger fs-12 mt-1">{errors.requested_amount}</div>}
                                     </div>
                                     <div className="col-md-6">
                                         <label className="form-label text-muted fs-13">Use of Funds</label>
-                                        <select 
+                                        <select
                                             className="form-select"
                                             value={formData.use_of_funds}
-                                            onChange={(e) => setFormData({...formData, use_of_funds: e.target.value})}
+                                            onChange={(e) => setFormData({ ...formData, use_of_funds: e.target.value })}
                                         >
                                             <option value="Working Capital">Working Capital</option>
                                             <option value="Equipment">Equipment</option>
@@ -243,7 +253,7 @@ const FundingReviewWizard = () => {
                             <div>
                                 <h4 className="fw-bold mb-2">Document Requirements</h4>
                                 <p className="text-muted mb-4 fs-15">Upload the documents below to continue</p>
-                                
+
                                 <div className="mb-4">
                                     <h6 className="fw-bold mb-3">Banking Documents</h6>
                                     <div className="d-flex align-items-center justify-content-between mb-3 border rounded-3 p-3 bg-white">
@@ -289,7 +299,7 @@ const FundingReviewWizard = () => {
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div className="mb-2">
                                     <h6 className="fw-bold mb-3">Financial Information</h6>
                                     <div className="d-flex align-items-center justify-content-between mb-3 border rounded-3 p-3 bg-white border-success-subtle">
@@ -310,7 +320,7 @@ const FundingReviewWizard = () => {
                             <div>
                                 <h4 className="fw-bold mb-2">Review & Submit</h4>
                                 <p className="text-muted mb-4 fs-15">Please review and submit your funding review</p>
-                                
+
                                 <div className="border rounded-3 p-4 mb-4 bg-white shadow-sm">
                                     <h6 className="fw-bold mb-4 fs-15">Review Summary</h6>
                                     <div className="table-responsive">
@@ -340,7 +350,7 @@ const FundingReviewWizard = () => {
                                         </table>
                                     </div>
                                 </div>
-                                
+
                                 <div className="alert alert-success bg-success-subtle border-success-subtle d-flex align-items-center gap-3 py-3 mt-4" style={{ borderRadius: '8px' }}>
                                     <i className="ri-information-line fs-18 text-success"></i>
                                     <span className="fs-14 fw-medium text-success-emphasis">Your file appears complete and is ready for underwriting review.</span>
@@ -357,8 +367,8 @@ const FundingReviewWizard = () => {
                                     </div>
                                 </div>
                                 <h3 className="fw-bold mb-3">Funding Review Submitted!</h3>
-                                <p className="text-muted mb-4 fs-15 px-md-5">Your request has been received and is now under<br/>FCH underwriting review.</p>
-                                
+                                <p className="text-muted mb-4 fs-15 px-md-5">Your request has been received and is now under<br />FCH underwriting review.</p>
+
                                 <div className="border border-primary-subtle bg-primary-subtle rounded-3 p-4 text-start mx-auto mb-4" style={{ maxWidth: '400px' }}>
                                     <h6 className="fw-bold text-primary mb-3">What Happens Next?</h6>
                                     <ul className="list-unstyled m-0 d-flex flex-column gap-3">
@@ -380,7 +390,7 @@ const FundingReviewWizard = () => {
                                         </li>
                                     </ul>
                                 </div>
-                                
+
                                 <div className="d-flex justify-content-between border-top pt-4 mx-auto" style={{ maxWidth: '400px' }}>
                                     <div className="text-start">
                                         <p className="text-muted fs-12 mb-1 fw-medium text-uppercase">Review ID</p>
@@ -398,33 +408,33 @@ const FundingReviewWizard = () => {
                         {currentStep < 4 && (
                             <div className="d-flex justify-content-between align-items-center mt-5 pt-3 border-top">
                                 {currentStep > 1 ? (
-                                    <button 
-                                        className="btn btn-light fw-medium px-4 d-flex align-items-center gap-2" 
+                                    <button
+                                        className="btn btn-light fw-medium px-4 d-flex align-items-center gap-2"
                                         onClick={handleBack}
                                         disabled={submitting}
                                     >
                                         <i className="ri-arrow-left-s-line"></i> Back
                                     </button>
                                 ) : (
-                                    <button 
-                                        className="btn btn-link text-muted fw-medium text-decoration-none px-0" 
+                                    <button
+                                        className="btn btn-link text-muted fw-medium text-decoration-none px-0"
                                         onClick={() => navigate(-1)}
                                     >
                                         Cancel
                                     </button>
                                 )}
-                                
+
                                 {currentStep < 3 ? (
-                                    <button 
-                                        className="btn btn-primary px-4 fw-medium d-flex align-items-center gap-2" 
+                                    <button
+                                        className="btn btn-primary px-4 fw-medium d-flex align-items-center gap-2"
                                         onClick={handleNext}
                                     >
                                         {currentStep === 1 ? 'Review Requirements' : 'Continue'} <i className="ri-arrow-right-line"></i>
                                     </button>
                                 ) : (
-                                    <button 
-                                        className="btn btn-primary px-4 fw-medium" 
-                                        onClick={handleSubmit} 
+                                    <button
+                                        className="btn btn-primary px-4 fw-medium"
+                                        onClick={handleSubmit}
                                         disabled={submitting}
                                     >
                                         {submitting ? 'Submitting...' : 'Submit for Underwriting'}
