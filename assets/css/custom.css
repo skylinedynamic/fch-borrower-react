@@ -1740,4 +1740,47 @@ File: Custom Css File
 .ca-step-metrics .ca-metric-value {
     font-size: 15px;
     font-weight: 700;
+}
+
+/* Empty state for CA pages */
+.ca-empty-state {
+    text-align: center;
+    padding: 56px 24px;
+    background: var(--ca-card-bg);
+    border: 1px solid var(--ca-border);
+    border-radius: var(--ca-radius);
+    box-shadow: var(--ca-shadow-sm);
+    margin-bottom: 24px;
+}
+
+.ca-empty-state-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    background: var(--ca-primary-light);
+}
+
+.ca-empty-state-icon i {
+    font-size: 32px;
+    color: var(--ca-primary);
+}
+
+.ca-empty-state-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ca-primary);
+    margin-bottom: 8px;
+}
+
+.ca-empty-state-desc {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 0;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
 }
