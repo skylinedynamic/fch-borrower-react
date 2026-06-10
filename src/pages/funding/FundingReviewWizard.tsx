@@ -80,7 +80,7 @@ const FundingReviewWizard = () => {
                 await submitFileSelection(filePaths, '/borrower/documents/upload', {
                     document_type_id: currentDocType.id
                 });
-                
+
                 await queryClient.invalidateQueries({ queryKey: queryKeys.documents.list() });
                 toast.success(`Files attached to ${currentDocType.name}`);
                 setShowFileManager(false);
@@ -334,7 +334,7 @@ const FundingReviewWizard = () => {
                                                     {isMissing ? (
                                                         <>
                                                             <span className="text-danger fs-13 fw-semibold"><i className="ri-error-warning-fill align-middle me-1"></i> Missing</span>
-                                                            <button 
+                                                            <button
                                                                 className="btn btn-outline-secondary btn-sm px-3 fw-medium"
                                                                 onClick={() => {
                                                                     setCurrentDocType(docType);
