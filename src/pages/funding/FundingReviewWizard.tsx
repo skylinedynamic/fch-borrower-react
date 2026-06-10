@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
+import { Dropdown } from 'primereact/dropdown';
 import { toast } from 'react-toastify';
 import { apiClient } from '../../lib/http/apiClient';
 import { fetchFundingDetail, fetchReadinessFactors } from '../../modules/funding/services';
@@ -11,6 +12,7 @@ import type { FileSystemItem } from '../../modules/filemanager/types';
 import { getUser } from '../../lib/auth/auth';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../lib/query';
+import { useBusinessDetails, useFinancialInfo } from '../../modules/profile/queries';
 
 const steps = [
     { id: 1, label: 'Review' },
@@ -22,6 +24,7 @@ const steps = [
 const FundingReviewWizard = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -42,6 +45,11 @@ const FundingReviewWizard = () => {
 
     const { data: documentTypes } = useDocumentTypes();
     const queryClient = useQueryClient();
+    const { data: businessRes } = useBusinessDetails();
+    const { data: financialRes } = useFinancialInfo();
+
+    const businessDetails = businessRes?.data || businessRes || {};
+    const financialInfo = financialRes?.data || financialRes || {};
 
     const fetchFactors = (fundingId: string) => {
         fetchReadinessFactors(fundingId).then(res => {
@@ -111,7 +119,7 @@ const FundingReviewWizard = () => {
             }
             setErrors({});
         }
-        if (currentStep === 2 && missingDocs.length > 0) {
+        if (currentStep === 3 && missingDocs.length > 0) {
             toast.error('Please upload all required documents to continue');
             return;
         }
@@ -169,7 +177,7 @@ const FundingReviewWizard = () => {
                 entityType="borrowers"
                 entityId={getUser()?.entity_id}
             />
-            <div className="container-fluid" style={{ maxWidth: '800px' }}>
+            <div className="container-fluid">
 
                 {/* ── Breadcrumb ─────────────────────────────────────────────── */}
                 <div className="row page-subheader-sticky bg-body">
@@ -181,15 +189,21 @@ const FundingReviewWizard = () => {
                                     <ol className="breadcrumb m-0">
                                         <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>
                                         <li className="breadcrumb-item"><Link to="/funding">Funding Options</Link></li>
-                                        <li className="breadcrumb-item"><Link to={`/funding/${id}`}>{fundingDetail.name}</Link></li>
+                                        <li className="breadcrumb-item"><Link to={`/funding/${id}`}>{fundingDetail?.name}</Link></li>
                                         <li className="breadcrumb-item active fw-medium" aria-current="page">Funding Review</li>
                                     </ol>
                                 </nav>
                             </div>
-
+                            <div className="mt-0">
+                                <Link to={`/funding/${id}`} className="btn btn-primary fw-medium">
+                                    <i className="ri-arrow-left-line me-1 align-bottom"></i> Back
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <div className="mx-auto" style={{ maxWidth: '800px' }}>
 
                 {/* Stepper Header */}
                 <div className="d-flex justify-content-center mb-5 pt-4">
@@ -201,26 +215,28 @@ const FundingReviewWizard = () => {
                             return (
                                 <React.Fragment key={step.id}>
                                     {index !== 0 && (
-                                        <div style={{ flex: 1, height: '2px', backgroundColor: isCompleted ? '#2563eb' : 'transparent', zIndex: 1 }}></div>
+                                        <div style={{ flex: 1, height: '2px', backgroundColor: currentStep >= step.id ? '#2563eb' : 'transparent', zIndex: 1 }}></div>
                                     )}
                                     <div className="d-flex flex-column align-items-center position-relative" style={{ zIndex: 2, background: '#f9fafb', padding: '0 10px' }}>
                                         <div
                                             className={`rounded-circle d-flex align-items-center justify-content-center fw-bold`}
                                             style={{
-                                                width: '28px',
-                                                height: '28px',
-                                                fontSize: '12px',
-                                                backgroundColor: isActive || isCompleted ? '#2563eb' : '#fff',
-                                                color: isActive || isCompleted ? '#fff' : '#6b7280',
-                                                border: isActive || isCompleted ? 'none' : '1px solid #d1d5db'
+                                                width: isActive ? '40px' : '32px',
+                                                height: isActive ? '40px' : '32px',
+                                                fontSize: isActive ? '16px' : (isCompleted ? '18px' : '14px'),
+                                                backgroundColor: isActive ? '#2563eb' : '#fff',
+                                                color: isActive ? '#fff' : (isCompleted ? '#2563eb' : '#6b7280'),
+                                                border: isActive ? 'none' : (isCompleted ? '1px solid #2563eb' : '1px solid #d1d5db'),
+                                                boxShadow: isActive ? '0 0 0 4px rgba(37, 99, 235, 0.1)' : 'none',
+                                                transition: 'all 0.2s ease-in-out'
                                             }}
                                         >
-                                            {step.id}
+                                            {isCompleted ? <i className="ri-check-line"></i> : step.id}
                                         </div>
                                         <span
                                             className="mt-2 position-absolute"
                                             style={{
-                                                top: '30px',
+                                                top: '42px',
                                                 fontSize: '13px',
                                                 fontWeight: isActive ? 600 : 500,
                                                 color: isActive || isCompleted ? '#111827' : '#6b7280',
@@ -231,7 +247,7 @@ const FundingReviewWizard = () => {
                                         </span>
                                     </div>
                                     {index !== steps.length - 1 && (
-                                        <div style={{ flex: 1, height: '2px', backgroundColor: isCompleted ? '#2563eb' : 'transparent', zIndex: 1 }}></div>
+                                        <div style={{ flex: 1, height: '2px', backgroundColor: currentStep > step.id ? '#2563eb' : 'transparent', zIndex: 1 }}></div>
                                     )}
                                 </React.Fragment>
                             );
@@ -291,16 +307,18 @@ const FundingReviewWizard = () => {
                                     </div>
                                     <div className="col-md-6">
                                         <label className="form-label text-muted fs-13">Use of Funds</label>
-                                        <select
-                                            className="form-select"
+                                        <Dropdown
                                             value={formData.use_of_funds}
-                                            onChange={(e) => setFormData({ ...formData, use_of_funds: e.target.value })}
-                                        >
-                                            <option value="Working Capital">Working Capital</option>
-                                            <option value="Equipment">Equipment</option>
-                                            <option value="Expansion">Expansion</option>
-                                            <option value="Other">Other</option>
-                                        </select>
+                                            options={[
+                                                { label: 'Working Capital', value: 'Working Capital' },
+                                                { label: 'Equipment', value: 'Equipment' },
+                                                { label: 'Expansion', value: 'Expansion' },
+                                                { label: 'Other', value: 'Other' }
+                                            ]}
+                                            onChange={(e) => setFormData({ ...formData, use_of_funds: e.value })}
+                                            className="w-100 bg-light border-light"
+                                            style={{ height: '38px' }}
+                                        />
                                     </div>
                                 </div>
 
@@ -311,8 +329,150 @@ const FundingReviewWizard = () => {
                             </div>
                         )}
 
-                        {/* Step 2: Document Requirements */}
+                        {/* Step 2: Application Summary */}
                         {currentStep === 2 && (
+                            <div>
+                                <h4 className="fw-bold mb-2">Application Summary</h4>
+                                <p className="text-muted mb-4 fs-15">Please review your business information</p>
+
+                                <div className="alert alert-primary bg-primary-subtle border-0 d-flex align-items-center gap-3 py-3 mb-4" style={{ borderRadius: '8px' }}>
+                                    <i className="ri-information-line fs-18 text-primary"></i>
+                                    <span className="fs-13 text-primary-emphasis">Please confirm that the information below is accurate. This information is sourced from your profile and cannot be edited here.</span>
+                                </div>
+
+                                <div className="row g-4 mb-2">
+                                    {/* Business Information */}
+                                    <div className="col-md-6">
+                                        <div className="border rounded-3 p-4 bg-white shadow-sm h-100">
+                                            <div className="d-flex align-items-center gap-3 mb-4">
+                                                <div className="rounded-circle d-flex align-items-center justify-content-center bg-primary" style={{ width: '40px', height: '40px' }}>
+                                                    <i className="ri-building-line text-white fs-20"></i>
+                                                </div>
+                                                <h6 className="fw-bold m-0 text-uppercase" style={{ fontSize: '13px', letterSpacing: '0.5px' }}>Business Information</h6>
+                                            </div>
+                                            <div className="d-flex flex-column gap-3">
+                                                <div className="d-flex justify-content-between align-items-start">
+                                                    <span className="text-muted fs-13" style={{ width: '45%' }}>Legal Business Name</span>
+                                                    <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.legal_business_name || 'ABC Solutions LLC'}</span>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-start">
+                                                    <span className="text-muted fs-13" style={{ width: '45%' }}>Business Structure</span>
+                                                    <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.entity_type || 'Limited Liability Company (LLC)'}</span>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-start">
+                                                    <span className="text-muted fs-13" style={{ width: '45%' }}>Industry</span>
+                                                    <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.industry || 'Professional Services'}</span>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-start">
+                                                    <span className="text-muted fs-13" style={{ width: '45%' }}>EIN / Tax ID</span>
+                                                    <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.tax_id || '12-3456789'}</span>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-start">
+                                                    <span className="text-muted fs-13" style={{ width: '45%' }}>Time in Business</span>
+                                                    <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.time_in_business || '2 - 5 Years'}</span>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-start">
+                                                    <span className="text-muted fs-13" style={{ width: '45%' }}>Number of Employees</span>
+                                                    <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.number_of_employees || '5 - 10'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Financial Overview */}
+                                    <div className="col-md-6">
+                                        <div className="border rounded-3 p-4 bg-white shadow-sm h-100">
+                                            <div className="d-flex align-items-center gap-3 mb-4">
+                                                <div className="rounded-circle d-flex align-items-center justify-content-center bg-success" style={{ width: '40px', height: '40px' }}>
+                                                    <i className="ri-money-dollar-circle-line text-white fs-20"></i>
+                                                </div>
+                                                <h6 className="fw-bold m-0 text-uppercase" style={{ fontSize: '13px', letterSpacing: '0.5px' }}>Financial Overview</h6>
+                                            </div>
+                                            <div className="d-flex flex-column gap-3">
+                                                <div className="d-flex justify-content-between align-items-start">
+                                                    <span className="text-muted fs-13" style={{ width: '45%' }}>Gross Annual Revenue</span>
+                                                    <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>${financialInfo?.gross_annual_revenue?.toLocaleString() || '500,000'}</span>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-start">
+                                                    <span className="text-muted fs-13" style={{ width: '45%' }}>Average Monthly Revenue</span>
+                                                    <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>${financialInfo?.average_monthly_revenue?.toLocaleString() || '45,000'}</span>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-start">
+                                                    <span className="text-muted fs-13" style={{ width: '45%' }}>Time in Business</span>
+                                                    <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.time_in_business || '2 - 5 Years'}</span>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-start">
+                                                    <span className="text-muted fs-13" style={{ width: '45%' }}>Requested Amount</span>
+                                                    <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>${Number(formData.requested_amount || 0).toLocaleString()}</span>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-start">
+                                                    <span className="text-muted fs-13" style={{ width: '45%' }}>Use of Funds</span>
+                                                    <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{formData.use_of_funds}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Business Address */}
+                                    <div className="col-md-6">
+                                        <div className="border rounded-3 p-4 bg-white shadow-sm h-100">
+                                            <div className="d-flex align-items-center gap-3 mb-4">
+                                                <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ backgroundColor: '#a855f7', width: '40px', height: '40px' }}>
+                                                    <i className="ri-map-pin-line text-white fs-20"></i>
+                                                </div>
+                                                <h6 className="fw-bold m-0 text-uppercase" style={{ fontSize: '13px', letterSpacing: '0.5px' }}>Business Address</h6>
+                                            </div>
+                                            <div className="d-flex flex-column gap-3">
+                                                <div className="d-flex justify-content-between align-items-start">
+                                                    <span className="text-muted fs-13" style={{ width: '35%' }}>Address</span>
+                                                    <span className="fw-medium fs-13 text-dark text-end" style={{ width: '65%' }}>
+                                                        {businessDetails?.address_line1 || '123 Business Blvd, Suite 100'}<br />
+                                                        {businessDetails?.city || 'New York'}, {businessDetails?.state || 'NY'} {businessDetails?.zip_code || '10001'}
+                                                    </span>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-start mt-2">
+                                                    <span className="text-muted fs-13" style={{ width: '35%' }}>Phone</span>
+                                                    <span className="fw-medium fs-13 text-dark text-end" style={{ width: '65%' }}>{businessDetails?.business_phone || '(555) 123-4567'}</span>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-start mt-2">
+                                                    <span className="text-muted fs-13" style={{ width: '35%' }}>Email</span>
+                                                    <span className="fw-medium fs-13 text-dark text-end" style={{ width: '65%' }}>{businessDetails?.business_email || 'info@abcsolutions.com'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Funding Details */}
+                                    <div className="col-md-6">
+                                        <div className="border rounded-3 p-4 bg-white shadow-sm h-100">
+                                            <div className="d-flex align-items-center gap-3 mb-4">
+                                                <div className="rounded-circle d-flex align-items-center justify-content-center bg-warning" style={{ width: '40px', height: '40px' }}>
+                                                    <i className="ri-bank-card-line text-white fs-20"></i>
+                                                </div>
+                                                <h6 className="fw-bold m-0 text-uppercase" style={{ fontSize: '13px', letterSpacing: '0.5px' }}>Funding Details</h6>
+                                            </div>
+                                            <div className="d-flex flex-column gap-3">
+                                                <div className="d-flex justify-content-between align-items-start">
+                                                    <span className="text-muted fs-13" style={{ width: '45%' }}>Funding Type</span>
+                                                    <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{fundingDetail.name}</span>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-start">
+                                                    <span className="text-muted fs-13" style={{ width: '45%' }}>Estimated Speed to Funds</span>
+                                                    <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{fundingDetail.speed_to_funds ? `${fundingDetail.speed_to_funds} Days` : '1 - 7 Days'}</span>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-start">
+                                                    <span className="text-muted fs-13" style={{ width: '45%' }}>Recommended Range</span>
+                                                    <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{fundingDetail.amount_range || '$10,000 - $250,000'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Step 3: Document Requirements */}
+                        {currentStep === 3 && (
                             <div>
                                 <h4 className="fw-bold mb-2">Document Requirements</h4>
                                 <p className="text-muted mb-4 fs-15">Upload the documents below to continue</p>
@@ -352,49 +512,6 @@ const FundingReviewWizard = () => {
                                             </div>
                                         );
                                     })}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Step 3: Review & Submit */}
-                        {currentStep === 3 && (
-                            <div>
-                                <h4 className="fw-bold mb-2">Review & Submit</h4>
-                                <p className="text-muted mb-4 fs-15">Please review and submit your funding review</p>
-
-                                <div className="border rounded-3 p-4 mb-4 bg-white shadow-sm">
-                                    <h6 className="fw-bold mb-4 fs-15">Review Summary</h6>
-                                    <div className="table-responsive">
-                                        <table className="table table-borderless table-sm m-0">
-                                            <tbody>
-                                                <tr>
-                                                    <td className="text-muted fs-14 py-2" style={{ width: '40%' }}>Funding Type</td>
-                                                    <td className="fw-medium fs-14 py-2 text-dark">{fundingDetail.name}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="text-muted fs-14 py-2">Requested Amount</td>
-                                                    <td className="fw-medium fs-14 py-2 text-dark">${formData.requested_amount || '0'}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="text-muted fs-14 py-2">Use of Funds</td>
-                                                    <td className="fw-medium fs-14 py-2 text-dark">{formData.use_of_funds}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="text-muted fs-14 py-2">Documents Uploaded</td>
-                                                    <td className="fw-medium fs-14 py-2 text-dark">{uploadedCount} of {requiredDocTypes.length}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="text-muted fs-14 py-2">Estimated Speed</td>
-                                                    <td className="fw-medium fs-14 py-2 text-dark">{fundingDetail.speed_to_funds ? `${fundingDetail.speed_to_funds} Days` : '1 - 7 Days'}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                <div className="alert alert-success bg-success-subtle border-success-subtle d-flex align-items-center gap-3 py-3 mt-4" style={{ borderRadius: '8px' }}>
-                                    <i className="ri-information-line fs-18 text-success"></i>
-                                    <span className="fs-14 fw-medium text-success-emphasis">Your file appears complete and is ready for underwriting review.</span>
                                 </div>
                             </div>
                         )}
@@ -442,6 +559,7 @@ const FundingReviewWizard = () => {
                                         <h6 className="fw-bold mb-0">{submitDate}</h6>
                                     </div>
                                 </div>
+
                             </div>
                         )}
 
@@ -469,15 +587,14 @@ const FundingReviewWizard = () => {
                                     <button
                                         className="btn btn-primary px-4 fw-medium d-flex align-items-center gap-2"
                                         onClick={handleNext}
-                                        disabled={currentStep === 2 && missingDocs.length > 0}
                                     >
-                                        {currentStep === 1 ? 'Review Requirements' : 'Continue'} <i className="ri-arrow-right-line"></i>
+                                        {currentStep === 1 ? 'Continue to Application' : 'Continue to Documents'} <i className="ri-arrow-right-line"></i>
                                     </button>
                                 ) : (
                                     <button
                                         className="btn btn-primary px-4 fw-medium"
                                         onClick={handleSubmit}
-                                        disabled={submitting}
+                                        disabled={submitting || missingDocs.length > 0}
                                     >
                                         {submitting ? 'Submitting...' : 'Submit for Underwriting'}
                                     </button>
@@ -488,12 +605,24 @@ const FundingReviewWizard = () => {
                         {/* Navigation Buttons (Step 4) */}
                         {currentStep === 4 && (
                             <div className="d-flex flex-column align-items-center mx-auto mt-4" style={{ maxWidth: '400px' }}>
-                                <button className="btn btn-primary w-100 fw-medium py-2 mb-3">View Review Status</button>
-                                <Link to="/funding" className="text-primary fw-medium text-decoration-none fs-14">Return to Funding Options</Link>
+                                <button 
+                                    className="btn w-100 mb-3 fw-medium text-white" 
+                                    style={{ backgroundColor: '#00204a', borderColor: '#00204a', padding: '10px' }}
+                                    onClick={() => navigate('/funding-reviews')}
+                                >
+                                    View Review Status
+                                </button>
+                                <button 
+                                    className="btn btn-link text-muted text-decoration-none fw-medium" 
+                                    onClick={() => navigate('/funding')}
+                                >
+                                    Return to Funding Options
+                                </button>
                             </div>
                         )}
 
                     </div>
+                </div>
                 </div>
             </div>
         </div>

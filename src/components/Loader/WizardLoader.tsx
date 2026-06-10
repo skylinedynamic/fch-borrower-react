@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 const WizardLoader = () => {
     return (
         <div className="page-content" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
-            <div className="container-fluid" style={{ maxWidth: '800px' }}>
+            <div className="container-fluid">
                 
                 {/* ── Breadcrumb Skeleton ─────────────────────────────────────────────── */}
                 <div className="row page-subheader-sticky bg-body">
@@ -16,41 +16,50 @@ const WizardLoader = () => {
                                     <ol className="breadcrumb m-0">
                                         <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>
                                         <li className="breadcrumb-item"><Link to="/funding">Funding Options</Link></li>
-                                        <li className="breadcrumb-item text-muted">
-                                            <span className="skeleton-line d-inline-block m-0" style={{ width: '120px', height: '14px', borderRadius: '4px', verticalAlign: 'middle' }}></span>
-                                        </li>
                                         <li className="breadcrumb-item active fw-medium" aria-current="page">Funding Review</li>
                                     </ol>
                                 </nav>
+                            </div>
+                            <div className="mt-0">
+                                <div className="skeleton-line d-inline-block m-0" style={{ width: '75px', height: '36px', borderRadius: '6px' }}></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <div className="mx-auto" style={{ maxWidth: '800px' }}>
+
                 {/* Stepper Header Skeleton */}
                 <div className="d-flex justify-content-center mb-5 pt-4">
                     <div className="d-flex align-items-center position-relative w-100" style={{ maxWidth: '600px' }}>
                         <div className="position-absolute" style={{ top: '50%', left: 0, right: 0, height: '2px', backgroundColor: '#e5e7eb', zIndex: 0, transform: 'translateY(-50%)' }}></div>
-                        {[1, 2, 3, 4].map((step, index) => (
-                            <React.Fragment key={step}>
-                                {index !== 0 && (
-                                    <div style={{ flex: 1, height: '2px', backgroundColor: 'transparent', zIndex: 1 }}></div>
-                                )}
-                                <div className="d-flex flex-column align-items-center position-relative" style={{ zIndex: 2, background: '#f9fafb', padding: '0 10px' }}>
-                                    <div
-                                        className="skeleton-line rounded-circle d-flex align-items-center justify-content-center"
-                                        style={{ width: '28px', height: '28px' }}
-                                    ></div>
-                                    <div
-                                        className="skeleton-line mt-2 position-absolute"
-                                        style={{ top: '30px', width: 60, height: 12, borderRadius: 4 }}
-                                    ></div>
-                                </div>
-                                {index !== 3 && (
-                                    <div style={{ flex: 1, height: '2px', backgroundColor: 'transparent', zIndex: 1 }}></div>
-                                )}
-                            </React.Fragment>
-                        ))}
+                        {[1, 2, 3, 4].map((step, index) => {
+                            const isActive = index === 0;
+                            return (
+                                <React.Fragment key={step}>
+                                    {index !== 0 && (
+                                        <div style={{ flex: 1, height: '2px', backgroundColor: 'transparent', zIndex: 1 }}></div>
+                                    )}
+                                    <div className="d-flex flex-column align-items-center position-relative" style={{ zIndex: 2, background: '#f9fafb', padding: '0 10px' }}>
+                                        <div
+                                            className="skeleton-line rounded-circle d-flex align-items-center justify-content-center"
+                                            style={{
+                                                width: isActive ? '40px' : '32px',
+                                                height: isActive ? '40px' : '32px',
+                                                boxShadow: isActive ? '0 0 0 4px rgba(37, 99, 235, 0.1)' : 'none',
+                                            }}
+                                        ></div>
+                                        <div
+                                            className="skeleton-line mt-2 position-absolute"
+                                            style={{ top: '42px', width: 60, height: 12, borderRadius: 4 }}
+                                        ></div>
+                                    </div>
+                                    {index !== 3 && (
+                                        <div style={{ flex: 1, height: '2px', backgroundColor: 'transparent', zIndex: 1 }}></div>
+                                    )}
+                                </React.Fragment>
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -101,6 +110,7 @@ const WizardLoader = () => {
                             <div className="skeleton-line" style={{ width: '100%', height: 50, borderRadius: '8px' }} />
                         </div>
                     </div>
+                </div>
                 </div>
 
             </div>

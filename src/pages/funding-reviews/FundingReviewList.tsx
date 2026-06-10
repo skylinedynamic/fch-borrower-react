@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useBorrowerFundingReviews } from '../../modules/funding-reviews/queries'
 import { DataTable } from '../../components/Table/DataTableWrapper'
 import { Column } from 'primereact/column'
+import { Dropdown } from 'primereact/dropdown'
 import FundingReviewModal from './FundingReviewModal'
 import StatisticsCardSkeleton from '../../components/Common/StatisticsCardSkeleton'
 
@@ -10,14 +11,19 @@ export default function FundingReviewList() {
     const [page, setPage] = useState(1)
     const [perPage, setPerPage] = useState(10)
     const [searchText, setSearchText] = useState('')
+    const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
+    
     const [appliedSearchText, setAppliedSearchText] = useState('')
+    const [appliedStatus, setAppliedStatus] = useState<string | null>(null)
+    
     const [selectedReview, setSelectedReview] = useState<any>(null)
     const [showModal, setShowModal] = useState(false)
 
     const { data, isLoading } = useBorrowerFundingReviews({
         page,
         per_page: perPage,
-        search: appliedSearchText
+        search: appliedSearchText,
+        status: appliedStatus || undefined
     })
 
     // Fix the nested data access
@@ -54,12 +60,15 @@ export default function FundingReviewList() {
 
     const handleApplyFilters = () => {
         setAppliedSearchText(searchText)
+        setAppliedStatus(selectedStatus)
         setPage(1)
     }
 
     const handleClearFilters = () => {
         setSearchText('')
+        setSelectedStatus(null)
         setAppliedSearchText('')
+        setAppliedStatus(null)
         setPage(1)
     }
 
@@ -210,15 +219,30 @@ export default function FundingReviewList() {
                                                 <i className="ri-search-line search-icon"></i>
                                             </div>
                                         </div>
-                                        <div className="col-xxl-6 col-sm-6 d-flex gap-2 justify-content-end">
+                                        <div className="col-xxl-4 col-sm-6">
+                                            <Dropdown
+                                                value={selectedStatus}
+                                                options={[
+                                                    { label: 'Pending', value: 'Pending' },
+                                                    { label: 'Approved', value: 'Approved' },
+                                                    { label: 'Rejected', value: 'Rejected' }
+                                                ]}
+                                                onChange={(e) => setSelectedStatus(e.value)}
+                                                placeholder="All Statuses"
+                                                className="w-100 bg-light border-light"
+                                                style={{ height: '38px' }}
+                                                inputStyle={{ height: '38px' }}
+                                            />
+                                        </div>
+                                        <div className="col-xxl-2 col-sm-6 d-flex gap-2 justify-content-end">
                                             <button 
                                                 type="button" 
-                                                className="btn btn-warning"
+                                                className="btn btn-warning flex-grow-1"
                                                 onClick={handleApplyFilters}
                                             >
                                                 <i className="ri-equalizer-fill me-1 align-bottom"></i> Filters
                                             </button>
-                                             <button type="button" className="btn-clear" onClick={handleClearFilters}>
+                                             <button type="button" className="btn-clear flex-grow-1" onClick={handleClearFilters}>
                                                 <i className="ri-close-line me-1 align-bottom"></i> Clear
                                             </button>
                                         </div>
