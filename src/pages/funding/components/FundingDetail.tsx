@@ -55,9 +55,9 @@ const FundingDetailLoader = () => (
                     </div>
                 </div>
             </div>
-            <div className="card border-0 shadow-sm">
+            <div className="card border-0 shadow-sm" style={{ borderRadius: 12, overflow: 'hidden' }}>
                 <div className="card-body p-4">
-                    <div className="d-flex align-items-start justify-content-between mb-4">
+                    <div className="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
                         <div className="d-flex align-items-center gap-3">
                             <div className="skeleton-line flex-shrink-0" style={{ width: 56, height: 56, borderRadius: '50%' }} />
                             <div>
@@ -65,32 +65,43 @@ const FundingDetailLoader = () => (
                                 <div className="skeleton-line" style={{ width: 280, height: 13, borderRadius: 4 }} />
                             </div>
                         </div>
-                        <div className="skeleton-line" style={{ width: 110, height: 36, borderRadius: 20 }} />
+                        <div className="text-end flex-shrink-0">
+                            <div className="skeleton-line" style={{ width: 110, height: 32, borderRadius: 20 }} />
+                            <div className="skeleton-line ms-auto mt-2" style={{ width: 60, height: 10, borderRadius: 4 }} />
+                        </div>
                     </div>
-                    <div className="row g-0 border rounded-2 mb-4">
+                    <div className="row g-0 mb-4" style={{ border: '1px solid #e8ecf0', borderRadius: 10, overflow: 'hidden' }}>
                         {[0, 1, 2, 3].map(i => (
-                            <div key={i} className={`col-md-3 p-3 ${i < 3 ? 'border-end' : ''}`}>
+                            <div key={i} className={`col-md-3 col-6 p-3`} style={{ borderRight: i < 3 ? '1px solid #e8ecf0' : 'none' }}>
                                 <div className="skeleton-line mb-2" style={{ width: '60%', height: 10, borderRadius: 4 }} />
                                 <div className="skeleton-line" style={{ width: '80%', height: 14, borderRadius: 4 }} />
                             </div>
                         ))}
                     </div>
-                    <div className="row g-3">
+                    <div className="row g-3 mb-3">
                         {[0, 1].map(i => (
                             <div key={i} className="col-md-6">
-                                <div className="border rounded-2 p-3" style={{ minHeight: 220 }}>
-                                    <div className="skeleton-line mb-3" style={{ width: 140, height: 14, borderRadius: 4 }} />
+                                <div style={{ border: '1px solid #e8ecf0', borderRadius: 10, padding: '20px 22px', minHeight: 220 }}>
+                                    <div className="skeleton-line mb-4" style={{ width: 140, height: 14, borderRadius: 4 }} />
                                     {[90, 80, 85, 70].map((w, j) => (
-                                        <div key={j} className="skeleton-line mb-2" style={{ width: `${w}%`, height: 12, borderRadius: 4 }} />
+                                        <div key={j} className="d-flex align-items-center gap-2 mb-3">
+                                            <div className="skeleton-line flex-shrink-0" style={{ width: 16, height: 16, borderRadius: '50%' }} />
+                                            <div className="skeleton-line" style={{ width: `${w}%`, height: 12, borderRadius: 4 }} />
+                                        </div>
                                     ))}
                                 </div>
                             </div>
                         ))}
                     </div>
+                    <div style={{ border: '1px solid #e8ecf0', borderRadius: 10, padding: '18px 22px' }}>
+                        <div className="skeleton-line mb-3" style={{ width: 100, height: 14, borderRadius: 4 }} />
+                        <div className="skeleton-line mb-2" style={{ width: '100%', height: 12, borderRadius: 4 }} />
+                        <div className="skeleton-line" style={{ width: '80%', height: 12, borderRadius: 4 }} />
+                    </div>
                 </div>
-                <div className="card-footer bg-white border-top d-flex align-items-center justify-content-between p-3 px-4">
+                <div style={{ borderTop: '1px solid #e8ecf0', background: '#fff', padding: '18px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
-                        <div className="skeleton-line mb-1" style={{ width: 80, height: 14, borderRadius: 4 }} />
+                        <div className="skeleton-line mb-2" style={{ width: 80, height: 14, borderRadius: 4 }} />
                         <div className="skeleton-line" style={{ width: 320, height: 12, borderRadius: 4 }} />
                     </div>
                     <div className="skeleton-line" style={{ width: 170, height: 42, borderRadius: 8 }} />
@@ -272,26 +283,16 @@ const FundingDetail = () => {
                                     <h6 style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d', marginBottom: 16 }}>
                                         Why You May Qualify
                                     </h6>
-                                    {dynamicQualifyReasons.length > 0 ? (
+                                    {dynamicQualifyReasons.filter((r: any) => r.status === 'Good' || r.status === 'Strong').length > 0 ? (
                                         <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                            {dynamicQualifyReasons.map((r: any, i: number) => {
-                                                const isGood = r.status === 'Good' || r.status === 'Strong';
+                                            {dynamicQualifyReasons.filter((r: any) => r.status === 'Good' || r.status === 'Strong').map((r: any, i: number) => {
                                                 return (
                                                     <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: '#374151' }}>
-                                                        <i className={isGood ? "ri-checkbox-circle-fill" : "ri-close-circle-fill"} style={{ color: isGood ? '#16a34a' : '#dc2626', fontSize: 16, marginTop: 1, flexShrink: 0 }} />
+                                                        <i className="ri-checkbox-circle-fill" style={{ color: '#16a34a', fontSize: 16, marginTop: 1, flexShrink: 0 }} />
                                                         {r.label}
                                                     </li>
                                                 );
                                             })}
-                                        </ul>
-                                    ) : qualify_reasons.length > 0 ? (
-                                        <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                            {qualify_reasons.map((r: string, i: number) => (
-                                                <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: '#374151' }}>
-                                                    <i className="ri-checkbox-circle-fill" style={{ color: '#16a34a', fontSize: 16, marginTop: 1, flexShrink: 0 }} />
-                                                    {r}
-                                                </li>
-                                            ))}
                                         </ul>
                                     ) : (
                                         <p style={{ fontSize: 13, color: '#9ca3af', margin: 0 }}>No eligibility reasons available.</p>

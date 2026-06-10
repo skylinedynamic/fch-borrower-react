@@ -2,8 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { apiClient } from '../../lib/http/apiClient';
-import { fetchFundingDetail } from '../../modules/funding/services';
+import { fetchFundingDetail, fetchReadinessFactors } from '../../modules/funding/services';
 import WizardLoader from '../../components/Loader/WizardLoader';
+import { useDocumentTypes } from '../../modules/documents';
+import { FileManagerModal } from '../../components/FileManagerModal/FileManagerModal';
+import { submitFileSelection } from '../../modules/filemanager/services';
+import type { FileSystemItem } from '../../modules/filemanager/types';
+import { getUser } from '../../lib/auth/auth';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../../lib/query';
 
 const steps = [
     { id: 1, label: 'Review' },
@@ -28,16 +35,34 @@ const FundingReviewWizard = () => {
     });
     const [errors, setErrors] = useState<any>({});
 
+    const [missingDocs, setMissingDocs] = useState<string[]>([]);
+    const [showFileManager, setShowFileManager] = useState(false);
+    const [currentDocType, setCurrentDocType] = useState<any>(null);
+    const [uploading, setUploading] = useState(false);
+
+    const { data: documentTypes } = useDocumentTypes();
+    const queryClient = useQueryClient();
+
+    const fetchFactors = (fundingId: string) => {
+        fetchReadinessFactors(fundingId).then(res => {
+            if (res.status) {
+                const docFactor = res.data.find((f: any) => f.type === 'documents');
+                if (docFactor && docFactor.missing_docs) {
+                    setMissingDocs(docFactor.missing_docs);
+                } else {
+                    setMissingDocs([]);
+                }
+            }
+        }).catch(err => console.error(err));
+    };
+
     useEffect(() => {
         if (id) {
             fetchFundingDetail(id)
                 .then(res => {
                     if (res.status) {
                         setFundingDetail(res.data);
-                        // set default range logic if available
-                        if (res.data.amount_range) {
-                            // Extract min value from range like "$10,000 - $250,000" if needed
-                        }
+                        fetchFactors(id);
                     } else {
                         toast.error(res.message || 'Failed to load funding details');
                     }
@@ -46,6 +71,28 @@ const FundingReviewWizard = () => {
                 .finally(() => setLoading(false));
         }
     }, [id]);
+
+    const handleFileSelection = async (selectedFiles: FileSystemItem[]) => {
+        if (currentDocType) {
+            setUploading(true);
+            try {
+                const filePaths = selectedFiles.map(f => f.path);
+                await submitFileSelection(filePaths, '/borrower/documents/upload', {
+                    document_type_id: currentDocType.id
+                });
+                
+                await queryClient.invalidateQueries({ queryKey: queryKeys.documents.list() });
+                toast.success(`Files attached to ${currentDocType.name}`);
+                setShowFileManager(false);
+                fetchFactors(id as string);
+            } catch (error) {
+                console.error('Failed to attach files', error);
+                toast.error('Failed to attach files');
+            } finally {
+                setUploading(false);
+            }
+        }
+    };
 
     const handleNext = () => {
         if (currentStep === 1) {
@@ -64,6 +111,10 @@ const FundingReviewWizard = () => {
             }
             setErrors({});
         }
+        if (currentStep === 2 && missingDocs.length > 0) {
+            toast.error('Please upload all required documents to continue');
+            return;
+        }
         if (currentStep < 4) setCurrentStep(prev => prev + 1);
     };
 
@@ -71,6 +122,9 @@ const FundingReviewWizard = () => {
         if (currentStep > 1) setCurrentStep(prev => prev - 1);
         else navigate(-1);
     };
+
+    const requiredDocTypes = documentTypes ? documentTypes.filter(t => !fundingDetail?.allowed_documents?.length || fundingDetail.allowed_documents.includes(t.id)) : [];
+    const uploadedCount = requiredDocTypes.length - missingDocs.length;
 
     const handleSubmit = async () => {
         setSubmitting(true);
@@ -80,7 +134,7 @@ const FundingReviewWizard = () => {
                 funding_type: fundingDetail.name,
                 requested_amount: formData.requested_amount,
                 use_of_funds: formData.use_of_funds,
-                documents_uploaded: ['bank_statement_1', 'bank_statement_2', 'voided_check', 'drivers_license', 'tax_return'],
+                documents_uploaded: requiredDocTypes.filter(t => !missingDocs.includes(t.name)).map(t => t.name),
                 estimated_speed: fundingDetail.speed_to_funds ? `${fundingDetail.speed_to_funds} Days` : '1 - 7 Days'
             });
             setReviewId(response.data.data?.id ? `FR-2024-${String(response.data.data.id).padStart(5, '0')}` : 'FR-2024-000158');
@@ -106,6 +160,15 @@ const FundingReviewWizard = () => {
 
     return (
         <div className="page-content" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
+            <FileManagerModal
+                isOpen={showFileManager}
+                toggle={() => setShowFileManager(!showFileManager)}
+                section={currentDocType?.name || ''}
+                selectionMode={true}
+                onSelectFiles={handleFileSelection}
+                entityType="borrowers"
+                entityId={getUser()?.entity_id}
+            />
             <div className="container-fluid" style={{ maxWidth: '800px' }}>
 
                 {/* ── Breadcrumb ─────────────────────────────────────────────── */}
@@ -255,62 +318,40 @@ const FundingReviewWizard = () => {
                                 <p className="text-muted mb-4 fs-15">Upload the documents below to continue</p>
 
                                 <div className="mb-4">
-                                    <h6 className="fw-bold mb-3">Banking Documents</h6>
-                                    <div className="d-flex align-items-center justify-content-between mb-3 border rounded-3 p-3 bg-white">
-                                        <div className="d-flex align-items-center gap-2">
-                                            <i className="ri-checkbox-blank-line text-muted fs-18"></i>
-                                            <span className="fs-14 fw-medium text-dark">Last 3 months business bank statements</span>
-                                        </div>
-                                        <div className="d-flex align-items-center gap-3">
-                                            <span className="text-danger fs-13 fw-semibold"><i className="ri-error-warning-fill align-middle me-1"></i> Missing</span>
-                                            <button className="btn btn-outline-secondary btn-sm px-3 fw-medium">Upload</button>
-                                        </div>
-                                    </div>
-                                    <div className="d-flex align-items-center justify-content-between mb-3 border rounded-3 p-3 bg-white">
-                                        <div className="d-flex align-items-center gap-2">
-                                            <i className="ri-checkbox-blank-line text-muted fs-18"></i>
-                                            <span className="fs-14 fw-medium text-dark">Voided business check</span>
-                                        </div>
-                                        <div className="d-flex align-items-center gap-3">
-                                            <span className="text-danger fs-13 fw-semibold"><i className="ri-error-warning-fill align-middle me-1"></i> Missing</span>
-                                            <button className="btn btn-outline-secondary btn-sm px-3 fw-medium">Upload</button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="mb-4">
-                                    <h6 className="fw-bold mb-3">Identity & Business</h6>
-                                    <div className="d-flex align-items-center justify-content-between mb-3 border rounded-3 p-3 bg-white border-success-subtle">
-                                        <div className="d-flex align-items-center gap-2">
-                                            <i className="ri-checkbox-fill text-success fs-18"></i>
-                                            <span className="fs-14 fw-medium text-dark">Driver's License / ID</span>
-                                        </div>
-                                        <div className="d-flex align-items-center gap-3">
-                                            <span className="text-success fs-13 fw-semibold"><i className="ri-check-line align-middle me-1"></i> Uploaded</span>
-                                        </div>
-                                    </div>
-                                    <div className="d-flex align-items-center justify-content-between mb-3 border rounded-3 p-3 bg-white border-success-subtle">
-                                        <div className="d-flex align-items-center gap-2">
-                                            <i className="ri-checkbox-fill text-success fs-18"></i>
-                                            <span className="fs-14 fw-medium text-dark">Business Information Form</span>
-                                        </div>
-                                        <div className="d-flex align-items-center gap-3">
-                                            <span className="text-success fs-13 fw-semibold"><i className="ri-check-line align-middle me-1"></i> Uploaded</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="mb-2">
-                                    <h6 className="fw-bold mb-3">Financial Information</h6>
-                                    <div className="d-flex align-items-center justify-content-between mb-3 border rounded-3 p-3 bg-white border-success-subtle">
-                                        <div className="d-flex align-items-center gap-2">
-                                            <i className="ri-checkbox-fill text-success fs-18"></i>
-                                            <span className="fs-14 fw-medium text-dark">Business Tax Returns (if applicable)</span>
-                                        </div>
-                                        <div className="d-flex align-items-center gap-3">
-                                            <span className="text-success fs-13 fw-semibold"><i className="ri-check-line align-middle me-1"></i> Uploaded</span>
-                                        </div>
-                                    </div>
+                                    {requiredDocTypes.map(docType => {
+                                        const isMissing = missingDocs.includes(docType.name);
+                                        return (
+                                            <div key={docType.id} className={`d-flex align-items-center justify-content-between mb-3 border rounded-3 p-3 bg-white ${!isMissing ? 'border-success-subtle' : ''}`}>
+                                                <div className="d-flex align-items-center gap-2">
+                                                    {isMissing ? (
+                                                        <i className="ri-checkbox-blank-line text-muted fs-18"></i>
+                                                    ) : (
+                                                        <i className="ri-checkbox-fill text-success fs-18"></i>
+                                                    )}
+                                                    <span className="fs-14 fw-medium text-dark">{docType.name}</span>
+                                                </div>
+                                                <div className="d-flex align-items-center gap-3">
+                                                    {isMissing ? (
+                                                        <>
+                                                            <span className="text-danger fs-13 fw-semibold"><i className="ri-error-warning-fill align-middle me-1"></i> Missing</span>
+                                                            <button 
+                                                                className="btn btn-outline-secondary btn-sm px-3 fw-medium"
+                                                                onClick={() => {
+                                                                    setCurrentDocType(docType);
+                                                                    setShowFileManager(true);
+                                                                }}
+                                                                disabled={uploading}
+                                                            >
+                                                                Upload
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-success fs-13 fw-semibold"><i className="ri-check-line align-middle me-1"></i> Uploaded</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
@@ -340,7 +381,7 @@ const FundingReviewWizard = () => {
                                                 </tr>
                                                 <tr>
                                                     <td className="text-muted fs-14 py-2">Documents Uploaded</td>
-                                                    <td className="fw-medium fs-14 py-2 text-dark">5 of 5</td>
+                                                    <td className="fw-medium fs-14 py-2 text-dark">{uploadedCount} of {requiredDocTypes.length}</td>
                                                 </tr>
                                                 <tr>
                                                     <td className="text-muted fs-14 py-2">Estimated Speed</td>
@@ -428,6 +469,7 @@ const FundingReviewWizard = () => {
                                     <button
                                         className="btn btn-primary px-4 fw-medium d-flex align-items-center gap-2"
                                         onClick={handleNext}
+                                        disabled={currentStep === 2 && missingDocs.length > 0}
                                     >
                                         {currentStep === 1 ? 'Review Requirements' : 'Continue'} <i className="ri-arrow-right-line"></i>
                                     </button>
