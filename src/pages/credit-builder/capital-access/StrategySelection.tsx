@@ -49,10 +49,12 @@ export default function StrategySelection() {
           {isLoading ? (
             <CapitalAccessLoader type="list" />
           ) : strategies.length === 0 ? (
-            <div className="text-center py-5">
-              <i className="ri-search-eye-line fs-40 text-muted mb-2"></i>
-              <h5 className="fw-semibold">No Capital Access Strategies Available</h5>
-              <p className="text-muted fs-13">There are no funding strategies available at this time.</p>
+            <div className="ca-empty-state">
+              <div className="ca-empty-state-icon">
+                <i className="ri-search-eye-line"></i>
+              </div>
+              <h5 className="ca-empty-state-title">No Capital Access Strategies Available</h5>
+              <p className="ca-empty-state-desc">There are no funding strategies available at this time.</p>
             </div>
           ) : (
             <>
