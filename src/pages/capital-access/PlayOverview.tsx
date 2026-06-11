@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
-import { useCapitalAccessStrategy } from '../../../modules/credit-builder/capital-access/queries';
-import CapitalAccessLoader from '../../../components/Loader/CapitalAccessLoader';
+import { useCapitalAccessStrategy } from '../../modules/capital-access/queries';
+import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
 
 
 
@@ -9,20 +9,21 @@ export default function PlayOverview() {
   const { id } = useParams<{ id: string }>();
   const { data: play, isLoading, isError } = useCapitalAccessStrategy(id);
 
-  if (!isLoading && (isError || !play)) return <Navigate to="/credit-builder/strategy" />;
+  if (!isLoading && (isError || !play)) return <Navigate to="/capital-access/strategy" />;
 
   return (
     <div className="page-content capital-access-page">
       <div className="container-fluid">
 
         <div className="ca-page-wrap">
-          {/* ── Page Header ── */}
           <div className="row pb-1 page-subheader-sticky bg-body mb-3">
             <div className="col-12">
               <div className="text-center py-2 w-100">
-                <h4 className="fs-20 mb-1 fw-bold">{isLoading ? "Loading Strategy..." : play?.name}</h4>
+                <h4 className="fs-22 mb-1 fw-bold text-dark">
+                  {isLoading || !play ? 'Strategy Overview' : play.name}
+                </h4>
                 <p className="ca-page-subtitle">
-                  Review the program target exposure, probability of approval, and total timeline.
+                  Review the target exposure, approval probability, and benefits of this play.
                 </p>
               </div>
             </div>
@@ -97,10 +98,10 @@ export default function PlayOverview() {
                 <hr className="ca-divider" />
 
                 <div className="d-flex align-items-center justify-content-between gap-3 w-100">
-                  <Link to="/credit-builder/strategy" className="ca-btn ca-btn-outline flex-fill justify-content-center">
+                  <Link to="/capital-access/strategy" className="ca-btn ca-btn-outline flex-fill justify-content-center">
                     <i className="ri-arrow-left-line"></i> Back
                   </Link>
-                  <Link to={`/credit-builder/strategy/${play?.id}/pre-flight`} className="ca-btn ca-btn-primary flex-fill justify-content-center">
+                  <Link to={`/capital-access/${play?.id}/pre-flight`} className="ca-btn ca-btn-primary flex-fill justify-content-center">
                     Start This Play <i className="ri-arrow-right-line"></i>
                   </Link>
                 </div>

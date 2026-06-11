@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useCapitalAccessStrategies } from '../../../modules/credit-builder/capital-access/queries';
-import CapitalAccessLoader from '../../../components/Loader/CapitalAccessLoader';
+import { useCapitalAccessStrategies } from '../../modules/capital-access/queries';
+import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
 
 
 
@@ -38,7 +38,7 @@ export default function StrategySelection() {
           <div className="row pb-1 page-subheader-sticky bg-body mb-3">
             <div className="col-12">
               <div className="text-center py-2 w-100">
-                <h4 className="fs-20 mb-1 fw-bold">Capital Access Strategy</h4>
+                <h4 className="fs-22 mb-1 fw-bold text-dark">Capital Access Strategy</h4>
                 <p className="ca-page-subtitle">
                   Choose a strategy that fits your business funding goals. Each play is a structured sequence of card applications designed to maximize your credit access.
                 </p>
@@ -49,19 +49,21 @@ export default function StrategySelection() {
           {isLoading ? (
             <CapitalAccessLoader type="list" />
           ) : strategies.length === 0 ? (
-            <div className="ca-empty-state">
+            <div className="ca-empty-state text-center py-4">
               <div className="ca-empty-state-icon">
                 <i className="ri-search-eye-line"></i>
               </div>
               <h5 className="ca-empty-state-title">No Capital Access Strategies Available</h5>
-              <p className="ca-empty-state-desc">There are no funding strategies available at this time.</p>
+              <p className="ca-empty-state-desc mb-3">There are no funding strategies available at this time.</p>
+              <Link to="/capital-access" className="ca-btn ca-btn-outline">
+                <i className="ri-arrow-left-line"></i> Back to Overview
+              </Link>
             </div>
           ) : (
             <>
               {/* Recommended Play */}
               {recommendedPlay && (
                 <div className="mb-4">
-                  <span className="ca-section-label">⭐ Recommended For You</span>
                   <div className="ca-hero-card">
                     <div className="ca-hero-header">
                       <div className="d-flex align-items-center gap-3 flex-grow-1">
@@ -104,8 +106,11 @@ export default function StrategySelection() {
                         </div>
                       </div>
 
-                      <div className="d-flex justify-content-end pt-2">
-                        <Link to={`/credit-builder/strategy/${recommendedPlay.id}/overview`} className="ca-btn ca-btn-primary">
+                      <div className="d-flex justify-content-end gap-3 pt-2">
+                        <Link to="/capital-access" className="ca-btn ca-btn-outline">
+                          <i className="ri-arrow-left-line"></i> Back
+                        </Link>
+                        <Link to={`/capital-access/${recommendedPlay.id}/overview`} className="ca-btn ca-btn-primary">
                           View Strategy <i className="ri-arrow-right-line"></i>
                         </Link>
                       </div>
@@ -120,7 +125,7 @@ export default function StrategySelection() {
                   <span className="ca-section-label">Other Eligible Plays</span>
                   <div className="d-flex flex-column gap-2">
                     {otherPlays.map(play => (
-                      <Link key={play.id} to={`/credit-builder/strategy/${play.id}/overview`} className="ca-strategy-row text-decoration-none">
+                      <Link key={play.id} to={`/capital-access/${play.id}/overview`} className="ca-strategy-row text-decoration-none">
                         <div className="d-flex align-items-center gap-3 flex-grow-1" style={{ minWidth: 0 }}>
                           <div className="avatar-sm flex-shrink-0">
                             <span className="avatar-title bg-light text-muted rounded-circle fs-18">
@@ -148,6 +153,12 @@ export default function StrategySelection() {
                   </div>
                 </div>
               )}
+
+              <div className="d-flex justify-content-center mt-4">
+                <Link to="/capital-access" className="ca-btn ca-btn-outline" style={{ minWidth: '180px' }}>
+                  <i className="ri-arrow-left-line"></i> Back to Overview
+                </Link>
+              </div>
             </>
           )}
         </div>

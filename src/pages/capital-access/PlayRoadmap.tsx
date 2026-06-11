@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, Navigate, useLocation } from 'react-router-dom';
-import { useCapitalAccessStrategy } from '../../../modules/credit-builder/capital-access/queries';
-import CapitalAccessLoader from '../../../components/Loader/CapitalAccessLoader';
+import { useCapitalAccessStrategy } from '../../modules/capital-access/queries';
+import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
 import { formatCurrency } from './mockPlayData';
 
 
@@ -37,12 +37,12 @@ export default function PlayRoadmap() {
   if (isLoading) {
     // We will render the layout statically, but showing the loader below
   } else if (isError || (!apiPlay && !play)) {
-    return <Navigate to="/credit-builder/strategy" />;
+    return <Navigate to="/capital-access/strategy" />;
   }
 
   const isCompleted = play ? play.roadmap.every((s: any) => s.status === 'Completed') : false;
   if (isCompleted && play) {
-    return <Navigate to={`/credit-builder/strategy/${play.id}/completion`} state={{ play }} />;
+    return <Navigate to={`/capital-access/${play.id}/completion`} state={{ play }} />;
   }
 
   const currentExposure = play
@@ -67,7 +67,7 @@ export default function PlayRoadmap() {
           <div className="row pb-1 page-subheader-sticky bg-body mb-3">
             <div className="col-12">
               <div className="text-center py-2 w-100">
-                <h4 className="fs-20 mb-1 fw-bold">
+                <h4 className="fs-22 mb-1 fw-bold text-dark">
                   {isLoading || !play ? 'Strategy Roadmap' : `${play.name} — Roadmap`}
                 </h4>
                 <p className="ca-page-subtitle">
@@ -121,7 +121,7 @@ export default function PlayRoadmap() {
                         </div>
 
                         <Link
-                          to={isActive || isStepCompleted ? `/credit-builder/strategy/${play.id}/step/${step.id}` : '#'}
+                          to={isActive || isStepCompleted ? `/capital-access/${play.id}/step/${step.id}` : '#'}
                           state={isActive || isStepCompleted ? { step, play } : null}
                           className={`ca-step-card ${isActive ? 'active' : ''} ${isLocked ? 'locked' : ''}`}
                           style={{ pointerEvents: isLocked ? 'none' : 'auto' }}
@@ -190,6 +190,17 @@ export default function PlayRoadmap() {
                       </div>
                     </div>
                   </div>
+                </div>
+
+                <hr className="ca-divider mt-4 mb-3" />
+
+                <div className="d-flex gap-3 justify-content-center">
+                  <Link to={`/capital-access/${play.id}/overview`} className="ca-btn ca-btn-outline flex-fill justify-content-center">
+                    <i className="ri-arrow-left-line"></i> Back to Overview
+                  </Link>
+                  <Link to="/capital-access/strategy" className="ca-btn ca-btn-primary flex-fill justify-content-center">
+                    All Strategies <i className="ri-list-check-3"></i>
+                  </Link>
                 </div>
 
               </div>

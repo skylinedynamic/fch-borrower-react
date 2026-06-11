@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { queryKeys } from '../../../lib/query/queryKeys'
+import { queryKeys } from '../../lib/query/queryKeys'
 import { fetchCapitalAccessStrategies, fetchCapitalAccessStrategyDetail } from './services'
 
 export const useCapitalAccessStrategies = () => {

@@ -313,7 +313,7 @@ export default function Dashboard() {
                                             iconPos="right"
                                             className="ca-btn ca-btn-primary w-100 justify-content-center"
                                             style={{ border: 'none' }}
-                                            onClick={() => navigate('/credit-builder/strategy')}
+                                            onClick={() => navigate('/capital-access')}
                                         />
                                     </div>
                                 </div>

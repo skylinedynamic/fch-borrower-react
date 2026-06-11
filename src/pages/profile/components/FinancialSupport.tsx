@@ -115,6 +115,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
     <div className="fade-panel">
       <form className="row g-3">
         <div className="col-md-6">
+          <label className="form-label">Currency <span className="text-danger">*</span></label>
           <div className="position-relative">
             <CustomDropdown
               searchable={true}
@@ -140,6 +141,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           {errors.currency && <div className="invalid-feedback d-block">{errors.currency}</div>}
         </div>
         <div className="col-md-6">
+          <label className="form-label">Years in Business <span className="text-danger">*</span></label>
           <div className="position-relative">
             <CustomDropdown
               searchable={true}

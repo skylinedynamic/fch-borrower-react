@@ -8,7 +8,7 @@ export default function StepDetail() {
   const navigate = useNavigate();
 
   if (!location.state || !location.state.step || !location.state.play) {
-    return <Navigate to="/credit-builder/strategy" />;
+    return <Navigate to="/capital-access/strategy" />;
   }
 
   const { step, play } = location.state;
@@ -29,7 +29,7 @@ export default function StepDetail() {
         notes,
       },
     };
-    navigate(`/credit-builder/strategy/${play.id}/roadmap`, { state: { updatedStep } });
+    navigate(`/capital-access/${play.id}/roadmap`, { state: { updatedStep } });
   };
 
   return (
@@ -41,7 +41,7 @@ export default function StepDetail() {
           <div className="row pb-1 page-subheader-sticky bg-body mb-3">
             <div className="col-12">
               <div className="text-center py-2 w-100">
-                <h4 className="fs-20 mb-1 fw-bold">{step.issuer} — {step.card_name}</h4>
+                <h4 className="fs-22 mb-1 fw-bold text-dark">{step.issuer} — {step.card_name}</h4>
                 <p className="ca-page-subtitle">
                   Review details, eligibility criteria, and submit your application limit status.
                 </p>
@@ -111,13 +111,17 @@ export default function StepDetail() {
 
                   <hr className="ca-divider" />
 
-                  <button
-                    onClick={() => setEntryMode(true)}
-                    className="ca-btn ca-btn-primary w-100 justify-content-center"
-                    style={{ fontSize: '15px', padding: '13px 24px' }}
-                  >
-                    <i className="ri-external-link-line"></i> Apply Now
-                  </button>
+                  <div className="d-flex gap-3">
+                    <Link to={`/capital-access/${play.id}/roadmap`} className="ca-btn ca-btn-outline flex-fill justify-content-center">
+                      <i className="ri-arrow-left-line"></i> Back to Roadmap
+                    </Link>
+                    <button
+                      onClick={() => setEntryMode(true)}
+                      className="ca-btn ca-btn-primary flex-fill justify-content-center"
+                    >
+                      <i className="ri-external-link-line"></i> Apply Now
+                    </button>
+                  </div>
                   <p className="text-center text-muted fs-12 mt-2 mb-0">
                     Opens in a new tab — come back here to log your result.
                   </p>
