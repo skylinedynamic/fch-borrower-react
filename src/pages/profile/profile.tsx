@@ -53,6 +53,7 @@ export default function Profile() {
     years_in_business: '',
     monthly_revenue: '',
     annual_revenue: '',
+    bank_accounts: [],
   })
 
   useEffect(() => {

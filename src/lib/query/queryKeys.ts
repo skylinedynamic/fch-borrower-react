@@ -45,6 +45,7 @@ export const queryKeys = {
   },
   capitalAccess: {
     all: ['capitalAccess'] as const,
+    overview: () => [...queryKeys.capitalAccess.all, 'overview'] as const,
     strategies: () => [...queryKeys.capitalAccess.all, 'strategies'] as const,
     detail: (id: string | number) => [...queryKeys.capitalAccess.all, 'detail', id] as const,
   },

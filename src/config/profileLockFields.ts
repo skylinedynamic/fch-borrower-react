@@ -13,5 +13,8 @@ export const LOCKED_PERSONAL_FIELDS = [];
 
 export const LOCKED_FINANCIAL_FIELDS = [
     'monthly_revenue',
-    'annual_revenue'
+    'annual_revenue',
+    'bank_name',
+    'account_open_date',
 ];
+

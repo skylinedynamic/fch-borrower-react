@@ -1,16 +1,17 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { SaveFinancialInfoRequest, ValidationErrors } from '../../../modules/profile/types'
 import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { countries as countriesData } from '../../../data/countries'
 import { yearsInBusinessOptions } from '../../../data/profile'
-import { useFinancialInfo, useSaveFinancialInfo } from '../../../modules/profile/queries'
+import { useFinancialInfo, useSaveFinancialInfo, useSubmitChangeRequest } from '../../../modules/profile/queries'
 import { toast } from 'react-toastify'
 import TabLoader from '../../../components/Loader/TabLoader'
 import { formatCurrency, unformatCurrency } from '../../../utils/formatters'
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import { LOCKED_FINANCIAL_FIELDS } from '../../../config/profileLockFields'
-import { useSubmitChangeRequest } from '../../../modules/profile/queries'
-import { useRef } from 'react'
+import Flatpickr from 'react-flatpickr'
+import 'flatpickr/dist/flatpickr.css'
+import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
 
 interface FinancialSupportProps {
   data: any
@@ -31,29 +32,79 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [updateRequest, setUpdateRequest] = useState({
     label: '',
-    key: '' as keyof SaveFinancialInfoRequest,
+    key: '' as any,
     currentValue: '',
-    newValue: ''
+    newValue: '',
+    entityType: undefined as string | undefined,
+    entityId: undefined as number | undefined
   })
-  const [modalErrors, setModalErrors] = useState<Record<string, string[]>>({})
+  const [modalErrors, setModalErrors] = useState<ValidationErrors>({})
 
   const toggleModal = () => {
     if (isModalOpen) setModalErrors({})
     setIsModalOpen(!isModalOpen)
   }
 
-  const handleOpenRequestModal = (label: string, key: keyof SaveFinancialInfoRequest, value: any) => {
+  const handleOpenRequestModal = (label: string, key: any, value: any, entityId?: number, entityType?: string) => {
     setUpdateRequest({
       label,
       key,
       currentValue: value || '',
-      newValue: ''
+      newValue: '',
+      entityId,
+      entityType
     })
     setIsModalOpen(true)
   }
 
   const isFieldLocked = (field: keyof SaveFinancialInfoRequest) => {
     const dbValue = (apiData as any)?.[field];
+    return LOCKED_FINANCIAL_FIELDS.includes(field) && dbValue !== null && dbValue !== undefined && dbValue !== '';
+  }
+
+  const bankAccounts = data.bank_accounts || []
+
+  const handleAddBankAccount = () => {
+    onChange({
+      ...data,
+      bank_accounts: [
+        ...bankAccounts,
+        { bank_name: '', account_open_date: null }
+      ]
+    })
+  }
+
+  const handleRemoveBankAccount = (index: number) => {
+    const newAccounts = [...bankAccounts]
+    newAccounts.splice(index, 1)
+    onChange({
+      ...data,
+      bank_accounts: newAccounts
+    })
+  }
+
+  const handleBankAccountChange = (index: number, field: string, value: any) => {
+    const newAccounts = [...bankAccounts]
+    newAccounts[index] = {
+      ...newAccounts[index],
+      [field]: value
+    }
+    onChange({
+      ...data,
+      bank_accounts: newAccounts
+    })
+  }
+
+  const getRowFieldError = (index: number, field: string) => {
+    const key = `bank_accounts.${index}.${field}`
+    return errors[key]
+  }
+
+  const isBankAccountFieldLocked = (field: 'bank_name' | 'account_open_date', recordId?: number) => {
+    if (!recordId) return false;
+    const apiAccount = (apiData as any)?.bank_accounts?.find((acc: any) => acc.id === recordId);
+    if (!apiAccount) return false;
+    const dbValue = apiAccount[field];
     return LOCKED_FINANCIAL_FIELDS.includes(field) && dbValue !== null && dbValue !== undefined && dbValue !== '';
   }
 
@@ -64,13 +115,13 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
       years_in_business: data.years_in_business,
       monthly_revenue: parseFloat(unformatCurrency(data.monthly_revenue)) || 0,
       annual_revenue: parseFloat(unformatCurrency(data.annual_revenue)) || 0,
+      bank_accounts: data.bank_accounts || []
     }
 
     saveFinancial(payload, {
       onSuccess: (response) => {
         if (response.status) {
           toast.success(response.message)
-          //onSave()
         } else {
           toast.error(response.message)
           if (response.errors) {
@@ -96,6 +147,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
         years_in_business: apiData.years_in_business,
         monthly_revenue: apiData.monthly_revenue ? formatCurrency(apiData.monthly_revenue) : '',
         annual_revenue: apiData.annual_revenue ? formatCurrency(apiData.annual_revenue) : '',
+        bank_accounts: apiData.bank_accounts || []
       })
     }
   }, [isSuccess, apiData])
@@ -213,6 +265,126 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           </div>
           {errors.annual_revenue && <div className="invalid-feedback d-block">{errors.annual_revenue}</div>}
         </div>
+
+        {/* Bank Accounts Repeater Section */}
+        <div className="col-12 mt-4">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h5 className="mb-0 ">
+              <i className="ri-bank-line me-1 align-bottom "></i> Business Bank Accounts
+            </h5>
+            <button
+              type="button"
+              className="btn btn-sm btn-soft-primary d-flex align-items-center"
+              onClick={handleAddBankAccount}
+            >
+              <i className="ri-add-line me-1"></i> Add Bank Account
+            </button>
+          </div>
+
+          {bankAccounts.length === 0 ? (
+            <div className="text-center py-4 border border-dashed rounded bg-light">
+              <p className="text-muted mb-0">No bank accounts added yet. Click "Add Bank Account" to add one.</p>
+            </div>
+          ) : (
+            <div className="row g-3">
+              {bankAccounts.map((account: any, index: number) => {
+                const isSaved = !!account.id;
+                const isBankNameLocked = isBankAccountFieldLocked('bank_name', account.id);
+                const isDateLocked = isBankAccountFieldLocked('account_open_date', account.id);
+
+                return (
+                  <div key={account.id || `new-${index}`} className="col-12">
+                    <div className="card border shadow-none mb-0 bg-light-subtle position-relative overflow-hidden">
+                      <div className="card-body p-3">
+                        <div className="row g-3 align-items-end">
+                          {/* Bank Name */}
+                          <div className="col-md-6">
+                            <label className="form-label">Bank Name <span className="text-danger">*</span></label>
+                            <div className="position-relative">
+                              <input
+                                type="text"
+                                placeholder="e.g. Chase, Bank of America"
+                                value={account.bank_name || ''}
+                                onChange={(e) => handleBankAccountChange(index, 'bank_name', e.target.value)}
+                                className={`form-control ${getRowFieldError(index, 'bank_name') ? 'is-invalid' : ''} ${isBankNameLocked ? 'bg-light border-dashed locked-field-padding' : ''}`}
+                                readOnly={isBankNameLocked}
+                              />
+                              {isBankNameLocked && (
+                                <button
+                                  className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                                  type="button"
+                                  onClick={() => handleOpenRequestModal('Bank Name', 'bank_name', account.bank_name, account.id, 'borrower_bank_accounts')}
+                                >
+                                  Change Request
+                                </button>
+                              )}
+                            </div>
+                            {getRowFieldError(index, 'bank_name') && (
+                              <div className="invalid-feedback d-block">{getRowFieldError(index, 'bank_name')}</div>
+                            )}
+                          </div>
+
+                          {/* Account Open Date */}
+                          <div className={`col-md-${!isSaved ? '5' : '6'}`}>
+                            <label className="form-label">Business Account Open Date</label>
+                            <div className="position-relative">
+                              <Flatpickr
+                                className={`form-control ${getRowFieldError(index, 'account_open_date') ? 'is-invalid' : ''} ${isDateLocked ? 'bg-light border-dashed locked-field-padding' : ''}`}
+                                value={account.account_open_date || ''}
+                                onChange={(dates, dateStr) => {
+                                  handleBankAccountChange(index, 'account_open_date', dateStr || null)
+                                }}
+                                options={{
+                                  dateFormat: "Y-m-d",
+                                  altInput: true,
+                                  altFormat: "j M, Y",
+                                  maxDate: "today",
+                                  yearRange: "1900:" + new Date().getFullYear(),
+                                  monthSelectorType: "dropdown",
+                                  clickOpens: !isDateLocked,
+                                  plugins: [yearDropdownPlugin(1900)],
+                                } as any}
+                                placeholder="Select account open date"
+                                disabled={isDateLocked}
+                              />
+                              {isDateLocked && (
+                                <button
+                                  className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                                  type="button"
+                                  onClick={() => handleOpenRequestModal('Account Open Date', 'account_open_date', account.account_open_date, account.id, 'borrower_bank_accounts')}
+                                >
+                                  Change Request
+                                </button>
+                              )}
+                            </div>
+                            {getRowFieldError(index, 'account_open_date') && (
+                              <div className="invalid-feedback d-block">{getRowFieldError(index, 'account_open_date')}</div>
+                            )}
+                          </div>
+
+                          {/* Remove button — only for unsaved (new) rows */}
+                          {!isSaved && (
+                            <div className="col-md-1 text-end">
+                              <button
+                                type="button"
+                                className="btn btn-icon btn-soft-danger w-100"
+                                onClick={() => handleRemoveBankAccount(index)}
+                                title="Remove bank account"
+                              >
+                                <i className="ri-delete-bin-line fs-16"></i>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
         <div className="col-12 d-flex justify-content-between mt-4">
           <button type="button" className="btn btn-warning" onClick={onBack}>Previous</button>
           <button type="button" className="btn primary-btn" onClick={handleSave} disabled={isPending}>
@@ -235,11 +407,13 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
             <input
               type="text"
               className="form-control bg-light"
-              value={updateRequest.key === 'years_in_business' 
+              value={updateRequest.key === 'years_in_business'
                 ? (yearsInBusinessOptions.find(opt => opt.value === updateRequest.currentValue)?.label || updateRequest.currentValue)
-                : ((updateRequest.key === 'monthly_revenue' || updateRequest.key === 'annual_revenue') 
-                  ? formatCurrency(String(updateRequest.currentValue)) 
-                  : updateRequest.currentValue)}
+                : (updateRequest.key === 'account_open_date' && updateRequest.currentValue
+                  ? new Date(updateRequest.currentValue).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                  : ((updateRequest.key === 'monthly_revenue' || updateRequest.key === 'annual_revenue')
+                    ? formatCurrency(String(updateRequest.currentValue))
+                    : updateRequest.currentValue))}
               readOnly
             />
           </div>
@@ -267,11 +441,27 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
                 placeholder="Select years"
                 className={`w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
               />
+            ) : updateRequest.key === 'account_open_date' ? (
+              <Flatpickr
+                className={`form-control w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
+                value={updateRequest.newValue}
+                onChange={(dates, dateStr) => setUpdateRequest({ ...updateRequest, newValue: dateStr })}
+                options={{
+                  dateFormat: "Y-m-d",
+                  altInput: true,
+                  altFormat: "j M, Y",
+                  maxDate: "today",
+                  monthSelectorType: "dropdown",
+                  static: true,
+                  plugins: [yearDropdownPlugin(1900)],
+                }}
+                placeholder="Select account open date"
+              />
             ) : (
               <input
                 ref={inputRef}
                 type="text"
-                className={`form-control ${modalErrors.new_value ? 'is-invalid' : ''}`}
+                className={`form-control w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
                 placeholder={`Enter the updated ${updateRequest.label}`}
                 value={updateRequest.newValue}
                 onChange={(e) => {
@@ -316,6 +506,8 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               submitChange({
                 field_name: updateRequest.key,
                 new_value: finalNewValue,
+                entity_id: updateRequest.entityId,
+                entity_type: updateRequest.entityType,
               }, {
                 onSuccess: (response) => {
                   if (response.status) {

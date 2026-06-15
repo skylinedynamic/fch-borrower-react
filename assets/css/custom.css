@@ -2230,3 +2230,9 @@ File: Custom Css File
 .capital-access-page .breadcrumb-item a {
     font-size: 12px !important;
 }
+
+/* Ensure Flatpickr inputs and their wrappers occupy the full width of their containers */
+.flatpickr-wrapper {
+    display: block !important;
+    width: 100% !important;
+}

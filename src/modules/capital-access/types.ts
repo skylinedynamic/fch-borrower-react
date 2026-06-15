@@ -40,3 +40,19 @@ export interface StrategyDetailResponse {
   message: string;
   data: any; // raw data from API to be mapped in service
 }
+
+export interface CapitalAccessOverview {
+  readiness_score: number;
+  readiness_status: string;
+  score_labels_top: { min: number; max: number };
+  score_labels_bottom: { min: number; max: number };
+  contributing_factors: string[];
+  estimated_total_access: string;
+  breakdown: Array<{ label: string; value: string }>;
+}
+
+export interface OverviewResponse {
+  status: boolean;
+  message: string;
+  data: CapitalAccessOverview;
+}

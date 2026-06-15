@@ -10,7 +10,7 @@ import CreditGuide from '../src/pages/credit-builder/creditguide/CreditGuide.tsx
 import FundApplication from '../src/pages/fundapplication/FundApplication.tsx'
 import PreQualification from '../src/pages/prequalification/PreQualification.tsx'
 import Documents from '../src/pages/documents/Documents.tsx'
-import { ProtectedRoute, GuestRoute, HostRoute, checkSession, refreshSubscription, isAuthenticated } from './lib/auth'
+import { ProtectedRoute, GuestRoute, HostRoute, CapitalAccessGuard, checkSession, refreshSubscription, isAuthenticated } from './lib/auth'
 import Profile from '../src/pages/profile/profile.tsx'
 import MyApplication from '../src/pages/myapplication/MyApplication.tsx'
 import Invoices from '../src/pages/invoices/Invoices.jsx'
@@ -129,12 +129,14 @@ export default function App() {
 
             <Route path="capital-access">
               <Route index element={<CapitalAccess />} />
-              <Route path="strategy" element={<StrategySelection />} />
-              <Route path=":id/overview" element={<PlayOverview />} />
-              <Route path=":id/pre-flight" element={<PreFlightChecklist />} />
-              <Route path=":id/roadmap" element={<PlayRoadmap />} />
-              <Route path=":id/step/:stepId" element={<StepDetail />} />
-              <Route path=":id/completion" element={<PlayCompletion />} />
+              <Route element={<CapitalAccessGuard />}>
+                <Route path="strategy" element={<StrategySelection />} />
+                <Route path=":id/overview" element={<PlayOverview />} />
+                <Route path=":id/pre-flight" element={<PreFlightChecklist />} />
+                <Route path=":id/roadmap" element={<PlayRoadmap />} />
+                <Route path=":id/step/:stepId" element={<StepDetail />} />
+                <Route path=":id/completion" element={<PlayCompletion />} />
+              </Route>
             </Route>
 
             <Route path="documents" element={<Documents />} />

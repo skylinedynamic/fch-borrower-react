@@ -20,6 +20,7 @@ export type AuthUser = {
   platform_fee_start_date?: string | null
   first_payment_date?: string | null
   enrollment_completed_at?: string | null
+  credit_profile_updated?: boolean
   enrollment_type?: string
   phase?: string
   [key: string]: unknown

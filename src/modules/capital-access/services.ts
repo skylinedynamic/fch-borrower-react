@@ -1,6 +1,6 @@
 import { apiClient } from '../../lib/http/apiClient'
-import type { StrategiesResponse, StrategyDetailResponse, CapitalAccessStrategy } from './types'
-
+import type { StrategiesResponse, StrategyDetailResponse, CapitalAccessStrategy, CapitalAccessOverview, OverviewResponse } from './types'
+ 
 const mapChecklist = (checklist: any[]): Array<{ id: string; label: string; complete: boolean }> => {
   if (!checklist) return []
   return checklist.map((item, index) => {
@@ -31,4 +31,9 @@ export const fetchCapitalAccessStrategies = async (): Promise<CapitalAccessStrat
 export const fetchCapitalAccessStrategyDetail = async (id: string | number): Promise<CapitalAccessStrategy> => {
   const { data } = await apiClient.get<StrategyDetailResponse>(`/borrower/capital-access/strategies/${id}`)
   return mapStrategy(data.data)
+}
+
+export const fetchCapitalAccessOverview = async (): Promise<CapitalAccessOverview> => {
+  const { data } = await apiClient.get<OverviewResponse>('/borrower/capital-access/overview')
+  return data.data
 }
