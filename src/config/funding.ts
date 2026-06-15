@@ -106,6 +106,12 @@ export const FUNDING_APPLICATION_STATUS_CLASS_MAP: Record<string, string> = {
   [FUNDING_APPLICATION_STATUS_OPTIONS[12].value]: 'bg-warning-subtle text-warning',
   [FUNDING_APPLICATION_STATUS_OPTIONS[13].value]: 'bg-success-subtle text-success',
   [FUNDING_APPLICATION_STATUS_OPTIONS[14].value]: 'bg-success text-white',
-  [FUNDING_APPLICATION_STATUS_OPTIONS[15].value]: 'bg-success-subtle text-success',
   [FUNDING_APPLICATION_STATUS_OPTIONS[16].value]: 'bg-danger-subtle text-danger',
 };
+
+export const FUNDING_WIZARD_STEPS = [
+    { id: 1, label: 'Review' },
+    { id: 2, label: 'Application' },
+    { id: 3, label: 'Documents' },
+    { id: 4, label: 'Submit' }
+];

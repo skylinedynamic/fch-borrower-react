@@ -13,13 +13,8 @@ import { getUser } from '../../lib/auth/auth';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../lib/query';
 import { useBusinessDetails, useFinancialInfo } from '../../modules/profile/queries';
-
-const steps = [
-    { id: 1, label: 'Review' },
-    { id: 2, label: 'Application' },
-    { id: 3, label: 'Documents' },
-    { id: 4, label: 'Submit' }
-];
+import { FUNDING_WIZARD_STEPS } from '../../config/funding';
+    const steps = FUNDING_WIZARD_STEPS;
 
 const FundingReviewWizard = () => {
     const { id } = useParams();
@@ -102,6 +97,8 @@ const FundingReviewWizard = () => {
         }
     };
 
+    const isDocsRequired = fundingDetail?.require_documents_uploaded;
+
     const handleNext = () => {
         if (currentStep === 1) {
             let newErrors: any = {};
@@ -119,10 +116,12 @@ const FundingReviewWizard = () => {
             }
             setErrors({});
         }
-        if (currentStep === 3 && missingDocs.length > 0) {
+        
+        if (currentStep === 3 && isDocsRequired && missingDocs.length > 0) {
             toast.error('Please upload all required documents to continue');
             return;
         }
+
         if (currentStep < 4) setCurrentStep(prev => prev + 1);
     };
 
@@ -130,8 +129,9 @@ const FundingReviewWizard = () => {
         if (currentStep > 1) setCurrentStep(prev => prev - 1);
         else navigate(-1);
     };
-
-    const requiredDocTypes = documentTypes ? documentTypes.filter(t => !fundingDetail?.allowed_documents?.length || fundingDetail.allowed_documents.includes(t.id)) : [];
+    const requiredDocTypes = (isDocsRequired && documentTypes && fundingDetail?.allowed_documents?.length) 
+        ? documentTypes.filter(t => fundingDetail.allowed_documents.includes(t.id)) 
+        : [];
     const uploadedCount = requiredDocTypes.length - missingDocs.length;
 
     const handleSubmit = async () => {
@@ -215,7 +215,7 @@ const FundingReviewWizard = () => {
                             return (
                                 <React.Fragment key={step.id}>
                                     {index !== 0 && (
-                                        <div style={{ flex: 1, height: '2px', backgroundColor: currentStep >= step.id ? '#2563eb' : 'transparent', zIndex: 1 }}></div>
+                                        <div style={{ flex: 1, height: '2px', backgroundColor: (currentStep > step.id || currentStep === step.id) ? '#2563eb' : 'transparent', zIndex: 1 }}></div>
                                     )}
                                     <div className="d-flex flex-column align-items-center position-relative" style={{ zIndex: 2, background: '#f9fafb', padding: '0 10px' }}>
                                         <div
@@ -475,44 +475,74 @@ const FundingReviewWizard = () => {
                         {currentStep === 3 && (
                             <div>
                                 <h4 className="fw-bold mb-2">Document Requirements</h4>
-                                <p className="text-muted mb-4 fs-15">Upload the documents below to continue</p>
-
-                                <div className="mb-4">
-                                    {requiredDocTypes.map(docType => {
-                                        const isMissing = missingDocs.includes(docType.name);
-                                        return (
-                                            <div key={docType.id} className={`d-flex align-items-center justify-content-between mb-3 border rounded-3 p-3 bg-white ${!isMissing ? 'border-success-subtle' : ''}`}>
-                                                <div className="d-flex align-items-center gap-2">
-                                                    {isMissing ? (
-                                                        <i className="ri-checkbox-blank-line text-muted fs-18"></i>
-                                                    ) : (
-                                                        <i className="ri-checkbox-fill text-success fs-18"></i>
-                                                    )}
-                                                    <span className="fs-14 fw-medium text-dark">{docType.name}</span>
-                                                </div>
-                                                <div className="d-flex align-items-center gap-3">
-                                                    {isMissing ? (
-                                                        <>
-                                                            <span className="text-danger fs-13 fw-semibold"><i className="ri-error-warning-fill align-middle me-1"></i> Missing</span>
-                                                            <button
-                                                                className="btn btn-outline-secondary btn-sm px-3 fw-medium"
-                                                                onClick={() => {
-                                                                    setCurrentDocType(docType);
-                                                                    setShowFileManager(true);
-                                                                }}
-                                                                disabled={uploading}
-                                                            >
-                                                                Upload
-                                                            </button>
-                                                        </>
-                                                    ) : (
-                                                        <span className="text-success fs-13 fw-semibold"><i className="ri-check-line align-middle me-1"></i> Uploaded</span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                                
+                                {!isDocsRequired ? (
+                                    <div className="alert alert-success bg-success-subtle border-0 d-flex align-items-center gap-3 py-3 mb-4" style={{ borderRadius: '8px' }}>
+                                        <i className="ri-checkbox-circle-fill fs-24 text-success"></i>
+                                        <div>
+                                            <h6 className="fw-bold mb-1 text-success-emphasis">No Documents Required</h6>
+                                            <span className="fs-13 text-success-emphasis">You do not need to upload any specific documents for this funding option. You can proceed directly to submit.</span>
+                                        </div>
+                                    </div>
+                                ) : requiredDocTypes.length === 0 ? (
+                                    <div className="alert alert-primary bg-primary-subtle border-0 d-flex align-items-center gap-3 py-3 mb-4" style={{ borderRadius: '8px' }}>
+                                        <i className="ri-information-fill fs-24 text-primary"></i>
+                                        <div className="flex-grow-1">
+                                            <h6 className="fw-bold mb-1 text-primary-emphasis">Supporting Documents Needed</h6>
+                                            <span className="fs-13 text-primary-emphasis">No specific documents are strictly required, but please upload relevant business documents (like Bank Statements) to help with underwriting.</span>
+                                        </div>
+                                        <button
+                                            className="btn btn-primary btn-sm px-3 fw-medium flex-shrink-0"
+                                            onClick={() => {
+                                                setCurrentDocType(documentTypes?.[0] || { id: 1, name: 'Business Bank Statements' });
+                                                setShowFileManager(true);
+                                            }}
+                                            disabled={uploading}
+                                        >
+                                            Upload Documents
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <p className="text-muted mb-4 fs-15">Upload the documents below to continue</p>
+                                        <div className="mb-4">
+                                            {requiredDocTypes.map(docType => {
+                                                const isMissing = missingDocs.includes(docType.name);
+                                                return (
+                                                    <div key={docType.id} className={`d-flex align-items-center justify-content-between mb-3 border rounded-3 p-3 bg-white ${!isMissing ? 'border-success-subtle' : ''}`}>
+                                                        <div className="d-flex align-items-center gap-2">
+                                                            {isMissing ? (
+                                                                <i className="ri-checkbox-blank-line text-muted fs-18"></i>
+                                                            ) : (
+                                                                <i className="ri-checkbox-fill text-success fs-18"></i>
+                                                            )}
+                                                            <span className="fs-14 fw-medium text-dark">{docType.name}</span>
+                                                        </div>
+                                                        <div className="d-flex align-items-center gap-3">
+                                                            {isMissing ? (
+                                                                <>
+                                                                    <span className="text-danger fs-13 fw-semibold"><i className="ri-error-warning-fill align-middle me-1"></i> Missing</span>
+                                                                    <button
+                                                                        className="btn btn-outline-secondary btn-sm px-3 fw-medium"
+                                                                        onClick={() => {
+                                                                            setCurrentDocType(docType);
+                                                                            setShowFileManager(true);
+                                                                        }}
+                                                                        disabled={uploading}
+                                                                    >
+                                                                        Upload
+                                                                    </button>
+                                                                </>
+                                                            ) : (
+                                                                <span className="text-success fs-13 fw-semibold"><i className="ri-check-line align-middle me-1"></i> Uploaded</span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         )}
 
@@ -594,7 +624,7 @@ const FundingReviewWizard = () => {
                                     <button
                                         className="btn btn-primary px-4 fw-medium"
                                         onClick={handleSubmit}
-                                        disabled={submitting || missingDocs.length > 0}
+                                        disabled={submitting || (isDocsRequired && missingDocs.length > 0)}
                                     >
                                         {submitting ? 'Submitting...' : 'Submit for Underwriting'}
                                     </button>
