@@ -172,3 +172,29 @@ export const unformatEIN = (value: string): string => {
   if (!value) return ''
   return value.replace(/\D/g, '').slice(0, 9)
 }
+
+/**
+ * Masks an SSN string, showing only the last 4 digits (***-**-XXXX)
+ * @param ssn The raw or formatted SSN string
+ * @returns The masked SSN string
+ */
+export const maskSSN = (ssn: string): string => {
+  if (!ssn) return ''
+  const clean = ssn.replace(/\D/g, '')
+  const last4 = clean.slice(-4).padStart(4, '*')
+  return `***-**-${last4}`
+}
+
+/**
+ * Formats a date string into a human-readable format (e.g., January 1, 2023)
+ * @param d The date string to format
+ * @returns The formatted date string
+ */
+export const formatDate = (d: string): string => {
+  if (!d) return '—'
+  try {
+    return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  } catch {
+    return d
+  }
+}
