@@ -71,6 +71,12 @@ const FundingReviewWizard = () => {
                     if (res.status) {
                         setFundingDetail(res.data);
                         fetchFactors(id);
+                        
+                        setFormData(prev => {
+                            const newAmount = prev.requested_amount || res.data.latest_requested_amount || '';
+                            const newPurpose = (prev.use_of_funds && prev.use_of_funds !== 'Working Capital') ? prev.use_of_funds : (res.data.latest_use_of_funds || prev.use_of_funds);
+                            return { requested_amount: newAmount, use_of_funds: newPurpose };
+                        });
                     } else {
                         toast.error(res.message || 'Failed to load funding details');
                     }
