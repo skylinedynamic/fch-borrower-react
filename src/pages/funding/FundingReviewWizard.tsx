@@ -27,9 +27,10 @@ const FundingReviewWizard = () => {
     const [reviewId, setReviewId] = useState('');
     const [submitDate, setSubmitDate] = useState('');
 
-    const searchParams = new URLSearchParams(location.search);
-    const initialAmount = searchParams.get('amount') || '';
-    const initialPurpose = searchParams.get('purpose') || 'Working Capital';
+    const { state, search } = useLocation();
+    const searchParams = new URLSearchParams(search);
+    const initialAmount = state?.amount || searchParams.get('amount') || '';
+    const initialPurpose = state?.purpose || searchParams.get('purpose') || 'Working Capital';
 
     const [formData, setFormData] = useState({
         requested_amount: initialAmount,

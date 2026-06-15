@@ -101,7 +101,9 @@ export default function FundingReviewModal({ show, onHide, review }: FundingRevi
                 {review.status === 'Rejected' && (
                     <Button color="danger" onClick={() => {
                         onHide();
-                        navigate(`/funding/${review.funding_sequence?.id}/review?amount=${review.requested_amount || ''}&purpose=${encodeURIComponent(review.use_of_funds || 'Working Capital')}`);
+                        navigate(`/funding/${review.funding_sequence?.id}/review`, {
+                            state: { amount: review.requested_amount || '', purpose: review.use_of_funds || 'Working Capital' }
+                        });
                     }}>
                         Update Application
                     </Button>
