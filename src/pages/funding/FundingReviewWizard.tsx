@@ -27,9 +27,13 @@ const FundingReviewWizard = () => {
     const [reviewId, setReviewId] = useState('');
     const [submitDate, setSubmitDate] = useState('');
 
+    const searchParams = new URLSearchParams(location.search);
+    const initialAmount = searchParams.get('amount') || '';
+    const initialPurpose = searchParams.get('purpose') || 'Working Capital';
+
     const [formData, setFormData] = useState({
-        requested_amount: '',
-        use_of_funds: 'Working Capital',
+        requested_amount: initialAmount,
+        use_of_funds: initialPurpose,
     });
     const [errors, setErrors] = useState<any>({});
 
@@ -295,7 +299,7 @@ const FundingReviewWizard = () => {
                                             <input
                                                 type="number"
                                                 className={`form-control border-start-0 ps-0 ${errors.requested_amount ? 'border-danger' : ''}`}
-                                                placeholder="100,000"
+                                                placeholder="e.g. 50000"
                                                 value={formData.requested_amount}
                                                 onChange={(e) => {
                                                     setFormData({ ...formData, requested_amount: e.target.value });

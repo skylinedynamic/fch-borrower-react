@@ -89,19 +89,30 @@ export default function FundingReviewModal({ show, onHide, review }: FundingRevi
                         <p className="text-muted fs-14 mb-0">Your funding review has been approved for <strong>{review.funding_type}</strong>. Please proceed with the final funding application to complete your request.</p>
                     </div>
                 )}
+
+                {review.status === 'Rejected' && (
+                    <div className="mt-4 p-4 border border-danger-subtle rounded bg-danger-subtle">
+                        <h5 className="fs-15 text-danger mb-3">Update Application Needed</h5>
+                        <p className="text-muted fs-14 mb-0">Please review the reason for rejection. You can click <strong>Update Application</strong> to edit your requested amount, upload missing documents, and resubmit.</p>
+                    </div>
+                )}
             </ModalBody>
-            {review.status === 'Approved' ? (
-                <ModalFooter>
-                    <Button color="light" onClick={onHide}>Cancel</Button>
+            <ModalFooter>
+                <Button color="light" onClick={onHide}>{review.status === 'Approved' ? 'Cancel' : 'Close'}</Button>
+                {review.status === 'Approved' && (
                     <Button color="primary" onClick={handleProceed}>
                         Process to Fund Application
                     </Button>
-                </ModalFooter>
-            ) : (
-                <ModalFooter>
-                    <Button color="light" onClick={onHide}>Close</Button>
-                </ModalFooter>
-            )}
+                )}
+                {review.status === 'Rejected' && (
+                    <Button color="danger" onClick={() => {
+                        onHide();
+                        navigate(`/funding/${review.funding_sequence?.id}/review?amount=${review.requested_amount || ''}&purpose=${encodeURIComponent(review.use_of_funds || 'Working Capital')}`);
+                    }}>
+                        Update Application
+                    </Button>
+                )}
+            </ModalFooter>
         </Modal>
     )
 }

@@ -81,9 +81,19 @@ export default function FundingReviewList() {
 
     const actionBodyTemplate = (row: any) => {
         return (
-            <button className="btn btn-sm btn-primary" onClick={() => handleView(row)}>
-                View Details
-            </button>
+            <div className="d-flex gap-2">
+                <button className="btn btn-sm btn-primary" onClick={() => handleView(row)}>
+                    View Details
+                </button>
+                {row.status === 'Rejected' && (
+                    <Link 
+                        to={`/funding/${row.funding_sequence?.id}/review?amount=${row.requested_amount || ''}&purpose=${encodeURIComponent(row.use_of_funds || 'Working Capital')}`} 
+                        className="btn btn-sm btn-outline-danger"
+                    >
+                        Update Application
+                    </Link>
+                )}
+            </div>
         )
     }
 
