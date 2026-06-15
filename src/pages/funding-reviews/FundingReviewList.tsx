@@ -19,11 +19,16 @@ export default function FundingReviewList() {
     const [selectedReview, setSelectedReview] = useState<any>(null)
     const [showModal, setShowModal] = useState(false)
 
+    const [sortField, setSortField] = useState<string>('id')
+    const [sortOrder, setSortOrder] = useState<number>(-1)
+
     const { data, isLoading } = useBorrowerFundingReviews({
         page,
         per_page: perPage,
         search: appliedSearchText,
-        status: appliedStatus || undefined
+        status: appliedStatus || undefined,
+        sort_field: sortField,
+        sort_order: sortOrder === 1 ? 'asc' : 'desc'
     })
 
     // Fix the nested data access
@@ -53,9 +58,14 @@ export default function FundingReviewList() {
     }
 
     const onPage = (e: any) => {
-        // DataTable uses 0-based first index, so page = Math.floor(e.first / e.rows) + 1
         setPage(Math.floor(e.first / e.rows) + 1)
         setPerPage(e.rows)
+    }
+
+    const onSort = (e: any) => {
+        setSortField(e.sortField)
+        setSortOrder(e.sortOrder)
+        setPage(1)
     }
 
     const handleApplyFilters = () => {
@@ -77,24 +87,6 @@ export default function FundingReviewList() {
         if (row.status === 'Approved') bg = 'success'
         if (row.status === 'Rejected') bg = 'danger'
         return <span className={`badge bg-${bg}`}>{row.status}</span>
-    }
-
-    const actionBodyTemplate = (row: any) => {
-        return (
-            <div className="d-flex gap-2">
-                <button className="btn btn-sm btn-primary" onClick={() => handleView(row)}>
-                    View Details
-                </button>
-                {row.status === 'Rejected' && (
-                    <Link 
-                        to={`/funding/${row.funding_sequence?.id}/review?amount=${row.requested_amount || ''}&purpose=${encodeURIComponent(row.use_of_funds || 'Working Capital')}`} 
-                        className="btn btn-sm btn-outline-danger"
-                    >
-                        Update Application
-                    </Link>
-                )}
-            </div>
-        )
     }
 
     return (
@@ -268,16 +260,24 @@ export default function FundingReviewList() {
                                         rows={perPage}
                                         totalRecords={total}
                                         onPage={onPage}
+                                        onSort={onSort}
+                                        sortField={sortField}
+                                        sortOrder={sortOrder as any}
                                         loading={isLoading}
                                         dataKey="id"
                                         emptyMessage={<div className="text-center p-3">No funding reviews found.</div>}
                                     >
-                                        <Column field="id" header="ID" style={{ width: '80px' }}></Column>
-                                        <Column field="funding_type" header="Funding Type" body={(row) => row.funding_type || 'N/A'}></Column>
-                                        <Column header="Requested Amount" body={(row) => row.requested_amount ? `$${Number(row.requested_amount).toLocaleString()}` : 'N/A'}></Column>
-                                        <Column field="status" header="Status" body={statusBodyTemplate}></Column>
-                                        <Column header="Created At" body={(row) => row.created_at ? new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : 'N/A'}></Column>
-                                        <Column header="Actions" body={actionBodyTemplate} style={{ width: '120px' }}></Column>
+                                        <Column field="funding_type" header="Funding Type" sortable body={(row) => row.funding_type || 'N/A'}></Column>
+                                        <Column field="requested_amount" header="Requested Amount" sortable body={(row) => row.requested_amount ? `$${Number(row.requested_amount).toLocaleString()}` : 'N/A'}></Column>
+                                        <Column field="status" header="Status" sortable body={statusBodyTemplate}></Column>
+                                        <Column field="created_at" header="Created At" sortable body={(row) => row.created_at ? new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : 'N/A'}></Column>
+                                        <Column header="Actions" body={(row: any) => (
+                                            <div className="d-flex gap-2">
+                                                <button className="btn btn-sm btn-primary" onClick={() => handleView(row)}>
+                                                    View Details
+                                                </button>
+                                            </div>
+                                        )} style={{ width: '120px' }}></Column>
                                     </DataTable>
                                 </div>
                             </div>
