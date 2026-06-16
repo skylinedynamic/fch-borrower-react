@@ -42,10 +42,16 @@ interface FormState {
 }
 
 // ─── Helper: read-only detail row ─────────────────────────────────────────────
-const DetailItem = ({ label, value, icon }: { label: string; value: React.ReactNode; icon?: string }) => (
-  <div className="d-flex align-items-start gap-3 py-2 border-bottom">
+interface DetailItemProps {
+  label: string
+  value: React.ReactNode
+  icon?: string
+}
+
+const DetailItem = ({ label, value, icon }: DetailItemProps) => (
+  <div className="d-flex align-items-start gap-3 py-2">
     {icon && (
-      <div className="flex-shrink-0 text-primary mt-1">
+      <div className="flex-shrink-0 text-muted">
         <i className={`${icon} fs-16`}></i>
       </div>
     )}
@@ -290,7 +296,7 @@ export default function CreditProfileTab() {
               </div>
               <div className="card-body px-4 py-3">
                 <div className="row g-0">
-                  <div className="col-md-6">
+                  <div className="col-md-4">
                     <DetailItem
                       label="Street Address"
                       icon="ri-road-map-line"
@@ -304,10 +310,10 @@ export default function CreditProfileTab() {
                       }
                     />
                   </div>
-                  <div className="col-md-2">
+                  <div className="col-md-3">
                     <DetailItem label="City" icon="ri-building-2-line" value={submittedData.city} />
                   </div>
-                  <div className="col-md-2">
+                  <div className="col-md-3">
                     <DetailItem label="State" icon="ri-map-2-line" value={submittedData.state} />
                   </div>
                   <div className="col-md-2">
