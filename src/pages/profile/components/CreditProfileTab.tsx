@@ -9,6 +9,8 @@ import { countries } from '../../../data/countries'
 import { apiClient } from '../../../lib/http/apiClient'
 import { formatPhoneNumber, formatZipCode, maskSSN, formatDate } from '../../../utils/formatters'
 import TabLoader from '../../../components/Loader/TabLoader'
+import { fetchCreditProfile } from '../../../modules/credit-profile'
+import type { CreditProfile } from '../../../modules/credit-profile'
 
 interface CreditProfileRequestData {
   first_name: string
@@ -70,6 +72,7 @@ export default function CreditProfileTab() {
   const [initialized, setInitialized] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submittedData, setSubmittedData] = useState<CreditProfileRequestData | null>(null)
+  const [creditProfile, setCreditProfile] = useState<CreditProfile | null>(null)
   const [showSSN, setShowSSN] = useState(false)
 
   const [formData, setFormData] = useState<FormState>({
@@ -104,16 +107,29 @@ export default function CreditProfileTab() {
     }
   }, [user])
 
-  // If credit_profile_updated flag is set, try to load the actual record.
+  // If credit_profile_updated flag is set, fetch credit profile data.
   // If not set, mark as initialized immediately so the form shows right away.
   useEffect(() => {
     if (user === undefined) return // still loading auth
     if (user?.credit_profile_updated) {
-      fetchSubmittedDetails()
+      fetchCreditProfileOnly()
     } else {
       setInitialized(true)
     }
   }, [user?.credit_profile_updated])
+
+  const fetchCreditProfileOnly = async () => {
+    try {
+      setLoading(true)
+      const data = await fetchCreditProfile()
+      setCreditProfile(data)
+    } catch {
+      setCreditProfile(null)
+    } finally {
+      setLoading(false)
+      setInitialized(true)
+    }
+  }
 
   const fetchSubmittedDetails = async () => {
     try {
@@ -178,7 +194,360 @@ export default function CreditProfileTab() {
     return <TabLoader count={12} colClass="col-md-6" />
   }
 
-  // ─── Details view: only when a real record was returned by the API ───────────
+  // ─── Credit Profile Details view (from borrower_credit_* tables) ────────────
+  if (creditProfile) {
+    const { personal_info, addresses } = creditProfile
+    const currentAddress = addresses?.find(a => a.type === 'CURRENT')
+    const prevAddresses = addresses?.filter(a => a.type !== 'CURRENT')
+
+    return (
+      <div className="fade-panel">
+        <div className="d-flex align-items-center gap-3 p-3 mb-4 rounded-3 border"
+          style={{ background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', borderColor: '#93c5fd !important' }}>
+          <div className="rounded-circle bg-primary d-flex align-items-center justify-content-center flex-shrink-0"
+            style={{ width: 48, height: 48 }}>
+            <i className="ri-file-list-3-line text-white fs-22"></i>
+          </div>
+          <div>
+            <div className="fw-bold text-primary-emphasis fs-15">Credit Profile Details</div>
+            <div className="text-primary-emphasis fs-13 opacity-75">
+              Your credit profile has been processed and is available for review.
+            </div>
+          </div>
+          <div className="ms-auto flex-shrink-0">
+            <span className="badge bg-primary-subtle text-primary border border-primary-subtle fs-12 px-3 py-2">
+              <i className="ri-checkbox-circle-fill me-1"></i>Active
+            </span>
+          </div>
+        </div>
+
+        <div className="row g-4">
+          {/* ── Personal Information ── */}
+          <div className="col-lg-6">
+            <div className="card border shadow-sm h-100">
+              <div className="card-header bg-transparent border-bottom py-3">
+                <div className="d-flex align-items-center gap-2">
+                  <div className="rounded bg-primary-subtle p-2">
+                    <i className="ri-user-3-line text-primary fs-16"></i>
+                  </div>
+                  <div>
+                    <div className="fw-semibold text-dark fs-14">Personal Information</div>
+                    <div className="text-muted fs-12">Credit report identity data</div>
+                  </div>
+                </div>
+              </div>
+              <div className="card-body px-4 py-3">
+                <DetailItem label="Full Name" icon="ri-account-circle-line" value={personal_info?.name} />
+                <DetailItem label="Date of Birth" icon="ri-cake-2-line" value={personal_info?.dob ? formatDate(personal_info.dob) : '-'} />
+                <DetailItem
+                  label="Social Security Number"
+                  icon="ri-lock-line"
+                  value={
+                    <div className="d-flex align-items-center gap-2">
+                      <span className="font-monospace fs-14">
+                        {showSSN && personal_info?.ssn ? personal_info.ssn : maskSSN(personal_info?.ssn || '')}
+                      </span>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-soft-secondary py-0 px-2 fs-12"
+                        onClick={() => setShowSSN(s => !s)}
+                      >
+                        <i className={`${showSSN ? 'ri-eye-off-line' : 'ri-eye-line'} align-middle me-1`}></i>
+                        {showSSN ? 'Hide' : 'Reveal'}
+                      </button>
+                    </div>
+                  }
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ── Contact Information ── */}
+          <div className="col-lg-6">
+            <div className="card border shadow-sm h-100">
+              <div className="card-header bg-transparent border-bottom py-3">
+                <div className="d-flex align-items-center gap-2">
+                  <div className="rounded bg-info-subtle p-2">
+                    <i className="ri-contacts-line text-info fs-16"></i>
+                  </div>
+                  <div>
+                    <div className="fw-semibold text-dark fs-14">Contact Information</div>
+                    <div className="text-muted fs-12">Email and phone on file</div>
+                  </div>
+                </div>
+              </div>
+              <div className="card-body px-4 py-3">
+                <DetailItem label="Email Address" icon="ri-mail-line" value={personal_info?.email ? <a href={`mailto:${personal_info.email}`} className="text-primary text-decoration-none">{personal_info.email}</a> : '-'} />
+                <DetailItem label="Phone Number" icon="ri-phone-line" value={personal_info?.phone ? <a href={`tel:${personal_info.phone}`} className="text-dark text-decoration-none">{personal_info.phone}</a> : '-'} />
+              </div>
+            </div>
+          </div>
+
+          {/* ── Current Address ── */}
+          {currentAddress && (
+            <div className="col-lg-6">
+              <div className="card border shadow-sm h-100">
+                <div className="card-header bg-transparent border-bottom py-3">
+                  <div className="d-flex align-items-center gap-2">
+                    <div className="rounded bg-warning-subtle p-2">
+                      <i className="ri-map-pin-2-line text-warning fs-16"></i>
+                    </div>
+                    <div>
+                      <div className="fw-semibold text-dark fs-14">Current Address</div>
+                      <div className="text-muted fs-12">Primary residence on record</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="card-body px-4 py-3">
+                  <div className="row g-0">
+                    <div className="col-md-6">
+                      <DetailItem label="Street Address" icon="ri-road-map-line" value={currentAddress.street} />
+                    </div>
+                    <div className="col-md-2">
+                      <DetailItem label="City" icon="ri-building-2-line" value={currentAddress.city} />
+                    </div>
+                    <div className="col-md-2">
+                      <DetailItem label="State" icon="ri-map-2-line" value={currentAddress.state} />
+                    </div>
+                    <div className="col-md-2">
+                      <DetailItem label="Zip Code" icon="ri-mail-send-line" value={currentAddress.zip} />
+                    </div>
+                  </div>
+                  {currentAddress.date_reported && (
+                    <div className="text-muted fs-12 mt-2">
+                      <i className="ri-calendar-line me-1"></i>Reported: {currentAddress.date_reported}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Previous Addresses ── */}
+          {prevAddresses && prevAddresses.length > 0 && (
+            <div className="col-lg-6">
+              <div className="card border shadow-sm h-100">
+                <div className="card-header bg-transparent border-bottom py-3">
+                  <div className="d-flex align-items-center gap-2">
+                    <div className="rounded bg-secondary-subtle p-2">
+                      <i className="ri-history-line text-secondary fs-16"></i>
+                    </div>
+                    <div>
+                      <div className="fw-semibold text-dark fs-14">Previous Addresses</div>
+                      <div className="text-muted fs-12">{prevAddresses.length} previous address{prevAddresses.length > 1 ? 'es' : ''} on record</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="card-body px-4 py-3">
+                  {prevAddresses.map((addr, i) => (
+                    <div key={i} className={i < prevAddresses.length - 1 ? 'border-bottom pb-2 mb-2' : ''}>
+                      <div className="fs-13 fw-medium text-dark">{addr.street}</div>
+                      <div className="text-muted fs-12">{addr.city}, {addr.state} {addr.zip}</div>
+                      {addr.date_reported && (
+                        <div className="text-muted fs-11 mt-1"><i className="ri-calendar-line me-1"></i>Reported: {addr.date_reported}</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Credit Scores ── */}
+          <div className="col-lg-6">
+            <div className="card border shadow-sm h-100">
+              <div className="card-header bg-transparent border-bottom py-3">
+                <div className="d-flex align-items-center gap-2">
+                  <div className="rounded bg-danger-subtle p-2">
+                    <i className="ri-funds-line text-danger fs-16"></i>
+                  </div>
+                  <div>
+                    <div className="fw-semibold text-dark fs-14">Credit Scores</div>
+                    <div className="text-muted fs-12">Bureau-level credit scores</div>
+                  </div>
+                </div>
+              </div>
+              <div className="card-body px-4 py-3">
+                <div className="row g-0">
+                  <div className="col-6">
+                    <DetailItem label="FICO Score" icon="ri-bar-chart-2-line" value={creditProfile.metrics?.fico_score ?? '-'} />
+                  </div>
+                  <div className="col-6">
+                    <DetailItem label="Paydex Score" icon="ri-bar-chart-2-line" value={creditProfile.metrics?.paydex_score ?? '-'} />
+                  </div>
+                  <div className="col-6">
+                    <DetailItem label="Experian Intelliscore" icon="ri-bar-chart-2-line" value={creditProfile.metrics?.experian_intelliscore ?? '-'} />
+                  </div>
+                  <div className="col-6">
+                    <DetailItem label="Equifax Score" icon="ri-bar-chart-2-line" value={creditProfile.metrics?.equifax_score ?? '-'} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Account Overview ── */}
+          <div className="col-lg-6">
+            <div className="card border shadow-sm h-100">
+              <div className="card-header bg-transparent border-bottom py-3">
+                <div className="d-flex align-items-center gap-2">
+                  <div className="rounded bg-success-subtle p-2">
+                    <i className="ri-briefcase-4-line text-success fs-16"></i>
+                  </div>
+                  <div>
+                    <div className="fw-semibold text-dark fs-14">Account Overview</div>
+                    <div className="text-muted fs-12">Credit utilization and tradelines</div>
+                  </div>
+                </div>
+              </div>
+              <div className="card-body px-4 py-3">
+                <div className="row g-0">
+                  <div className="col-6">
+                    <DetailItem label="Active Tradelines" icon="ri-archive-line" value={creditProfile.metrics?.active_tradelines ?? '-'} />
+                  </div>
+                  <div className="col-6">
+                    <DetailItem label="Total Credit Limit" icon="ri-money-dollar-circle-line" value={creditProfile.metrics?.total_credit_limit != null ? `$${Number(creditProfile.metrics.total_credit_limit).toLocaleString()}` : '-'} />
+                  </div>
+                  <div className="col-6">
+                    <DetailItem label="Credit Utilization" icon="ri-pie-chart-2-line" value={creditProfile.metrics?.credit_utilization != null ? `${creditProfile.metrics.credit_utilization}%` : '-'} />
+                  </div>
+                  <div className="col-6">
+                    <DetailItem label="Recent Inquiries" icon="ri-search-eye-line" value={creditProfile.metrics?.recent_inquiries ?? '-'} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Account Health ── */}
+          <div className="col-lg-6">
+            <div className="card border shadow-sm h-100">
+              <div className="card-header bg-transparent border-bottom py-3">
+                <div className="d-flex align-items-center gap-2">
+                  <div className="rounded bg-warning-subtle p-2">
+                    <i className="ri-alert-line text-warning fs-16"></i>
+                  </div>
+                  <div>
+                    <div className="fw-semibold text-dark fs-14">Account Health</div>
+                    <div className="text-muted fs-12">Delinquencies and public records</div>
+                  </div>
+                </div>
+              </div>
+              <div className="card-body px-4 py-3">
+                <div className="row g-0">
+                  <div className="col-4">
+                    <DetailItem label="Delinquent" icon="ri-error-warning-line" value={creditProfile.metrics?.delinquent_accounts ?? '-'} />
+                  </div>
+                  <div className="col-4">
+                    <DetailItem label="Public Records" icon="ri-file-text-line" value={creditProfile.metrics?.public_records ?? '-'} />
+                  </div>
+                  <div className="col-4">
+                    <DetailItem label="Collections" icon="ri-bank-line" value={creditProfile.metrics?.collections ?? '-'} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Open Accounts Analysis ── */}
+          <div className="col-lg-6">
+            <div className="card border shadow-sm h-100">
+              <div className="card-header bg-transparent border-bottom py-3">
+                <div className="d-flex align-items-center gap-2">
+                  <div className="rounded bg-info-subtle p-2">
+                    <i className="ri-line-chart-line text-info fs-16"></i>
+                  </div>
+                  <div>
+                    <div className="fw-semibold text-dark fs-14">Open Accounts Analysis</div>
+                    <div className="text-muted fs-12">Current open account details</div>
+                  </div>
+                </div>
+              </div>
+              <div className="card-body px-4 py-3">
+                <div className="row g-0">
+                  <div className="col-6">
+                    <DetailItem label="Monthly Payments" icon="ri-exchange-dollar-line" value={creditProfile.metrics?.open_accounts_analysis?.monthly_payments != null ? `$${Number(creditProfile.metrics.open_accounts_analysis.monthly_payments).toLocaleString()}` : '-'} />
+                  </div>
+                  <div className="col-6">
+                    <DetailItem label="Balance" icon="ri-wallet-3-line" value={creditProfile.metrics?.open_accounts_analysis?.balance != null ? `$${Number(creditProfile.metrics.open_accounts_analysis.balance).toLocaleString()}` : '-'} />
+                  </div>
+                  <div className="col-6">
+                    <DetailItem label="Credit Limit" icon="ri-credit-card-2-line" value={creditProfile.metrics?.open_accounts_analysis?.credit_limit != null ? `$${Number(creditProfile.metrics.open_accounts_analysis.credit_limit).toLocaleString()}` : '-'} />
+                  </div>
+                  <div className="col-6">
+                    <DetailItem label="Available Credit" icon="ri-hand-coin-line" value={creditProfile.metrics?.open_accounts_analysis?.available_credit != null ? `$${Number(creditProfile.metrics.open_accounts_analysis.available_credit).toLocaleString()}` : '-'} />
+                  </div>
+                  <div className="col-6">
+                    <DetailItem label="Utilization Ratio" icon="ri-percent-line" value={creditProfile.metrics?.open_accounts_analysis?.utilization_ratio != null ? `${creditProfile.metrics.open_accounts_analysis.utilization_ratio}%` : '-'} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── All Accounts Analysis ── */}
+          <div className="col-lg-6">
+            <div className="card border shadow-sm h-100">
+              <div className="card-header bg-transparent border-bottom py-3">
+                <div className="d-flex align-items-center gap-2">
+                  <div className="rounded bg-secondary-subtle p-2">
+                    <i className="ri-donut-chart-line text-secondary fs-16"></i>
+                  </div>
+                  <div>
+                    <div className="fw-semibold text-dark fs-14">All Accounts Analysis</div>
+                    <div className="text-muted fs-12">Complete account history</div>
+                  </div>
+                </div>
+              </div>
+              <div className="card-body px-4 py-3">
+                <div className="row g-0">
+                  <div className="col-4">
+                    <DetailItem label="Total Accounts" icon="ri-numbers-line" value={creditProfile.metrics?.all_accounts_analysis?.total_accounts ?? '-'} />
+                  </div>
+                  <div className="col-4">
+                    <DetailItem label="Open Accounts" icon="ri-folder-open-line" value={creditProfile.metrics?.all_accounts_analysis?.open_accounts ?? '-'} />
+                  </div>
+                  <div className="col-4">
+                    <DetailItem label="Closed Accounts" icon="ri-folder-close-line" value={creditProfile.metrics?.all_accounts_analysis?.closed_accounts ?? '-'} />
+                  </div>
+                  <div className="col-6">
+                    <DetailItem label="Newest Open" icon="ri-calendar-check-line" value={creditProfile.metrics?.all_accounts_analysis?.newest_open_date ?? '-'} />
+                  </div>
+                  <div className="col-6">
+                    <DetailItem label="Oldest Open" icon="ri-calendar-line" value={creditProfile.metrics?.all_accounts_analysis?.oldest_open_date ?? '-'} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Summary ── */}
+          {creditProfile.metrics?.summary && (
+            <div className="col-12">
+              <div className="card border shadow-sm">
+                <div className="card-header bg-transparent border-bottom py-3">
+                  <div className="d-flex align-items-center gap-2">
+                    <div className="rounded bg-primary-subtle p-2">
+                      <i className="ri-file-text-line text-primary fs-16"></i>
+                    </div>
+                    <div>
+                      <div className="fw-semibold text-dark fs-14">Credit Profile Summary</div>
+                      <div className="text-muted fs-12">Overall assessment</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="card-body px-4 py-3">
+                  <p className="text-dark fs-14 mb-0">{creditProfile.metrics.summary}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // ─── Submitted details view (fallback) ─────────────────────────────────────
   if (submittedData) {
     return (
       <div className="fade-panel">
