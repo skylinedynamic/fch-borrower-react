@@ -197,139 +197,139 @@ export default function CreditProfileTab() {
         </div>
 
         <div className="row g-4">
-            {/* ── Personal Information ── */}
-            <div className="col-lg-6">
-              <div className="card border shadow-sm h-100">
-                <div className="card-header bg-transparent border-bottom py-3">
-                  <div className="d-flex align-items-center gap-2">
-                    <div className="rounded bg-primary-subtle p-2">
-                      <i className="ri-user-3-line text-primary fs-16"></i>
-                    </div>
-                    <div>
-                      <div className="fw-semibold text-dark fs-14">Personal Information</div>
-                      <div className="text-muted fs-12">Applicant identity details</div>
-                    </div>
+          {/* ── Personal Information ── */}
+          <div className="col-lg-6">
+            <div className="card border shadow-sm h-100">
+              <div className="card-header bg-transparent border-bottom py-3">
+                <div className="d-flex align-items-center gap-2">
+                  <div className="rounded bg-primary-subtle p-2">
+                    <i className="ri-user-3-line text-primary fs-16"></i>
+                  </div>
+                  <div>
+                    <div className="fw-semibold text-dark fs-14">Personal Information</div>
+                    <div className="text-muted fs-12">Applicant identity details</div>
                   </div>
                 </div>
-                <div className="card-body px-4 py-3">
-                  <DetailItem
-                    label="Full Name"
-                    icon="ri-account-circle-line"
-                    value={[submittedData.first_name, submittedData.middle_name, submittedData.last_name].filter(Boolean).join(' ')}
-                  />
-                  <DetailItem
-                    label="Date of Birth"
-                    icon="ri-cake-2-line"
-                    value={formatDate(submittedData.date_of_birth)}
-                  />
-                  <DetailItem
-                    label="Social Security Number"
-                    icon="ri-lock-line"
-                    value={
-                      <div className="d-flex align-items-center gap-2">
-                        <span className="font-monospace fs-14">
-                          {showSSN && submittedData.ssn ? submittedData.ssn : maskSSN(submittedData.ssn || '')}
-                        </span>
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-soft-secondary py-0 px-2 fs-12"
-                          onClick={() => setShowSSN(s => !s)}
-                        >
-                          <i className={`${showSSN ? 'ri-eye-off-line' : 'ri-eye-line'} align-middle me-1`}></i>
-                          {showSSN ? 'Hide' : 'Reveal'}
-                        </button>
-                      </div>
-                    }
-                  />
-                </div>
+              </div>
+              <div className="card-body px-4 py-3">
+                <DetailItem
+                  label="Full Name"
+                  icon="ri-account-circle-line"
+                  value={[submittedData.first_name, submittedData.middle_name, submittedData.last_name].filter(Boolean).join(' ')}
+                />
+                <DetailItem
+                  label="Date of Birth"
+                  icon="ri-cake-2-line"
+                  value={formatDate(submittedData.date_of_birth)}
+                />
+                <DetailItem
+                  label="Social Security Number"
+                  icon="ri-lock-line"
+                  value={
+                    <div className="d-flex align-items-center gap-2">
+                      <span className="font-monospace fs-14">
+                        {showSSN && submittedData.ssn ? submittedData.ssn : maskSSN(submittedData.ssn || '')}
+                      </span>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-soft-secondary py-0 px-2 fs-12"
+                        onClick={() => setShowSSN(s => !s)}
+                      >
+                        <i className={`${showSSN ? 'ri-eye-off-line' : 'ri-eye-line'} align-middle me-1`}></i>
+                        {showSSN ? 'Hide' : 'Reveal'}
+                      </button>
+                    </div>
+                  }
+                />
               </div>
             </div>
-
-            {/* ── Contact Information ── */}
-            <div className="col-lg-6">
-              <div className="card border shadow-sm h-100">
-                <div className="card-header bg-transparent border-bottom py-3">
-                  <div className="d-flex align-items-center gap-2">
-                    <div className="rounded bg-info-subtle p-2">
-                      <i className="ri-contacts-line text-info fs-16"></i>
-                    </div>
-                    <div>
-                      <div className="fw-semibold text-dark fs-14">Contact Information</div>
-                      <div className="text-muted fs-12">Reach and communication details</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="card-body px-4 py-3">
-                  <DetailItem
-                    label="Email Address"
-                    icon="ri-mail-line"
-                    value={<a href={`mailto:${submittedData.email}`} className="text-primary text-decoration-none">{submittedData.email}</a>}
-                  />
-                  <DetailItem
-                    label="Phone Number"
-                    icon="ri-phone-line"
-                    value={<a href={`tel:${submittedData.phone}`} className="text-dark text-decoration-none">{submittedData.phone}</a>}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* ── Address Information ── */}
-            <div className="col-12">
-              <div className="card border shadow-sm">
-                <div className="card-header bg-transparent border-bottom py-3">
-                  <div className="d-flex align-items-center gap-2">
-                    <div className="rounded bg-warning-subtle p-2">
-                      <i className="ri-map-pin-2-line text-warning fs-16"></i>
-                    </div>
-                    <div>
-                      <div className="fw-semibold text-dark fs-14">Address Details</div>
-                      <div className="text-muted fs-12">Residential address for credit verification</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="card-body px-4 py-3">
-                  <div className="row g-0">
-                    <div className="col-md-6">
-                      <DetailItem
-                        label="Street Address"
-                        icon="ri-road-map-line"
-                        value={
-                          <>
-                            {submittedData.address}
-                            {submittedData.apt_suite_other && (
-                              <span className="text-muted ms-2 fs-13">({submittedData.apt_suite_other})</span>
-                            )}
-                          </>
-                        }
-                      />
-                    </div>
-                    <div className="col-md-2">
-                      <DetailItem label="City" icon="ri-building-2-line" value={submittedData.city} />
-                    </div>
-                    <div className="col-md-2">
-                      <DetailItem label="State" icon="ri-map-2-line" value={submittedData.state} />
-                    </div>
-                    <div className="col-md-2">
-                      <DetailItem label="Zip Code" icon="ri-mail-send-line" value={submittedData.zip} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* ── Submission timestamp ── */}
-            {submittedData.created_at && (
-              <div className="col-12">
-                <div className="d-flex align-items-center gap-2 text-muted fs-12 justify-content-end">
-                  <i className="ri-time-line"></i>
-                  Submitted on {new Date(submittedData.created_at).toLocaleString('en-US', {
-                    dateStyle: 'medium', timeStyle: 'short'
-                  })}
-                </div>
-              </div>
-            )}
           </div>
+
+          {/* ── Contact Information ── */}
+          <div className="col-lg-6">
+            <div className="card border shadow-sm h-100">
+              <div className="card-header bg-transparent border-bottom py-3">
+                <div className="d-flex align-items-center gap-2">
+                  <div className="rounded bg-info-subtle p-2">
+                    <i className="ri-contacts-line text-info fs-16"></i>
+                  </div>
+                  <div>
+                    <div className="fw-semibold text-dark fs-14">Contact Information</div>
+                    <div className="text-muted fs-12">Reach and communication details</div>
+                  </div>
+                </div>
+              </div>
+              <div className="card-body px-4 py-3">
+                <DetailItem
+                  label="Email Address"
+                  icon="ri-mail-line"
+                  value={<a href={`mailto:${submittedData.email}`} className="text-primary text-decoration-none">{submittedData.email}</a>}
+                />
+                <DetailItem
+                  label="Phone Number"
+                  icon="ri-phone-line"
+                  value={<a href={`tel:${submittedData.phone}`} className="text-dark text-decoration-none">{submittedData.phone}</a>}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ── Address Information ── */}
+          <div className="col-12">
+            <div className="card border shadow-sm">
+              <div className="card-header bg-transparent border-bottom py-3">
+                <div className="d-flex align-items-center gap-2">
+                  <div className="rounded bg-warning-subtle p-2">
+                    <i className="ri-map-pin-2-line text-warning fs-16"></i>
+                  </div>
+                  <div>
+                    <div className="fw-semibold text-dark fs-14">Address Details</div>
+                    <div className="text-muted fs-12">Residential address for credit verification</div>
+                  </div>
+                </div>
+              </div>
+              <div className="card-body px-4 py-3">
+                <div className="row g-0">
+                  <div className="col-md-6">
+                    <DetailItem
+                      label="Street Address"
+                      icon="ri-road-map-line"
+                      value={
+                        <>
+                          {submittedData.address}
+                          {submittedData.apt_suite_other && (
+                            <span className="text-muted ms-2 fs-13">({submittedData.apt_suite_other})</span>
+                          )}
+                        </>
+                      }
+                    />
+                  </div>
+                  <div className="col-md-2">
+                    <DetailItem label="City" icon="ri-building-2-line" value={submittedData.city} />
+                  </div>
+                  <div className="col-md-2">
+                    <DetailItem label="State" icon="ri-map-2-line" value={submittedData.state} />
+                  </div>
+                  <div className="col-md-2">
+                    <DetailItem label="Zip Code" icon="ri-mail-send-line" value={submittedData.zip} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Submission timestamp ── */}
+          {submittedData.created_at && (
+            <div className="col-12">
+              <div className="d-flex align-items-center gap-2 text-muted fs-12 justify-content-end">
+                <i className="ri-time-line"></i>
+                Submitted on {new Date(submittedData.created_at).toLocaleString('en-US', {
+                  dateStyle: 'medium', timeStyle: 'short'
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     )
   }
@@ -470,7 +470,7 @@ export default function CreditProfileTab() {
         {/* ── Address ── */}
         <div className="mb-4">
           <div className="row g-3">
-            <div className="col-md-8">
+            <div className="col-md-6">
               <label className="form-label">Street Address <span className="text-danger">*</span></label>
               <input
                 type="text"
@@ -481,7 +481,7 @@ export default function CreditProfileTab() {
               />
               {errors.address && <div className="invalid-feedback">{errors.address}</div>}
             </div>
-            <div className="col-md-4">
+            <div className="col-md-6">
               <label className="form-label">Apt / Suite / Unit <span className="text-muted fs-12">(optional)</span></label>
               <input
                 type="text"
