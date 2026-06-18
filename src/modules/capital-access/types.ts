@@ -41,11 +41,20 @@ export interface StrategyDetailResponse {
   data: any; // raw data from API to be mapped in service
 }
 
+export interface FactorDetail {
+  slug: string;
+  label: string;
+  value: string | number;
+  weighted_score: number;
+  raw_score: number;
+}
+
 export interface CapitalAccessOverview {
   readiness_score: number;
   readiness_status: string;
   score_labels_top: { min: number; max: number };
   score_labels_bottom: { min: number; max: number };
+  factors: FactorDetail[];
   contributing_factors: string[];
   estimated_total_access: string;
   breakdown: Array<{ label: string; value: string }>;

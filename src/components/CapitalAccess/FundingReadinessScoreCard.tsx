@@ -1,22 +1,15 @@
 import React from 'react'
+import type { FactorDetail } from '../../modules/capital-access/types'
 
 interface FundingReadinessScoreCardProps {
   score: number
   status: string
-  minTop: number
-  maxTop: number
-  minBottom: number
-  maxBottom: number
-  factors: string[]
+  factors: FactorDetail[]
 }
 
 export default function FundingReadinessScoreCard({
   score,
   status,
-  minTop,
-  maxTop,
-  minBottom,
-  maxBottom,
   factors,
 }: FundingReadinessScoreCardProps) {
   return (
@@ -38,10 +31,6 @@ export default function FundingReadinessScoreCard({
         </div>
 
         <div className="ca-slider-wrapper">
-          <div className="ca-slider-labels ca-slider-labels-top">
-            <span>{minTop}</span>
-            <span>{maxTop}</span>
-          </div>
           <div className="ca-custom-progress-container">
             <div className="progress ca-custom-progress">
               <div
@@ -54,17 +43,14 @@ export default function FundingReadinessScoreCard({
               ></div>
             </div>
           </div>
-          <div className="ca-slider-labels ca-slider-labels-bottom">
-            <span>{minBottom}</span>
-            <span>{maxBottom}</span>
-          </div>
         </div>
 
         <div className="ca-score-factors">
           {factors.map((factor, idx) => (
-            <span key={idx} className="ca-factor-tag">
-              <i className="ri-checkbox-circle-fill"></i> {factor}
-            </span>
+            <div key={idx} className="ca-factor-row d-flex align-items-center justify-content-between py-1">
+              <span className="ca-factor-label fw-medium text-muted small">{factor.label}</span>
+              <span className="ca-factor-value fw-semibold small">{factor.value}</span>
+            </div>
           ))}
         </div>
       </div>

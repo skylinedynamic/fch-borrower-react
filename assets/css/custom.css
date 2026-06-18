@@ -1875,7 +1875,7 @@ File: Custom Css File
 
 .ca-dashboard-welcome {
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border-radius: 12px;
+    border-radius: 4px;
     padding: 20px;
     border: 1px solid rgba(226, 232, 240, 0.8);
     box-shadow: 0 6px 20px -5px rgba(0, 0, 0, 0.04);
@@ -2176,11 +2176,39 @@ File: Custom Css File
 
 .ca-score-factors {
     display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-top: 16px;
-    padding-top: 14px;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 14px;
+    padding-top: 12px;
     border-top: 1px dashed var(--ca-border);
+}
+
+.ca-factor-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+}
+
+.ca-factor-row:hover {
+    background: #f1f5f9;
+}
+
+.ca-factor-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.ca-factor-value {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1e293b;
+    text-align: right;
+    max-width: 55%;
+    word-break: break-word;
 }
 
 .ca-factor-tag {

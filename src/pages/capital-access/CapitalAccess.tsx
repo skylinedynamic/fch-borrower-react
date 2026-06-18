@@ -27,11 +27,7 @@ export default function CapitalAccess() {
 
   const score = overview?.readiness_score ?? 0
   const status = overview?.readiness_status ?? 'N/A'
-  const minTop = overview?.score_labels_top?.min ?? 501
-  const maxTop = overview?.score_labels_top?.max ?? 900
-  const minBottom = overview?.score_labels_bottom?.min ?? 300
-  const maxBottom = overview?.score_labels_bottom?.max ?? 850
-  const factors = overview?.contributing_factors ?? []
+  const factors = overview?.factors ?? []
   const totalAccess = overview?.estimated_total_access ?? '$0'
   const breakdown = overview?.breakdown ?? []
 
@@ -52,15 +48,10 @@ export default function CapitalAccess() {
                   <FundingReadinessScoreCard
                     score={score}
                     status={status}
-                    minTop={minTop}
-                    maxTop={maxTop}
-                    minBottom={minBottom}
-                    maxBottom={maxBottom}
                     factors={factors}
                   />
                   <EstimatedTotalAccessCard
                     totalAccess={totalAccess}
-                    breakdown={breakdown}
                   />
                 </div>
 

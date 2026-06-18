@@ -2,12 +2,10 @@ import React from 'react'
 
 interface EstimatedTotalAccessCardProps {
   totalAccess: string
-  breakdown: Array<{ label: string; value: string }>
 }
 
 export default function EstimatedTotalAccessCard({
   totalAccess,
-  breakdown,
 }: EstimatedTotalAccessCardProps) {
   return (
     <div className="col-md-6">
@@ -28,15 +26,6 @@ export default function EstimatedTotalAccessCard({
 
         <div className="ca-access-footer">
           Across Eligible Plays
-        </div>
-
-        <div className="ca-breakdown-list">
-          {breakdown.map((item, idx) => (
-            <div key={idx} className="ca-breakdown-item">
-              <span>{item.label}</span>
-              <span className="value">{item.value}</span>
-            </div>
-          ))}
         </div>
       </div>
     </div>
