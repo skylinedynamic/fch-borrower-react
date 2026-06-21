@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react'
+import { useLocation } from 'react-router-dom'
 import type { FundingRequest } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
@@ -32,7 +33,8 @@ export default function FundingRequestStep({
   const [fundingRequestId, setFundingRequestId] = useState<number | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
-  const urlApprovedFunding = new URLSearchParams(window.location.search).get('approved_funding')
+  const location = useLocation()
+  const urlApprovedFunding = (location.state as any)?.approved_funding
 
   // Fetch approved funding options
   const { data: fundingOptionsData } = useQuery({

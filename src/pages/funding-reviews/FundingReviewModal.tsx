@@ -21,13 +21,14 @@ export default function FundingReviewModal({ show, onHide, review }: FundingRevi
     }
 
     const handleProceed = () => {
-        const queryParams = new URLSearchParams()
-        if (review.funding_type) queryParams.append('approved_funding', review.funding_type)
-        if (review.use_of_funds) queryParams.append('purpose', review.use_of_funds)
-        if (review.requested_amount) queryParams.append('requested_amount', review.requested_amount)
-        
         onHide()
-        navigate(`/fund-application?${queryParams.toString()}`)
+        navigate(`/fund-application`, {
+            state: {
+                approved_funding: review.funding_type || '',
+                purpose: review.use_of_funds || '',
+                requested_amount: review.requested_amount || ''
+            }
+        })
     }
 
     return (
