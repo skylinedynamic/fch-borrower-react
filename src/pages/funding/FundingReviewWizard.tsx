@@ -545,7 +545,19 @@ const FundingReviewWizard = () => {
                                                                     </button>
                                                                 </>
                                                             ) : (
-                                                                <span className="text-success fs-13 fw-semibold"><i className="ri-check-line align-middle me-1"></i> Uploaded</span>
+                                                                <>
+                                                                    <span className="text-success fs-13 fw-semibold me-3"><i className="ri-check-line align-middle me-1"></i> Uploaded</span>
+                                                                    <button
+                                                                        className="btn btn-light border btn-sm px-3 fw-medium"
+                                                                        onClick={() => {
+                                                                            setCurrentDocType(docType);
+                                                                            setShowFileManager(true);
+                                                                        }}
+                                                                        disabled={uploading}
+                                                                    >
+                                                                        Upload Again
+                                                                    </button>
+                                                                </>
                                                             )}
                                                         </div>
                                                     </div>
