@@ -115,3 +115,11 @@ export const FUNDING_WIZARD_STEPS = [
     { id: 3, label: 'Documents' },
     { id: 4, label: 'Submit' }
 ];
+
+export const QUALIFY_REASONS_MAP: Record<string, string> = {
+    'Business Credit': 'Business profile meets our lending standards',
+    'Revenue': 'Revenue exceeds minimum threshold',
+    'Time in Business': 'Time in business exceeds requirement',
+    'Banking Activity': 'Banking activity shows consistent deposits',
+    'Documents': 'Required documents have been provided'
+};

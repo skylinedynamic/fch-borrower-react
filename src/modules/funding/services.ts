@@ -15,7 +15,4 @@ export const fetchReadinessFactors = async (id: string | undefined) => {
     return response.data;
 };
 
-export const fetchQualifyReasons = async (id: string | undefined) => {
-    const response = await apiClient.get(`/common/funding-qualification/${id}/qualify-reasons`);
-    return response.data;
-};
+
