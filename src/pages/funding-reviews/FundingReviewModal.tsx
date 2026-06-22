@@ -60,7 +60,7 @@ export default function FundingReviewModal({ show, onHide, review }: FundingRevi
     const displayLogo = globalBranding?.primary_logo_full_url || globalBranding?.primary_logo || invoiceLogo;
 
     return (
-        <Modal isOpen={show} toggle={onHide} size="lg" centered contentClassName="border-0 shadow-lg">
+        <Modal isOpen={show} toggle={onHide} size="lg" centered contentClassName="border-0 shadow-lg" style={{ maxWidth: '920px' }}>
             <ModalBody className="p-0">
                 {fetching && !fullReview ? (
                     <FundingReviewSkeleton />
@@ -128,7 +128,7 @@ export default function FundingReviewModal({ show, onHide, review }: FundingRevi
 
                                     <div className="mt-4 pt-3 border-top border-top-dashed">
                                         <h6 className="text-muted text-uppercase fw-semibold mb-3">
-                                            Uploaded Documents 
+                                            Uploaded Documents
                                             {displayReview.actual_documents && displayReview.actual_documents.length > 0 && (
                                                 <span className="ms-2 badge bg-success-subtle text-success text-capitalize border border-success-subtle">
                                                     {displayReview.actual_documents.length} Attached
@@ -159,10 +159,10 @@ export default function FundingReviewModal({ show, onHide, review }: FundingRevi
                                                                                 </div>
                                                                             </div>
                                                                             <div className="ms-1 flex-grow-1 overflow-hidden" style={{ minWidth: 0 }}>
-                                                                                <a 
-                                                                                    href={doc.document_url || doc.file_path || '#'} 
-                                                                                    target="_blank" 
-                                                                                    rel="noreferrer" 
+                                                                                <a
+                                                                                    href={doc.document_url || doc.file_path || '#'}
+                                                                                    target="_blank"
+                                                                                    rel="noreferrer"
                                                                                     className="text-body fw-medium d-block text-truncate"
                                                                                 >
                                                                                     {doc.document_name}
@@ -200,13 +200,21 @@ export default function FundingReviewModal({ show, onHide, review }: FundingRevi
                                     {displayReview.status !== 'Pending' && (
                                         <div className="mt-4 pt-3 border-top border-top-dashed">
                                             <h6 className="text-muted text-uppercase fw-semibold mb-3">Decision Details:</h6>
-                                            <p className="text-muted mb-1">Reviewed On: <span className="fw-medium text-dark">{displayReview.approved_at ? new Date(displayReview.approved_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'N/A'}</span></p>
+                                            <p className="text-muted mb-1">
+                                                Reviewed On: <span className="fw-medium text-dark">{(displayReview.approved_at || displayReview.updated_at) ? new Date(displayReview.approved_at || displayReview.updated_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'N/A'}</span>
+                                                {displayReview.reviewer?.first_name && (
+                                                    <> | By: <span className="fw-medium text-dark">{displayReview.reviewer.first_name} {displayReview.reviewer.last_name}</span></>
+                                                )}
+                                                {!displayReview.reviewer?.first_name && displayReview.reviewer?.name && (
+                                                    <> | By: <span className="fw-medium text-dark">{displayReview.reviewer.name}</span></>
+                                                )}
+                                            </p>
                                             {displayReview.status === 'Rejected' && displayReview.reject_reason && (
                                                 <p className="text-muted mb-0">Reason for Rejection: <span className="fw-medium text-danger">{displayReview.reject_reason}</span></p>
                                             )}
                                         </div>
                                     )}
-                                    
+
                                     {displayReview.status === 'Approved' && (
                                         <div className="mt-4">
                                             <div className="alert alert-success">
