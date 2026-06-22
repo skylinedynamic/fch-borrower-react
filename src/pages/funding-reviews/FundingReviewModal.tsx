@@ -6,7 +6,7 @@ import { getBorrowerFundingReview } from '../../modules/funding-reviews/services
 import FundingReviewSkeleton from './FundingReviewSkeleton'
 import { useBrandingStore } from '../../store/brandingStore'
 import { getFileConfig } from '../../config/fileTypeConfig'
-
+import { FUNDING_REVIEW_STATUS } from '../../config/funding'
 interface FundingReviewModalProps {
     show: boolean
     onHide: () => void
@@ -80,7 +80,7 @@ export default function FundingReviewModal({ show, onHide, review }: FundingRevi
                                             <h6 className="text-muted text-uppercase fw-semibold mb-3">Funding Details</h6>
                                             <p className="text-muted mb-1">Funding Type: <span className="fw-medium text-dark">{displayReview.funding_type || 'N/A'}</span></p>
                                             <p className="text-muted mb-1">Requested Amount: <span className="fw-medium text-dark">{displayReview.requested_amount ? `$${Number(displayReview.requested_amount).toLocaleString()}` : 'N/A'}</span></p>
-                                            <p className="text-muted mb-1">Status: <span className={`badge bg-${displayReview.status === 'Approved' ? 'success' : displayReview.status === 'Rejected' ? 'danger' : 'warning'}-subtle text-${displayReview.status === 'Approved' ? 'success' : displayReview.status === 'Rejected' ? 'danger' : 'warning'} fs-11 text-uppercase`}>{displayReview.status || 'Pending'}</span></p>
+                                            <p className="text-muted mb-1">Status: <span className={`badge bg-${displayReview.status === FUNDING_REVIEW_STATUS.APPROVED ? 'success' : displayReview.status === FUNDING_REVIEW_STATUS.REJECTED ? 'danger' : 'warning'}-subtle text-${displayReview.status === FUNDING_REVIEW_STATUS.APPROVED ? 'success' : displayReview.status === FUNDING_REVIEW_STATUS.REJECTED ? 'danger' : 'warning'} fs-11 text-uppercase`}>{displayReview.status || FUNDING_REVIEW_STATUS.PENDING}</span></p>
                                             <p className="text-muted mb-0">Submitted On: <span className="fw-medium text-dark">{displayReview.created_at ? new Date(displayReview.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : 'N/A'}</span></p>
                                         </div>
                                         <div className="col-6 text-end">
@@ -119,7 +119,14 @@ export default function FundingReviewModal({ show, onHide, review }: FundingRevi
                                                     <td className="text-end">
                                                         <span className="fw-medium text-dark">{displayReview.requested_amount ? `$${Number(displayReview.requested_amount).toLocaleString()}` : 'N/A'}</span>
                                                     </td>
-                                                    <td className="text-end">{displayReview.funding_sequence?.amount_range ? displayReview.funding_sequence.amount_range.split('-').map((num: string) => '$' + Number(num.trim()).toLocaleString()).join(' - ') : 'N/A'}</td>
+                                                    <td className="text-end">
+                                                        {displayReview.funding_sequence?.amount_range
+                                                            ? displayReview.funding_sequence.amount_range.split('-').map((num: string) => {
+                                                                const cleanNum = Number(num.replace(/[^0-9.]/g, ''));
+                                                                return cleanNum ? '$' + cleanNum.toLocaleString() : num.trim();
+                                                            }).join(' - ')
+                                                            : 'N/A'}
+                                                    </td>
                                                     <td className="text-end">{displayReview.estimated_speed ? displayReview.estimated_speed.replace('Days Days', 'Days') : '1 - 7 Days'}</td>
                                                 </tr>
                                             </tbody>
@@ -173,7 +180,7 @@ export default function FundingReviewModal({ show, onHide, review }: FundingRevi
                                                                     <td className="text-center">
                                                                         {doc.status === 'Accepted' ? (
                                                                             <span className="badge bg-success-subtle text-success">Accepted</span>
-                                                                        ) : doc.status === 'Rejected' ? (
+                                                                        ) : doc.status === FUNDING_REVIEW_STATUS.REJECTED ? (
                                                                             <span className="badge bg-danger-subtle text-danger" title={doc.rejection_reason || 'Rejected'}>
                                                                                 Rejected {doc.rejection_reason && <i className="ri-information-line align-middle ms-1"></i>}
                                                                             </span>
@@ -197,25 +204,22 @@ export default function FundingReviewModal({ show, onHide, review }: FundingRevi
                                         )}
                                     </div>
 
-                                    {displayReview.status !== 'Pending' && (
+                                    {displayReview.status !== FUNDING_REVIEW_STATUS.PENDING && (
                                         <div className="mt-4 pt-3 border-top border-top-dashed">
                                             <h6 className="text-muted text-uppercase fw-semibold mb-3">Decision Details:</h6>
                                             <p className="text-muted mb-1">
-                                                Reviewed On: <span className="fw-medium text-dark">{(displayReview.approved_at || displayReview.updated_at) ? new Date(displayReview.approved_at || displayReview.updated_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'N/A'}</span>
-                                                {displayReview.reviewer?.first_name && (
-                                                    <> | By: <span className="fw-medium text-dark">{displayReview.reviewer.first_name} {displayReview.reviewer.last_name}</span></>
-                                                )}
-                                                {!displayReview.reviewer?.first_name && displayReview.reviewer?.name && (
-                                                    <> | By: <span className="fw-medium text-dark">{displayReview.reviewer.name}</span></>
+                                                Reviewed By:
+                                                {displayReview.reviewer?.name && (
+                                                    <> <span className="fw-medium text-dark">{displayReview.reviewer.name}</span></>
                                                 )}
                                             </p>
-                                            {displayReview.status === 'Rejected' && displayReview.reject_reason && (
+                                            {displayReview.status === FUNDING_REVIEW_STATUS.REJECTED && displayReview.reject_reason && (
                                                 <p className="text-muted mb-0">Reason for Rejection: <span className="fw-medium text-danger">{displayReview.reject_reason}</span></p>
                                             )}
                                         </div>
                                     )}
 
-                                    {displayReview.status === 'Approved' && (
+                                    {displayReview.status === FUNDING_REVIEW_STATUS.APPROVED && (
                                         <div className="mt-4">
                                             <div className="alert alert-success">
                                                 <p className="mb-0"><span className="fw-semibold">APPROVED:</span>
@@ -230,12 +234,12 @@ export default function FundingReviewModal({ show, onHide, review }: FundingRevi
                                             <button className="btn btn-light border" onClick={onHide}>
                                                 <i className="ri-close-line align-bottom me-1"></i> Close
                                             </button>
-                                            {displayReview.status === 'Approved' && (
+                                            {displayReview.status === FUNDING_REVIEW_STATUS.APPROVED && (
                                                 <button className="btn btn-primary shadow-sm" onClick={handleProceed}>
                                                     Process to Fund Application <i className="ri-arrow-right-line ms-1 align-bottom"></i>
                                                 </button>
                                             )}
-                                            {displayReview.status === 'Rejected' && (
+                                            {displayReview.status === FUNDING_REVIEW_STATUS.REJECTED && (
                                                 <button className="btn btn-danger shadow-sm" onClick={() => {
                                                     onHide();
                                                     navigate(`/funding/${displayReview.funding_sequence?.id}/review`, {

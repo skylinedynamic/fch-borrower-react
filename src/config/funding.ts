@@ -50,6 +50,12 @@ export const FUNDING_COLOR_MAP: Record<string, string> = {
     'teal': 'info',
 };
 
+export const FUNDING_REVIEW_STATUS = {
+  PENDING: 'Pending',
+  APPROVED: 'Approved',
+  REJECTED: 'Rejected'
+};
+
 export const FUNDING_APPLICATION_STATUS = {
   PENDING: 'Pending',
   SUBMITTED: 'Submitted (Received)',
