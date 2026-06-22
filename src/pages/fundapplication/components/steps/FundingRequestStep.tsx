@@ -35,6 +35,7 @@ export default function FundingRequestStep({
 
   const location = useLocation()
   const urlApprovedFunding = (location.state as any)?.approved_funding
+  const urlRequestedAmount = (location.state as any)?.requested_amount
 
   // Fetch approved funding options
   const { data: fundingOptionsData } = useQuery({
@@ -98,7 +99,9 @@ export default function FundingRequestStep({
       setFundingRequestId(apiData.id || null)
       setFunding({
         ...funding,
-        requestedAmount: apiData.requested_amount ? formatCurrency(apiData.requested_amount) : '',
+        requestedAmount: urlRequestedAmount 
+          ? formatCurrency(urlRequestedAmount) 
+          : (apiData.requested_amount ? formatCurrency(apiData.requested_amount) : ''),
         purpose: apiData.purpose_of_funds || funding.purpose,
         approvedFunding: urlApprovedFunding || apiData.approved_funding || funding.approvedFunding,
         fundingType: apiData.preferred_funding_type || funding.fundingType,
@@ -110,7 +113,8 @@ export default function FundingRequestStep({
       // If no API data yet, but we have a URL param, pre-fill it immediately
       setFunding({
         ...funding,
-        approvedFunding: urlApprovedFunding
+        approvedFunding: urlApprovedFunding,
+        requestedAmount: urlRequestedAmount ? formatCurrency(urlRequestedAmount) : ''
       })
     }
   }, [isSuccess, apiData])
