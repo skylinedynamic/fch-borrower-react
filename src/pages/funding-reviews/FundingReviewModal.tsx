@@ -1,6 +1,11 @@
-import React from 'react'
-import { Modal, ModalHeader, ModalBody, ModalFooter, Badge, Row, Col, Button } from 'reactstrap'
+import React, { useState, useEffect } from 'react'
+import { Modal, ModalBody } from 'reactstrap'
 import { useNavigate } from 'react-router-dom'
+import invoiceLogo from '../../../assets/images/logo-mail.png'
+import { getBorrowerFundingReview } from '../../modules/funding-reviews/services'
+import FundingReviewSkeleton from './FundingReviewSkeleton'
+import { useBrandingStore } from '../../store/brandingStore'
+import { getFileConfig } from '../../config/fileTypeConfig'
 
 interface FundingReviewModalProps {
     show: boolean
@@ -9,107 +14,237 @@ interface FundingReviewModalProps {
 }
 
 export default function FundingReviewModal({ show, onHide, review }: FundingReviewModalProps) {
+    const { branding: globalBranding } = useBrandingStore()
     const navigate = useNavigate()
+    const [fetching, setFetching] = useState(false)
+    const [fullReview, setFullReview] = useState<any>(null)
+
+    useEffect(() => {
+        if (show && review?.id) {
+            setFetching(true)
+            getBorrowerFundingReview(review.id)
+                .then(res => {
+                    if (res.success) {
+                        setFullReview(res.data)
+                    } else {
+                        setFullReview(review)
+                    }
+                })
+                .catch(() => {
+                    setFullReview(review)
+                })
+                .finally(() => {
+                    setFetching(false)
+                })
+        } else {
+            setFullReview(null)
+        }
+    }, [show, review])
 
     if (!review) return null
 
-    const getStatusBadge = (status: string) => {
-        let bg = 'warning'
-        if (status === 'Approved') bg = 'success'
-        if (status === 'Rejected') bg = 'danger'
-        return <Badge color={bg}>{status}</Badge>
-    }
+    const displayReview = fullReview || review
 
     const handleProceed = () => {
         onHide()
         navigate(`/fund-application`, {
             state: {
-                approved_funding: review.funding_type || '',
-                purpose: review.use_of_funds || '',
-                requested_amount: review.requested_amount || ''
+                approved_funding: displayReview.funding_type || '',
+                purpose: displayReview.use_of_funds || '',
+                requested_amount: displayReview.requested_amount || ''
             }
         })
     }
 
+    const reviewId = displayReview.id ? `FR-2024-${String(displayReview.id).padStart(5, '0')}` : '';
+    const displayLogo = globalBranding?.primary_logo_full_url || globalBranding?.primary_logo || invoiceLogo;
+
     return (
-        <Modal isOpen={show} toggle={onHide} size="lg" centered>
-            <ModalHeader toggle={onHide}>
-                Funding Review Details
-            </ModalHeader>
-            <ModalBody>
-                <div className="mb-4">
-                    <h5 className="fs-15 mb-3">Request Overview</h5>
-                    <Row className="g-3">
-                        <Col sm={6}>
-                            <p className="text-muted mb-1">Funding Type</p>
-                            <h6 className="fs-14">{review.funding_type || 'N/A'}</h6>
-                        </Col>
-                        <Col sm={6}>
-                            <p className="text-muted mb-1">Requested Amount</p>
-                            <h6 className="fs-14">{review.requested_amount ? `$${Number(review.requested_amount).toLocaleString()}` : 'N/A'}</h6>
-                        </Col>
-                        <Col sm={6}>
-                            <p className="text-muted mb-1">Status</p>
-                            <h6 className="fs-14">{getStatusBadge(review.status)}</h6>
-                        </Col>
-                        <Col sm={6}>
-                            <p className="text-muted mb-1">Submitted On</p>
-                            <h6 className="fs-14">{review.created_at ? new Date(review.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : 'N/A'}</h6>
-                        </Col>
-                    </Row>
-                </div>
-
-                <div className="mb-4">
-                    <h5 className="fs-15 mb-3">Use of Funds</h5>
-                    <div className="p-3 bg-light rounded">
-                        <p className="mb-0 text-dark">{review.use_of_funds || 'No details provided.'}</p>
+        <Modal isOpen={show} toggle={onHide} size="lg" centered contentClassName="border-0 shadow-lg">
+            <ModalBody className="p-0">
+                {fetching && !fullReview ? (
+                    <FundingReviewSkeleton />
+                ) : !displayReview ? (
+                    <div className="p-5 text-center text-muted">
+                        No review data available.
                     </div>
-                </div>
+                ) : (
+                    <div className="card shadow-none mb-0 position-relative" id="demo">
+                        <div className="row p-2">
 
-                {review.status !== 'Pending' && (
-                    <div className="mb-4">
-                        <h5 className="fs-15 mb-3">Decision Details</h5>
-                        <Row className="g-3 bg-light p-3 rounded mx-0">
-                            <Col sm={6}>
-                                <p className="text-muted mb-1">Reviewed On</p>
-                                <h6 className="fs-14">{review.approved_at ? new Date(review.approved_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'N/A'}</h6>
-                            </Col>
-                            {review.status === 'Rejected' && review.reject_reason && (
-                                <Col sm={12} className="mt-3">
-                                    <p className="text-muted mb-1">Reason for Rejection</p>
-                                    <p className="text-danger mb-0 fw-medium">{review.reject_reason}</p>
-                                </Col>
-                            )}
-                        </Row>
+
+                            <div className="col-lg-12">
+                                <div className="card-body p-4">
+                                    <div className="row g-3">
+                                        <div className="col-6">
+                                            <h6 className="text-muted text-uppercase fw-semibold mb-3">Funding Details</h6>
+                                            <p className="text-muted mb-1">Funding Type: <span className="fw-medium text-dark">{displayReview.funding_type || 'N/A'}</span></p>
+                                            <p className="text-muted mb-1">Requested Amount: <span className="fw-medium text-dark">{displayReview.requested_amount ? `$${Number(displayReview.requested_amount).toLocaleString()}` : 'N/A'}</span></p>
+                                            <p className="text-muted mb-1">Status: <span className={`badge bg-${displayReview.status === 'Approved' ? 'success' : displayReview.status === 'Rejected' ? 'danger' : 'warning'}-subtle text-${displayReview.status === 'Approved' ? 'success' : displayReview.status === 'Rejected' ? 'danger' : 'warning'} fs-11 text-uppercase`}>{displayReview.status || 'Pending'}</span></p>
+                                            <p className="text-muted mb-0">Submitted On: <span className="fw-medium text-dark">{displayReview.created_at ? new Date(displayReview.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : 'N/A'}</span></p>
+                                        </div>
+                                        <div className="col-6 text-end">
+                                            <h6 className="text-muted text-uppercase fw-semibold mb-3">Borrower Details</h6>
+                                            <p className="fw-medium mb-2 text-dark">{displayReview.borrower?.business_name || [displayReview.borrower?.first_name, displayReview.borrower?.last_name].filter(Boolean).join(' ') || 'Borrower Info'}</p>
+                                            <p className="text-muted mb-1">{displayReview.borrower?.email || ''}</p>
+                                            {displayReview.borrower?.phone && <p className="text-muted mb-0"><span>Phone: </span><span className="text-dark">{displayReview.borrower.phone}</span></p>}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <div className="col-lg-12">
+                                <div className="card-body p-4">
+                                    <div className="table-responsive">
+                                        <table className="table table-borderless text-center table-nowrap align-middle mb-0">
+                                            <thead>
+                                                <tr className="table-active">
+                                                    <th scope="col" className="text-start">Funding Type</th>
+                                                    <th scope="col" className="text-start">Use of Funds</th>
+                                                    <th scope="col" className="text-end">Requested Amount</th>
+                                                    <th scope="col" className="text-end">Estimated Amount</th>
+                                                    <th scope="col" className="text-end">Estimated Speed</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td className="text-start">
+                                                        <span className="fw-medium">{displayReview.funding_sequence?.name || displayReview.funding_type || 'N/A'}</span>
+                                                    </td>
+                                                    <td className="text-start">
+                                                        <span className="fw-medium">{displayReview.use_of_funds || 'Working Capital'}</span>
+                                                    </td>
+                                                    <td className="text-end">
+                                                        <span className="fw-medium text-dark">{displayReview.requested_amount ? `$${Number(displayReview.requested_amount).toLocaleString()}` : 'N/A'}</span>
+                                                    </td>
+                                                    <td className="text-end">{displayReview.funding_sequence?.amount_range ? displayReview.funding_sequence.amount_range.split('-').map((num: string) => '$' + Number(num.trim()).toLocaleString()).join(' - ') : 'N/A'}</td>
+                                                    <td className="text-end">{displayReview.estimated_speed ? displayReview.estimated_speed.replace('Days Days', 'Days') : '1 - 7 Days'}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div className="mt-4 pt-3 border-top border-top-dashed">
+                                        <h6 className="text-muted text-uppercase fw-semibold mb-3">
+                                            Uploaded Documents 
+                                            {displayReview.actual_documents && displayReview.actual_documents.length > 0 && (
+                                                <span className="ms-2 badge bg-success-subtle text-success text-capitalize border border-success-subtle">
+                                                    {displayReview.actual_documents.length} Attached
+                                                </span>
+                                            )}
+                                        </h6>
+                                        {displayReview.actual_documents && Array.isArray(displayReview.actual_documents) && displayReview.actual_documents.length > 0 ? (
+                                            <div className="table-responsive">
+                                                <table className="table table-nowrap align-middle mb-0">
+                                                    <thead className="table-light text-muted">
+                                                        <tr>
+                                                            <th scope="col" className="text-start">Document Name</th>
+                                                            <th scope="col" className="text-center">Status</th>
+                                                            <th scope="col" className="text-end">Upload Date</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {displayReview.actual_documents.map((doc: any, idx: number) => {
+                                                            const displayFileName = doc.file_name || doc.document_name;
+                                                            const config = getFileConfig(doc.document_url || doc.file_path || displayFileName || '');
+                                                            return (
+                                                                <tr key={idx} className="border-bottom border-bottom-dashed">
+                                                                    <td className="text-start fw-medium text-dark">
+                                                                        <div className="d-flex align-items-center">
+                                                                            <div className="avatar-xs flex-shrink-0 me-2">
+                                                                                <div className={`avatar-title ${config.bg} ${config.color} rounded fs-16`}>
+                                                                                    <i className={config.icon}></i>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className="ms-1 flex-grow-1 overflow-hidden" style={{ minWidth: 0 }}>
+                                                                                <a 
+                                                                                    href={doc.document_url || doc.file_path || '#'} 
+                                                                                    target="_blank" 
+                                                                                    rel="noreferrer" 
+                                                                                    className="text-body fw-medium d-block text-truncate"
+                                                                                >
+                                                                                    {doc.document_name}
+                                                                                </a>
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="text-center">
+                                                                        {doc.status === 'Accepted' ? (
+                                                                            <span className="badge bg-success-subtle text-success">Accepted</span>
+                                                                        ) : doc.status === 'Rejected' ? (
+                                                                            <span className="badge bg-danger-subtle text-danger" title={doc.rejection_reason || 'Rejected'}>
+                                                                                Rejected {doc.rejection_reason && <i className="ri-information-line align-middle ms-1"></i>}
+                                                                            </span>
+                                                                        ) : doc.status === 'Under Review' ? (
+                                                                            <span className="badge bg-warning-subtle text-warning">Under Review</span>
+                                                                        ) : (
+                                                                            <span className="badge bg-info-subtle text-info">Uploaded</span>
+                                                                        )}
+                                                                    </td>
+                                                                    <td className="text-end text-muted">
+                                                                        {doc.created_at ? new Date(doc.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        ) : (
+                                            <p className="text-muted mb-0">No documents uploaded.</p>
+                                        )}
+                                    </div>
+
+                                    {displayReview.status !== 'Pending' && (
+                                        <div className="mt-4 pt-3 border-top border-top-dashed">
+                                            <h6 className="text-muted text-uppercase fw-semibold mb-3">Decision Details:</h6>
+                                            <p className="text-muted mb-1">Reviewed On: <span className="fw-medium text-dark">{displayReview.approved_at ? new Date(displayReview.approved_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'N/A'}</span></p>
+                                            {displayReview.status === 'Rejected' && displayReview.reject_reason && (
+                                                <p className="text-muted mb-0">Reason for Rejection: <span className="fw-medium text-danger">{displayReview.reject_reason}</span></p>
+                                            )}
+                                        </div>
+                                    )}
+                                    
+                                    {displayReview.status === 'Approved' && (
+                                        <div className="mt-4">
+                                            <div className="alert alert-success">
+                                                <p className="mb-0"><span className="fw-semibold">APPROVED:</span>
+                                                    <span> Your funding review has been approved for {displayReview.funding_type}. Please proceed with the final funding application to complete your request.</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="d-flex justify-content-end align-items-center flex-wrap gap-2 mt-4">
+                                        <div className="hstack gap-2 flex-wrap">
+                                            <button className="btn btn-light border" onClick={onHide}>
+                                                <i className="ri-close-line align-bottom me-1"></i> Close
+                                            </button>
+                                            {displayReview.status === 'Approved' && (
+                                                <button className="btn btn-primary shadow-sm" onClick={handleProceed}>
+                                                    Process to Fund Application <i className="ri-arrow-right-line ms-1 align-bottom"></i>
+                                                </button>
+                                            )}
+                                            {displayReview.status === 'Rejected' && (
+                                                <button className="btn btn-danger shadow-sm" onClick={() => {
+                                                    onHide();
+                                                    navigate(`/funding/${displayReview.funding_sequence?.id}/review`, {
+                                                        state: { amount: displayReview.requested_amount || '', purpose: displayReview.use_of_funds || 'Working Capital' }
+                                                    });
+                                                }}>
+                                                    Update Application <i className="ri-refresh-line ms-1 align-bottom"></i>
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 )}
-                
-                {review.status === 'Approved' && (
-                    <div className="mt-4 p-4 border border-primary-subtle rounded bg-primary-subtle">
-                        <h5 className="fs-15 text-primary mb-3">Proceed to Fund Application</h5>
-                        <p className="text-muted fs-14 mb-0">Your funding review has been approved for <strong>{review.funding_type}</strong>. Please proceed with the final funding application to complete your request.</p>
-                    </div>
-                )}
-
             </ModalBody>
-            <ModalFooter>
-                <Button color="light" onClick={onHide}>{review.status === 'Approved' ? 'Cancel' : 'Close'}</Button>
-                {review.status === 'Approved' && (
-                    <Button color="primary" onClick={handleProceed}>
-                        Process to Fund Application
-                    </Button>
-                )}
-                {review.status === 'Rejected' && (
-                    <Button color="danger" onClick={() => {
-                        onHide();
-                        navigate(`/funding/${review.funding_sequence?.id}/review`, {
-                            state: { amount: review.requested_amount || '', purpose: review.use_of_funds || 'Working Capital' }
-                        });
-                    }}>
-                        Update Application
-                    </Button>
-                )}
-            </ModalFooter>
         </Modal>
     )
 }

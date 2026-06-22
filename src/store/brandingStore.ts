@@ -15,6 +15,8 @@ export type BrandingConfig = {
   favicon: string | null
   website_favicon: string | null
   is_white_label: boolean | null
+  primary_logo_full_url?: string | null
+  secondary_logo_full_url?: string | null
 }
 
 type BrandingState = {

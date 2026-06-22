@@ -6,6 +6,7 @@ import { Column } from 'primereact/column'
 import { Dropdown } from 'primereact/dropdown'
 import FundingReviewModal from './FundingReviewModal'
 import StatisticsCardSkeleton from '../../components/Common/StatisticsCardSkeleton'
+import StatisticsCard from '../../components/Common/StatisticsCard'
 
 export default function FundingReviewList() {
     const [page, setPage] = useState(1)
@@ -121,74 +122,30 @@ export default function FundingReviewList() {
                     </div>
                 ) : (
                     <div className="row">
-                        <div className="col-xl-3 col-md-6">
-                            <div className="card card-animate mb-0">
-                                <div className="card-body">
-                                    <div className="d-flex align-items-center">
-                                        <div className="avatar-sm flex-shrink-0">
-                                            <span className="avatar-title bg-primary-subtle text-primary rounded-2 fs-2">
-                                                <i className="ri-file-list-3-line text-primary"></i>
-                                            </span>
-                                        </div>
-                                        <div className="flex-grow-1 overflow-hidden ms-3">
-                                            <p className="text-uppercase fw-medium text-muted text-truncate mb-1">Total Reviews</p>
-                                            <h4 className="fs-4 flex-grow-1 mb-0">{computeStats()?.total_reviews || 0}</h4>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-xl-3 col-md-6">
-                            <div className="card card-animate mb-0">
-                                <div className="card-body">
-                                    <div className="d-flex align-items-center">
-                                        <div className="avatar-sm flex-shrink-0">
-                                            <span className="avatar-title bg-success-subtle text-success rounded-2 fs-2">
-                                                <i className="ri-checkbox-circle-line text-success"></i>
-                                            </span>
-                                        </div>
-                                        <div className="flex-grow-1 overflow-hidden ms-3">
-                                            <p className="text-uppercase fw-medium text-muted text-truncate mb-1">Total Approved</p>
-                                            <h4 className="fs-4 flex-grow-1 mb-0">{computeStats()?.approved || 0}</h4>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-xl-3 col-md-6">
-                            <div className="card card-animate mb-0">
-                                <div className="card-body">
-                                    <div className="d-flex align-items-center">
-                                        <div className="avatar-sm flex-shrink-0">
-                                            <span className="avatar-title bg-info-subtle text-info rounded-2 fs-2">
-                                                <i className="ri-time-line text-info"></i>
-                                            </span>
-                                        </div>
-                                        <div className="flex-grow-1 overflow-hidden ms-3">
-                                            <p className="text-uppercase fw-medium text-muted text-truncate mb-1">Total Pending</p>
-                                            <h4 className="fs-4 flex-grow-1 mb-0">{computeStats()?.pending || 0}</h4>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-xl-3 col-md-6">
-                            <div className="card card-animate mb-0">
-                                <div className="card-body">
-                                    <div className="d-flex align-items-center">
-                                        <div className="avatar-sm flex-shrink-0">
-                                            <span className="avatar-title bg-danger-subtle text-danger rounded-2 fs-2">
-                                                <i className="ri-close-circle-line text-danger"></i>
-                                            </span>
-                                        </div>
-                                        <div className="flex-grow-1 overflow-hidden ms-3">
-                                            <p className="text-uppercase fw-medium text-muted text-truncate mb-1">Total Rejected</p>
-                                            <h4 className="fs-4 flex-grow-1 mb-0">{computeStats()?.rejected || 0}</h4>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <StatisticsCard
+                            title="Total Reviews"
+                            count={computeStats()?.total_reviews || 0}
+                            icon="ri-file-list-3-line"
+                            colorVariant="primary"
+                        />
+                        <StatisticsCard
+                            title="Total Approved"
+                            count={computeStats()?.approved || 0}
+                            icon="ri-checkbox-circle-line"
+                            colorVariant="success"
+                        />
+                        <StatisticsCard
+                            title="Total Pending"
+                            count={computeStats()?.pending || 0}
+                            icon="ri-time-line"
+                            colorVariant="info"
+                        />
+                        <StatisticsCard
+                            title="Total Rejected"
+                            count={computeStats()?.rejected || 0}
+                            icon="ri-close-circle-line"
+                            colorVariant="danger"
+                        />
                     </div>
                 )}
 
@@ -268,13 +225,22 @@ export default function FundingReviewList() {
                                         emptyMessage={<div className="text-center p-3">No funding reviews found.</div>}
                                     >
                                         <Column field="funding_type" header="Funding Type" sortable body={(row) => row.funding_type || 'N/A'}></Column>
+                                        <Column field="use_of_funds" header="Uses" sortable body={(row) => row.use_of_funds || 'N/A'}></Column>
                                         <Column field="requested_amount" header="Requested Amount" sortable body={(row) => row.requested_amount ? `$${Number(row.requested_amount).toLocaleString()}` : 'N/A'}></Column>
+                                        <Column field="amount_range" header="Estimated Amount" sortable body={(row) => {
+                                            if (!row.funding_sequence?.amount_range) return 'N/A';
+                                            return row.funding_sequence.amount_range.split('-').map((num: string) => {
+                                                const cleanStr = num.replace(/[$,]/g, '').trim();
+                                                const parsed = Number(cleanStr);
+                                                return isNaN(parsed) ? num.trim() : '$' + parsed.toLocaleString();
+                                            }).join(' - ');
+                                        }}></Column>
                                         <Column field="status" header="Status" sortable body={statusBodyTemplate}></Column>
                                         <Column field="created_at" header="Created At" sortable body={(row) => row.created_at ? new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : 'N/A'}></Column>
                                         <Column header="Actions" body={(row: any) => (
                                             <div className="d-flex gap-2">
                                                 <button className="btn btn-sm btn-primary" onClick={() => handleView(row)}>
-                                                    View Details
+                                                    <i className="ri-eye-line align-bottom me-1"></i> Details
                                                 </button>
                                             </div>
                                         )} style={{ width: '120px' }}></Column>
