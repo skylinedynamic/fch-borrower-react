@@ -616,24 +616,24 @@ const FundingReviewWizard = () => {
                                     <h3 className="fw-bold mb-3" style={{ color: '#0f172a' }}>Funding Review Submitted!</h3>
                                     <p className="text-muted mb-4 fs-15 px-md-5">Your request has been received and is now under<br />{reviewerName} underwriting review.</p>
 
-                                    <div className="rounded-3 p-4 text-start mx-auto mb-4" style={{ maxWidth: '480px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                                        <h6 className="fw-bold mb-3" style={{ color: '#2563eb' }}>What Happens Next?</h6>
+                                    <div className="rounded-3 p-4 text-start mx-auto mb-4" style={{ maxWidth: '600px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                                        <h6 className="fw-bold mb-3" style={{ color: 'var(--primary-color, #0a192f)' }}>What Happens Next?</h6>
                                         <ul className="list-unstyled m-0 d-flex flex-column gap-3">
                                             <li className="d-flex align-items-start gap-3 fs-14" style={{ color: '#334155' }}>
                                                 <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: 'var(--primary-color, #0a192f)' }}></i>
-                                                <span className="mt-1">Our automated underwriting engine will review your file</span>
+                                                <span className="mt-1">Our automated underwriting engine will evaluate your application using your business profile, banking activity, and financial qualification data.</span>
                                             </li>
                                             <li className="d-flex align-items-start gap-3 fs-14" style={{ color: '#334155' }}>
                                                 <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: 'var(--primary-color, #0a192f)' }}></i>
-                                                <span className="mt-1">An underwriter will review and evaluate your request</span>
+                                                <span className="mt-1">Any required supporting documents and banking information will be reviewed and verified during the underwriting process.</span>
                                             </li>
                                             <li className="d-flex align-items-start gap-3 fs-14" style={{ color: '#334155' }}>
                                                 <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: 'var(--primary-color, #0a192f)' }}></i>
-                                                <span className="mt-1">We may contact you if additional information is needed</span>
+                                                <span className="mt-1">If additional information or documentation is needed, our team will contact you.</span>
                                             </li>
                                             <li className="d-flex align-items-start gap-3 fs-14" style={{ color: '#334155' }}>
                                                 <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: 'var(--primary-color, #0a192f)' }}></i>
-                                                <span className="mt-1">You will receive updates on your review status</span>
+                                                <span className="mt-1">You will receive updates throughout the review process and be notified once a decision has been made.</span>
                                             </li>
                                         </ul>
                                     </div>
