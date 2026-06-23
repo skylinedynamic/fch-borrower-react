@@ -29,7 +29,8 @@ const FundingReviewWizard = () => {
     const [submitDate, setSubmitDate] = useState('');
 
     const branding = useBrandingStore((state: any) => state.branding);
-    const reviewerName = branding?.site_name || 'Four Corner Holding';
+    const [dynamicReviewerName, setDynamicReviewerName] = useState('');
+    const reviewerName = dynamicReviewerName || branding?.site_name || 'Four Corner Holding';
 
     const { state, search } = useLocation();
     const searchParams = new URLSearchParams(search);
@@ -164,8 +165,13 @@ const FundingReviewWizard = () => {
                 documents_uploaded: requiredDocTypes.filter(t => !missingDocs.includes(t.name)).map(t => t.name),
                 estimated_speed: fundingDetail.speed_to_funds ? `${fundingDetail.speed_to_funds} Days` : '1 - 7 Days'
             });
-            setReviewId(response.data.data?.id ? `FR-2024-${String(response.data.data.id).padStart(5, '0')}` : 'FR-2024-000158');
-            setSubmitDate(response.data.data?.created_at || new Date().toLocaleString());
+            const reviewData = response.data.data;
+            setReviewId(reviewData?.id ? `FR-2024-${String(reviewData.id).padStart(5, '0')}` : 'FR-2024-000158');
+            setSubmitDate(reviewData?.created_at || new Date().toLocaleString());
+            
+            if (reviewData?.reviewer?.name) {
+                setDynamicReviewerName(reviewData.reviewer.name);
+            }
             setCurrentStep(4);
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Failed to submit funding review');
