@@ -227,7 +227,7 @@ const FundingReviewWizard = () => {
                                 return (
                                     <React.Fragment key={step.id}>
                                         {index !== 0 && (
-                                            <div style={{ flex: 1, height: '2px', backgroundColor: (currentStep > step.id || currentStep === step.id) ? '#2563eb' : 'transparent', zIndex: 1 }}></div>
+                                            <div style={{ flex: 1, height: '2px', backgroundColor: (currentStep > step.id || currentStep === step.id) ? 'var(--primary-color, #0a192f)' : 'transparent', zIndex: 1 }}></div>
                                         )}
                                         <div className="d-flex flex-column align-items-center position-relative" style={{ zIndex: 2, background: '#f9fafb', padding: '0 10px' }}>
                                             <div
@@ -236,10 +236,10 @@ const FundingReviewWizard = () => {
                                                     width: isActive ? '40px' : '32px',
                                                     height: isActive ? '40px' : '32px',
                                                     fontSize: isActive ? '16px' : (isCompleted ? '18px' : '14px'),
-                                                    backgroundColor: isActive ? '#2563eb' : '#fff',
-                                                    color: isActive ? '#fff' : (isCompleted ? '#2563eb' : '#6b7280'),
-                                                    border: isActive ? 'none' : (isCompleted ? '1px solid #2563eb' : '1px solid #d1d5db'),
-                                                    boxShadow: isActive ? '0 0 0 4px rgba(37, 99, 235, 0.1)' : 'none',
+                                                    backgroundColor: isActive ? 'var(--primary-color, #0a192f)' : '#fff',
+                                                    color: isActive ? '#fff' : (isCompleted ? 'var(--primary-color, #0a192f)' : '#6b7280'),
+                                                    border: isActive ? 'none' : (isCompleted ? '1px solid var(--primary-color, #0a192f)' : '1px solid #d1d5db'),
+                                                    boxShadow: isActive ? '0 0 0 4px rgba(10, 25, 47, 0.1)' : 'none',
                                                     transition: 'all 0.2s ease-in-out'
                                                 }}
                                             >
@@ -273,41 +273,48 @@ const FundingReviewWizard = () => {
                             {/* Step 1: Review Summary */}
                             {currentStep === 1 && (
                                 <div>
-                                    <h4 className="fw-bold mb-2">Funding Review Summary</h4>
-                                    <p className="text-muted mb-4 fs-15">Please confirm your request details</p>
+                                    <h3 className="fw-bold mb-2" style={{ color: '#0f172a' }}>Funding Review Summary</h3>
+                                    <p className="mb-4 fs-14" style={{ color: '#64748b' }}>Please confirm your request details</p>
 
-                                    <div className="border rounded-3 p-4 mb-4 bg-white shadow-sm">
-                                        <div className="row mb-4">
-                                            <div className="col-12 mb-3">
-                                                <p className="text-muted fs-12 fw-semibold text-uppercase mb-1">Funding Type</p>
-                                                <h5 className="fw-bold m-0">{fundingDetail.name}</h5>
+                                    <div className="border rounded p-4 mb-4" style={{ borderColor: '#e2e8f0', backgroundColor: '#ffffff' }}>
+                                        <div className="row align-items-center">
+                                            <div className="col-md-7">
+                                                <div className="mb-4">
+                                                    <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Funding Type</p>
+                                                    <h5 className="fw-bold m-0" style={{ color: '#0f172a' }}>{fundingDetail.name}</h5>
+                                                </div>
+                                                <div className="mb-4">
+                                                    <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Recommended Range</p>
+                                                    <h6 className="fw-bold m-0 fs-14" style={{ color: '#0f172a' }}>{fundingDetail.amount_range || '$5K - $250K'}</h6>
+                                                </div>
+                                                <div>
+                                                    <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Est. Speed to Funds</p>
+                                                    <h6 className="fw-bold m-0 fs-14 d-flex align-items-center gap-1" style={{ color: '#0f172a' }}>
+                                                        {fundingDetail.speed_to_funds ? `${fundingDetail.speed_to_funds} Days` : '7-14 Days'} 
+                                                        <i className="ri-information-line fs-14" style={{ color: '#94a3b8' }}></i>
+                                                    </h6>
+                                                </div>
                                             </div>
-                                            <div className="col-12 mb-3">
-                                                <p className="text-muted fs-12 fw-semibold text-uppercase mb-1">Recommended Range</p>
-                                                <h6 className="fw-bold m-0">{fundingDetail.amount_range || '$10,000 - $250,000'}</h6>
-                                            </div>
-                                        </div>
-                                        <div className="row">
-                                            <div className="col-md-6 mb-3 mb-md-0">
-                                                <p className="text-muted fs-12 fw-semibold text-uppercase mb-1">Est. Speed to Funds</p>
-                                                <h6 className="fw-bold m-0">{fundingDetail.speed_to_funds ? `${fundingDetail.speed_to_funds} Days` : '1 - 7 Days'}</h6>
-                                            </div>
-                                            <div className="col-md-6">
-                                                <p className="text-muted fs-12 fw-semibold text-uppercase mb-1">Use of Funds</p>
-                                                <h6 className="fw-bold m-0">Working Capital</h6>
+                                            <div className="col-md-5 d-flex flex-column align-items-center justify-content-center text-center">
+                                                <div className="rounded-circle d-flex align-items-center justify-content-center mb-3" style={{ width: '64px', height: '64px', backgroundColor: '#f1f5f9' }}>
+                                                    <i className="ri-bank-card-line" style={{ fontSize: '28px', color: '#2563eb' }}></i>
+                                                </div>
+                                                <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Use of Funds</p>
+                                                <h6 className="fw-bold m-0 fs-14" style={{ color: '#0f172a' }}>Working Capital</h6>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="row g-4 mb-4">
                                         <div className="col-md-6">
-                                            <label className="form-label text-muted fs-13">Requested Amount</label>
+                                            <label className="form-label fs-13 mb-2" style={{ color: '#64748b' }}>Requested Amount</label>
                                             <div className="input-group">
-                                                <span className={`input-group-text bg-white ${errors.requested_amount ? 'border-danger' : 'border-end-0'}`}>$</span>
+                                                <span className="input-group-text bg-white" style={{ border: '1px solid #e2e8f0', borderRight: 'none', color: '#475569' }}>$</span>
                                                 <input
                                                     type="number"
-                                                    className={`form-control border-start-0 ps-0 ${errors.requested_amount ? 'border-danger' : ''}`}
-                                                    placeholder="e.g. 50000"
+                                                    className={`form-control ps-0 shadow-none`}
+                                                    style={{ border: '1px solid #e2e8f0', borderLeft: 'none' }}
+                                                    placeholder="200000.00"
                                                     value={formData.requested_amount}
                                                     onChange={(e) => {
                                                         setFormData({ ...formData, requested_amount: e.target.value });
@@ -318,25 +325,28 @@ const FundingReviewWizard = () => {
                                             {errors.requested_amount && <div className="text-danger fs-12 mt-1">{errors.requested_amount}</div>}
                                         </div>
                                         <div className="col-md-6">
-                                            <label className="form-label text-muted fs-13">Use of Funds</label>
-                                            <Dropdown
-                                                value={formData.use_of_funds}
-                                                options={[
-                                                    { label: 'Working Capital', value: 'Working Capital' },
-                                                    { label: 'Equipment', value: 'Equipment' },
-                                                    { label: 'Expansion', value: 'Expansion' },
-                                                    { label: 'Other', value: 'Other' }
-                                                ]}
-                                                onChange={(e) => setFormData({ ...formData, use_of_funds: e.value })}
-                                                className="w-100 bg-light border-light"
-                                                style={{ height: '38px' }}
-                                            />
+                                            <label className="form-label fs-13 mb-2" style={{ color: '#64748b' }}>Use of Funds</label>
+                                            <div style={{ border: '1px solid #e2e8f0', borderRadius: '0.375rem', backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                <Dropdown
+                                                    value={formData.use_of_funds}
+                                                    options={[
+                                                        { label: 'Working Capital', value: 'Working Capital' },
+                                                        { label: 'Equipment', value: 'Equipment' },
+                                                        { label: 'Expansion', value: 'Expansion' },
+                                                        { label: 'Other', value: 'Other' }
+                                                    ]}
+                                                    onChange={(e) => setFormData({ ...formData, use_of_funds: e.value })}
+                                                    className="w-100 shadow-none border-0 bg-transparent"
+                                                    style={{ height: '38px', backgroundColor: 'transparent' }}
+                                                    panelStyle={{ backgroundColor: '#fff' }}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="alert alert-primary bg-primary-subtle border-0 d-flex align-items-center gap-3 py-3" style={{ borderRadius: '8px' }}>
-                                        <i className="ri-information-line fs-18 text-primary"></i>
-                                        <span className="fs-13 text-primary-emphasis">This is not a credit decision. Final approval amount will be determined after underwriting.</span>
+                                    <div className="alert border-0 d-flex align-items-center gap-3 py-3" style={{ backgroundColor: '#eff6ff', borderRadius: '8px' }}>
+                                        <i className="ri-information-line fs-18" style={{ color: '#2563eb' }}></i>
+                                        <span className="fs-13" style={{ color: '#1e3a8a' }}>This is not a credit decision. Final approval amount will be determined after underwriting.</span>
                                     </div>
                                 </div>
                             )}
@@ -642,20 +652,16 @@ const FundingReviewWizard = () => {
                                             <i className="ri-arrow-left-s-line"></i> Back
                                         </button>
                                     ) : (
-                                        <button
-                                            className="btn btn-link text-muted fw-medium text-decoration-none px-0"
-                                            onClick={() => navigate(-1)}
-                                        >
-                                            Cancel
-                                        </button>
+                                        <div></div>
                                     )}
 
                                     {currentStep < 3 ? (
                                         <button
-                                            className="btn btn-primary px-4 fw-medium d-flex align-items-center gap-2"
+                                            className="d-flex align-items-center justify-content-center gap-2 text-white"
+                                            style={{ backgroundColor: 'var(--primary-color, #0a192f)', border: '1px solid var(--primary-color, #0a192f)', padding: '10px 24px', borderRadius: '6px', fontWeight: 500 }}
                                             onClick={handleNext}
                                         >
-                                            {currentStep === 1 ? 'Continue to Application' : 'Continue to Documents'} <i className="ri-arrow-right-line"></i>
+                                            {currentStep === 1 ? 'Continue to Application' : 'Continue to Documents'} <i className="ri-arrow-right-line" style={{ fontSize: '18px' }}></i>
                                         </button>
                                     ) : (
                                         <button
