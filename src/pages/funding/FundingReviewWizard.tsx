@@ -165,7 +165,7 @@ const FundingReviewWizard = () => {
                 estimated_speed: fundingDetail.speed_to_funds ? `${fundingDetail.speed_to_funds} Days` : '1 - 7 Days'
             });
             const reviewData = response.data.data;
-            setSubmitDate(reviewData?.created_at || new Date().toLocaleString());
+            setSubmitDate(reviewData?.updated_at || reviewData?.created_at || new Date().toLocaleString());
             
             if (reviewData?.reviewer?.name) {
                 setDynamicReviewerName(reviewData.reviewer.name);
