@@ -522,22 +522,23 @@ const FundingReviewWizard = () => {
                                     <h4 className="fw-bold mb-2">Document Requirements</h4>
 
                                     {!isDocsRequired ? (
-                                        <div className="alert alert-success bg-success-subtle border-0 d-flex align-items-center gap-3 py-3 mb-4" style={{ borderRadius: '8px' }}>
-                                            <i className="ri-checkbox-circle-fill fs-24 text-success"></i>
+                                        <div className="alert border-0 d-flex align-items-center gap-3 py-3 mb-4" style={{ borderRadius: '8px', backgroundColor: '#f1f5f9' }}>
+                                            <i className="ri-checkbox-circle-fill fs-24" style={{ color: 'var(--primary-color, #0a192f)' }}></i>
                                             <div>
-                                                <h6 className="fw-bold mb-1 text-success-emphasis">No Documents Required</h6>
-                                                <span className="fs-13 text-success-emphasis">You do not need to upload any specific documents for this funding option. You can proceed directly to submit.</span>
+                                                <h6 className="fw-bold mb-1" style={{ color: 'var(--primary-color, #0a192f)' }}>No Documents Required</h6>
+                                                <span className="fs-13" style={{ color: '#475569' }}>You do not need to upload any specific documents for this funding option. You can proceed directly to submit.</span>
                                             </div>
                                         </div>
                                     ) : requiredDocTypes.length === 0 ? (
-                                        <div className="alert alert-primary bg-primary-subtle border-0 d-flex align-items-center gap-3 py-3 mb-4" style={{ borderRadius: '8px' }}>
-                                            <i className="ri-information-fill fs-24 text-primary"></i>
+                                        <div className="alert border-0 d-flex align-items-center gap-3 py-3 mb-4" style={{ borderRadius: '8px', backgroundColor: '#f1f5f9' }}>
+                                            <i className="ri-information-fill fs-24" style={{ color: 'var(--primary-color, #0a192f)' }}></i>
                                             <div className="flex-grow-1">
-                                                <h6 className="fw-bold mb-1 text-primary-emphasis">Supporting Documents Needed</h6>
-                                                <span className="fs-13 text-primary-emphasis">No specific documents are strictly required, but please upload relevant business documents (like Bank Statements) to help with underwriting.</span>
+                                                <h6 className="fw-bold mb-1" style={{ color: 'var(--primary-color, #0a192f)' }}>Supporting Documents Needed</h6>
+                                                <span className="fs-13" style={{ color: '#475569' }}>No specific documents are strictly required, but please upload relevant business documents (like Bank Statements) to help with underwriting.</span>
                                             </div>
                                             <button
-                                                className="btn btn-primary btn-sm px-3 fw-medium flex-shrink-0"
+                                                className="btn btn-sm px-3 fw-medium flex-shrink-0 text-white"
+                                                style={{ backgroundColor: 'var(--primary-color, #0a192f)', border: '1px solid var(--primary-color, #0a192f)' }}
                                                 onClick={() => {
                                                     setCurrentDocType(documentTypes?.[0] || { id: 1, name: 'Business Bank Statements' });
                                                     setShowFileManager(true);
