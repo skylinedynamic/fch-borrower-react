@@ -14,6 +14,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../lib/query';
 import { useBusinessDetails, useFinancialInfo } from '../../modules/profile/queries';
 import { FUNDING_WIZARD_STEPS } from '../../config/funding';
+import { useBrandingStore } from '../../store/brandingStore';
 const steps = FUNDING_WIZARD_STEPS;
 
 const FundingReviewWizard = () => {
@@ -26,6 +27,9 @@ const FundingReviewWizard = () => {
     const [fundingDetail, setFundingDetail] = useState<any>(null);
     const [reviewId, setReviewId] = useState('');
     const [submitDate, setSubmitDate] = useState('');
+
+    const branding = useBrandingStore((state: any) => state.branding);
+    const reviewerName = branding?.site_name || 'Four Corner Holding';
 
     const { state, search } = useLocation();
     const searchParams = new URLSearchParams(search);
@@ -610,7 +614,7 @@ const FundingReviewWizard = () => {
                                         </div>
                                     </div>
                                     <h3 className="fw-bold mb-3" style={{ color: '#0f172a' }}>Funding Review Submitted!</h3>
-                                    <p className="text-muted mb-4 fs-15 px-md-5">Your request has been received and is now under<br />FCH underwriting review.</p>
+                                    <p className="text-muted mb-4 fs-15 px-md-5">Your request has been received and is now under<br />{reviewerName} underwriting review.</p>
 
                                     <div className="rounded-3 p-4 text-start mx-auto mb-4" style={{ maxWidth: '480px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
                                         <h6 className="fw-bold mb-3" style={{ color: '#2563eb' }}>What Happens Next?</h6>
@@ -634,17 +638,7 @@ const FundingReviewWizard = () => {
                                         </ul>
                                     </div>
 
-                                    <div className="d-flex align-items-center justify-content-between border-top pt-4 mx-auto" style={{ maxWidth: '480px' }}>
-                                        <div className="d-flex align-items-center gap-3">
-                                            <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: '40px', height: '40px', backgroundColor: '#f1f5f9' }}>
-                                                <i className="ri-contacts-book-2-line" style={{ color: '#475569', fontSize: '18px' }}></i>
-                                            </div>
-                                            <div className="text-start">
-                                                <p className="fs-11 mb-0 fw-bold text-uppercase" style={{ color: '#64748b', letterSpacing: '0.5px' }}>Review ID</p>
-                                                <h6 className="fw-bold mb-0 text-dark fs-14">{reviewId}</h6>
-                                            </div>
-                                        </div>
-                                        <div style={{ width: '1px', height: '40px', backgroundColor: '#e2e8f0' }}></div>
+                                    <div className="d-flex align-items-center justify-content-center gap-5 border-top pt-4 mx-auto">
                                         <div className="d-flex align-items-center gap-3">
                                             <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: '40px', height: '40px', backgroundColor: '#f1f5f9' }}>
                                                 <i className="ri-calendar-line" style={{ color: '#475569', fontSize: '18px' }}></i>
@@ -652,6 +646,16 @@ const FundingReviewWizard = () => {
                                             <div className="text-start">
                                                 <p className="fs-11 mb-0 fw-bold text-uppercase" style={{ color: '#64748b', letterSpacing: '0.5px' }}>Submitted On</p>
                                                 <h6 className="fw-bold mb-0 text-dark fs-14">{submitDate}</h6>
+                                            </div>
+                                        </div>
+                                        <div style={{ width: '1px', height: '40px', backgroundColor: '#e2e8f0' }}></div>
+                                        <div className="d-flex align-items-center gap-3">
+                                            <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: '40px', height: '40px', backgroundColor: '#f1f5f9' }}>
+                                                <i className="ri-shield-user-line" style={{ color: '#475569', fontSize: '18px' }}></i>
+                                            </div>
+                                            <div className="text-start">
+                                                <p className="fs-11 mb-0 fw-bold text-uppercase" style={{ color: '#64748b', letterSpacing: '0.5px' }}>Reviewed By</p>
+                                                <h6 className="fw-bold mb-0 text-dark fs-14">{reviewerName}</h6>
                                             </div>
                                         </div>
                                     </div>
@@ -721,7 +725,7 @@ const FundingReviewWizard = () => {
                                         style={{ color: 'var(--primary-color, #0a192f)' }}
                                         onClick={() => navigate('/funding')}
                                     >
-                                        <i className="ri-arrow-left-line"></i> Return to Funding Options
+                                        <i className="ri-arrow-left-line"></i> Return to Funding
                                     </button>
                                 </div>
                             )}
