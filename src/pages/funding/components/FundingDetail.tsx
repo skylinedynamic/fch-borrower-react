@@ -315,8 +315,10 @@ const FundingDetail = () => {
 
                                     {/* Missing Documents section inside qualify panel */}
                                     {(() => {
-                                        const docsFactor = dynamicReadiness.find((f: any) => f.label === 'Documents' && f.missing_docs && f.missing_docs.length > 0);
-                                        const currentMissingDocs = docsFactor?.missing_docs || missing_documents;
+                                        const extractedDocs = dynamicReadiness
+                                            .filter((f: any) => f.missing_docs && f.missing_docs.length > 0)
+                                            .flatMap((f: any) => f.missing_docs);
+                                        const currentMissingDocs = extractedDocs.length > 0 ? Array.from(new Set(extractedDocs)) : missing_documents;
                                         
                                         return currentMissingDocs.length > 0 && (
                                             <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #f0f3f7' }}>

@@ -127,5 +127,9 @@ export const QUALIFY_REASONS_MAP: Record<string, string> = {
     'Revenue': 'Revenue exceeds minimum threshold',
     'Time in Business': 'Time in business exceeds requirement',
     'Banking Activity': 'Banking activity shows consistent deposits',
-    'Documents': 'Required documents have been provided'
+    'Documents': 'Required documents have been provided',
+    'Minimum Monthly Deposits': 'Deposit volume meets minimum requirements',
+    'Monthly Deposit Count': 'Deposit frequency meets minimum requirements',
+    'Minimum Average Daily Balance': 'Average daily balance meets minimum requirements',
+    'Max NSF / Negative Days': 'Banking history meets minimum NSF/negative day requirements'
 };
