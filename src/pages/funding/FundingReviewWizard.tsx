@@ -25,7 +25,6 @@ const FundingReviewWizard = () => {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [fundingDetail, setFundingDetail] = useState<any>(null);
-    const [reviewId, setReviewId] = useState('');
     const [submitDate, setSubmitDate] = useState('');
 
     const branding = useBrandingStore((state: any) => state.branding);
@@ -166,7 +165,6 @@ const FundingReviewWizard = () => {
                 estimated_speed: fundingDetail.speed_to_funds ? `${fundingDetail.speed_to_funds} Days` : '1 - 7 Days'
             });
             const reviewData = response.data.data;
-            setReviewId(reviewData?.id ? `FR-2024-${String(reviewData.id).padStart(5, '0')}` : 'FR-2024-000158');
             setSubmitDate(reviewData?.created_at || new Date().toLocaleString());
             
             if (reviewData?.reviewer?.name) {
