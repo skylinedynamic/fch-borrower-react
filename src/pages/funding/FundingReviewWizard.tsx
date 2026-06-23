@@ -575,44 +575,55 @@ const FundingReviewWizard = () => {
                             {/* Step 4: Submitted */}
                             {currentStep === 4 && (
                                 <div className="text-center pt-2 pb-4">
-                                    <div className="mb-4">
-                                        <div className="d-inline-flex align-items-center justify-content-center bg-success-subtle rounded-circle" style={{ width: '80px', height: '80px' }}>
-                                            <i className="ri-check-line text-success" style={{ fontSize: '40px' }}></i>
+                                    <div className="mb-4 position-relative d-inline-block">
+                                        <div className="d-inline-flex align-items-center justify-content-center rounded-circle" style={{ width: '80px', height: '80px', backgroundColor: '#e6f4ea' }}>
+                                            <i className="ri-check-line fw-bolder" style={{ fontSize: '40px', color: '#059669' }}></i>
                                         </div>
                                     </div>
-                                    <h3 className="fw-bold mb-3">Funding Review Submitted!</h3>
+                                    <h3 className="fw-bold mb-3" style={{ color: '#0f172a' }}>Funding Review Submitted!</h3>
                                     <p className="text-muted mb-4 fs-15 px-md-5">Your request has been received and is now under<br />FCH underwriting review.</p>
 
-                                    <div className="border border-primary-subtle bg-primary-subtle rounded-3 p-4 text-start mx-auto mb-4" style={{ maxWidth: '400px' }}>
-                                        <h6 className="fw-bold text-primary mb-3">What Happens Next?</h6>
+                                    <div className="rounded-3 p-4 text-start mx-auto mb-4" style={{ maxWidth: '480px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                                        <h6 className="fw-bold mb-3" style={{ color: '#2563eb' }}>What Happens Next?</h6>
                                         <ul className="list-unstyled m-0 d-flex flex-column gap-3">
-                                            <li className="d-flex align-items-start gap-2 fs-14 text-dark">
-                                                <i className="ri-check-line text-success fs-16 mt-1"></i>
-                                                <span>Our automated underwriting engine will review your file</span>
+                                            <li className="d-flex align-items-start gap-3 fs-14" style={{ color: '#334155' }}>
+                                                <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: '#059669' }}></i>
+                                                <span className="mt-1">Our automated underwriting engine will review your file</span>
                                             </li>
-                                            <li className="d-flex align-items-start gap-2 fs-14 text-dark">
-                                                <i className="ri-check-line text-success fs-16 mt-1"></i>
-                                                <span>An underwriter will review and evaluate your request</span>
+                                            <li className="d-flex align-items-start gap-3 fs-14" style={{ color: '#334155' }}>
+                                                <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: '#059669' }}></i>
+                                                <span className="mt-1">An underwriter will review and evaluate your request</span>
                                             </li>
-                                            <li className="d-flex align-items-start gap-2 fs-14 text-dark">
-                                                <i className="ri-check-line text-success fs-16 mt-1"></i>
-                                                <span>We may contact you if additional information is needed</span>
+                                            <li className="d-flex align-items-start gap-3 fs-14" style={{ color: '#334155' }}>
+                                                <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: '#059669' }}></i>
+                                                <span className="mt-1">We may contact you if additional information is needed</span>
                                             </li>
-                                            <li className="d-flex align-items-start gap-2 fs-14 text-dark">
-                                                <i className="ri-check-line text-success fs-16 mt-1"></i>
-                                                <span>You will receive updates on your review status</span>
+                                            <li className="d-flex align-items-start gap-3 fs-14" style={{ color: '#334155' }}>
+                                                <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: '#059669' }}></i>
+                                                <span className="mt-1">You will receive updates on your review status</span>
                                             </li>
                                         </ul>
                                     </div>
 
-                                    <div className="d-flex justify-content-between border-top pt-4 mx-auto" style={{ maxWidth: '400px' }}>
-                                        <div className="text-start">
-                                            <p className="text-muted fs-12 mb-1 fw-medium text-uppercase">Review ID</p>
-                                            <h6 className="fw-bold mb-0">{reviewId}</h6>
+                                    <div className="d-flex align-items-center justify-content-between border-top pt-4 mx-auto" style={{ maxWidth: '480px' }}>
+                                        <div className="d-flex align-items-center gap-3">
+                                            <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: '40px', height: '40px', backgroundColor: '#f1f5f9' }}>
+                                                <i className="ri-contacts-book-2-line" style={{ color: '#475569', fontSize: '18px' }}></i>
+                                            </div>
+                                            <div className="text-start">
+                                                <p className="fs-11 mb-0 fw-bold text-uppercase" style={{ color: '#64748b', letterSpacing: '0.5px' }}>Review ID</p>
+                                                <h6 className="fw-bold mb-0 text-dark fs-14">{reviewId}</h6>
+                                            </div>
                                         </div>
-                                        <div className="text-end">
-                                            <p className="text-muted fs-12 mb-1 fw-medium text-uppercase">Submitted On</p>
-                                            <h6 className="fw-bold mb-0">{submitDate}</h6>
+                                        <div style={{ width: '1px', height: '40px', backgroundColor: '#e2e8f0' }}></div>
+                                        <div className="d-flex align-items-center gap-3">
+                                            <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: '40px', height: '40px', backgroundColor: '#f1f5f9' }}>
+                                                <i className="ri-calendar-line" style={{ color: '#475569', fontSize: '18px' }}></i>
+                                            </div>
+                                            <div className="text-start">
+                                                <p className="fs-11 mb-0 fw-bold text-uppercase" style={{ color: '#64748b', letterSpacing: '0.5px' }}>Submitted On</p>
+                                                <h6 className="fw-bold mb-0 text-dark fs-14">{submitDate}</h6>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -660,19 +671,20 @@ const FundingReviewWizard = () => {
 
                             {/* Navigation Buttons (Step 4) */}
                             {currentStep === 4 && (
-                                <div className="d-flex flex-column align-items-center mx-auto mt-4" style={{ maxWidth: '400px' }}>
+                                <div className="d-flex flex-column align-items-center mx-auto mt-4" style={{ maxWidth: '480px' }}>
                                     <button
-                                        className="btn w-100 mb-3 fw-medium text-white"
-                                        style={{ backgroundColor: '#00204a', borderColor: '#00204a', padding: '10px' }}
+                                        className="btn w-100 mb-3 fw-bold text-white d-flex align-items-center justify-content-center gap-2"
+                                        style={{ backgroundColor: '#0a192f', borderColor: '#0a192f', padding: '12px' }}
                                         onClick={() => navigate('/funding-reviews')}
                                     >
-                                        View Review Status
+                                        <i className="ri-bar-chart-fill fs-16"></i> View Review Status
                                     </button>
                                     <button
-                                        className="btn btn-link text-muted text-decoration-none fw-medium"
+                                        className="btn btn-link text-decoration-none fw-bold d-flex align-items-center gap-2"
+                                        style={{ color: '#2563eb' }}
                                         onClick={() => navigate('/funding')}
                                     >
-                                        Return to Funding Options
+                                        <i className="ri-arrow-left-line"></i> Return to Funding Options
                                     </button>
                                 </div>
                             )}
