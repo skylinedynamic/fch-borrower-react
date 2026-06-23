@@ -1,10 +1,11 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { getBorrowerFundingReviews, getBorrowerFundingReview } from './services'
 
 export const useBorrowerFundingReviews = (params: any) => {
     return useQuery({
         queryKey: ['borrowerFundingReviews', params],
         queryFn: () => getBorrowerFundingReviews(params),
+        placeholderData: keepPreviousData,
     })
 }
 
