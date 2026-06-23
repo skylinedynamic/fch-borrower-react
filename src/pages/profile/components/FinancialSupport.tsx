@@ -64,6 +64,12 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
       years_in_business: data.years_in_business,
       monthly_revenue: parseFloat(unformatCurrency(data.monthly_revenue)) || 0,
       annual_revenue: parseFloat(unformatCurrency(data.annual_revenue)) || 0,
+      average_monthly_deposits: data.average_monthly_deposits ? parseFloat(unformatCurrency(data.average_monthly_deposits)) : undefined,
+      monthly_deposit_count: data.monthly_deposit_count ? parseInt(data.monthly_deposit_count, 10) : undefined,
+      avg_bank_balance: data.avg_bank_balance ? parseFloat(unformatCurrency(data.avg_bank_balance)) : undefined,
+      current_business_debt: data.current_business_debt ? parseFloat(unformatCurrency(data.current_business_debt)) : undefined,
+      nsf_count: data.nsf_count ? parseInt(data.nsf_count, 10) : undefined,
+      negative_days: data.negative_days ? parseInt(data.negative_days, 10) : undefined,
     }
 
     saveFinancial(payload, {
@@ -96,6 +102,12 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
         years_in_business: apiData.years_in_business,
         monthly_revenue: apiData.monthly_revenue ? formatCurrency(apiData.monthly_revenue) : '',
         annual_revenue: apiData.annual_revenue ? formatCurrency(apiData.annual_revenue) : '',
+        average_monthly_deposits: apiData.average_monthly_deposits ? formatCurrency(apiData.average_monthly_deposits) : '',
+        monthly_deposit_count: apiData.monthly_deposit_count ?? '',
+        avg_bank_balance: apiData.avg_bank_balance ? formatCurrency(apiData.avg_bank_balance) : '',
+        current_business_debt: apiData.current_business_debt ? formatCurrency(apiData.current_business_debt) : '',
+        nsf_count: apiData.nsf_count ?? '',
+        negative_days: apiData.negative_days ?? '',
       })
     }
   }, [isSuccess, apiData])
@@ -211,6 +223,144 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           </div>
           {errors.annual_revenue && <div className="invalid-feedback d-block">{errors.annual_revenue}</div>}
         </div>
+        <div className="col-md-6">
+          <label className="form-label">Average Monthly Deposits <span className="text-danger">*</span></label>
+          <div className="position-relative">
+            <input
+              type="text"
+              placeholder="$0.00"
+              value={data.average_monthly_deposits ?? ''}
+              onChange={(e) => onChange({ ...data, average_monthly_deposits: formatCurrency(e.target.value) })}
+              className={`form-control ${errors.average_monthly_deposits ? 'is-invalid' : ''} ${isFieldLocked('average_monthly_deposits' as any) ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              readOnly={isFieldLocked('average_monthly_deposits' as any)}
+            />
+            {isFieldLocked('average_monthly_deposits' as any) && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Average Monthly Deposits', 'average_monthly_deposits' as any, data.average_monthly_deposits)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
+          {errors.average_monthly_deposits && <div className="invalid-feedback d-block">{errors.average_monthly_deposits}</div>}
+        </div>
+        <div className="col-md-6">
+          <label className="form-label">Monthly Deposit Count <span className="text-danger">*</span></label>
+          <div className="position-relative">
+            <input
+              type="text"
+              placeholder="0"
+              value={data.monthly_deposit_count ?? ''}
+              onChange={(e) => onChange({ ...data, monthly_deposit_count: e.target.value.replace(/[^0-9]/g, '') })}
+              className={`form-control ${errors.monthly_deposit_count ? 'is-invalid' : ''} ${isFieldLocked('monthly_deposit_count' as any) ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              readOnly={isFieldLocked('monthly_deposit_count' as any)}
+            />
+            {isFieldLocked('monthly_deposit_count' as any) && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Monthly Deposit Count', 'monthly_deposit_count' as any, data.monthly_deposit_count)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
+          {errors.monthly_deposit_count && <div className="invalid-feedback d-block">{errors.monthly_deposit_count}</div>}
+        </div>
+        <div className="col-md-6">
+          <label className="form-label">Average Daily Balance (ADB) <span className="text-danger">*</span></label>
+          <div className="position-relative">
+            <input
+              type="text"
+              placeholder="$0.00"
+              value={data.avg_bank_balance ?? ''}
+              onChange={(e) => onChange({ ...data, avg_bank_balance: formatCurrency(e.target.value) })}
+              className={`form-control ${errors.avg_bank_balance ? 'is-invalid' : ''} ${isFieldLocked('avg_bank_balance' as any) ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              readOnly={isFieldLocked('avg_bank_balance' as any)}
+            />
+            {isFieldLocked('avg_bank_balance' as any) && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Average Daily Balance (ADB)', 'avg_bank_balance' as any, data.avg_bank_balance)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
+          {errors.avg_bank_balance && <div className="invalid-feedback d-block">{errors.avg_bank_balance}</div>}
+        </div>
+        <div className="col-md-6">
+          <label className="form-label">Current Business Debt</label>
+          <div className="position-relative">
+            <input
+              type="text"
+              placeholder="$0.00"
+              value={data.current_business_debt ?? ''}
+              onChange={(e) => onChange({ ...data, current_business_debt: formatCurrency(e.target.value) })}
+              className={`form-control ${errors.current_business_debt ? 'is-invalid' : ''} ${isFieldLocked('current_business_debt' as any) ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              readOnly={isFieldLocked('current_business_debt' as any)}
+            />
+            {isFieldLocked('current_business_debt' as any) && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Current Business Debt', 'current_business_debt' as any, data.current_business_debt)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
+          {errors.current_business_debt && <div className="invalid-feedback d-block">{errors.current_business_debt}</div>}
+        </div>
+        <div className="col-md-6">
+          <label className="form-label">NSF Count <span className="text-danger">*</span></label>
+          <div className="position-relative">
+            <input
+              type="text"
+              placeholder="0"
+              value={data.nsf_count ?? ''}
+              onChange={(e) => onChange({ ...data, nsf_count: e.target.value.replace(/[^0-9]/g, '') })}
+              className={`form-control ${errors.nsf_count ? 'is-invalid' : ''} ${isFieldLocked('nsf_count' as any) ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              readOnly={isFieldLocked('nsf_count' as any)}
+            />
+            {isFieldLocked('nsf_count' as any) && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('NSF Count', 'nsf_count' as any, data.nsf_count)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
+          {errors.nsf_count && <div className="invalid-feedback d-block">{errors.nsf_count}</div>}
+        </div>
+        <div className="col-md-6">
+          <label className="form-label">Negative Days <span className="text-danger">*</span></label>
+          <div className="position-relative">
+            <input
+              type="text"
+              placeholder="0"
+              value={data.negative_days ?? ''}
+              onChange={(e) => onChange({ ...data, negative_days: e.target.value.replace(/[^0-9]/g, '') })}
+              className={`form-control ${errors.negative_days ? 'is-invalid' : ''} ${isFieldLocked('negative_days' as any) ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              readOnly={isFieldLocked('negative_days' as any)}
+            />
+            {isFieldLocked('negative_days' as any) && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Negative Days', 'negative_days' as any, data.negative_days)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
+          {errors.negative_days && <div className="invalid-feedback d-block">{errors.negative_days}</div>}
+        </div>
         <div className="col-12 d-flex justify-content-between mt-4">
           <button type="button" className="btn btn-warning" onClick={onBack}>Previous</button>
           <button type="button" className="btn primary-btn" onClick={handleSave} disabled={isPending}>
@@ -233,10 +383,10 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
             <input
               type="text"
               className="form-control bg-light"
-              value={updateRequest.key === 'years_in_business' 
+              value={updateRequest.key === 'years_in_business'
                 ? (yearsInBusinessOptions.find(opt => opt.value === updateRequest.currentValue)?.label || updateRequest.currentValue)
-                : ((updateRequest.key === 'monthly_revenue' || updateRequest.key === 'annual_revenue') 
-                  ? formatCurrency(String(updateRequest.currentValue)) 
+                : ((['monthly_revenue', 'annual_revenue', 'average_monthly_deposits', 'avg_bank_balance', 'current_business_debt'].includes(updateRequest.key))
+                  ? formatCurrency(String(updateRequest.currentValue))
                   : updateRequest.currentValue)}
               readOnly
             />

@@ -123,6 +123,12 @@ export type SaveFinancialInfoRequest = {
   years_in_business: string
   monthly_revenue: number
   annual_revenue: number
+  average_monthly_deposits?: number
+  monthly_deposit_count?: number
+  avg_bank_balance?: number
+  current_business_debt?: number
+  nsf_count?: number
+  negative_days?: number
 }
 
 export type SaveFinancialInfoResponse = {
