@@ -141,22 +141,19 @@ export default function FundApplication() {
 
   const location = useLocation()
 
-  // Initialize funding state from query parameters
+  // Initialize funding state from location.state
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search)
-    const purposeParam = searchParams.get('purpose')
-    const typeParam = searchParams.get('funding_type')
-    const approvedParam = searchParams.get('approved_funding')
-
-    if (purposeParam || typeParam || approvedParam) {
+    const state = location.state as any;
+    if (state && (state.purpose || state.approved_funding || state.requested_amount)) {
       setFunding(prev => ({
         ...prev,
-        purpose: purposeParam || prev.purpose,
-        approvedFunding: approvedParam || prev.approvedFunding,
-        fundingType: typeParam || prev.fundingType,
+        purpose: state.purpose || prev.purpose,
+        approvedFunding: state.approved_funding || prev.approvedFunding,
+        requestedAmount: state.requested_amount || prev.requestedAmount,
+        fundingType: state.approved_funding || prev.fundingType,
       }))
     }
-  }, [location.search])
+  }, [location.state])
 
   const [federal, setFederal] = useState<FederalCompliance>({
     legalBusinessName: '',

@@ -3,26 +3,24 @@ import { DataTable as PrimeDataTable } from '@primereact/datatable'
 import { Skeleton } from 'primereact/skeleton'
 
 export const DataTable = (props) => {
-  const { value, loading, className } = props
+  const { value, loading, className, children } = props
   const showSkeleton = !!loading
 
   if (showSkeleton) {
-    const count = typeof props.rows === 'number' ? props.rows : 20
+    // Use the current data length if available to prevent jumping, otherwise fallback to rows prop or 10
+    const count = value && value.length > 0 ? value.length : (typeof props.rows === 'number' ? props.rows : 10)    
+    // Dynamically get the number of columns from the children props
+    const columns = React.Children.toArray(children).filter(child => child && child.props)
+    const numColumns = columns.length > 0 ? columns.length : 5
+
     return (
       <div className={className || ''}>
         <div className="p-3">
           {Array.from({ length: count }).map((_, i) => (
-            <div key={i} className="d-flex align-items-center gap-3 py-2 border-bottom">
-              <Skeleton width="20%" height="2.5rem" />
-              <Skeleton width="15%" height="2.5rem" />
-              <Skeleton width="25%" height="2.5rem" />
-              <Skeleton width="15%" height="2.5rem" />
-              <Skeleton width="15%" height="2.5rem" />
-              <Skeleton width="20%" height="2.5rem" />
-              <Skeleton width="12%" height="2.5rem" />
-              <Skeleton width="10%" height="2.5rem" />
-              <Skeleton width="18%" height="2.5rem" />
-              <Skeleton width="14%" height="2.5rem" />
+            <div key={i} className="d-flex align-items-center gap-4 py-2 border-bottom">
+              {Array.from({ length: numColumns }).map((_, j) => (
+                 <Skeleton key={j} height="2rem" className="flex-grow-1" />
+              ))}
             </div>
           ))}
         </div>

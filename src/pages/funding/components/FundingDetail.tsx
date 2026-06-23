@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { fetchFundingDetail, fetchReadinessFactors, fetchQualifyReasons } from '../../../modules/funding/services';
-import { FUNDING_ICON_MAP } from '../../../config/funding';
+import { fetchFundingDetail, fetchReadinessFactors } from '../../../modules/funding/services';
+import { FUNDING_ICON_MAP, QUALIFY_REASONS_MAP } from '../../../config/funding';
 import { getFundingColorStyles } from '../../../config/fundingColor';
 import { toast } from 'react-toastify';
 
@@ -124,14 +124,27 @@ const FundingDetail = () => {
         setLoading(true);
         Promise.all([
             fetchFundingDetail(id),
-            fetchReadinessFactors(id).catch(() => ({ status: false, data: [] })),
-            fetchQualifyReasons(id).catch(() => ({ status: false, data: [] }))
-        ]).then(([detailRes, readinessRes, qualifyRes]) => {
+            fetchReadinessFactors(id).catch(() => ({ status: false, data: [] }))
+        ]).then(([detailRes, readinessRes]) => {
             if (detailRes.status) setData(detailRes.data);
             else toast.error(detailRes.message || 'Failed to load funding details');
 
-            if (readinessRes?.status) setDynamicReadiness(readinessRes.data);
-            if (qualifyRes?.status) setDynamicQualifyReasons(qualifyRes.data);
+            if (readinessRes?.status && Array.isArray(readinessRes.data)) {
+                const readinessData = readinessRes.data;
+                setDynamicReadiness(readinessData);
+                
+                // Dynamically generate "Why You May Qualify" sentences from Good/Strong readiness factors
+                const generatedReasons: any[] = [];
+                readinessData.forEach((r: any) => {
+                    if (r.status === 'Good' || r.status === 'Strong') {
+                        const l = r.label || '';
+                        let text = QUALIFY_REASONS_MAP[l] || `${l} meets requirements`;
+                        
+                        generatedReasons.push({ label: text, status: r.status });
+                    }
+                });
+                setDynamicQualifyReasons(generatedReasons);
+            }
         }).catch(() => toast.error('Failed to load funding details'))
         .finally(() => setLoading(false));
     }, [id]);
@@ -189,6 +202,8 @@ const FundingDetail = () => {
     ];
 
     const ctaSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+    const hasMissingFactors = dynamicReadiness.some((r: any) => r.status === 'Missing');
 
     return (
         <div className="page-content">
@@ -300,8 +315,10 @@ const FundingDetail = () => {
 
                                     {/* Missing Documents section inside qualify panel */}
                                     {(() => {
-                                        const docsFactor = dynamicReadiness.find((f: any) => f.label === 'Documents' && f.missing_docs && f.missing_docs.length > 0);
-                                        const currentMissingDocs = docsFactor?.missing_docs || missing_documents;
+                                        const extractedDocs = dynamicReadiness
+                                            .filter((f: any) => f.missing_docs && f.missing_docs.length > 0)
+                                            .flatMap((f: any) => f.missing_docs);
+                                        const currentMissingDocs = extractedDocs.length > 0 ? Array.from(new Set(extractedDocs)) : missing_documents;
                                         
                                         return currentMissingDocs.length > 0 && (
                                             <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #f0f3f7' }}>
@@ -384,13 +401,17 @@ const FundingDetail = () => {
                             <p style={{ margin: 0, fontSize: 12, color: '#6b7280', marginTop: 3 }}>
                                 {isGreyedOut
                                     ? 'You do not meet the minimum requirements for this funding option at this time.'
-                                    : 'Start your funding review by providing a few details and uploading missing documents.'}
+                                    : hasMissingFactors 
+                                        ? 'Please address missing readiness factors before starting your review.'
+                                        : 'Start your funding review by providing a few details and uploading missing documents.'}
                             </p>
                         </div>
                         {!isGreyedOut && (
                             <Link
-                                to={`/funding/${id}/review`}
-                                className="funding-detail-btn-review"
+                                to={hasMissingFactors ? '#' : `/funding/${id}/review`}
+                                className={`funding-detail-btn-review ${hasMissingFactors ? 'disabled' : ''}`}
+                                style={hasMissingFactors ? { opacity: 0.5, pointerEvents: 'none', cursor: 'not-allowed' } : {}}
+                                onClick={(e) => { if (hasMissingFactors) e.preventDefault(); }}
                             >
                                 Start Funding Review
                                 <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />

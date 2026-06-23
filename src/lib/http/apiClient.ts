@@ -13,10 +13,16 @@ export const apiClient: AxiosInstance = axios.create({
 // Attach Authorization header if token exists
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = getToken()
+  config.headers = config.headers || {}
+  
   if (token) {
-    config.headers = config.headers || {}
     ;(config.headers as Record<string, string>).Authorization = `Bearer ${token}`
   }
+  
+  if (typeof window !== 'undefined') {
+    ;(config.headers as Record<string, string>)['X-Timezone'] = Intl.DateTimeFormat().resolvedOptions().timeZone
+  }
+  
   return config
 })
 

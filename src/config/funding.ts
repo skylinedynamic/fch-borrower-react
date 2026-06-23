@@ -50,6 +50,12 @@ export const FUNDING_COLOR_MAP: Record<string, string> = {
     'teal': 'info',
 };
 
+export const FUNDING_REVIEW_STATUS = {
+  PENDING: 'Pending',
+  APPROVED: 'Approved',
+  REJECTED: 'Rejected'
+};
+
 export const FUNDING_APPLICATION_STATUS = {
   PENDING: 'Pending',
   SUBMITTED: 'Submitted (Received)',
@@ -106,6 +112,24 @@ export const FUNDING_APPLICATION_STATUS_CLASS_MAP: Record<string, string> = {
   [FUNDING_APPLICATION_STATUS_OPTIONS[12].value]: 'bg-warning-subtle text-warning',
   [FUNDING_APPLICATION_STATUS_OPTIONS[13].value]: 'bg-success-subtle text-success',
   [FUNDING_APPLICATION_STATUS_OPTIONS[14].value]: 'bg-success text-white',
-  [FUNDING_APPLICATION_STATUS_OPTIONS[15].value]: 'bg-success-subtle text-success',
   [FUNDING_APPLICATION_STATUS_OPTIONS[16].value]: 'bg-danger-subtle text-danger',
+};
+
+export const FUNDING_WIZARD_STEPS = [
+    { id: 1, label: 'Review' },
+    { id: 2, label: 'Application' },
+    { id: 3, label: 'Documents' },
+    { id: 4, label: 'Submit' }
+];
+
+export const QUALIFY_REASONS_MAP: Record<string, string> = {
+    'Business Credit': 'Business profile meets our lending standards',
+    'Revenue': 'Revenue exceeds minimum threshold',
+    'Time in Business': 'Time in business exceeds requirement',
+    'Banking Activity': 'Banking activity shows consistent deposits',
+    'Documents': 'Required documents have been provided',
+    'Minimum Monthly Deposits': 'Deposit volume meets minimum requirements',
+    'Monthly Deposit Count': 'Deposit frequency meets minimum requirements',
+    'Minimum Average Daily Balance': 'Average daily balance meets minimum requirements',
+    'Max NSF / Negative Days': 'Banking history meets minimum NSF/negative day requirements'
 };
