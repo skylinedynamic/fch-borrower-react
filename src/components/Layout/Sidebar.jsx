@@ -164,6 +164,7 @@ export default function Sidebar() {
             {/* <LinkItem to="/fund-application" label="Fund Application" icon="ri-hand-coin-line" restricted={isRestricted} /> */}
             <LinkItem to="/funding-reviews" label="Funding Review" icon="ri-file-search-line" restricted={isRestricted} />
             <LinkItem to="/my-applications" label="My Applications" icon="ri-file-list-line" restricted={isRestricted} />
+            <LinkItem to="/capital-access" label="Capital Access" icon="ri-funds-line" restricted={isRestricted} />
             <LinkItem to="/invoices" label="Invoices" icon="ri-article-line" />
             <LinkItem to="/payments" label="Payments" icon="ri-money-dollar-box-line" />
 
@@ -196,9 +197,6 @@ export default function Sidebar() {
                 </li>
                 <li className="nav-item">
                   <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/credit-accounts" onClick={() => isMobile && closeSidebar()}><i className="ri-subtract-line"></i> <span>Credit Accounts</span></NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/strategy" onClick={() => isMobile && closeSidebar()}><i className="ri-subtract-line"></i> <span>Capital Access</span></NavLink>
                 </li>
               </ul>
             </li>

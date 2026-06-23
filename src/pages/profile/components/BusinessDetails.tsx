@@ -720,7 +720,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
             <label className="form-label fw-bold">Requested New Value <span className="text-danger">*</span></label>
             {updateRequest.key === 'business_start_date' ? (
               <Flatpickr
-                className={`form-control ${modalErrors.new_value ? 'is-invalid' : ''}`}
+                className={`form-control w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
                 value={updateRequest.newValue}
                 onChange={(dates, dateStr) => setUpdateRequest({ ...updateRequest, newValue: dateStr })}
                 options={{
@@ -793,7 +793,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               <input
                 ref={inputRef}
                 type={(updateRequest.key === 'business_credit_score' || updateRequest.key === 'personal_credit_score') ? 'number' : 'text'}
-                className={`form-control ${modalErrors.new_value ? 'is-invalid' : ''}`}
+                className={`form-control w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
                 placeholder={`Enter the updated ${updateRequest.label}`}
                 value={updateRequest.newValue}
                 onChange={(e) => {

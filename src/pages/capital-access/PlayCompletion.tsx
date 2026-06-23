@@ -7,7 +7,7 @@ export default function PlayCompletion() {
   const location = useLocation();
 
   if (!location.state || !location.state.play) {
-    return <Navigate to="/credit-builder/strategy" />;
+    return <Navigate to="/capital-access/strategy" />;
   }
 
   const { play } = location.state;
@@ -25,11 +25,10 @@ export default function PlayCompletion() {
       <div className="container-fluid">
 
         <div className="ca-page-wrap">
-          {/* ── Page Header ── */}
           <div className="row pb-1 page-subheader-sticky bg-body mb-3">
             <div className="col-12">
               <div className="text-center py-2 w-100">
-                <h4 className="fs-20 mb-1 fw-bold">Play Completed!</h4>
+                <h4 className="fs-22 mb-1 fw-bold text-dark">Play Completed!</h4>
                 <p className="ca-page-subtitle">
                   Review the final summary of your business credit build play results.
                 </p>
@@ -88,10 +87,10 @@ export default function PlayCompletion() {
 
               {/* Actions */}
               <div className="d-flex gap-3 justify-content-center">
-                <Link to={`/credit-builder/strategy/${play.id}/roadmap`} className="ca-btn ca-btn-outline">
+                <Link to={`/capital-access/${play.id}/roadmap`} className="ca-btn ca-btn-outline">
                   <i className="ri-road-map-line"></i> View Roadmap
                 </Link>
-                <Link to="/credit-builder/strategy" className="ca-btn ca-btn-primary">
+                <Link to="/capital-access/strategy" className="ca-btn ca-btn-primary">
                   Next Play <i className="ri-arrow-right-line"></i>
                 </Link>
               </div>
