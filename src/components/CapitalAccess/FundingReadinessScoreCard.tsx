@@ -5,12 +5,14 @@ interface FundingReadinessScoreCardProps {
   score: number
   status: string
   factors: FactorDetail[]
+  statusColor?: string
 }
 
 export default function FundingReadinessScoreCard({
   score,
   status,
   factors,
+  statusColor,
 }: FundingReadinessScoreCardProps) {
   return (
     <div className="col-md-6">
@@ -21,8 +23,18 @@ export default function FundingReadinessScoreCard({
               Funding Readiness Score
             </h6>
             <div className="ca-score-display">
-              <span className="ca-score-value animate__animated animate__fadeIn">{score}</span>
-              <span className="ca-score-status">{status}</span>
+              <span
+                className="ca-score-value animate__animated animate__fadeIn"
+                style={statusColor ? { color: statusColor } : undefined}
+              >
+                {score}
+              </span>
+              <span
+                className="ca-score-status"
+                style={statusColor ? { color: statusColor, backgroundColor: `${statusColor}1A` } : undefined}
+              >
+                {status}
+              </span>
             </div>
           </div>
           <div className="ca-metric-icon-wrapper readiness-icon">
@@ -36,7 +48,10 @@ export default function FundingReadinessScoreCard({
               <div
                 className="progress-bar ca-progress-bar-green"
                 role="progressbar"
-                style={{ width: `${score}%` }}
+                style={{
+                  width: `${score}%`,
+                  background: statusColor ? `linear-gradient(90deg, ${statusColor}, ${statusColor}cc)` : undefined
+                }}
                 aria-valuenow={score}
                 aria-valuemin={0}
                 aria-valuemax={100}

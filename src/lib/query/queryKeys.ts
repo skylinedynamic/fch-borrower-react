@@ -48,6 +48,10 @@ export const queryKeys = {
     overview: () => [...queryKeys.capitalAccess.all, 'overview'] as const,
     strategies: () => [...queryKeys.capitalAccess.all, 'strategies'] as const,
     detail: (id: string | number) => [...queryKeys.capitalAccess.all, 'detail', id] as const,
+    detailOverview: (id: string | number) => [...queryKeys.capitalAccess.all, 'detailOverview', id] as const,
+    detailChecklist: (id: string | number) => [...queryKeys.capitalAccess.all, 'detailChecklist', id] as const,
+    detailRoadmap: (id: string | number) => [...queryKeys.capitalAccess.all, 'detailRoadmap', id] as const,
+    detailStep: (strategyId: string | number, sequenceId: string | number) => [...queryKeys.capitalAccess.all, 'detailStep', strategyId, sequenceId] as const,
   },
   documents: {
     all: ['documents'] as const,

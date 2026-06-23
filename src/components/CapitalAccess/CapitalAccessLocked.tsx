@@ -16,20 +16,28 @@ export default function CapitalAccessLocked() {
             </div>
           </div>
 
-          <div className="card border shadow-none text-center p-5 mt-4" style={{ background: 'var(--ca-card-bg)', borderRadius: 'var(--ca-radius)', border: '1px solid var(--ca-border)' }}>
-            <div className="card-body py-4">
-              <div className="avatar-lg mx-auto mb-4" style={{ display: 'inline-flex', width: '80px', height: '80px', background: 'rgba(247, 184, 75, 0.1)', borderRadius: '50%', alignItems: 'center', justifyContent: 'center' }}>
-                <i className="ri-shield-keyhole-line text-warning" style={{ fontSize: '48px' }}></i>
-              </div>
-              <h4 className="fw-bold text-dark mb-2 mt-3">Please Update Your Credit Profile</h4>
-              <p className="text-muted mx-auto fs-14" style={{ maxWidth: '600px', lineHeight: '1.6' }}>
-                To unlock your personalized **Funding Readiness Score**, **Estimated Total Access**, and structured funding plays, your credit profile needs to be saved and updated.
-              </p>
-              <div className="mt-4 p-3 bg-light rounded d-inline-block border" style={{ maxWidth: '500px' }}>
-                <span className="text-muted fs-13">
-                  <i className="ri-information-line align-middle text-primary me-2 fs-15"></i>
-                  Please contact your account manager to complete your credit report verification.
-                </span>
+          <div className="ca-locked-container">
+            <div className="card ca-locked-card">
+              <div className="card-body ca-locked-card-body">
+                <div className="ca-locked-badge">
+                  <i className="ri-lock-2-line"></i>
+                  <span>Access Restricted</span>
+                </div>
+                <div className="ca-locked-icon-wrapper">
+                  <i className="ri-shield-keyhole-line ca-locked-icon"></i>
+                </div>
+                <h3 className="ca-locked-title">Unlock Your Funding Readiness</h3>
+                <p className="ca-locked-description">
+                  To view your personalized **Funding Readiness Score**, explore **Estimated Total Access**, and execute strategic funding plays, your business credit profile needs to be verified and finalized.
+                </p>
+                <div className="ca-locked-action-box">
+                  <div className="ca-locked-action-icon">
+                    <i className="ri-information-line"></i>
+                  </div>
+                  <p className="ca-locked-action-text">
+                    Verification in progress? Please contact your <span className="ca-locked-action-highlight">Account Manager</span> to complete your credit report update.
+                  </p>
+                </div>
               </div>
             </div>
           </div>

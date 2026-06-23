@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCapitalAccessStrategies } from '../../modules/capital-access/queries';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
+import CommonErrorPage from '../../components/Common/CommonErrorPage';
 
 
 
@@ -10,15 +11,10 @@ export default function StrategySelection() {
 
   if (isError) {
     return (
-      <div className="page-content capital-access-page">
-        <div className="container-fluid">
-          <div className="text-center py-5">
-            <i className="ri-error-warning-line fs-40 text-danger mb-2"></i>
-            <h5 className="fw-semibold">Error loading strategies</h5>
-            <p className="text-muted fs-13">Please try reloading the page.</p>
-          </div>
-        </div>
-      </div>
+      <CommonErrorPage
+        title="Error loading strategies"
+        description="Please try reloading the page."
+      />
     );
   }
 
@@ -37,11 +33,16 @@ export default function StrategySelection() {
           {/* ── Page Header ── */}
           <div className="row pb-1 page-subheader-sticky bg-body mb-3">
             <div className="col-12">
-              <div className="text-center py-2 w-100">
-                <h4 className="fs-22 mb-1 fw-bold text-dark">Capital Access Strategy</h4>
-                <p className="ca-page-subtitle">
-                  Choose a strategy that fits your business funding goals. Each play is a structured sequence of card applications designed to maximize your credit access.
-                </p>
+              <div className="d-flex align-items-center gap-3 py-2 w-100">
+                <Link to="/capital-access" className="ca-back-btn" title="Back to Overview">
+                  <i className="ri-arrow-left-line fs-16"></i>
+                </Link>
+                <div>
+                  <h4 className="fs-22 mb-1 fw-bold text-dark">Capital Access Strategy</h4>
+                  <p className="ca-page-subtitle">
+                    Choose a strategy that fits your business funding goals. Each play is a structured sequence of card applications designed to maximize your credit access.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -64,8 +65,8 @@ export default function StrategySelection() {
               {/* Recommended Play */}
               {recommendedPlay && (
                 <div className="mb-4">
-                  <div className="ca-hero-card">
-                    <div className="ca-hero-header">
+                  <div className="ca-hero-card-premium">
+                    <div className="ca-hero-header-premium">
                       <div className="d-flex align-items-center gap-3 flex-grow-1">
                         <div className="avatar-sm flex-shrink-0">
                           <span className="avatar-title bg-primary-subtle text-primary rounded-circle fs-20">
@@ -73,43 +74,46 @@ export default function StrategySelection() {
                           </span>
                         </div>
                         <div>
-                          <h5 className="fw-bold mb-1 fs-17">{recommendedPlay.name}</h5>
+                          <h5 className="fw-bold mb-1 fs-17 text-dark">{recommendedPlay.name}</h5>
                           <p className="text-muted fs-13 mb-0">{recommendedPlay.description}</p>
                         </div>
                       </div>
-                      <span className="ca-badge ca-badge-primary ms-2 flex-shrink-0">
+                      <span className="ca-badge-recommended flex-shrink-0">
                         <i className="ri-star-fill"></i> Recommended For You
                       </span>
                     </div>
 
-                    <div className="ca-card-body">
+                    <div className="ca-card-body" style={{ padding: '28px' }}>
                       <div className="row g-3 mb-4">
                         <div className="col-sm-4">
-                          <div className="ca-metric">
-                            <span className="ca-metric-label">Target Exposure</span>
-                            <p className="ca-metric-value primary mb-0" style={{ fontSize: '17px' }}>
+                          <div className="ca-metric-card-premium">
+                            <span className="ca-metric-label-premium">
+                              <i className="ri-money-dollar-circle-line fs-14" style={{ color: '#60a5fa' }}></i> Target Exposure
+                            </span>
+                            <p className="ca-metric-value-premium primary">
                               {recommendedPlay.target_exposure}
                             </p>
                           </div>
                         </div>
                         <div className="col-sm-4">
-                          <div className="ca-metric">
-                            <span className="ca-metric-label">Approval Probability</span>
-                            <p className="ca-metric-value success mb-0">{recommendedPlay.approval_probability}</p>
+                          <div className="ca-metric-card-premium">
+                            <span className="ca-metric-label-premium">
+                              <i className="ri-percent-line fs-14" style={{ color: '#34d399' }}></i> Approval Probability
+                            </span>
+                            <p className="ca-metric-value-premium success">{recommendedPlay.approval_probability}</p>
                           </div>
                         </div>
                         <div className="col-sm-4">
-                          <div className="ca-metric">
-                            <span className="ca-metric-label">Est. Timeline</span>
-                            <p className="ca-metric-value mb-0">{recommendedPlay.est_timeline}</p>
+                          <div className="ca-metric-card-premium">
+                            <span className="ca-metric-label-premium">
+                              <i className="ri-calendar-line fs-14" style={{ color: '#38bdf8' }}></i> Est. Timeline
+                            </span>
+                            <p className="ca-metric-value-premium timeline">{recommendedPlay.est_timeline}</p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="d-flex justify-content-end gap-3 pt-2">
-                        <Link to="/capital-access" className="ca-btn ca-btn-outline">
-                          <i className="ri-arrow-left-line"></i> Back
-                        </Link>
+                      <div className="d-flex justify-content-end pt-2">
                         <Link to={`/capital-access/${recommendedPlay.id}/overview`} className="ca-btn ca-btn-primary">
                           View Strategy <i className="ri-arrow-right-line"></i>
                         </Link>
@@ -122,43 +126,37 @@ export default function StrategySelection() {
               {/* Other Plays */}
               {otherPlays.length > 0 && (
                 <div>
-                  <span className="ca-section-label">Other Eligible Plays</span>
-                  <div className="d-flex flex-column gap-2">
+                  <span className="ca-section-label" style={{ fontWeight: 700, fontSize: '11px', color: '#94a3b8' }}>Other Eligible Plays</span>
+                  <div className="d-flex flex-column gap-3">
                     {otherPlays.map(play => (
-                      <Link key={play.id} to={`/capital-access/${play.id}/overview`} className="ca-strategy-row text-decoration-none">
+                      <Link key={play.id} to={`/capital-access/${play.id}/overview`} className="ca-strategy-row-premium text-decoration-none">
                         <div className="d-flex align-items-center gap-3 flex-grow-1" style={{ minWidth: 0 }}>
-                          <div className="avatar-sm flex-shrink-0">
-                            <span className="avatar-title bg-light text-muted rounded-circle fs-18">
-                              <i className="ri-flashlight-line"></i>
-                            </span>
+                          <div className="ca-strategy-icon-wrapper-premium flex-shrink-0">
+                            <i className="ri-flashlight-line"></i>
                           </div>
                           <div style={{ minWidth: 0 }}>
-                            <h6 className="mb-0 fw-semibold fs-14 text-truncate">{play.name}</h6>
+                            <h6 className="mb-1 fw-bold fs-14 text-dark">{play.name}</h6>
                             <p className="text-muted fs-12 mb-0 text-truncate">{play.description}</p>
                           </div>
                         </div>
-                        <div className="ca-strategy-row-metrics d-flex align-items-center gap-4">
-                          <div className="text-start text-sm-end">
-                            <p className="ca-metric-label mb-1">Target</p>
-                            <span className="fw-semibold fs-13">{play.target_exposure}</span>
+                        <div className="d-flex align-items-center gap-3">
+                          <div className="ca-row-metric-badge d-none d-sm-block">
+                            <span className="label">Target Exposure</span>
+                            <span className="value">{play.target_exposure}</span>
                           </div>
-                          <div className="text-start text-sm-end">
-                            <p className="ca-metric-label mb-1">Approval</p>
-                            <span className="fw-bold fs-13" style={{ color: 'var(--vz-success)' }}>{play.approval_probability}</span>
+                          <div className="ca-row-metric-badge">
+                            <span className="label">Probability</span>
+                            <span className="value success">{play.approval_probability}</span>
                           </div>
-                          <i className="ri-arrow-right-s-line fs-20 text-muted"></i>
+                          <div className="ps-2">
+                            <i className="ri-arrow-right-s-line fs-20 text-muted" style={{ transition: 'color 0.2s' }}></i>
+                          </div>
                         </div>
                       </Link>
                     ))}
                   </div>
                 </div>
               )}
-
-              <div className="d-flex justify-content-center mt-4">
-                <Link to="/capital-access" className="ca-btn ca-btn-outline" style={{ minWidth: '180px' }}>
-                  <i className="ri-arrow-left-line"></i> Back to Overview
-                </Link>
-              </div>
             </>
           )}
         </div>

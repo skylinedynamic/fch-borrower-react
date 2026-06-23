@@ -127,16 +127,14 @@ export default function App() {
               <Route path="resources" element={<CreditResources />} />
             </Route>
 
-            <Route path="capital-access">
+            <Route path="capital-access" element={<CapitalAccessGuard />}>
               <Route index element={<CapitalAccess />} />
-              <Route element={<CapitalAccessGuard />}>
-                <Route path="strategy" element={<StrategySelection />} />
-                <Route path=":id/overview" element={<PlayOverview />} />
-                <Route path=":id/pre-flight" element={<PreFlightChecklist />} />
-                <Route path=":id/roadmap" element={<PlayRoadmap />} />
-                <Route path=":id/step/:stepId" element={<StepDetail />} />
-                <Route path=":id/completion" element={<PlayCompletion />} />
-              </Route>
+              <Route path="strategy" element={<StrategySelection />} />
+              <Route path=":id/overview" element={<PlayOverview />} />
+              <Route path=":id/pre-flight" element={<PreFlightChecklist />} />
+              <Route path=":id/roadmap" element={<PlayRoadmap />} />
+              <Route path=":id/step/:stepId" element={<StepDetail />} />
+              <Route path=":id/completion" element={<PlayCompletion />} />
             </Route>
 
             <Route path="documents" element={<Documents />} />

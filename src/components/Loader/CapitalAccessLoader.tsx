@@ -1,7 +1,7 @@
 import React from 'react'
 
 interface CapitalAccessLoaderProps {
-  type?: 'list' | 'detail' | 'roadmap' | 'checklist'
+  type?: 'list' | 'detail' | 'roadmap' | 'checklist' | 'overview'
 }
 
 /* ─── Reusable skeleton primitives ─────────────────────────── */
@@ -196,67 +196,65 @@ function ListLoader() {
 /* ─── DETAIL  (strategy detail / about page) ─────────────────── */
 function DetailLoader() {
   return (
-    <SkCard>
-      <SkCardHeader>
-        <SkCircle size={52} />
-        <div style={{ flex: 1 }}>
-          <SkLine w="40%" h={22} mb={8} />
-          <SkLine w="65%" h={14} />
-        </div>
-        <SkRect w={100} h={34} radius={20} />
-      </SkCardHeader>
-      <SkCardBody>
-        {/* Metrics row */}
-        <div
-          className="row g-3 mb-4 pb-4"
-          style={{ borderBottom: '1px solid var(--vz-border-color, #e9ebec)' }}
-        >
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="col-md-4">
-              <SkMetric />
+    <>
+      {/* Metrics Row */}
+      <div className="row g-4 mb-4">
+        {/* Funding Readiness Score Card Skeleton */}
+        <div className="col-md-6">
+          <div className="ca-metric-card h-100">
+            <div className="ca-metric-header">
+              <div className="ca-metric-title-block w-100">
+                <SkLine w="40%" h={12} mb={12} />
+                <div className="d-flex align-items-center gap-2">
+                  <SkLine w="60px" h={28} />
+                  <SkLine w="80px" h={20} radius={12} />
+                </div>
+              </div>
+              <SkCircle size={44} />
             </div>
-          ))}
-        </div>
 
-        {/* Why section */}
-        <SkLine w={140} h={18} mb={12} />
-        <div
-          style={{
-            padding: '14px 18px',
-            borderRadius: '6px',
-            background: 'rgba(64,81,137,0.035)',
-            borderLeft: '3px solid rgba(64,81,137,0.3)',
-            marginBottom: 20,
-          }}
-        >
-          <SkLine w="100%" h={14} mb={8} />
-          <SkLine w="90%" h={14} mb={8} />
-          <SkLine w="60%" h={14} />
-        </div>
+            <div className="ca-slider-wrapper my-3">
+              <SkRect w="100%" h={6} radius={3} />
+            </div>
 
-        {/* Requirements */}
-        <SkLine w={160} h={18} mb={12} />
-        {[1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              padding: '12px 14px',
-              borderRadius: '6px',
-              background: 'var(--vz-secondary-bg, #f3f6f9)',
-              border: '1px solid var(--vz-border-color, #e9ebec)',
-              marginBottom: 8,
-            }}
-          >
-            <SkCircle size={24} />
-            <SkLine w="65%" h={14} />
-            <SkRect w={80} h={26} radius={16} />
+            <div className="ca-score-factors mt-3" style={{ borderTop: '1px dashed var(--ca-border)' }}>
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="d-flex align-items-center justify-content-between py-2">
+                  <SkLine w="35%" h={12} />
+                  <SkLine w="15%" h={12} />
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-      </SkCardBody>
-    </SkCard>
+        </div>
+
+        {/* Estimated Total Access Card Skeleton */}
+        <div className="col-md-6">
+          <div className="ca-metric-card h-100">
+            <div className="ca-metric-header">
+              <div className="ca-metric-title-block w-100">
+                <SkLine w="45%" h={12} mb={12} />
+                <SkLine w="120px" h={32} />
+              </div>
+              <SkCircle size={44} />
+            </div>
+
+            <div className="ca-access-footer mt-4">
+              <SkLine w="40%" h={12} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Recommended Next Step Skeleton */}
+      <div className="ca-next-step-card">
+        <div className="ca-next-step-content w-100">
+          <SkLine w="150px" h={12} mb={8} />
+          <SkLine w="70%" h={14} />
+        </div>
+        <SkRect w={180} h={36} radius={4} />
+      </div>
+    </>
   )
 }
 
@@ -419,11 +417,65 @@ function RoadmapLoader() {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   OVERVIEW  (play overview page)
+   ═══════════════════════════════════════════════════════════ */
+function OverviewLoader() {
+  return (
+    <div className="ca-hero-card-premium">
+      <div className="ca-hero-header-premium">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1 }}>
+          <SkCircle size={44} />
+          <div style={{ flex: 1 }}>
+            <SkLine w="40%" h={18} mb={8} />
+            <SkLine w="60%" h={13} />
+          </div>
+        </div>
+      </div>
+
+      <div className="ca-card-body" style={{ padding: '28px' }}>
+        <div className="row g-3 mb-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="col-md-4">
+              <div className="ca-metric-card-premium">
+                <SkLine w="55%" h={12} mb={12} />
+                <SkLine w="70%" h={24} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mb-4">
+          <SkLine w="100px" h={12} mb={16} />
+          <div className="row g-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="col-12 mt-0">
+                <div style={{ padding: '12px', borderRadius: '8px', background: 'var(--vz-secondary-bg)', display: 'flex', gap: 10 }}>
+                  <SkCircle size={16} />
+                  <SkLine w="85%" h={12} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <hr className="ca-divider my-4" />
+
+        <div className="d-flex align-items-center justify-content-between gap-3 w-100">
+          <SkRect w="50%" h={40} radius={6} />
+          <SkRect w="50%" h={40} radius={6} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════
    EXPORT
    ═══════════════════════════════════════════════════════════ */
 export default function CapitalAccessLoader({ type = 'list' }: CapitalAccessLoaderProps) {
   if (type === 'detail') return <DetailLoader />
   if (type === 'checklist') return <ChecklistLoader />
   if (type === 'roadmap') return <RoadmapLoader />
+  if (type === 'overview') return <OverviewLoader />
   return <ListLoader />
 }

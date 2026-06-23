@@ -16,6 +16,64 @@ export interface RoadmapStep {
   } | null;
 }
 
+export interface RoadmapCard {
+  id: number;                   // sequence id
+  sequence_order: number;
+  credit_account_id: number;
+  issuer: string;
+  card_name: string;
+  exposure: string;             // e.g. "$1,000 - $5,000"
+  hard_pull: string;
+  access_time: string;          // Morning | Evening | Anytime | Day
+  access_day: number | null;
+  access_day_time: string | null;
+  why_this_card: string;
+  requirements: string[];
+  approval_odds: string;        // e.g. "82%"
+  probability_status: boolean;  // false = card is locked
+  application_status?: string | null;
+}
+
+export interface CapitalAccessStrategyRoadmap {
+  id: number;
+  name: string;
+  approval_status?: boolean;    // false = whole strategy locked
+  reason_code?: string | null;
+  target_exposure: string;
+  est_timeline: string;
+  roadmap: RoadmapCard[];
+}
+
+export interface CapitalAccessStepDetail {
+  id: number;
+  sequence_order: number;
+  credit_account_id: number;
+  issuer: string;
+  card_name: string;
+  exposure: string;
+  est_limit_min: number | null;
+  est_limit_max: number | null;
+  hard_pull: string;
+  access_time: string;
+  access_day: number | null;
+  access_day_time: string | null;
+  why_this_card: string;
+  requirements: string[];
+  approval_odds: string;
+  probability_status: boolean;
+  play: {
+    id: number;
+    name: string;
+    target_exposure: string;
+  };
+  application?: {
+    id: number;
+    credit_limit: string | null;
+    notes: string | null;
+    status: string;
+  } | null;
+}
+
 export interface CapitalAccessStrategy {
   id: number;
   name: string;
@@ -27,6 +85,27 @@ export interface CapitalAccessStrategy {
   benefits: string[];
   checklist: Array<{ id: string; label: string; complete: boolean }>;
   roadmap: RoadmapStep[];
+}
+
+export interface CapitalAccessStrategyOverview {
+  id: number;
+  name: string;
+  description: string;
+  isRecommended: boolean;
+  target_exposure: string;
+  est_timeline: string;
+  approval_probability: string;
+  approval_status: boolean;
+  reason_code: string | null;
+  benefits: string[];
+}
+
+export interface CapitalAccessStrategyChecklist {
+  id: number;
+  name: string;
+  approval_status: boolean;
+  reason_code: string | null;
+  checklist: Array<{ id: string; label: string; complete: boolean }>;
 }
 
 export interface StrategiesResponse {
@@ -49,15 +128,18 @@ export interface FactorDetail {
   raw_score: number;
 }
 
+export interface ExposureBreakdownItem {
+  name: string;
+  max_exposure: number;
+}
+
 export interface CapitalAccessOverview {
   readiness_score: number;
   readiness_status: string;
-  score_labels_top: { min: number; max: number };
-  score_labels_bottom: { min: number; max: number };
+  readiness_status_color?: string;
   factors: FactorDetail[];
-  contributing_factors: string[];
   estimated_total_access: string;
-  breakdown: Array<{ label: string; value: string }>;
+  exposure_breakdown?: ExposureBreakdownItem[];
 }
 
 export interface OverviewResponse {

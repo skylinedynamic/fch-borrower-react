@@ -3,7 +3,7 @@ import { useAuthStore } from '../../store/auth/authStore'
 import { useCapitalAccessOverview } from '../../modules/capital-access/queries'
 
 import CapitalAccessLocked from '../../components/CapitalAccess/CapitalAccessLocked'
-import CapitalAccessError from '../../components/CapitalAccess/CapitalAccessError'
+import CommonErrorPage from '../../components/Common/CommonErrorPage'
 import CapitalAccessPageHeader from '../../components/CapitalAccess/CapitalAccessPageHeader'
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader'
 import WelcomeHeader from '../../components/CapitalAccess/WelcomeHeader'
@@ -17,19 +17,20 @@ export default function CapitalAccess() {
 
   const { data: overview, isLoading, isError } = useCapitalAccessOverview()
 
-  if (!user?.credit_profile_updated) {
-    return <CapitalAccessLocked />
-  }
-
   if (isError) {
-    return <CapitalAccessError />
+    return (
+      <CommonErrorPage
+        title="Error loading capital access overview"
+        description="Please try reloading the page."
+      />
+    )
   }
 
   const score = overview?.readiness_score ?? 0
   const status = overview?.readiness_status ?? 'N/A'
+  const statusColor = overview?.readiness_status_color
   const factors = overview?.factors ?? []
   const totalAccess = overview?.estimated_total_access ?? '$0'
-  const breakdown = overview?.breakdown ?? []
 
   return (
     <div className="page-content capital-access-page">
@@ -49,9 +50,12 @@ export default function CapitalAccess() {
                     score={score}
                     status={status}
                     factors={factors}
+                    statusColor={statusColor}
                   />
                   <EstimatedTotalAccessCard
                     totalAccess={totalAccess}
+                    exposureBreakdown={overview?.exposure_breakdown}
+                    statusColor={statusColor}
                   />
                 </div>
 
