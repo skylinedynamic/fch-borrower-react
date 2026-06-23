@@ -113,8 +113,11 @@ const FundingReviewWizard = () => {
                 newErrors.requested_amount = 'Requested amount is required';
             } else if (isNaN(Number(formData.requested_amount))) {
                 newErrors.requested_amount = 'Requested amount must be a number';
-            } else if (Number(formData.requested_amount) < 0) {
-                newErrors.requested_amount = 'Requested amount cannot be negative';
+            } else {
+                const amount = Number(formData.requested_amount);
+                if (amount < 0) {
+                    newErrors.requested_amount = 'Requested amount cannot be negative';
+                }
             }
 
             if (Object.keys(newErrors).length > 0) {
@@ -146,7 +149,7 @@ const FundingReviewWizard = () => {
             toast.error('Please upload all required documents before submitting.');
             return;
         }
-        
+
         setSubmitting(true);
         try {
             const response = await apiClient.post('/borrower/funding/reviews', {
@@ -206,11 +209,6 @@ const FundingReviewWizard = () => {
                                     </ol>
                                 </nav>
                             </div>
-                            <div className="mt-0">
-                                <Link to={`/funding/${id}`} className="btn btn-primary fw-medium">
-                                    <i className="ri-arrow-left-line me-1 align-bottom"></i> Back
-                                </Link>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -238,8 +236,8 @@ const FundingReviewWizard = () => {
                                                     fontSize: isActive ? '16px' : (isCompleted ? '18px' : '14px'),
                                                     backgroundColor: isActive ? 'var(--primary-color, #0a192f)' : '#fff',
                                                     color: isActive ? '#fff' : (isCompleted ? 'var(--primary-color, #0a192f)' : '#6b7280'),
-                                                    border: isActive ? 'none' : (isCompleted ? '1px solid var(--primary-color, #0a192f)' : '1px solid #d1d5db'),
-                                                    boxShadow: isActive ? '0 0 0 4px rgba(10, 25, 47, 0.1)' : 'none',
+                                                    border: isActive ? 'none' : (isCompleted ? '2px solid var(--primary-color, #0a192f)' : '2px solid #e5e7eb'),
+                                                    boxShadow: isActive ? '0 0 0 4px #e5e7eb' : 'none',
                                                     transition: 'all 0.2s ease-in-out'
                                                 }}
                                             >
@@ -250,17 +248,14 @@ const FundingReviewWizard = () => {
                                                 style={{
                                                     top: '42px',
                                                     fontSize: '13px',
-                                                    fontWeight: isActive ? 600 : 500,
-                                                    color: isActive || isCompleted ? '#111827' : '#6b7280',
+                                                    fontWeight: isActive ? 600 : 400,
+                                                    color: (isActive || isCompleted) ? 'var(--primary-color, #0a192f)' : '#6b7280',
                                                     whiteSpace: 'nowrap'
                                                 }}
                                             >
                                                 {step.label}
                                             </span>
                                         </div>
-                                        {index !== steps.length - 1 && (
-                                            <div style={{ flex: 1, height: '2px', backgroundColor: currentStep > step.id ? '#2563eb' : 'transparent', zIndex: 1 }}></div>
-                                        )}
                                     </React.Fragment>
                                 );
                             })}
@@ -290,7 +285,7 @@ const FundingReviewWizard = () => {
                                                 <div>
                                                     <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Est. Speed to Funds</p>
                                                     <h6 className="fw-bold m-0 fs-14 d-flex align-items-center gap-1" style={{ color: '#0f172a' }}>
-                                                        {fundingDetail.speed_to_funds ? `${fundingDetail.speed_to_funds} Days` : '7-14 Days'} 
+                                                        {fundingDetail.speed_to_funds ? (fundingDetail.speed_to_funds.toLowerCase().includes('day') ? fundingDetail.speed_to_funds : `${fundingDetail.speed_to_funds} Days`) : '7-14 Days'}
                                                         <i className="ri-information-line fs-14" style={{ color: '#94a3b8' }}></i>
                                                     </h6>
                                                 </div>
@@ -308,12 +303,12 @@ const FundingReviewWizard = () => {
                                     <div className="row g-4 mb-4">
                                         <div className="col-md-6">
                                             <label className="form-label fs-13 mb-2" style={{ color: '#64748b' }}>Requested Amount</label>
-                                            <div className="input-group">
-                                                <span className="input-group-text bg-white" style={{ border: '1px solid #e2e8f0', borderRight: 'none', color: '#475569' }}>$</span>
+                                            <div className="input-group rounded" style={{ border: '1px solid', borderColor: errors.requested_amount ? '#dc3545' : '#e2e8f0', overflow: 'hidden' }}>
+                                                <span className="input-group-text bg-white" style={{ color: '#475569', border: 'none', borderRight: '1px solid #e2e8f0', borderRadius: 0 }}>$</span>
                                                 <input
                                                     type="number"
-                                                    className={`form-control ps-0 shadow-none`}
-                                                    style={{ border: '1px solid #e2e8f0', borderLeft: 'none' }}
+                                                    className={`form-control ps-2 shadow-none`}
+                                                    style={{ backgroundColor: 'transparent', border: 'none' }}
                                                     placeholder="200000.00"
                                                     value={formData.requested_amount}
                                                     onChange={(e) => {
@@ -323,6 +318,30 @@ const FundingReviewWizard = () => {
                                                 />
                                             </div>
                                             {errors.requested_amount && <div className="text-danger fs-12 mt-1">{errors.requested_amount}</div>}
+                                            {!errors.requested_amount && formData.requested_amount && (() => {
+                                                const amount = Number(formData.requested_amount);
+                                                const rangeStr = fundingDetail?.amount_range || '$5K - $250K';
+                                                const parts = rangeStr.split('-');
+                                                const parsePart = (p: string) => {
+                                                    let val = p.replace(/[^0-9.]/g, '');
+                                                    if (p.toUpperCase().includes('K')) return parseFloat(val) * 1000;
+                                                    if (p.toUpperCase().includes('M')) return parseFloat(val) * 1000000;
+                                                    return parseFloat(val);
+                                                };
+                                                if (parts.length === 2 && !isNaN(amount) && amount >= 0) {
+                                                    const min = parsePart(parts[0]);
+                                                    const max = parsePart(parts[1]);
+                                                    if (amount < min || amount > max) {
+                                                        return (
+                                                            <div className="d-flex align-items-start gap-2 mt-2 p-3" style={{ backgroundColor: '#fffbeb', borderLeft: '4px solid #f59e0b', borderRadius: '4px', color: '#b45309' }}>
+                                                                <i className="ri-error-warning-line fs-16 mt-1"></i>
+                                                                <span className="fs-13"><strong>Please note:</strong> Your requested amount falls outside the recommended range of {rangeStr}.</span>
+                                                            </div>
+                                                        );
+                                                    }
+                                                }
+                                                return null;
+                                            })()}
                                         </div>
                                         <div className="col-md-6">
                                             <label className="form-label fs-13 mb-2" style={{ color: '#64748b' }}>Use of Funds</label>
@@ -345,7 +364,7 @@ const FundingReviewWizard = () => {
                                     </div>
 
                                     <div className="alert border-0 d-flex align-items-center gap-3 py-3" style={{ backgroundColor: '#eff6ff', borderRadius: '8px' }}>
-                                        <i className="ri-information-line fs-18" style={{ color: '#2563eb' }}></i>
+                                        <i className="ri-information-fill fs-18" style={{ color: '#2563eb' }}></i>
                                         <span className="fs-13" style={{ color: '#1e3a8a' }}>This is not a credit decision. Final approval amount will be determined after underwriting.</span>
                                     </div>
                                 </div>
@@ -531,12 +550,12 @@ const FundingReviewWizard = () => {
                                                 {requiredDocTypes.map(docType => {
                                                     const isMissing = missingDocs.includes(docType.name);
                                                     return (
-                                                        <div key={docType.id} className={`d-flex align-items-center justify-content-between mb-3 border rounded-3 p-3 bg-white ${!isMissing ? 'border-success-subtle' : ''}`}>
+                                                        <div key={docType.id} className={`d-flex align-items-center justify-content-between mb-3 border rounded-3 p-3 bg-white`} style={{ borderColor: !isMissing ? 'var(--primary-color, #0a192f)' : '#dee2e6' }}>
                                                             <div className="d-flex align-items-center gap-2">
                                                                 {isMissing ? (
                                                                     <i className="ri-checkbox-blank-line text-muted fs-18"></i>
                                                                 ) : (
-                                                                    <i className="ri-checkbox-fill text-success fs-18"></i>
+                                                                    <i className="ri-checkbox-fill fs-18" style={{ color: 'var(--primary-color, #0a192f)' }}></i>
                                                                 )}
                                                                 <span className="fs-14 fw-medium text-dark">{docType.name}</span>
                                                             </div>
@@ -557,7 +576,7 @@ const FundingReviewWizard = () => {
                                                                     </>
                                                                 ) : (
                                                                     <>
-                                                                        <span className="text-success fs-13 fw-semibold me-3"><i className="ri-check-line align-middle me-1"></i> Uploaded</span>
+                                                                        <span className="fs-13 fw-semibold me-3" style={{ color: 'var(--primary-color, #0a192f)' }}><i className="ri-check-line align-middle me-1"></i> Uploaded</span>
                                                                         {fundingDetail?.latest_review_status === 'Rejected' && (
                                                                             <button
                                                                                 className="btn btn-light border btn-sm px-3 fw-medium"
@@ -586,8 +605,8 @@ const FundingReviewWizard = () => {
                             {currentStep === 4 && (
                                 <div className="text-center pt-2 pb-4">
                                     <div className="mb-4 position-relative d-inline-block">
-                                        <div className="d-inline-flex align-items-center justify-content-center rounded-circle" style={{ width: '80px', height: '80px', backgroundColor: '#e6f4ea' }}>
-                                            <i className="ri-check-line fw-bolder" style={{ fontSize: '40px', color: '#059669' }}></i>
+                                        <div className="d-inline-flex align-items-center justify-content-center rounded-circle" style={{ width: '80px', height: '80px', backgroundColor: '#f1f5f9' }}>
+                                            <i className="ri-check-line fw-bolder" style={{ fontSize: '40px', color: 'var(--primary-color, #0a192f)' }}></i>
                                         </div>
                                     </div>
                                     <h3 className="fw-bold mb-3" style={{ color: '#0f172a' }}>Funding Review Submitted!</h3>
@@ -597,19 +616,19 @@ const FundingReviewWizard = () => {
                                         <h6 className="fw-bold mb-3" style={{ color: '#2563eb' }}>What Happens Next?</h6>
                                         <ul className="list-unstyled m-0 d-flex flex-column gap-3">
                                             <li className="d-flex align-items-start gap-3 fs-14" style={{ color: '#334155' }}>
-                                                <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: '#059669' }}></i>
+                                                <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: 'var(--primary-color, #0a192f)' }}></i>
                                                 <span className="mt-1">Our automated underwriting engine will review your file</span>
                                             </li>
                                             <li className="d-flex align-items-start gap-3 fs-14" style={{ color: '#334155' }}>
-                                                <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: '#059669' }}></i>
+                                                <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: 'var(--primary-color, #0a192f)' }}></i>
                                                 <span className="mt-1">An underwriter will review and evaluate your request</span>
                                             </li>
                                             <li className="d-flex align-items-start gap-3 fs-14" style={{ color: '#334155' }}>
-                                                <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: '#059669' }}></i>
+                                                <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: 'var(--primary-color, #0a192f)' }}></i>
                                                 <span className="mt-1">We may contact you if additional information is needed</span>
                                             </li>
                                             <li className="d-flex align-items-start gap-3 fs-14" style={{ color: '#334155' }}>
-                                                <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: '#059669' }}></i>
+                                                <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: 'var(--primary-color, #0a192f)' }}></i>
                                                 <span className="mt-1">You will receive updates on your review status</span>
                                             </li>
                                         </ul>
@@ -645,14 +664,21 @@ const FundingReviewWizard = () => {
                                 <div className="d-flex justify-content-between align-items-center mt-5 pt-3 border-top">
                                     {currentStep > 1 ? (
                                         <button
-                                            className="btn btn-light fw-medium px-4 d-flex align-items-center gap-2"
+                                            className="btn bg-white px-4 fw-medium d-flex align-items-center gap-2 shadow-none"
+                                            style={{ border: '1px solid #e2e8f0', color: '#475569', borderRadius: '6px', padding: '10px 24px' }}
                                             onClick={handleBack}
                                             disabled={submitting}
                                         >
-                                            <i className="ri-arrow-left-s-line"></i> Back
+                                            <i className="ri-arrow-left-line"></i> Back
                                         </button>
                                     ) : (
-                                        <div></div>
+                                        <button
+                                            className="btn bg-white px-4 fw-medium d-flex align-items-center gap-2 shadow-none"
+                                            style={{ border: '1px solid #e2e8f0', color: '#475569', borderRadius: '6px', padding: '10px 24px' }}
+                                            onClick={() => navigate(-1)}
+                                        >
+                                            <i className="ri-arrow-left-line"></i> Cancel
+                                        </button>
                                     )}
 
                                     {currentStep < 3 ? (
@@ -665,11 +691,16 @@ const FundingReviewWizard = () => {
                                         </button>
                                     ) : (
                                         <button
-                                            className="btn btn-primary px-4 fw-medium"
+                                            className="d-flex align-items-center justify-content-center gap-2 text-white fw-medium"
+                                            style={{ backgroundColor: 'var(--primary-color, #0a192f)', border: '1px solid var(--primary-color, #0a192f)', padding: '10px 24px', borderRadius: '6px' }}
                                             onClick={handleSubmit}
                                             disabled={submitting || (isDocsRequired && missingDocs.length > 0)}
                                         >
-                                            {submitting ? 'Submitting...' : 'Submit for Underwriting'}
+                                            {submitting ? (
+                                                <><span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Submitting...</>
+                                            ) : (
+                                                'Submit for Underwriting'
+                                            )}
                                         </button>
                                     )}
                                 </div>
@@ -680,14 +711,14 @@ const FundingReviewWizard = () => {
                                 <div className="d-flex flex-column align-items-center mx-auto mt-4" style={{ maxWidth: '480px' }}>
                                     <button
                                         className="btn w-100 mb-3 fw-bold text-white d-flex align-items-center justify-content-center gap-2"
-                                        style={{ backgroundColor: '#0a192f', borderColor: '#0a192f', padding: '12px' }}
+                                        style={{ backgroundColor: 'var(--primary-color, #0a192f)', borderColor: 'var(--primary-color, #0a192f)', padding: '12px' }}
                                         onClick={() => navigate('/funding-reviews')}
                                     >
                                         <i className="ri-bar-chart-fill fs-16"></i> View Review Status
                                     </button>
                                     <button
                                         className="btn btn-link text-decoration-none fw-bold d-flex align-items-center gap-2"
-                                        style={{ color: '#2563eb' }}
+                                        style={{ color: 'var(--primary-color, #0a192f)' }}
                                         onClick={() => navigate('/funding')}
                                     >
                                         <i className="ri-arrow-left-line"></i> Return to Funding Options
