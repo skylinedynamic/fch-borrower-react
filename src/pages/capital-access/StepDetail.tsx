@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
-import { useCapitalAccessStepDetail, useSubmitCapitalAccessStep } from '../../modules/capital-access/queries';
+import { useCapitalAccessStepDetail, useSubmitCapitalAccessStep, useCapitalAccessStrategies } from '../../modules/capital-access/queries';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
 import type { CapitalAccessStepDetail } from '../../modules/capital-access/types';
 import { toast } from 'react-toastify';
@@ -8,7 +8,13 @@ import { toast } from 'react-toastify';
 export default function StepDetail() {
   const { id: strategyId, stepId: sequenceId } = useParams<{ id: string; stepId: string }>();
 
-  const { data: step, isLoading, isError } = useCapitalAccessStepDetail(strategyId, sequenceId);
+  const { data: step, isLoading: isStepLoading, isError } = useCapitalAccessStepDetail(strategyId, sequenceId);
+  const { data: strategies, isLoading: isStrategiesLoading } = useCapitalAccessStrategies();
+
+  const isLoading = isStepLoading || isStrategiesLoading;
+
+  const recommendedPlay = strategies?.find(p => p.isRecommended) || strategies?.[0];
+  const isAccessible = recommendedPlay ? String(recommendedPlay.id) === String(strategyId) : true;
 
   const [creditLimit, setCreditLimit] = useState('');
   const [notes, setNotes] = useState('');
@@ -52,7 +58,7 @@ export default function StepDetail() {
     return '';
   };
 
-  if (!isLoading && (isError || !step)) {
+  if (!isLoading && (isError || !step || !isAccessible)) {
     return <Navigate to="/capital-access/strategy" />;
   }
 

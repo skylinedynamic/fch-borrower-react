@@ -129,7 +129,7 @@ export default function StrategySelection() {
                   <span className="ca-section-label" style={{ fontWeight: 700, fontSize: '11px', color: '#94a3b8' }}>Other Eligible Plays</span>
                   <div className="d-flex flex-column gap-3">
                     {otherPlays.map(play => (
-                      <Link key={play.id} to={`/capital-access/${play.id}/overview`} className="ca-strategy-row-premium text-decoration-none">
+                      <div key={play.id} className="ca-strategy-row-premium text-decoration-none">
                         <div className="d-flex align-items-center gap-3 flex-grow-1" style={{ minWidth: 0 }}>
                           <div className="ca-strategy-icon-wrapper-premium flex-shrink-0">
                             <i className="ri-flashlight-line"></i>
@@ -149,10 +149,10 @@ export default function StrategySelection() {
                             <span className="value success">{play.approval_probability}</span>
                           </div>
                           <div className="ps-2">
-                            <i className="ri-arrow-right-s-line fs-20 text-muted" style={{ transition: 'color 0.2s' }}></i>
+                            <i className="ri-lock-line fs-20 text-muted"></i>
                           </div>
                         </div>
-                      </Link>
+                      </div>
                     ))}
                   </div>
                 </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
-import { useCapitalAccessStrategyRoadmap } from '../../modules/capital-access/queries';
+import { useCapitalAccessStrategyRoadmap, useCapitalAccessStrategies } from '../../modules/capital-access/queries';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
 import type { RoadmapCard } from '../../modules/capital-access/types';
 
@@ -15,9 +15,15 @@ function accessScheduleLabel(card: RoadmapCard): string {
 
 export default function PlayRoadmap() {
   const { id } = useParams<{ id: string }>();
-  const { data: play, isLoading, isError } = useCapitalAccessStrategyRoadmap(id);
+  const { data: play, isLoading: isPlayLoading, isError } = useCapitalAccessStrategyRoadmap(id);
+  const { data: strategies, isLoading: isStrategiesLoading } = useCapitalAccessStrategies();
 
-  if (!isLoading && (isError || !play)) return <Navigate to="/capital-access/strategy" />;
+  const isLoading = isPlayLoading || isStrategiesLoading;
+
+  const recommendedPlay = strategies?.find(p => p.isRecommended) || strategies?.[0];
+  const isAccessible = recommendedPlay ? String(recommendedPlay.id) === String(id) : true;
+
+  if (!isLoading && (isError || !play || !isAccessible)) return <Navigate to="/capital-access/strategy" />;
 
   // Strategy-level lock
   if (!isLoading && play && play.approval_status === false) {

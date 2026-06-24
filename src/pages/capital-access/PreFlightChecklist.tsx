@@ -1,14 +1,20 @@
 import React from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
-import { useCapitalAccessStrategyChecklist } from '../../modules/capital-access/queries';
+import { useCapitalAccessStrategyChecklist, useCapitalAccessStrategies } from '../../modules/capital-access/queries';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
 
 
 export default function PreFlightChecklist() {
   const { id } = useParams<{ id: string }>();
-  const { data: play, isLoading, isError } = useCapitalAccessStrategyChecklist(id);
+  const { data: play, isLoading: isPlayLoading, isError } = useCapitalAccessStrategyChecklist(id);
+  const { data: strategies, isLoading: isStrategiesLoading } = useCapitalAccessStrategies();
 
-  if (!isLoading && (isError || !play)) return <Navigate to="/capital-access/strategy" />;
+  const isLoading = isPlayLoading || isStrategiesLoading;
+
+  const recommendedPlay = strategies?.find(p => p.isRecommended) || strategies?.[0];
+  const isAccessible = recommendedPlay ? String(recommendedPlay.id) === String(id) : true;
+
+  if (!isLoading && (isError || !play || !isAccessible)) return <Navigate to="/capital-access/strategy" />;
 
   const allComplete = play?.checklist ? play.checklist.every((item: any) => item.complete !== false) : false;
   const completedCount = play?.checklist ? play.checklist.filter((item: any) => item.complete !== false).length : 0;

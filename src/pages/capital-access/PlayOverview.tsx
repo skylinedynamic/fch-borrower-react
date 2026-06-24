@@ -1,15 +1,21 @@
 import React from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
-import { useCapitalAccessStrategyOverview } from '../../modules/capital-access/queries';
+import { useCapitalAccessStrategyOverview, useCapitalAccessStrategies } from '../../modules/capital-access/queries';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
 
 
 
 export default function PlayOverview() {
   const { id } = useParams<{ id: string }>();
-  const { data: play, isLoading, isError } = useCapitalAccessStrategyOverview(id);
+  const { data: play, isLoading: isPlayLoading, isError } = useCapitalAccessStrategyOverview(id);
+  const { data: strategies, isLoading: isStrategiesLoading } = useCapitalAccessStrategies();
 
-  if (!isLoading && (isError || !play)) return <Navigate to="/capital-access/strategy" />;
+  const isLoading = isPlayLoading || isStrategiesLoading;
+
+  const recommendedPlay = strategies?.find(p => p.isRecommended) || strategies?.[0];
+  const isAccessible = recommendedPlay ? String(recommendedPlay.id) === String(id) : true;
+
+  if (!isLoading && (isError || !play || !isAccessible)) return <Navigate to="/capital-access/strategy" />;
 
   return (
     <div className="page-content capital-access-page">
