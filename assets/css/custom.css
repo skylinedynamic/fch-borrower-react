@@ -1016,7 +1016,7 @@ File: Custom Css File
 /* ─── Page Wrapper ───────────────────────────────────────── */
 .ca-page-wrap {
     max-width: 1080px;
-    margin: 28px auto 0;
+    margin: 10px auto 0;
     padding-bottom: 60px;
 }
 
@@ -1313,7 +1313,7 @@ File: Custom Css File
     box-shadow: var(--ca-shadow-sm);
 }
 
-.ca-step-card:hover:not(.locked) {
+.ca-step-card:hover:not(.locked):not(.locked-flat) {
     border-color: var(--ca-primary);
     border-left-color: var(--ca-primary);
     background: var(--ca-primary-light);
@@ -1335,7 +1335,7 @@ File: Custom Css File
     box-shadow: 0 2px 10px rgba(10, 179, 156, 0.1);
 }
 
-.ca-step-card.active.submitted:hover:not(.locked) {
+.ca-step-card.active.submitted:hover:not(.locked):not(.locked-flat) {
     border-color: var(--ca-success);
     border-left-color: var(--ca-success);
     background: rgba(10, 179, 156, 0.14);
@@ -1375,6 +1375,25 @@ File: Custom Css File
 .ca-step-card.locked .ca-badge-warning {
     background: var(--ca-border);
     color: #9ca3af;
+}
+
+.ca-step-card.locked-flat {
+    cursor: default;
+}
+
+.ca-step-card.locked-danger {
+    border-color: rgba(var(--bs-danger-rgb), 0.35) !important;
+    border-left-color: var(--bs-danger) !important;
+    background: rgba(var(--bs-danger-rgb), 0.04);
+    cursor: default;
+}
+
+.ca-step-card.locked-danger:hover {
+    border-color: rgba(var(--bs-danger-rgb), 0.5) !important;
+    border-left-color: var(--bs-danger) !important;
+    background: rgba(var(--bs-danger-rgb), 0.07);
+    transform: translateX(4px);
+    box-shadow: 0 2px 12px rgba(var(--bs-danger-rgb), 0.15);
 }
 
 /* ─── Radio Option Cards ─────────────────────────────────── */

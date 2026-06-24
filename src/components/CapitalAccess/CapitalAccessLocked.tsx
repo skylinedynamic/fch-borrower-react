@@ -5,7 +5,7 @@ export default function CapitalAccessLocked() {
     <div className="page-content capital-access-page">
       <div className="container-fluid">
         <div className="ca-page-wrap">
-          <div className="row pb-1 page-subheader-sticky mb-3">
+          <div className="row pb-1 mb-3">
             <div className="col-12">
               <div className="text-center py-2 w-100">
                 <h4 className="fs-22 mb-1 fw-bold text-dark">Capital Access</h4>

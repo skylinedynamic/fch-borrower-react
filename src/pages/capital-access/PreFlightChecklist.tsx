@@ -26,7 +26,7 @@ export default function PreFlightChecklist() {
 
         <div className="ca-page-wrap">
           {/* ── Page Header ── */}
-          <div className="row pb-1 page-subheader-sticky bg-body mb-3">
+          <div className="row pb-1 mb-3">
             <div className="col-12">
               <div className="d-flex align-items-center gap-3 py-2 w-100">
                 <Link to={play?.id ? `/capital-access/${play.id}/overview` : "/capital-access/strategy"} className="ca-back-btn" title="Back to Overview">

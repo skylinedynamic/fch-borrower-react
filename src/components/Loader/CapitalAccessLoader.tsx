@@ -203,25 +203,49 @@ function DetailLoader() {
         <div className="col-md-6">
           <div className="ca-metric-card h-100">
             <div className="ca-metric-header">
-              <div className="ca-metric-title-block w-100">
-                <SkLine w="40%" h={12} mb={12} />
-                <div className="d-flex align-items-center gap-2">
-                  <SkLine w="60px" h={28} />
-                  <SkLine w="80px" h={20} radius={12} />
+              <div className="ca-metric-title-block">
+                <h6 className="ca-metric-card-label">
+                  Funding Readiness Score
+                </h6>
+                <div className="ca-score-display">
+                  <span className="ca-score-value">
+                    <SkLine w={50} h={34} />
+                  </span>
+                  <span className="ca-score-status" style={{ background: 'none', padding: 0 }}>
+                    <SkLine w={65} h={22} radius={12} />
+                  </span>
                 </div>
               </div>
-              <SkCircle size={44} />
+              <div className="ca-metric-icon-wrapper readiness-icon">
+                <i className="ri-shield-flash-line" style={{ opacity: 0.3 }}></i>
+              </div>
             </div>
 
-            <div className="ca-slider-wrapper my-3">
-              <SkRect w="100%" h={6} radius={3} />
+            <div className="ca-slider-wrapper">
+              <div className="ca-custom-progress-container">
+                <div className="progress ca-custom-progress">
+                  <div
+                    className="progress-bar skeleton-line"
+                    style={{
+                      width: '60%',
+                      background: 'none',
+                      height: '100%',
+                      borderRadius: '3px'
+                    }}
+                  ></div>
+                </div>
+              </div>
             </div>
 
-            <div className="ca-score-factors mt-3" style={{ borderTop: '1px dashed var(--ca-border)' }}>
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="d-flex align-items-center justify-content-between py-2">
-                  <SkLine w="35%" h={12} />
-                  <SkLine w="15%" h={12} />
+            <div className="ca-score-factors">
+              {[1, 2, 3].map((idx) => (
+                <div key={idx} className="ca-factor-row d-flex align-items-center justify-content-between py-1">
+                  <span className="ca-factor-label fw-medium text-muted small">
+                    <SkLine w={120} h={12} />
+                  </span>
+                  <span className="ca-factor-value fw-semibold small">
+                    <SkLine w={40} h={12} />
+                  </span>
                 </div>
               ))}
             </div>
@@ -232,15 +256,37 @@ function DetailLoader() {
         <div className="col-md-6">
           <div className="ca-metric-card h-100">
             <div className="ca-metric-header">
-              <div className="ca-metric-title-block w-100">
-                <SkLine w="45%" h={12} mb={12} />
-                <SkLine w="120px" h={32} />
+              <div className="ca-metric-title-block">
+                <h6 className="ca-metric-card-label">
+                  Estimated Total Access
+                </h6>
+                <div className="ca-access-value">
+                  <SkLine w={160} h={34} />
+                </div>
               </div>
-              <SkCircle size={44} />
+              <div className="ca-metric-icon-wrapper access-icon">
+                <i className="ri-money-dollar-box-line" style={{ opacity: 0.3 }}></i>
+              </div>
             </div>
 
-            <div className="ca-access-footer mt-4">
-              <SkLine w="40%" h={12} />
+            <div className="ca-exposure-vertical-chart">
+              {[1, 2, 3, 4, 5].map((_, index) => (
+                <div
+                  key={index}
+                  className="ca-exposure-vertical-bar skeleton-line"
+                  style={{
+                    height: `${25 + (index % 3) * 20}%`,
+                    width: '24px',
+                    borderRadius: '4px 4px 0 0',
+                    border: 'none',
+                    margin: 0
+                  }}
+                />
+              ))}
+            </div>
+
+            <div className="ca-access-footer">
+              Across Eligible Plays
             </div>
           </div>
         </div>
@@ -248,11 +294,15 @@ function DetailLoader() {
 
       {/* Recommended Next Step Skeleton */}
       <div className="ca-next-step-card">
-        <div className="ca-next-step-content w-100">
-          <SkLine w="150px" h={12} mb={8} />
-          <SkLine w="70%" h={14} />
+        <div className="ca-next-step-content">
+          <h6 className="ca-next-step-label">
+            Recommended Next Step
+          </h6>
+          <p className="ca-next-step-desc">
+            Select your Capital Access Strategy to begin.
+          </p>
         </div>
-        <SkRect w={180} h={36} radius={4} />
+        <div className="skeleton-line" style={{ width: '180px', height: '41px', borderRadius: 'var(--ca-radius, 4px)' }} />
       </div>
     </>
   )

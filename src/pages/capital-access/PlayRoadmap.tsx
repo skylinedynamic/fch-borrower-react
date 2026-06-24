@@ -13,6 +13,17 @@ function accessScheduleLabel(card: RoadmapCard): string {
   return card.access_time ?? '';
 }
 
+// ── Lock reason helper ───────────────────────────────────────────────────────
+function getLockReason(card: RoadmapCard): string {
+  if (card.reason_code === 'FICO_BELOW_MINIMUM') {
+    return `Requires a minimum FICO score of ${card.minimum_fico_requirement ?? 'N/A'}`;
+  }
+  if (card.reason_code === 'UTILIZATION_ABOVE_MAXIMUM') {
+    return `Revolving utilization must be below ${card.maximum_utilization_threshold ?? 'N/A'}%`;
+  }
+  return 'Complete the previous step to unlock this card';
+}
+
 export default function PlayRoadmap() {
   const { id } = useParams<{ id: string }>();
   const { data: play, isLoading: isPlayLoading, isError } = useCapitalAccessStrategyRoadmap(id);
@@ -81,7 +92,7 @@ export default function PlayRoadmap() {
 
         <div className="ca-page-wrap">
           {/* ── Page Header ── */}
-          <div className="row pb-1 page-subheader-sticky bg-body mb-3">
+          <div className="row pb-1 mb-3">
             <div className="col-12">
               <div className="d-flex align-items-center gap-3 py-2 w-100">
                 <Link to={play?.id ? `/capital-access/${play.id}/checklist` : '/capital-access/strategy'} className="ca-back-btn" title="Back to Checklist">
@@ -131,7 +142,7 @@ export default function PlayRoadmap() {
                   <div className="ca-stepper-line"></div>
 
                   {roadmap.map((card: RoadmapCard, idx: number) => {
-                    const isLocked = card.probability_status === false;
+                    const isLocked = card.probability_status === false && !card.application_status;
 
                     return (
                       <div key={card.id} className="ca-step">
@@ -146,13 +157,13 @@ export default function PlayRoadmap() {
                           )}
                         </div>
 
-                        {/* Step card — clickable only when active */}
+                        {/* Step card — locked: same design as active, lock icon + reason only */}
                         {isLocked ? (
-                          <div className="ca-step-card locked">
+                          <div className="ca-step-card locked-danger">
                             <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
                               <div className="d-flex align-items-center gap-3">
                                 <div>
-                                  <h6 className="mb-1 fw-semibold fs-14 text-muted">
+                                  <h6 className="mb-1 fw-semibold fs-14">
                                     {card.card_name} ( {card.issuer} )
                                   </h6>
                                   <div className="d-flex align-items-center gap-2 flex-wrap">
@@ -165,13 +176,19 @@ export default function PlayRoadmap() {
                                       <span className="ca-badge ca-badge-warning">Hard Pull</span>
                                     )}
                                   </div>
+                                  <div className="mt-2 text-danger small d-flex align-items-center gap-1 fw-medium">
+                                    <i className="ri-error-warning-line"></i>
+                                    <span>{getLockReason(card)}</span>
+                                  </div>
                                 </div>
                               </div>
                               <div className="d-flex align-items-center gap-3 flex-shrink-0">
-                                <div className="text-end">
-                                  <span className="ca-metric-label d-block">Approval Odds</span>
-                                  <span className="fw-bold fs-14 text-muted">{card.approval_odds}</span>
-                                </div>
+                                {card.approval_odds && (
+                                  <div className="text-end">
+                                    <span className="ca-metric-label d-block">Approval Odds</span>
+                                    <span className="fw-bold fs-14 ca-odds-value">{card.approval_odds}</span>
+                                  </div>
+                                )}
                                 <i className="ri-lock-2-line fs-18 text-muted"></i>
                               </div>
                             </div>
@@ -216,10 +233,12 @@ export default function PlayRoadmap() {
                                 </div>
                               </div>
                               <div className="d-flex align-items-center gap-3 flex-shrink-0">
-                                <div className="text-end">
-                                  <span className="ca-metric-label d-block">Approval Odds</span>
-                                  <span className="fw-bold fs-14 ca-odds-value">{card.approval_odds}</span>
-                                </div>
+                                {!card.application_status && card.approval_odds && (
+                                  <div className="text-end">
+                                    <span className="ca-metric-label d-block">Approval Odds</span>
+                                    <span className="fw-bold fs-14 ca-odds-value">{card.approval_odds}</span>
+                                  </div>
+                                )}
                                 <span className={`ca-btn ca-btn-sm ${card.application_status ? 'ca-btn-success' : 'ca-btn-primary'}`}>
                                   {card.application_status ? 'Submitted' : 'Apply'} <i className="ri-arrow-right-line"></i>
                                 </span>

@@ -29,8 +29,11 @@ export interface RoadmapCard {
   access_day_time: string | null;
   why_this_card: string;
   requirements: string[];
-  approval_odds: string;        // e.g. "82%"
+  approval_odds: string | null;   // null when card already applied
   probability_status: boolean;  // false = card is locked
+  reason_code?: string | null;
+  minimum_fico_requirement?: number | null;
+  maximum_utilization_threshold?: number | null;
   application_status?: string | null;
 }
 
@@ -59,7 +62,7 @@ export interface CapitalAccessStepDetail {
   access_day_time: string | null;
   why_this_card: string;
   requirements: string[];
-  approval_odds: string;
+  approval_odds: string | null;  // null when card already applied
   probability_status: boolean;
   play: {
     id: number;

@@ -92,8 +92,8 @@ export default function StepDetail() {
     return s.access_time ?? '';
   };
 
-  const oddsNum = step ? parseInt(step.approval_odds, 10) : 0;
-  const oddsColor = oddsNum >= 70 ? 'var(--vz-success)' : oddsNum >= 45 ? '#f59e0b' : 'var(--vz-danger)';
+  const oddsNum = (step && step.approval_odds) ? parseInt(step.approval_odds, 10) : null;
+  const oddsColor = oddsNum === null ? 'inherit' : oddsNum >= 70 ? 'var(--vz-success)' : oddsNum >= 45 ? '#f59e0b' : 'var(--vz-danger)';
 
   return (
     <div className="page-content capital-access-page">
@@ -101,7 +101,7 @@ export default function StepDetail() {
         <div className="ca-page-wrap text-start">
 
           {/* ── Page Header ── */}
-          <div className="row pb-1 page-subheader-sticky bg-body mb-3">
+          <div className="row pb-1 mb-3">
             <div className="col-12">
               <div className="d-flex align-items-center gap-3 py-2 w-100">
                 <Link
@@ -151,18 +151,20 @@ export default function StepDetail() {
               <div className="ca-card-body p-4">
                 {/* ── Metrics Row ── */}
                 <div className="row g-3 mb-4">
-                  <div className="col-sm-4">
-                    <div className="ca-metric-card-premium success-accent">
-                      <div className="ca-metric-icon-wrap success-glow">
-                        <i className="ri-percent-line"></i>
+                  {step.approval_odds && (
+                    <div className={step.approval_odds ? 'col-sm-4' : 'col-sm-6'}>
+                      <div className="ca-metric-card-premium success-accent">
+                        <div className="ca-metric-icon-wrap success-glow">
+                          <i className="ri-percent-line"></i>
+                        </div>
+                        <span className="ca-metric-label-premium d-block mb-1">Approval Odds</span>
+                        <p className="ca-metric-value-premium mb-0" style={{ color: oddsColor }}>
+                          {step.approval_odds}
+                        </p>
                       </div>
-                      <span className="ca-metric-label-premium d-block mb-1">Approval Odds</span>
-                      <p className="ca-metric-value-premium mb-0" style={{ color: oddsColor }}>
-                        {step.approval_odds}
-                      </p>
                     </div>
-                  </div>
-                  <div className="col-sm-4">
+                  )}
+                  <div className={step.approval_odds ? 'col-sm-4' : 'col-sm-6'}>
                     <div className="ca-metric-card-premium">
                       <div className="ca-metric-icon-wrap primary-glow">
                         <i className="ri-money-dollar-circle-line"></i>
@@ -173,7 +175,7 @@ export default function StepDetail() {
                       </p>
                     </div>
                   </div>
-                  <div className="col-sm-4">
+                  <div className={step.approval_odds ? 'col-sm-4' : 'col-sm-6'}>
                     <div className="ca-metric-card-premium warning-accent">
                       <div className="ca-metric-icon-wrap warning-glow">
                         <i className="ri-file-search-line"></i>
