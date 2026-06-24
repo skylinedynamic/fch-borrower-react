@@ -116,11 +116,11 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
       monthly_revenue: parseFloat(unformatCurrency(data.monthly_revenue)) || 0,
       annual_revenue: parseFloat(unformatCurrency(data.annual_revenue)) || 0,
       average_monthly_deposits: data.average_monthly_deposits ? parseFloat(unformatCurrency(data.average_monthly_deposits)) : undefined,
-      monthly_deposit_count: data.monthly_deposit_count ? parseInt(data.monthly_deposit_count, 10) : undefined,
+      monthly_deposit_count: (data.monthly_deposit_count !== '' && data.monthly_deposit_count !== undefined && data.monthly_deposit_count !== null) ? parseInt(data.monthly_deposit_count, 10) : undefined,
       avg_bank_balance: data.avg_bank_balance ? parseFloat(unformatCurrency(data.avg_bank_balance)) : undefined,
       current_business_debt: data.current_business_debt ? parseFloat(unformatCurrency(data.current_business_debt)) : undefined,
-      nsf_count: data.nsf_count ? parseInt(data.nsf_count, 10) : undefined,
-      negative_days: data.negative_days ? parseInt(data.negative_days, 10) : undefined,
+      nsf_count: (data.nsf_count !== '' && data.nsf_count !== undefined && data.nsf_count !== null) ? parseInt(data.nsf_count, 10) : undefined,
+      negative_days: (data.negative_days !== '' && data.negative_days !== undefined && data.negative_days !== null) ? parseInt(data.negative_days, 10) : undefined,
       bank_accounts: data.bank_accounts || []
     }
 
@@ -310,6 +310,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               onChange={(e) => onChange({ ...data, monthly_deposit_count: e.target.value.replace(/[^0-9]/g, '') })}
               className={`form-control ${errors.monthly_deposit_count ? 'is-invalid' : ''} ${isFieldLocked('monthly_deposit_count' as any) ? 'bg-light border-dashed locked-field-padding' : ''}`}
               readOnly={isFieldLocked('monthly_deposit_count' as any)}
+              maxLength={5}
             />
             {isFieldLocked('monthly_deposit_count' as any) && (
               <button
@@ -379,6 +380,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               onChange={(e) => onChange({ ...data, nsf_count: e.target.value.replace(/[^0-9]/g, '') })}
               className={`form-control ${errors.nsf_count ? 'is-invalid' : ''} ${isFieldLocked('nsf_count' as any) ? 'bg-light border-dashed locked-field-padding' : ''}`}
               readOnly={isFieldLocked('nsf_count' as any)}
+              maxLength={5}
             />
             {isFieldLocked('nsf_count' as any) && (
               <button
@@ -402,6 +404,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               onChange={(e) => onChange({ ...data, negative_days: e.target.value.replace(/[^0-9]/g, '') })}
               className={`form-control ${errors.negative_days ? 'is-invalid' : ''} ${isFieldLocked('negative_days' as any) ? 'bg-light border-dashed locked-field-padding' : ''}`}
               readOnly={isFieldLocked('negative_days' as any)}
+              maxLength={5}
             />
             {isFieldLocked('negative_days' as any) && (
               <button
@@ -612,10 +615,13 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
                 className={`form-control w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
                 placeholder={`Enter the updated ${updateRequest.label}`}
                 value={updateRequest.newValue}
+                maxLength={['nsf_count', 'negative_days', 'monthly_deposit_count'].includes(updateRequest.key) ? 5 : undefined}
                 onChange={(e) => {
                   let val = e.target.value;
                   if (updateRequest.key === 'monthly_revenue' || updateRequest.key === 'annual_revenue') {
                     val = formatCurrency(val);
+                  } else if (['nsf_count', 'negative_days', 'monthly_deposit_count'].includes(updateRequest.key)) {
+                    val = val.replace(/[^0-9]/g, '');
                   }
                   setUpdateRequest({ ...updateRequest, newValue: val });
                 }}
