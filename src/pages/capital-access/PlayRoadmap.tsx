@@ -178,7 +178,7 @@ export default function PlayRoadmap() {
                                   </div>
                                   <div className="mt-2 text-danger small d-flex align-items-center gap-1 fw-medium">
                                     <i className="ri-error-warning-line"></i>
-                                    <span>{getLockReason(card)}</span>
+                                    <span className='ca-locked-reason'>{getLockReason(card)}</span>
                                   </div>
                                 </div>
                               </div>
