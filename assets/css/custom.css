@@ -1389,11 +1389,24 @@ File: Custom Css File
 }
 
 .ca-step-card.locked-danger:hover {
-    border-color: rgba(var(--bs-danger-rgb), 0.5) !important;
-    border-left-color: var(--bs-danger) !important;
-    background: rgba(var(--bs-danger-rgb), 0.07);
+    border-color: rgba(var(--vz-danger-rgb), 0.5) !important;
+    border-left-color: var(--vz-danger) !important;
+    background: rgba(var(--vz-danger-rgb), 0.07);
     transform: translateX(4px);
-    box-shadow: 0 2px 12px rgba(var(--bs-danger-rgb), 0.15);
+    box-shadow: 0 2px 12px rgba(var(--vz-danger-rgb), 0.15);
+}
+
+.ca-locked-reason {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 12px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    background: rgba(var(--vz-danger-rgb), 0.1);
+    color: var(--vz-danger);
+    white-space: nowrap;
 }
 
 /* ─── Radio Option Cards ─────────────────────────────────── */
