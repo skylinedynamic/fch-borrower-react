@@ -113,8 +113,9 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
     const payload: SaveFinancialInfoRequest = {
       currency: data.currency,
       years_in_business: data.years_in_business,
-      monthly_revenue: parseFloat(unformatCurrency(data.monthly_revenue)) || 0,
-      annual_revenue: parseFloat(unformatCurrency(data.annual_revenue)) || 0,
+      monthly_revenue: data.monthly_revenue || 0,
+      annual_revenue: data.annual_revenue || 0,
+      annual_personal_income: data.annual_personal_income || 0,
       bank_accounts: data.bank_accounts || []
     }
 
@@ -147,6 +148,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
         years_in_business: apiData.years_in_business,
         monthly_revenue: apiData.monthly_revenue ? formatCurrency(apiData.monthly_revenue) : '',
         annual_revenue: apiData.annual_revenue ? formatCurrency(apiData.annual_revenue) : '',
+        annual_personal_income: apiData.annual_personal_income ? formatCurrency(apiData.annual_personal_income) : '',
         bank_accounts: apiData.bank_accounts || []
       })
     }
@@ -264,6 +266,29 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
             )}
           </div>
           {errors.annual_revenue && <div className="invalid-feedback d-block">{errors.annual_revenue}</div>}
+        </div>
+        <div className="col-md-6">
+          <label className="form-label">Annual Personal Income <span className="text-danger">*</span></label>
+          <div className="position-relative">
+            <input
+              type="text"
+              placeholder="$30,000"
+              value={data.annual_personal_income || ''}
+              onChange={(e) => onChange({ ...data, annual_personal_income: formatCurrency(e.target.value) })}
+              className={`form-control ${errors.annual_personal_income ? 'is-invalid' : ''} ${isFieldLocked('annual_personal_income' as any) ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              readOnly={isFieldLocked('annual_personal_income' as any)}
+            />
+            {isFieldLocked('annual_personal_income' as any) && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Annual Personal Income', 'annual_personal_income' as any, data.annual_personal_income)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
+          {errors.annual_personal_income && <div className="invalid-feedback d-block">{errors.annual_personal_income}</div>}
         </div>
 
         {/* Bank Accounts Repeater Section */}
@@ -411,7 +436,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
                 ? (yearsInBusinessOptions.find(opt => opt.value === updateRequest.currentValue)?.label || updateRequest.currentValue)
                 : (updateRequest.key === 'account_open_date' && updateRequest.currentValue
                   ? new Date(updateRequest.currentValue).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-                  : ((updateRequest.key === 'monthly_revenue' || updateRequest.key === 'annual_revenue')
+                  : ((updateRequest.key === 'monthly_revenue' || updateRequest.key === 'annual_revenue' || updateRequest.key === 'annual_personal_income')
                     ? formatCurrency(String(updateRequest.currentValue))
                     : updateRequest.currentValue))}
               readOnly
@@ -466,7 +491,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
                 value={updateRequest.newValue}
                 onChange={(e) => {
                   let val = e.target.value;
-                  if (updateRequest.key === 'monthly_revenue' || updateRequest.key === 'annual_revenue') {
+                  if (updateRequest.key === 'monthly_revenue' || updateRequest.key === 'annual_revenue' || updateRequest.key === 'annual_personal_income') {
                     val = formatCurrency(val);
                   }
                   setUpdateRequest({ ...updateRequest, newValue: val });
@@ -499,7 +524,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
             disabled={!updateRequest.newValue || isSubmittingChange}
             onClick={() => {
               let finalNewValue = updateRequest.newValue;
-              if (updateRequest.key === 'monthly_revenue' || updateRequest.key === 'annual_revenue') {
+              if (updateRequest.key === 'monthly_revenue' || updateRequest.key === 'annual_revenue' || updateRequest.key === 'annual_personal_income') {
                 finalNewValue = unformatCurrency(finalNewValue);
               }
 

@@ -116,6 +116,7 @@ export type FinancialInfoData = {
   years_in_business: string
   monthly_revenue: string
   annual_revenue: string
+  annual_personal_income: string
   bank_accounts: BankAccount[]
 }
 
@@ -130,6 +131,7 @@ export type SaveFinancialInfoRequest = {
   years_in_business: string
   monthly_revenue: number
   annual_revenue: number
+  annual_personal_income: number
   bank_accounts: BankAccount[]
 }
 
