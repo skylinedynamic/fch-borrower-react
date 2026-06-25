@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function FundingReviewSkeleton() {
+export default function FundingRequestSkeleton() {
     return (
         <div className="card shadow-none mb-0 fade-panel">
             <div className="row p-2">

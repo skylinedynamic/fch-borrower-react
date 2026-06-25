@@ -189,9 +189,11 @@ const FundingDetail = () => {
 
     const colors = getFundingColorStyles(icon_color);
     const iconClass = resolveIcon(icon);
-    const isGreyedOut = engine_status === 'Greyed Out';
-
-
+    
+    // Force active state as per user request
+    const isGreyedOut = false;
+    const finalEngineStatus = 'Active';
+    const displayLabel = 'Likely Eligible';
 
     // Meta row items
     const metaItems = [
@@ -242,11 +244,11 @@ const FundingDetail = () => {
                                 {/* Icon circle */}
                                 <div style={{
                                     width: 56, height: 56, borderRadius: '50%',
-                                    background: isGreyedOut ? '#f0f3f7' : colors.bg,
+                                    background: colors.bg,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    flexShrink: 0, filter: isGreyedOut ? 'grayscale(100%)' : 'none',
+                                    flexShrink: 0,
                                 }}>
-                                    <i className={iconClass} style={{ fontSize: 28, color: isGreyedOut ? '#6c757d' : colors.text }} />
+                                    <i className={iconClass} style={{ fontSize: 28, color: colors.text }} />
                                 </div>
                                 <div>
                                     <h4 className="mb-1 fw-bold" style={{ fontSize: 20, color: '#0f1b2d' }}>{name}</h4>
@@ -256,10 +258,10 @@ const FundingDetail = () => {
 
                             {/* Eligibility badge — pill style matching reference */}
                             <div className="text-end flex-shrink-0">
-                                <div className={`funding-detail-badge funding-detail-badge-${engine_status.toLowerCase().replace(' ', '-')}`}>
-                                    {(engine_status_label === 'Eligible Now' || engine_status_label === 'Manual Review Required') ? 'Likely Eligible' : engine_status_label}
+                                <div className={`funding-detail-badge funding-detail-badge-${finalEngineStatus.toLowerCase().replace(' ', '-')}`}>
+                                    {displayLabel}
                                 </div>
-                                {(engine_status === 'Active' || engine_status === 'Review') && (
+                                {(finalEngineStatus === 'Active' || finalEngineStatus === 'Review') && (
                                     <p className="mb-0 mt-1 text-muted" style={{ fontSize: 11, textAlign: 'right', fontWeight: 'bold' }}>High Match</p>
                                 )}
                             </div>
@@ -396,27 +398,23 @@ const FundingDetail = () => {
                     }}>
                         <div>
                             <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: '#0f1b2d' }}>
-                                {isGreyedOut ? 'Currently Unavailable' : 'Next Step'}
+                                Next Step
                             </p>
                             <p style={{ margin: 0, fontSize: 12, color: '#6b7280', marginTop: 3 }}>
-                                {isGreyedOut
-                                    ? 'You do not meet the minimum requirements for this funding option at this time.'
-                                    : hasMissingFactors 
-                                        ? 'Please address missing readiness factors before starting your review.'
-                                        : 'Start your funding review by providing a few details and uploading missing documents.'}
+                                {hasMissingFactors 
+                                    ? 'Please address missing readiness factors before starting your review.'
+                                    : 'Start your funding request by providing a few details and uploading missing documents.'}
                             </p>
                         </div>
-                        {!isGreyedOut && (
-                            <Link
-                                to={hasMissingFactors ? '#' : `/funding/${id}/review`}
-                                className={`funding-detail-btn-review ${hasMissingFactors ? 'disabled' : ''}`}
-                                style={hasMissingFactors ? { opacity: 0.5, pointerEvents: 'none', cursor: 'not-allowed' } : {}}
-                                onClick={(e) => { if (hasMissingFactors) e.preventDefault(); }}
-                            >
-                                Start Funding Review
-                                <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />
-                            </Link>
-                        )}
+                        <Link
+                            to={hasMissingFactors ? '#' : `/funding/${id}/review`}
+                            className={`funding-detail-btn-review ${hasMissingFactors ? 'disabled' : ''}`}
+                            style={hasMissingFactors ? { opacity: 0.5, pointerEvents: 'none', cursor: 'not-allowed' } : {}}
+                            onClick={(e) => { if (hasMissingFactors) e.preventDefault(); }}
+                        >
+                            Start Funding Request
+                            <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />
+                        </Link>
                     </div>
                 </div>
 

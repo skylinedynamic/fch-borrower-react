@@ -162,7 +162,7 @@ export default function Sidebar() {
 
             <LinkItem to="/pre-qualification" label="Pre Qualification" icon="ri-clipboard-line" restricted={isRestricted} />
             {/* <LinkItem to="/fund-application" label="Fund Application" icon="ri-hand-coin-line" restricted={isRestricted} /> */}
-            <LinkItem to="/funding-reviews" label="Funding Review" icon="ri-file-search-line" restricted={isRestricted} />
+            <LinkItem to="/funding-requests" label="Funding Request" icon="ri-file-search-line" restricted={isRestricted} />
             <LinkItem to="/my-applications" label="My Applications" icon="ri-file-list-line" restricted={isRestricted} />
             <LinkItem to="/invoices" label="Invoices" icon="ri-article-line" />
             <LinkItem to="/payments" label="Payments" icon="ri-money-dollar-box-line" />

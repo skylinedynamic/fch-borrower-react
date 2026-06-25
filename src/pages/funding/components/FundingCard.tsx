@@ -97,25 +97,22 @@ const FundingCard: React.FC<FundingCardProps> = ({
         }
     };
 
-    const statusStyle = getStatusStyle();
-    const isEligible = statusStyle === null;
-    const isGreyedOut = engine_status === 'Greyed Out' || engine_status === 'Hidden';
+    // Force all active sequences to show as Active and not greyed out per user request
+    const forcedEngineStatus = 'Active';
+    const isGreyedOut = false;
+    const isEligible = true;
 
     // Convert generic "Eligible Now" and "Manual Review Required" to the design's "Likely Eligible"
-    const displayLabel = (engine_status_label === 'Eligible Now' || engine_status_label === 'Manual Review Required')
-        ? 'Likely Eligible'
-        : engine_status_label;
+    const displayLabel = 'Likely Eligible';
 
     return (
         <div
-            className={`funding-card ${isGreyedOut ? 'funding-card-disabled' : ''}`}
+            className={`funding-card`}
             onClick={() => {
-                if (!isGreyedOut) {
-                    if (destination.startsWith('http')) {
-                        window.open(destination, '_blank');
-                    } else {
-                        navigate(destination);
-                    }
+                if (destination.startsWith('http')) {
+                    window.open(destination, '_blank');
+                } else {
+                    navigate(destination);
                 }
             }}
         >
@@ -123,10 +120,10 @@ const FundingCard: React.FC<FundingCardProps> = ({
             <div className="funding-card-top">
                 {/* Icon Badge */}
                 <div
-                    className={`funding-card-icon-wrapper ${isGreyedOut ? 'disabled' : ''}`}
-                    style={!isGreyedOut ? { background: colors.bg } : {}}
+                    className={`funding-card-icon-wrapper`}
+                    style={{ background: colors.bg }}
                 >
-                    <i className={iconClass} style={!isGreyedOut ? { color: colors.text } : {}} />
+                    <i className={iconClass} style={{ color: colors.text }} />
                 </div>
 
                 {/* Text Content */}
