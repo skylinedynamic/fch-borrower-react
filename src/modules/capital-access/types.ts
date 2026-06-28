@@ -35,6 +35,9 @@ export interface RoadmapCard {
   minimum_fico_requirement?: number | null;
   maximum_utilization_threshold?: number | null;
   application_status?: string | null;
+  reference_url?: string | null;
+  access_time_detail?: { id: number; label: string; start?: number | null; end?: number | null; min_value?: number | null; max_value?: number | null; } | null;
+  access_day_time_detail?: { id: number; label: string; start?: number | null; end?: number | null; min_value?: number | null; max_value?: number | null; } | null;
 }
 
 export interface CapitalAccessStrategyRoadmap {
@@ -44,6 +47,7 @@ export interface CapitalAccessStrategyRoadmap {
   reason_code?: string | null;
   target_exposure: string;
   est_timeline: string;
+  first_submitted_at?: string | null;
   roadmap: RoadmapCard[];
 }
 
@@ -75,6 +79,9 @@ export interface CapitalAccessStepDetail {
     notes: string | null;
     status: string;
   } | null;
+  reference_url?: string | null;
+  image_url?: string | null;
+  full_image_url?: string | null;
 }
 
 export interface CapitalAccessStrategy {
@@ -143,6 +150,7 @@ export interface CapitalAccessOverview {
   factors: FactorDetail[];
   estimated_total_access: string;
   exposure_breakdown?: ExposureBreakdownItem[];
+  current_play?: { id: number; name: string; } | null;
 }
 
 export interface OverviewResponse {

@@ -24,6 +24,96 @@ function getLockReason(card: RoadmapCard): string {
   return 'Complete the previous step to unlock this card';
 }
 
+// ── Format Hour Helper ──────────────────────────────────────────────────────
+function formatDecimalHour(decimalHour: number): string {
+  const wholeHours = Math.floor(decimalHour);
+  const minutes = Math.round((decimalHour - wholeHours) * 60);
+  
+  let displayHour = wholeHours;
+  let ampm = 'AM';
+  
+  if (wholeHours === 0) {
+    displayHour = 12;
+    ampm = 'AM';
+  } else if (wholeHours === 12) {
+    displayHour = 12;
+    ampm = 'PM';
+  } else if (wholeHours > 12) {
+    displayHour = wholeHours - 12;
+    ampm = 'PM';
+  }
+  
+  const minutesStr = minutes > 0 ? `:${minutes.toString().padStart(2, '0')}` : '';
+  return `${displayHour}${minutesStr} ${ampm}`;
+}
+
+// ── Time Active Checker Helper ──────────────────────────────────────────────
+function isTimeActive(card: RoadmapCard, firstSubmittedDate: Date | null): { active: boolean; reason: string } {
+  const now = new Date();
+  const currentHourDecimal = now.getHours() + now.getMinutes() / 60;
+
+  if (card.application_status) {
+    return { active: true, reason: '' };
+  }
+
+  // 1. Check access_time as Day
+  if (card.access_time === 'Day' && card.access_day) {
+    if (!firstSubmittedDate) {
+      return { active: false, reason: 'Complete the previous step to unlock this card' };
+    }
+
+    const msDiff = now.getTime() - firstSubmittedDate.getTime();
+    const elapsedDays = msDiff / (24 * 60 * 60 * 1000);
+    const targetDayOffset = card.access_day - 1;
+
+    if (elapsedDays < targetDayOffset) {
+      const daysRemaining = Math.ceil(targetDayOffset - elapsedDays);
+      return {
+        active: false,
+        reason: `Available in ${daysRemaining} day${daysRemaining > 1 ? 's' : ''}`
+      };
+    }
+
+    // Check if on the target day itself
+    if (elapsedDays < targetDayOffset + 1) {
+      if (card.access_day_time && card.access_day_time !== 'Anytime') {
+        const detail = card.access_day_time_detail;
+        if (detail) {
+          const label = detail.label;
+          const start = detail.start ?? detail.min_value ?? 0;
+          const end = detail.end ?? detail.max_value ?? 24;
+          if (currentHourDecimal < start || currentHourDecimal > end) {
+            return {
+              active: false,
+              reason: `Active during ${label} (${formatDecimalHour(start)} - ${formatDecimalHour(end)})`
+            };
+          }
+        }
+      }
+    }
+
+    return { active: true, reason: '' };
+  }
+
+  // 2. Check access_time for non-Day cards (Morning, Evening, Anytime)
+  if (card.access_time && card.access_time !== 'Anytime') {
+    const detail = card.access_time_detail;
+    if (detail) {
+      const label = detail.label;
+      const start = detail.start ?? detail.min_value ?? 0;
+      const end = detail.end ?? detail.max_value ?? 24;
+      if (currentHourDecimal < start || currentHourDecimal > end) {
+        return {
+          active: false,
+          reason: `Active during ${label} (${formatDecimalHour(start)} - ${formatDecimalHour(end)})`
+        };
+      }
+    }
+  }
+
+  return { active: true, reason: '' };
+}
+
 export default function PlayRoadmap() {
   const { id } = useParams<{ id: string }>();
   const { data: play, isLoading: isPlayLoading, isError } = useCapitalAccessStrategyRoadmap(id);
@@ -72,7 +162,7 @@ export default function PlayRoadmap() {
                   </p>
                 </div>
                 <div className="d-flex justify-content-end">
-                  <Link to={`/capital-access/${play.id}/checklist`} className="ca-btn ca-btn-outline">
+                  <Link to={`/capital-access/${play.id}/pre-flight`} className="ca-btn ca-btn-outline">
                     <i className="ri-arrow-left-line"></i> Back to Checklist
                   </Link>
                 </div>
@@ -95,7 +185,7 @@ export default function PlayRoadmap() {
           <div className="row pb-1 mb-3">
             <div className="col-12">
               <div className="d-flex align-items-center gap-3 py-2 w-100">
-                <Link to={play?.id ? `/capital-access/${play.id}/checklist` : '/capital-access/strategy'} className="ca-back-btn" title="Back to Checklist">
+                <Link to={play?.id ? `/capital-access/${play.id}/pre-flight` : '/capital-access/strategy'} className="ca-back-btn" title="Back to Checklist">
                   <i className="ri-arrow-left-line fs-16"></i>
                 </Link>
                 <div>
@@ -142,7 +232,22 @@ export default function PlayRoadmap() {
                   <div className="ca-stepper-line"></div>
 
                   {roadmap.map((card: RoadmapCard, idx: number) => {
-                    const isLocked = card.probability_status === false && !card.application_status;
+                    const firstSubmittedDate = play?.first_submitted_at ? new Date(play.first_submitted_at) : null;
+                    const hasUnsubmittedPrevious = roadmap.slice(0, idx).some(c => !c.application_status);
+
+                    const timeCheck = isTimeActive(card, firstSubmittedDate);
+                    const isTimeLocked = !timeCheck.active;
+
+                    const isLocked = (card.probability_status === false || hasUnsubmittedPrevious || isTimeLocked) && !card.application_status;
+
+                    let lockReason = '';
+                    if (card.probability_status === false) {
+                      lockReason = getLockReason(card);
+                    } else if (hasUnsubmittedPrevious) {
+                      lockReason = 'Complete the previous step to unlock this card';
+                    } else if (isTimeLocked) {
+                      lockReason = timeCheck.reason;
+                    }
 
                     return (
                       <div key={card.id} className="ca-step">
@@ -178,41 +283,25 @@ export default function PlayRoadmap() {
                                   </div>
                                   <div className="mt-2 text-danger small d-flex align-items-center gap-1 fw-medium">
                                     <i className="ri-error-warning-line"></i>
-                                    <span className='ca-locked-reason'>{getLockReason(card)}</span>
+                                    <span className='ca-locked-reason'>{lockReason}</span>
                                   </div>
                                 </div>
                               </div>
                               <div className="d-flex align-items-center gap-3 flex-shrink-0">
-                                {card.approval_odds && (
+                                {card.approval_odds && parseInt(card.approval_odds, 10) !== 0 && (
                                   <div className="text-end">
                                     <span className="ca-metric-label d-block">Approval Odds</span>
                                     <span className="fw-bold fs-14 ca-odds-value">{card.approval_odds}</span>
                                   </div>
                                 )}
-                                <i className="ri-lock-2-line fs-18 text-muted"></i>
+                                <i className="ri-lock-2-line fs-18 text-muted ms-5"></i>
                               </div>
                             </div>
                           </div>
                         ) : (
-                          <Link
-                            to={`/capital-access/${play.id}/step/${card.id}`}
-                            state={{
-                              play,
-                              step: {
-                                id: card.id,
-                                day: card.sequence_order,
-                                issuer: card.issuer,
-                                card_name: card.card_name,
-                                exposure: card.exposure,
-                                hard_pull: card.hard_pull,
-                                why: card.why_this_card,
-                                approval_odds: card.approval_odds,
-                                requirements: card.requirements ?? [],
-                                status: 'Active',
-                                result: null,
-                              },
-                            }}
-                            className={`ca-step-card active text-decoration-none ${card.application_status ? 'submitted' : ''}`}
+                          <div
+                            className={`ca-step-card active ${card.application_status ? 'submitted' : ''}`}
+                            style={{ cursor: 'default' }}
                           >
                             <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
                               <div className="d-flex align-items-center gap-3">
@@ -233,18 +322,50 @@ export default function PlayRoadmap() {
                                 </div>
                               </div>
                               <div className="d-flex align-items-center gap-3 flex-shrink-0">
-                                {!card.application_status && card.approval_odds && (
+                                {!card.application_status && card.approval_odds && parseInt(card.approval_odds, 10) !== 0 && (
                                   <div className="text-end">
                                     <span className="ca-metric-label d-block">Approval Odds</span>
                                     <span className="fw-bold fs-14 ca-odds-value">{card.approval_odds}</span>
                                   </div>
                                 )}
-                                <span className={`ca-btn ca-btn-sm ${card.application_status ? 'ca-btn-success' : 'ca-btn-primary'}`}>
-                                  {card.application_status ? 'Submitted' : 'Apply'} <i className="ri-arrow-right-line"></i>
-                                </span>
+                                <div className="d-flex align-items-center gap-2">
+                                  <Link
+                                    to={`/capital-access/${play.id}/step/${card.id}`}
+                                    state={{
+                                      play,
+                                      step: {
+                                        id: card.id,
+                                        day: card.sequence_order,
+                                        issuer: card.issuer,
+                                        card_name: card.card_name,
+                                        exposure: card.exposure,
+                                        hard_pull: card.hard_pull,
+                                        why: card.why_this_card,
+                                        approval_odds: card.approval_odds,
+                                        requirements: card.requirements ?? [],
+                                        status: 'Active',
+                                        result: null,
+                                      },
+                                    }}
+                                    className="ca-btn ca-btn-sm ca-btn-outline"
+                                  >
+                                    Manage Status <i className="ri-arrow-right-line"></i>
+                                  </Link>
+                                  {!card.application_status && (
+                                    <a
+                                      href={card.reference_url || '#'}
+                                      target={card.reference_url ? "_blank" : undefined}
+                                      rel="noopener noreferrer"
+                                      className={`ca-btn ca-btn-sm ca-btn-primary ${!card.reference_url ? 'disabled' : ''}`}
+                                      onClick={!card.reference_url ? (e) => e.preventDefault() : undefined}
+                                    >
+                                      Apply <i className="ri-external-link-line"></i>
+                                    </a>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </Link>
+                          </div>
                         )}
                       </div>
                     );
@@ -254,7 +375,7 @@ export default function PlayRoadmap() {
                 <hr className="ca-divider mt-4 mb-3" />
 
                 <div className="d-flex gap-3 justify-content-center">
-                  <Link to={`/capital-access/${play.id}/checklist`} className="ca-btn ca-btn-outline flex-fill justify-content-center">
+                  <Link to={`/capital-access/${play.id}/pre-flight`} className="ca-btn ca-btn-outline flex-fill justify-content-center">
                     <i className="ri-arrow-left-line"></i> Back to Checklist
                   </Link>
                   <Link to="/capital-access/strategy" className="ca-btn ca-btn-primary flex-fill justify-content-center">

@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { useAuthStore } from '../../store/auth/authStore'
 import { useCapitalAccessOverview } from '../../modules/capital-access/queries'
 
@@ -59,7 +60,27 @@ export default function CapitalAccess() {
                   />
                 </div>
 
-                <RecommendedNextStep />
+                {overview?.current_play ? (
+                  <div className="card mt-4 border-primary shadow-sm" style={{ background: 'rgba(64, 81, 137, 0.03)' }}>
+                    <div className="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+                      <div>
+                        <h5 className="fw-bold mb-1 text-dark fs-16">Active Strategy Play</h5>
+                        <p className="text-muted mb-0 fs-13">
+                          You are currently working on the <strong>{overview.current_play.name}</strong> play.
+                        </p>
+                      </div>
+                      <Link
+                        to={`/capital-access/${overview.current_play.id}/roadmap`}
+                        className="ca-btn ca-btn-primary"
+                        style={{ minWidth: '160px', background: 'var(--primary-color, #405189)', borderColor: 'var(--primary-color, #405189)' }}
+                      >
+                        View Roadmap <i className="ri-arrow-right-line ms-1"></i>
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <RecommendedNextStep />
+                )}
               </>
             )}
           </div>
