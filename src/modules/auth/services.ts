@@ -33,7 +33,9 @@ export async function login(email: string, password: string, remember: boolean =
         next_platform_fee_date: user.next_platform_fee_date,
         enrollment_completed_at: user.enrollment_completed_at,
         subscription_start_date: user.subscription_start_date,
-        subscription_end_date: user.subscription_end_date
+        subscription_end_date: user.subscription_end_date,
+        is_free_trail: user.is_free_trail,
+        free_trail_end_date: user.free_trail_end_date
       })
 
       return { token, user }

@@ -20,6 +20,19 @@ export default function Sidebar() {
   const userSubscription = useAuthStore((state) => state.userSubscription)
   const isRestricted = isSubscriptionRestricted(userSubscription)
 
+  const isFreeTrial = !!userSubscription?.is_free_trail;
+  const trialEndDate = userSubscription?.free_trail_end_date;
+
+  const formatTrialDate = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch {
+      return dateStr;
+    }
+  };
+
   // Resolved logos for different sidebar states
   const primaryLogo = branding?.primary_logo_full_url 
   const secondaryLogo = branding?.secondary_logo_full_url 
@@ -207,6 +220,23 @@ export default function Sidebar() {
           </ul>
         </div>
       </div>
+
+      {isFreeTrial && (
+        <div className="sidebar-trial-panel">
+          <div className="trial-panel-inner">
+            <div className="trial-icon-wrap">
+              <i className="ri-vip-crown-2-fill"></i>
+            </div>
+            <div className="trial-text-wrap">
+              <span className="trial-label">Free Trial</span>
+              {trialEndDate && (
+                <span className="trial-expires">Expires {formatTrialDate(trialEndDate)}</span>
+              )}
+            </div>
+            <span className="trial-badge">TRIAL</span>
+          </div>
+        </div>
+      )}
 
       <div className="sidebar-background"></div>
     </div>
