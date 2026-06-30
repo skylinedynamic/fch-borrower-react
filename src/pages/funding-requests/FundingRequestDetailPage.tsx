@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { getBorrowerFundingRequest } from '../../modules/funding-requests/services'
-import { getBorrowerActivityLogs } from '../../modules/activity-log/services'
+import { getBorrowerActivityLogs, downloadActivityAttachment } from '../../modules/activity-log/services'
+import { downloadBorrowerDocument } from '../../modules/documents/services'
+import { downloadBlob, downloadFileFromUrl } from '../../utils/fileDownload'
 import { getFileConfig } from '../../config/fileTypeConfig'
 import { FUNDING_REVIEW_STATUS } from '../../config/funding'
 import { toast } from 'react-toastify'
@@ -30,7 +32,7 @@ const formatActivityTime = (dateStr: string): string => {
 
 const getActivityIcon = (logTypeRaw: string, isSuccess = false) => {
     const logType = String(logTypeRaw || '').toLowerCase();
-    
+
     // Exact matching for funding events
     if (logType === 'funding_request_create') {
         return { icon: 'ri-file-add-line', bg: 'bg-info-subtle', color: 'text-info' };
@@ -38,7 +40,7 @@ const getActivityIcon = (logTypeRaw: string, isSuccess = false) => {
     if (logType === 'funding_request_status_update') {
         return { icon: 'ri-refresh-line', bg: 'bg-warning-subtle', color: 'text-warning' };
     }
-    
+
     // Generic fallback matching
     if (logType.includes('create') || logType.includes('submit')) {
         return { icon: 'ri-file-add-line', bg: 'bg-primary-subtle', color: 'text-primary' };
@@ -61,7 +63,7 @@ const getActivityIcon = (logTypeRaw: string, isSuccess = false) => {
     if (logType.includes('email')) {
         return { icon: 'ri-mail-send-line', bg: 'bg-primary-subtle', color: 'text-primary' };
     }
-    
+
     // Default
     return { icon: 'ri-time-line', bg: 'bg-secondary-subtle', color: 'text-secondary' };
 }
@@ -111,6 +113,28 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
 
     const toggleExpand = () => setExpanded(!expanded)
 
+    const handleDownload = async (activityId: number | string, file: any) => {
+        try {
+            const fileName = file.name || file;
+            const filePath = file.path || file;
+
+            if (!filePath) {
+                console.error('No file path available for download');
+                return;
+            }
+
+            const blob = await downloadActivityAttachment({
+                activity_log_id: activityId,
+                path: filePath
+            });
+
+            downloadBlob(blob, fileName);
+        } catch (error) {
+            console.error('Error downloading attachment:', error);
+            toast.error('Failed to download attachment');
+        }
+    };
+
     // Category / Sequence badge
     const categoryName = review.funding_sequence?.name || review.funding_type || 'Business credit builder cards'
 
@@ -124,13 +148,13 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
             </div>
 
             {/* Main content body */}
-            <div className="flex-grow-1 card border shadow-none mb-0 rounded-3 bg-white" style={{ minWidth: 0 }}>
-                <div className="card-body p-3">
+            <div className="flex-grow-1 border-0 mb-0" style={{ minWidth: 0 }}>
+                <div className="p-1">
                     <div className="d-flex align-items-start justify-content-between gap-3">
                         <div style={{ minWidth: 0 }} onClick={toggleExpand} className="cursor-pointer flex-grow-1">
                             {/* Title */}
                             <h6 className="mb-0 fw-bold text-dark fs-13">{title}</h6>
-                            
+
                             {/* Subtitle / Meta */}
                             <p className="mb-2 text-muted fs-11 mt-1 d-flex align-items-center flex-wrap">
                                 <span>by {causedBy}</span>
@@ -138,11 +162,6 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
                                 <i className="ri-time-line align-middle me-1 fs-11 text-muted" style={{ marginRight: '2px' }}></i>
                                 <span>{timestamp}</span>
                             </p>
-
-                            {/* Short Snippet / Description */}
-                            {description && (
-                                <p className="mb-2 text-muted fs-12" dangerouslySetInnerHTML={{ __html: description }} />
-                            )}
 
                             {/* Category Badge */}
                             {isFirst && categoryName && (
@@ -153,12 +172,12 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
                         </div>
 
                         {/* Chevron collapse trigger on the right */}
-                        <button 
+                        <button
                             onClick={toggleExpand}
                             className="btn btn-light rounded-circle shadow-none flex-shrink-0 align-self-start d-flex align-items-center justify-content-center"
-                            style={{ 
-                                width: '28px', 
-                                height: '28px', 
+                            style={{
+                                width: '28px',
+                                height: '28px',
                                 minWidth: '28px',
                                 minHeight: '28px',
                                 background: '#f1f5f9',
@@ -179,8 +198,8 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
                             transition: 'grid-template-rows 0.3s ease',
                         }}
                     >
-                        <div>
-                            <div className="mt-3 pt-3 border-top border-light-subtle">
+                        <div style={{ overflow: 'hidden', paddingLeft: '2px' }}>
+                            <div className={isFirst || isApprove ? "mt-3 pt-3 border-top border-light-subtle" : "mt-2"}>
                                 {isFirst ? (
                                     /* Request details layout (Adapted for sidebar width) */
                                     <div>
@@ -216,9 +235,47 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
                                         </div>
                                     </div>
                                 ) : (
-                                    /* Generic log info */
+                                    /* Generic log info with description and attachments */
                                     <div className="p-1">
-                                        <p className="text-muted fs-12 mb-0">No additional details are available for this action.</p>
+                                        {description ? (
+                                            <div
+                                                className="text-muted mb-2 fs-13"
+                                                dangerouslySetInnerHTML={{ __html: description }}
+                                            />
+                                        ) : (!activity.attachments || activity.attachments.length === 0) ? (
+                                            <p className="text-muted fs-12 mb-0">No additional details are available for this action.</p>
+                                        ) : null}
+
+                                        {activity.attachments && activity.attachments.length > 0 && (
+                                            <div className="row g-2 mt-1">
+                                                {activity.attachments.map((file: any, fIdx: number) => {
+                                                    const fileName = file.name || file;
+                                                    return (
+                                                        <div key={fIdx} className="col-auto">
+                                                            <div className="d-flex align-items-center border border-dashed p-2 rounded position-relative bg-white" style={{ minWidth: '150px' }}>
+                                                                <div className="flex-shrink-0 me-2">
+                                                                    <i className="ri-image-line fs-18 text-primary"></i>
+                                                                </div>
+                                                                <div className="flex-grow-1">
+                                                                    <h6 className="mb-0 fs-12 text-truncate" style={{ maxWidth: '180px' }}>
+                                                                        <a
+                                                                            href="#"
+                                                                            className="stretched-link text-body"
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault();
+                                                                                handleDownload(activity.id, file);
+                                                                            }}
+                                                                        >
+                                                                            {fileName}
+                                                                        </a>
+                                                                    </h6>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
 
@@ -235,7 +292,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
 export default function FundingRequestDetailPage() {
     const { id } = useParams<{ id: string }>()
     const navigate = useNavigate()
-    
+
     const [review, setReview] = useState<any>(null)
     const [loading, setLoading] = useState(true)
 
@@ -267,18 +324,29 @@ export default function FundingRequestDetailPage() {
     // Load activity logs
     const loadActivities = useCallback((page: number, append = false) => {
         if (!id) return
-        if (page === 1) setActLoading(true)
-        else setActLoadingMore(true)
+        if (page === 1) {
+            setActLoading(true)
+            setActPage(1)
+        } else {
+            setActLoadingMore(true)
+        }
 
-        getBorrowerActivityLogs({ funding_request_id: id, page, per_page: 10 })
+        getBorrowerActivityLogs({ funding_request_id: id, page, limit: 10 })
             .then(res => {
-                const items: any[] = res?.data?.data || res?.data || []
-                const meta = res?.data?.meta || {}
-                setActivities(prev => append ? [...prev, ...items] : items)
+                const items: any[] = res?.data || []
+                const meta = res?.meta || {}
+
+                setActivities(prev => {
+                    if (!append) return items;
+                    const existingIds = new Set(prev.map(item => item.id));
+                    const newItems = items.filter(item => !existingIds.has(item.id));
+                    return [...prev, ...newItems];
+                })
+
                 setActHasMore(meta.current_page < meta.last_page)
                 setTotalActivities(meta.total || items.length)
             })
-            .catch(() => {})
+            .catch(() => { })
             .finally(() => { setActLoading(false); setActLoadingMore(false) })
     }, [id])
 
@@ -465,7 +533,8 @@ export default function FundingRequestDetailPage() {
                                                 <tr>
                                                     <th className="text-start">Document Name</th>
                                                     <th className="text-center">Status</th>
-                                                    <th className="text-end">Upload Date</th>
+                                                    <th className="text-center">Upload Date</th>
+                                                    <th className="text-end">Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -480,7 +549,12 @@ export default function FundingRequestDetailPage() {
                                                                             <i className={config.icon}></i>
                                                                         </div>
                                                                     </div>
-                                                                    <a href={doc.document_url || '#'} target="_blank" rel="noreferrer"
+                                                                    <a href="#" onClick={(e) => {
+                                                                        e.preventDefault()
+                                                                        if (doc.document_url) {
+                                                                            window.open(doc.document_url, '_blank')
+                                                                        }
+                                                                    }}
                                                                         className="text-body fw-medium text-truncate d-block" style={{ maxWidth: 260 }}>
                                                                         {doc.document_name}
                                                                     </a>
@@ -497,8 +571,48 @@ export default function FundingRequestDetailPage() {
                                                                     <span className="badge bg-info-subtle text-info">Uploaded</span>
                                                                 )}
                                                             </td>
-                                                            <td className="text-end text-muted fs-12">
+                                                            <td className="text-center text-muted fs-12">
                                                                 {formatDateTime(doc.created_at)}
+                                                            </td>
+                                                            <td className="text-end">
+                                                                <div className="d-flex gap-2 justify-content-end">
+                                                                    <button className="btn btn-sm btn-light border d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }} onClick={() => {
+                                                                        if (doc.document_url) {
+                                                                            window.open(doc.document_url, '_blank')
+                                                                        }
+                                                                    }} title="View">
+                                                                        <i className="ri-eye-line fs-14"></i>
+                                                                    </button>
+                                                                    <button className="btn btn-sm btn-light border d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }} onClick={async (e) => {
+                                                                        e.preventDefault()
+                                                                        try {
+                                                                            let fileName = doc.document_name || 'document';
+                                                                            const ext = (doc.document_url?.split(/[#?]/)[0].split('.').pop() || '').trim().toLowerCase();
+                                                                            if (ext && !fileName.toLowerCase().endsWith(`.${ext}`)) {
+                                                                                fileName += `.${ext}`;
+                                                                            }
+
+                                                                            if (doc.id && !String(doc.id).startsWith('missing_')) {
+                                                                                const response = await downloadBorrowerDocument(doc.id);
+                                                                                let blob = response.data instanceof Blob ? response.data : new Blob([response.data]);
+                                                                                downloadBlob(blob, fileName);
+                                                                            } else if (doc.document_url) {
+                                                                                downloadFileFromUrl(doc.document_url, fileName);
+                                                                            } else {
+                                                                                toast.error('Unable to download this document.');
+                                                                            }
+                                                                        } catch (error) {
+                                                                            console.error('API download failed', error);
+                                                                            if (doc.document_url) {
+                                                                                window.open(doc.document_url, '_blank');
+                                                                            } else {
+                                                                                toast.error('Failed to download document.');
+                                                                            }
+                                                                        }
+                                                                    }} title="Download">
+                                                                        <i className="ri-download-2-line fs-14"></i>
+                                                                    </button>
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     )
@@ -516,7 +630,7 @@ export default function FundingRequestDetailPage() {
                         </div>
 
                         {/* Decision Details */}
-                        {review.status !== FUNDING_REVIEW_STATUS.PENDING && (
+                        {(review.reviewer?.name || [FUNDING_REVIEW_STATUS.APPROVED, FUNDING_REVIEW_STATUS.REJECTED, 'Accepted'].includes(review.status)) && (
                             <div className="card border-0 shadow-sm mb-4">
                                 <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
                                     <h6 className="mb-0 fw-bold fs-15">
@@ -570,20 +684,20 @@ export default function FundingRequestDetailPage() {
                             </div>
 
                             {/* Sub-header Filter Tabs */}
-                            <div className="card-body px-3 pt-3 pb-3">
+                            <div className="card-body px-3 pt-3 pb-3" style={{ maxHeight: '600px', overflowY: 'auto', overflowX: 'hidden' }}>
 
                                 {/* Activity Logs Timeline */}
                                 <div className="timeline-container position-relative px-0" ref={activityRef}>
                                     {/* Vertical connecting line */}
-                                    <div 
-                                        className="timeline-vertical-line position-absolute" 
-                                        style={{ 
-                                            left: 18, 
-                                            top: 10, 
-                                            bottom: 10, 
-                                            width: 2, 
-                                            borderLeft: '2px dashed #e9ecef', 
-                                            zIndex: 1 
+                                    <div
+                                        className="timeline-vertical-line position-absolute"
+                                        style={{
+                                            left: 18,
+                                            top: 10,
+                                            bottom: 10,
+                                            width: 2,
+                                            borderLeft: '2px dashed #e9ecef',
+                                            zIndex: 1
                                         }}
                                     />
 
@@ -607,9 +721,9 @@ export default function FundingRequestDetailPage() {
                                     ) : (
                                         <div className="timeline-list">
                                             {filtered.map((act, index) => (
-                                                <ActivityItem 
-                                                    key={act.id} 
-                                                    activity={act} 
+                                                <ActivityItem
+                                                    key={act.id}
+                                                    activity={act}
                                                     review={review}
                                                     isFirst={index === filtered.length - 1} // Submit event is first (last in array)
                                                 />
@@ -622,18 +736,16 @@ export default function FundingRequestDetailPage() {
                                 {actHasMore && filtered.length > 0 && (
                                     <div className="text-center mt-4 mb-2">
                                         <button
-                                            className="btn bg-white border rounded-pill shadow-none d-inline-flex align-items-center justify-content-center gap-1 fw-medium"
-                                            style={{ fontSize: '12px', color: '#2563eb', padding: '6px 16px', borderColor: '#e2e8f0' }}
+                                            className="btn btn-soft-primary btn-sm rounded-pill px-4"
                                             onClick={loadMore}
                                             disabled={actLoadingMore}
                                         >
                                             {actLoadingMore ? (
-                                                <><span className="spinner-border spinner-border-sm me-2"></span>Loading...</>
+                                                <><span className="spinner-border spinner-border-sm align-middle me-2"></span>Loading...</>
                                             ) : (
-                                                <>Load More Activities <i className="ri-arrow-down-s-line fs-14 align-middle"></i></>
+                                                <><i className="ri-arrow-down-line align-middle me-1"></i> Load More Activity</>
                                             )}
                                         </button>
-                                        <p className="text-muted mt-2 mb-0" style={{ fontSize: '10px' }}>Showing {filtered.length} of {totalActivities} activities</p>
                                     </div>
                                 )}
                             </div>

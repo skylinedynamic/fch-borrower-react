@@ -15,3 +15,11 @@ export const deleteDocument = async (documentId: number): Promise<DeleteDocument
   const { data } = await apiClient.delete<DeleteDocumentResponse>(`/borrower/documents/${documentId}`)
   return data
 }
+
+// Download borrower document (uses the common endpoint accessible to the borrower)
+export const downloadBorrowerDocument = async (documentId: string | number): Promise<any> => {
+    const response = await apiClient.get(`/common/borrowers-documents/download/${Number(documentId)}`, {
+        responseType: 'blob'
+    });
+    return response;
+};
