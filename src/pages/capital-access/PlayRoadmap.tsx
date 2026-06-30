@@ -3,10 +3,11 @@ import { Link, useParams, Navigate } from 'react-router-dom';
 import { useCapitalAccessStrategyRoadmap, useCapitalAccessStrategies } from '../../modules/capital-access/queries';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
 import type { RoadmapCard } from '../../modules/capital-access/types';
+import { ACCESS_TIME } from '../../config/capitalAccessStatusOptions';
 
 // ── Access time label helper ────────────────────────────────────────────────
 function accessScheduleLabel(card: RoadmapCard): string {
-  if (card.access_time === 'Day' && card.access_day) {
+  if (card.access_time === ACCESS_TIME.DAY && card.access_day) {
     const sub = card.access_day_time ? ` (${card.access_day_time})` : '';
     return `Day ${card.access_day}${sub}`;
   }
@@ -48,7 +49,7 @@ function formatDecimalHour(decimalHour: number): string {
 }
 
 // ── Time Active Checker Helper ──────────────────────────────────────────────
-function isTimeActive(card: RoadmapCard, firstSubmittedDate: Date | null): { active: boolean; reason: string } {
+function isTimeActive(card: RoadmapCard, isFirstCard: boolean): { active: boolean; reason: string } {
   const now = new Date();
   const currentHourDecimal = now.getHours() + now.getMinutes() / 60;
 
@@ -56,59 +57,37 @@ function isTimeActive(card: RoadmapCard, firstSubmittedDate: Date | null): { act
     return { active: true, reason: '' };
   }
 
-  // 1. Check access_time as Day
-  if (card.access_time === 'Day' && card.access_day) {
-    if (!firstSubmittedDate) {
-      return { active: false, reason: 'Complete the previous step to unlock this card' };
-    }
+  // Extract time window — Day cards use access_day_time_detail, others use access_time_detail
+  let detail: any = null;
+  let label = '';
 
-    const msDiff = now.getTime() - firstSubmittedDate.getTime();
-    const elapsedDays = msDiff / (24 * 60 * 60 * 1000);
-    const targetDayOffset = card.access_day - 1;
+  if (card.access_time === ACCESS_TIME.DAY && card.access_day_time && card.access_day_time !== ACCESS_TIME.ANYTIME) {
+    detail = card.access_day_time_detail;
+    label = detail?.label ?? card.access_day_time;
+  } else if (card.access_time && card.access_time !== ACCESS_TIME.ANYTIME && card.access_time !== ACCESS_TIME.DAY) {
+    detail = card.access_time_detail;
+    label = detail?.label ?? card.access_time;
+  }
 
-    if (elapsedDays < targetDayOffset) {
-      const daysRemaining = Math.ceil(targetDayOffset - elapsedDays);
-      return {
-        active: false,
-        reason: `Available in ${daysRemaining} day${daysRemaining > 1 ? 's' : ''}`
-      };
-    }
-
-    // Check if on the target day itself
-    if (elapsedDays < targetDayOffset + 1) {
-      if (card.access_day_time && card.access_day_time !== 'Anytime') {
-        const detail = card.access_day_time_detail;
-        if (detail) {
-          const label = detail.label;
-          const start = detail.start ?? detail.min_value ?? 0;
-          const end = detail.end ?? detail.max_value ?? 24;
-          if (currentHourDecimal < start || currentHourDecimal > end) {
-            return {
-              active: false,
-              reason: `Active during ${label} (${formatDecimalHour(start)} - ${formatDecimalHour(end)})`
-            };
-          }
-        }
-      }
-    }
-
+  if (!detail) {
     return { active: true, reason: '' };
   }
 
-  // 2. Check access_time for non-Day cards (Morning, Evening, Anytime)
-  if (card.access_time && card.access_time !== 'Anytime') {
-    const detail = card.access_time_detail;
-    if (detail) {
-      const label = detail.label;
-      const start = detail.start ?? detail.min_value ?? 0;
-      const end = detail.end ?? detail.max_value ?? 24;
-      if (currentHourDecimal < start || currentHourDecimal > end) {
-        return {
-          active: false,
-          reason: `Active during ${label} (${formatDecimalHour(start)} - ${formatDecimalHour(end)})`
-        };
-      }
-    }
+  const start = detail.start ?? detail.min_value ?? 0;
+  const end = detail.end ?? detail.max_value ?? 24;
+
+  if (currentHourDecimal < start) {
+    return {
+      active: false,
+      reason: `Active during ${label} (${formatDecimalHour(start)} - ${formatDecimalHour(end)})`
+    };
+  }
+
+  if (currentHourDecimal > end && isFirstCard) {
+    return {
+      active: false,
+      reason: `Available next ${label} (${formatDecimalHour(start)} - ${formatDecimalHour(end)})`
+    };
   }
 
   return { active: true, reason: '' };
@@ -232,10 +211,9 @@ export default function PlayRoadmap() {
                   <div className="ca-stepper-line"></div>
 
                   {roadmap.map((card: RoadmapCard, idx: number) => {
-                    const firstSubmittedDate = play?.first_submitted_at ? new Date(play.first_submitted_at) : null;
                     const hasUnsubmittedPrevious = roadmap.slice(0, idx).some(c => !c.application_status);
 
-                    const timeCheck = isTimeActive(card, firstSubmittedDate);
+                    const timeCheck = isTimeActive(card, idx === 0);
                     const isTimeLocked = !timeCheck.active;
 
                     const isLocked = (card.probability_status === false || hasUnsubmittedPrevious || isTimeLocked) && !card.application_status;

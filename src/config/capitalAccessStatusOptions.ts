@@ -39,3 +39,13 @@ export const SCORE_FACTORS = {
     BANKING_RELATIONSHIP: 'banking_relationship',
     REVENUE_INCOME: 'revenue_income',
 } as const;
+
+export const ACCESS_TIME = {
+    DAY: 'Day',
+    ANYTIME: 'Anytime',
+    MORNING: 'Morning',
+    MID_DAY: 'Mid Day',
+    EVENING: 'Evening',
+} as const;
+
+export type AccessTime = typeof ACCESS_TIME[keyof typeof ACCESS_TIME];
