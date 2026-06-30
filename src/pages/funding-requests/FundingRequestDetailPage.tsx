@@ -139,7 +139,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
     const categoryName = review.funding_sequence?.name || review.funding_type || 'Business credit builder cards'
 
     return (
-        <div className="d-flex timeline-item-row position-relative mb-4 pb-2">
+        <div className="d-flex timeline-item-row position-relative mb-2">
             {/* Left timeline dot */}
             <div className="timeline-dot-container me-3 position-relative" style={{ zIndex: 2 }}>
                 <div className={`avatar-sm rounded-circle d-flex align-items-center justify-content-center ${bg} ${color} shadow-sm border border-white`} style={{ width: 36, height: 36 }}>
@@ -431,330 +431,341 @@ export default function FundingRequestDetailPage() {
     const countUpdates = activities.filter(a => String(a.log_type_raw || '').includes('update') || String(a.log_type_raw || '').includes('status')).length
 
     return (
-        <div className="page-content">
-            <div className="container-fluid">
+        <React.Fragment>
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                .activity-scroll-container::-webkit-scrollbar { width: 5px; }
+                .activity-scroll-container::-webkit-scrollbar-track { background: transparent; border-radius: 10px; }
+                .activity-scroll-container::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 10px; }
+                .activity-scroll-container::-webkit-scrollbar-thumb:hover { background: #adb5bd; }
+                `
+            }} />
+            <div className="page-content">
+                <div className="container-fluid">
 
-                {/* ── Header / Breadcrumb ─────────────────────────────────── */}
-                <div className="row pb-1 page-subheader-sticky bg-body">
-                    <div className="col-12">
-                        <div className="d-flex align-items-center justify-content-between py-2">
-                            <div className="flex-grow-1">
-                                <h4 className="fs-20 mb-1">Funding Request Detail</h4>
-                                <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb m-0 fs-12 text-muted">
-                                        <li className="breadcrumb-item"><Link to="/" className="text-muted">Dashboard</Link></li>
-                                        <li className="breadcrumb-item"><Link to="/funding-requests" className="text-muted">Funding Requests</Link></li>
-                                        <li className="breadcrumb-item active text-primary fw-semibold" aria-current="page">{reviewId}</li>
-                                    </ol>
-                                </nav>
+                    {/* ── Header / Breadcrumb ─────────────────────────────────── */}
+                    <div className="row pb-1 page-subheader-sticky bg-body">
+                        <div className="col-12">
+                            <div className="d-flex align-items-center justify-content-between py-2">
+                                <div className="flex-grow-1">
+                                    <h4 className="fs-20 mb-1">Funding Request Detail</h4>
+                                    <nav aria-label="breadcrumb">
+                                        <ol className="breadcrumb m-0 fs-12 text-muted">
+                                            <li className="breadcrumb-item"><Link to="/" className="text-muted">Dashboard</Link></li>
+                                            <li className="breadcrumb-item"><Link to="/funding-requests" className="text-muted">Funding Requests</Link></li>
+                                            <li className="breadcrumb-item active text-primary fw-semibold" aria-current="page">{reviewId}</li>
+                                        </ol>
+                                    </nav>
+                                </div>
+                                <Link to="/funding-requests" className="btn btn-outline-secondary btn-sm shadow-none">
+                                    <i className="ri-arrow-left-line align-bottom me-1"></i> Back
+                                </Link>
                             </div>
-                            <Link to="/funding-requests" className="btn btn-outline-secondary btn-sm shadow-none">
-                                <i className="ri-arrow-left-line align-bottom me-1"></i> Back
-                            </Link>
                         </div>
                     </div>
-                </div>
 
-                {/* ── Two Column Page Layout ─────────────────────────────── */}
-                <div className="row g-4 mt-1">
+                    {/* ── Two Column Page Layout ─────────────────────────────── */}
+                    <div className="row g-4 mt-1">
 
-                    {/* ── Left Column: Details Cards (Summary, Documents, Decision) ── */}
-                    <div className="col-lg-8">
-                        {/* Summary Card */}
-                        <div className="card border-0 shadow-sm mb-4">
-                            <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
-                                <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                                    <div className="d-flex align-items-center gap-3">
-                                        <div className="avatar-sm">
-                                            <div className="avatar-title bg-primary-subtle text-primary rounded-circle fs-20">
-                                                <i className="ri-file-text-line"></i>
+                        {/* ── Left Column: Details Cards (Summary, Documents, Decision) ── */}
+                        <div className="col-lg-8">
+                            {/* Summary Card */}
+                            <div className="card border-0 shadow-sm mb-4">
+                                <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
+                                    <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                        <div className="d-flex align-items-center gap-3">
+                                            <div className="avatar-sm">
+                                                <div className="avatar-title bg-primary-subtle text-primary rounded-circle fs-20">
+                                                    <i className="ri-file-text-line"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h5 className="mb-0 fw-bold fs-16">{reviewId}</h5>
+                                                <p className="mb-0 text-muted fs-12">Submitted on {formatDate(review.created_at)}</p>
                                             </div>
                                         </div>
-                                        <div>
-                                            <h5 className="mb-0 fw-bold fs-16">{reviewId}</h5>
-                                            <p className="mb-0 text-muted fs-12">Submitted on {formatDate(review.created_at)}</p>
-                                        </div>
+                                        <StatusBadge status={review.status} />
                                     </div>
-                                    <StatusBadge status={review.status} />
                                 </div>
-                            </div>
-                            <div className="card-body px-4 pb-4 pt-4">
-                                <div className="row g-3">
-                                    <div className="col-sm-6">
-                                        <div className="p-3 bg-light rounded-3">
-                                            <p className="text-muted fs-11 fw-semibold text-uppercase mb-1">Funding Type</p>
-                                            <p className="mb-0 fw-semibold text-dark fs-14">{review.funding_sequence?.name || review.funding_type || 'N/A'}</p>
+                                <div className="card-body px-4 pb-4 pt-4">
+                                    <div className="row g-3">
+                                        <div className="col-sm-6">
+                                            <div className="p-3 bg-light rounded-3">
+                                                <p className="text-muted fs-11 fw-semibold text-uppercase mb-1">Funding Type</p>
+                                                <p className="mb-0 fw-semibold text-dark fs-14">{review.funding_sequence?.name || review.funding_type || 'N/A'}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="col-sm-6">
-                                        <div className="p-3 bg-light rounded-3">
-                                            <p className="text-muted fs-11 fw-semibold text-uppercase mb-1">Requested Amount</p>
-                                            <p className="mb-0 fw-semibold text-dark fs-14">
-                                                {review.requested_amount ? `$${Number(review.requested_amount).toLocaleString()}` : 'N/A'}
-                                            </p>
+                                        <div className="col-sm-6">
+                                            <div className="p-3 bg-light rounded-3">
+                                                <p className="text-muted fs-11 fw-semibold text-uppercase mb-1">Requested Amount</p>
+                                                <p className="mb-0 fw-semibold text-dark fs-14">
+                                                    {review.requested_amount ? `$${Number(review.requested_amount).toLocaleString()}` : 'N/A'}
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="col-sm-6">
-                                        <div className="p-3 bg-light rounded-3">
-                                            <p className="text-muted fs-11 fw-semibold text-uppercase mb-1">Use of Funds</p>
-                                            <p className="mb-0 fw-semibold text-dark fs-14">{review.use_of_funds || 'Working Capital'}</p>
+                                        <div className="col-sm-6">
+                                            <div className="p-3 bg-light rounded-3">
+                                                <p className="text-muted fs-11 fw-semibold text-uppercase mb-1">Use of Funds</p>
+                                                <p className="mb-0 fw-semibold text-dark fs-14">{review.use_of_funds || 'Working Capital'}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="col-sm-6">
-                                        <div className="p-3 bg-light rounded-3">
-                                            <p className="text-muted fs-11 fw-semibold text-uppercase mb-1">Estimated Amount</p>
-                                            <p className="mb-0 fw-semibold text-dark fs-14">
-                                                {review.funding_sequence?.amount_range || 'N/A'}
-                                            </p>
+                                        <div className="col-sm-6">
+                                            <div className="p-3 bg-light rounded-3">
+                                                <p className="text-muted fs-11 fw-semibold text-uppercase mb-1">Estimated Amount</p>
+                                                <p className="mb-0 fw-semibold text-dark fs-14">
+                                                    {review.funding_sequence?.amount_range || 'N/A'}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Documents Card */}
-                        <div className="card border-0 shadow-sm mb-4">
-                            <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
-                                <h6 className="mb-0 fw-bold fs-15">
-                                    <i className="ri-folder-2-line me-2 text-primary"></i>
-                                    Uploaded Documents
-                                    {review.actual_documents?.length > 0 && (
-                                        <span className="ms-2 badge bg-success-subtle text-success border border-success-subtle">
-                                            {review.actual_documents.length} Attached
-                                        </span>
-                                    )}
-                                </h6>
-                            </div>
-                            <div className="card-body px-4 pb-4 pt-3">
-                                {review.actual_documents && review.actual_documents.length > 0 ? (
-                                    <div className="table-responsive">
-                                        <table className="table table-nowrap align-middle mb-0">
-                                            <thead className="table-light text-muted">
-                                                <tr>
-                                                    <th className="text-start">Document Name</th>
-                                                    <th className="text-center">Status</th>
-                                                    <th className="text-center">Upload Date</th>
-                                                    <th className="text-end">Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {review.actual_documents.map((doc: any, idx: number) => {
-                                                    const config = getFileConfig(doc.document_url || doc.file_path || doc.document_name || '')
-                                                    return (
-                                                        <tr key={idx} className="border-bottom border-bottom-dashed">
-                                                            <td className="text-start fw-medium text-dark">
-                                                                <div className="d-flex align-items-center">
-                                                                    <div className="avatar-xs flex-shrink-0 me-2">
-                                                                        <div className={`avatar-title ${config.bg} ${config.color} rounded fs-16`}>
-                                                                            <i className={config.icon}></i>
-                                                                        </div>
-                                                                    </div>
-                                                                    <a href="#" onClick={(e) => {
-                                                                        e.preventDefault()
-                                                                        if (doc.document_url) {
-                                                                            window.open(doc.document_url, '_blank')
-                                                                        }
-                                                                    }}
-                                                                        className="text-body fw-medium text-truncate d-block" style={{ maxWidth: 260 }}>
-                                                                        {doc.document_name}
-                                                                    </a>
-                                                                </div>
-                                                            </td>
-                                                            <td className="text-center">
-                                                                {doc.status === 'Accepted' ? (
-                                                                    <span className="badge bg-success-subtle text-success">Accepted</span>
-                                                                ) : doc.status === 'Rejected' ? (
-                                                                    <span className="badge bg-danger-subtle text-danger">Rejected</span>
-                                                                ) : doc.status === 'Under Review' ? (
-                                                                    <span className="badge bg-warning-subtle text-warning">Under Review</span>
-                                                                ) : (
-                                                                    <span className="badge bg-info-subtle text-info">Uploaded</span>
-                                                                )}
-                                                            </td>
-                                                            <td className="text-center text-muted fs-12">
-                                                                {formatDateTime(doc.created_at)}
-                                                            </td>
-                                                            <td className="text-end">
-                                                                <div className="d-flex gap-2 justify-content-end">
-                                                                    <button className="btn btn-sm btn-light border d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }} onClick={() => {
-                                                                        if (doc.document_url) {
-                                                                            window.open(doc.document_url, '_blank')
-                                                                        }
-                                                                    }} title="View">
-                                                                        <i className="ri-eye-line fs-14"></i>
-                                                                    </button>
-                                                                    <button className="btn btn-sm btn-light border d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }} onClick={async (e) => {
-                                                                        e.preventDefault()
-                                                                        try {
-                                                                            let fileName = doc.document_name || 'document';
-                                                                            const ext = (doc.document_url?.split(/[#?]/)[0].split('.').pop() || '').trim().toLowerCase();
-                                                                            if (ext && !fileName.toLowerCase().endsWith(`.${ext}`)) {
-                                                                                fileName += `.${ext}`;
-                                                                            }
-
-                                                                            if (doc.id && !String(doc.id).startsWith('missing_')) {
-                                                                                const response = await downloadBorrowerDocument(doc.id);
-                                                                                let blob = response.data instanceof Blob ? response.data : new Blob([response.data]);
-                                                                                downloadBlob(blob, fileName);
-                                                                            } else if (doc.document_url) {
-                                                                                downloadFileFromUrl(doc.document_url, fileName);
-                                                                            } else {
-                                                                                toast.error('Unable to download this document.');
-                                                                            }
-                                                                        } catch (error) {
-                                                                            console.error('API download failed', error);
-                                                                            if (doc.document_url) {
-                                                                                window.open(doc.document_url, '_blank');
-                                                                            } else {
-                                                                                toast.error('Failed to download document.');
-                                                                            }
-                                                                        }
-                                                                    }} title="Download">
-                                                                        <i className="ri-download-2-line fs-14"></i>
-                                                                    </button>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    )
-                                                })}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-4 text-muted">
-                                        <i className="ri-folder-open-line fs-2 d-block mb-2"></i>
-                                        <p className="mb-0 fs-13">No documents uploaded.</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Decision Details */}
-                        {(review.reviewer?.name || [FUNDING_REVIEW_STATUS.APPROVED, FUNDING_REVIEW_STATUS.REJECTED, 'Accepted'].includes(review.status)) && (
+                            {/* Documents Card */}
                             <div className="card border-0 shadow-sm mb-4">
                                 <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
                                     <h6 className="mb-0 fw-bold fs-15">
-                                        <i className="ri-shield-check-line me-2 text-success"></i>
-                                        Decision Details
+                                        <i className="ri-folder-2-line me-2 text-primary"></i>
+                                        Uploaded Documents
+                                        {review.actual_documents?.length > 0 && (
+                                            <span className="ms-2 badge bg-success-subtle text-success border border-success-subtle">
+                                                {review.actual_documents.length} Attached
+                                            </span>
+                                        )}
                                     </h6>
                                 </div>
                                 <div className="card-body px-4 pb-4 pt-3">
-                                    <div className="row g-3">
-                                        {review.reviewer?.name && (
-                                            <div className="col-12">
-                                                <p className="text-muted mb-1 fs-13">Reviewed By:</p>
-                                                <p className="fw-semibold text-dark mb-0">{review.reviewer.name}</p>
-                                            </div>
-                                        )}
-                                        {review.status === FUNDING_REVIEW_STATUS.REJECTED && review.reject_reason && (
-                                            <div className="col-12">
-                                                <div className="alert alert-danger border-0 mb-0">
-                                                    <p className="mb-0 fs-13">
-                                                        <span className="fw-bold">Reason for Rejection:</span>{' '}
-                                                        {review.reject_reason}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        )}
-                                        {(review.status === FUNDING_REVIEW_STATUS.APPROVED || review.status === 'Accepted') && (
-                                            <div className="col-12">
-                                                <div className="alert alert-success border-0 mb-0">
-                                                    <p className="mb-0 fs-13">
-                                                        <span className="fw-bold">Approved:</span>{' '}
-                                                        Your funding request has been approved for {review.funding_type}. Please proceed with the final funding application.
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                                    {review.actual_documents && review.actual_documents.length > 0 ? (
+                                        <div className="table-responsive">
+                                            <table className="table table-nowrap align-middle mb-0">
+                                                <thead className="table-light text-muted">
+                                                    <tr>
+                                                        <th className="text-start">Document Name</th>
+                                                        <th className="text-center">Status</th>
+                                                        <th className="text-center">Upload Date</th>
+                                                        <th className="text-end">Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {review.actual_documents.map((doc: any, idx: number) => {
+                                                        const config = getFileConfig(doc.document_url || doc.file_path || doc.document_name || '')
+                                                        return (
+                                                            <tr key={idx} className="border-bottom border-bottom-dashed">
+                                                                <td className="text-start fw-medium text-dark">
+                                                                    <div className="d-flex align-items-center">
+                                                                        <div className="avatar-xs flex-shrink-0 me-2">
+                                                                            <div className={`avatar-title ${config.bg} ${config.color} rounded fs-16`}>
+                                                                                <i className={config.icon}></i>
+                                                                            </div>
+                                                                        </div>
+                                                                        <a href="#" onClick={(e) => {
+                                                                            e.preventDefault()
+                                                                            if (doc.document_url) {
+                                                                                window.open(doc.document_url, '_blank')
+                                                                            }
+                                                                        }}
+                                                                            className="text-body fw-medium text-truncate d-block" style={{ maxWidth: 260 }}>
+                                                                            {doc.document_name}
+                                                                        </a>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="text-center">
+                                                                    {doc.status === 'Accepted' ? (
+                                                                        <span className="badge bg-success-subtle text-success">Accepted</span>
+                                                                    ) : doc.status === 'Rejected' ? (
+                                                                        <span className="badge bg-danger-subtle text-danger">Rejected</span>
+                                                                    ) : doc.status === 'Under Review' ? (
+                                                                        <span className="badge bg-warning-subtle text-warning">Under Review</span>
+                                                                    ) : (
+                                                                        <span className="badge bg-info-subtle text-info">Uploaded</span>
+                                                                    )}
+                                                                </td>
+                                                                <td className="text-center text-muted fs-12">
+                                                                    {formatDateTime(doc.created_at)}
+                                                                </td>
+                                                                <td className="text-end">
+                                                                    <div className="d-flex gap-2 justify-content-end">
+                                                                        <button className="btn btn-sm btn-light border d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }} onClick={() => {
+                                                                            if (doc.document_url) {
+                                                                                window.open(doc.document_url, '_blank')
+                                                                            }
+                                                                        }} title="View">
+                                                                            <i className="ri-eye-line fs-14"></i>
+                                                                        </button>
+                                                                        <button className="btn btn-sm btn-light border d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }} onClick={async (e) => {
+                                                                            e.preventDefault()
+                                                                            try {
+                                                                                let fileName = doc.document_name || 'document';
+                                                                                const ext = (doc.document_url?.split(/[#?]/)[0].split('.').pop() || '').trim().toLowerCase();
+                                                                                if (ext && !fileName.toLowerCase().endsWith(`.${ext}`)) {
+                                                                                    fileName += `.${ext}`;
+                                                                                }
 
-                    {/* ── Right Column: Activity Log Timeline Sidebar ── */}
-                    <div className="col-lg-4">
-                        <div className="card border-0 shadow-sm rounded-3">
-                            {/* Card Header */}
-                            <div className="card-header bg-white border-0 px-3 pt-3 pb-0">
-                                <div className="d-flex align-items-center gap-2">
-                                    <i className="ri-history-line fs-18 text-dark"></i>
-                                    <h5 className="mb-0 fw-bold text-dark fs-16">Activity</h5>
-                                </div>
-                            </div>
-
-                            {/* Sub-header Filter Tabs */}
-                            <div className="card-body px-3 pt-3 pb-3" style={{ maxHeight: '600px', overflowY: 'auto', overflowX: 'hidden' }}>
-
-                                {/* Activity Logs Timeline */}
-                                <div className="timeline-container position-relative px-0" ref={activityRef}>
-                                    {/* Vertical connecting line */}
-                                    <div
-                                        className="timeline-vertical-line position-absolute"
-                                        style={{
-                                            left: 18,
-                                            top: 10,
-                                            bottom: 10,
-                                            width: 2,
-                                            borderLeft: '2px dashed #e9ecef',
-                                            zIndex: 1
-                                        }}
-                                    />
-
-                                    {actLoading ? (
-                                        <div className="py-3">
-                                            {[1, 2, 3].map(i => (
-                                                <div key={i} className="d-flex gap-2.5 mb-3">
-                                                    <Skeleton w={36} h={36} rounded />
-                                                    <div className="flex-grow-1">
-                                                        <Skeleton w="60%" h={12} /><br />
-                                                        <Skeleton w="90%" h={10} />
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : filtered.length === 0 ? (
-                                        <div className="text-center py-4 text-muted">
-                                            <i className="ri-history-line fs-24 d-block mb-1 text-muted opacity-50"></i>
-                                            <p className="mb-0 fs-12 fw-semibold">No activities found.</p>
+                                                                                if (doc.id && !String(doc.id).startsWith('missing_')) {
+                                                                                    const response = await downloadBorrowerDocument(doc.id);
+                                                                                    let blob = response.data instanceof Blob ? response.data : new Blob([response.data]);
+                                                                                    downloadBlob(blob, fileName);
+                                                                                } else if (doc.document_url) {
+                                                                                    downloadFileFromUrl(doc.document_url, fileName);
+                                                                                } else {
+                                                                                    toast.error('Unable to download this document.');
+                                                                                }
+                                                                            } catch (error) {
+                                                                                console.error('API download failed', error);
+                                                                                if (doc.document_url) {
+                                                                                    window.open(doc.document_url, '_blank');
+                                                                                } else {
+                                                                                    toast.error('Failed to download document.');
+                                                                                }
+                                                                            }
+                                                                        }} title="Download">
+                                                                            <i className="ri-download-2-line fs-14"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        )
+                                                    })}
+                                                </tbody>
+                                            </table>
                                         </div>
                                     ) : (
-                                        <div className="timeline-list">
-                                            {filtered.map((act, index) => (
-                                                <ActivityItem
-                                                    key={act.id}
-                                                    activity={act}
-                                                    review={review}
-                                                    isFirst={index === filtered.length - 1} // Submit event is first (last in array)
-                                                />
-                                            ))}
+                                        <div className="text-center py-4 text-muted">
+                                            <i className="ri-folder-open-line fs-2 d-block mb-2"></i>
+                                            <p className="mb-0 fs-13">No documents uploaded.</p>
                                         </div>
                                     )}
                                 </div>
+                            </div>
 
-                                {/* Pagination / Load More Footer */}
-                                {actHasMore && filtered.length > 0 && (
-                                    <div className="text-center mt-4 mb-2">
-                                        <button
-                                            className="btn btn-soft-primary btn-sm rounded-pill px-4"
-                                            onClick={loadMore}
-                                            disabled={actLoadingMore}
-                                        >
-                                            {actLoadingMore ? (
-                                                <><span className="spinner-border spinner-border-sm align-middle me-2"></span>Loading...</>
-                                            ) : (
-                                                <><i className="ri-arrow-down-line align-middle me-1"></i> Load More Activity</>
-                                            )}
-                                        </button>
+                            {/* Decision Details */}
+                            {(review.reviewer?.name || [FUNDING_REVIEW_STATUS.APPROVED, FUNDING_REVIEW_STATUS.REJECTED, 'Accepted'].includes(review.status)) && (
+                                <div className="card border-0 shadow-sm mb-4">
+                                    <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
+                                        <h6 className="mb-0 fw-bold fs-15">
+                                            <i className="ri-shield-check-line me-2 text-success"></i>
+                                            Decision Details
+                                        </h6>
                                     </div>
-                                )}
+                                    <div className="card-body px-4 pb-4 pt-3">
+                                        <div className="row g-3">
+                                            {review.reviewer?.name && (
+                                                <div className="col-12">
+                                                    <p className="text-muted mb-1 fs-13">Reviewed By:</p>
+                                                    <p className="fw-semibold text-dark mb-0">{review.reviewer.name}</p>
+                                                </div>
+                                            )}
+                                            {review.status === FUNDING_REVIEW_STATUS.REJECTED && review.reject_reason && (
+                                                <div className="col-12">
+                                                    <div className="alert alert-danger border-0 mb-0">
+                                                        <p className="mb-0 fs-13">
+                                                            <span className="fw-bold">Reason for Rejection:</span>{' '}
+                                                            {review.reject_reason}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {(review.status === FUNDING_REVIEW_STATUS.APPROVED || review.status === 'Accepted') && (
+                                                <div className="col-12">
+                                                    <div className="alert alert-success border-0 mb-0">
+                                                        <p className="mb-0 fs-13">
+                                                            <span className="fw-bold">Approved:</span>{' '}
+                                                            Your funding request has been approved for {review.funding_type}. Please proceed with the final funding application.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* ── Right Column: Activity Log Timeline Sidebar ── */}
+                        <div className="col-lg-4">
+                            <div className="card border-0 shadow-sm rounded-3">
+                                {/* Card Header */}
+                                <div className="card-header px-3 py-2 align-items-center justify-content-between d-flex flex-column flex-sm-row gap-2">
+                                    <div className="d-flex align-items-center gap-2">
+                                        <i className="ri-history-line fs-18 text-dark"></i>
+                                        <h5 className="mb-0 fw-bold text-dark fs-16">Activity</h5>
+                                    </div>
+                                </div>
+
+                                {/* Sub-header Filter Tabs */}
+                                <div className="card-body px-3 pt-3 pb-3 activity-scroll-container" style={{ maxHeight: '600px', overflowY: 'auto', overflowX: 'hidden' }}>
+
+                                    {/* Activity Logs Timeline */}
+                                    <div className="timeline-container position-relative px-0" ref={activityRef}>
+                                        {/* Vertical connecting line */}
+                                        <div
+                                            className="timeline-vertical-line position-absolute"
+                                            style={{
+                                                left: 18,
+                                                top: 10,
+                                                bottom: 10,
+                                                width: 2,
+                                                borderLeft: '2px dashed #e9ecef',
+                                                zIndex: 1
+                                            }}
+                                        />
+
+                                        {actLoading ? (
+                                            <div className="py-2">
+                                                {[1, 2, 3].map(i => (
+                                                    <div key={i} className="d-flex align-items-start p-2 mb-2">
+                                                        <div className="me-3 flex-shrink-0">
+                                                            <Skeleton w={36} h={36} rounded />
+                                                        </div>
+                                                        <div className="flex-grow-1">
+                                                            <div className="mb-2"><Skeleton w="45%" h={14} /></div>
+                                                            <div><Skeleton w="75%" h={12} /></div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : filtered.length === 0 ? (
+                                            <div className="text-center py-4 text-muted">
+                                                <i className="ri-history-line fs-24 d-block mb-1 text-muted opacity-50"></i>
+                                                <p className="mb-0 fs-12 fw-semibold">No activities found.</p>
+                                            </div>
+                                        ) : (
+                                            <div className="timeline-list">
+                                                {filtered.map((act, index) => (
+                                                    <ActivityItem
+                                                        key={act.id}
+                                                        activity={act}
+                                                        review={review}
+                                                        isFirst={index === filtered.length - 1} // Submit event is first (last in array)
+                                                    />
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Pagination / Load More Footer */}
+                                    {actHasMore && filtered.length > 0 && (
+                                        <div className="text-center mt-4 mb-2">
+                                            <button
+                                                className="btn btn-soft-primary btn-sm rounded-pill px-4"
+                                                onClick={loadMore}
+                                                disabled={actLoadingMore}
+                                            >
+                                                {actLoadingMore ? (
+                                                    <><span className="spinner-border spinner-border-sm align-middle me-2"></span>Loading...</>
+                                                ) : (
+                                                    <><i className="ri-arrow-down-line align-middle me-1"></i> Load More Activity</>
+                                                )}
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
+
                     </div>
-
                 </div>
-
             </div>
-        </div>
+        </React.Fragment>
     )
 }
