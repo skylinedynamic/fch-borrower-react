@@ -23,6 +23,8 @@ export type AuthUser = {
   credit_profile_updated?: boolean
   enrollment_type?: string
   phase?: string
+  is_free_trail?: boolean
+  free_trail_end_date?: string | null
   [key: string]: unknown
 }
 
@@ -39,6 +41,8 @@ export type UserSubscription = {
   partner_type?: string | null
   partner_invoice_status?: string | null
   partner_payment_for_me?: boolean
+  is_free_trail?: boolean
+  free_trail_end_date?: string | null
   [key: string]: unknown
 }
 

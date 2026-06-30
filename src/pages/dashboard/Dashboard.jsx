@@ -126,13 +126,16 @@ export default function Dashboard() {
     const showAlert = (isRestricted || isWL || isCertified) && pendingInvoices.length > 0;
 
 
-    // Credit Score Mock Data (keep as mock since not in API)
-    const creditScore = 740;
+    // Credit Score from API
+    const ficoScore = dashboardData?.data.fico_score;
+    const hasFico = ficoScore !== null && ficoScore !== undefined && ficoScore !== '';
+    const displayFico = hasFico ? Number(ficoScore) : null;
+
     const creditScoreData = {
         labels: ['Score', 'Remaining'],
         datasets: [
             {
-                data: [creditScore, 850 - creditScore],
+                data: hasFico ? [displayFico, 850 - displayFico] : [0, 100],
                 backgroundColor: ['#405189', '#f0f0f0'],
                 hoverBackgroundColor: ['#405189', '#f0f0f0'],
                 borderWidth: 0
@@ -336,16 +339,20 @@ export default function Dashboard() {
                                         <h5 className="card-title mb-0 flex-grow-1">Credit Score</h5>
                                     </div>
                                     <div className="card-body d-flex align-items-center justify-content-between p-4">
-                                        <div className="text-center position-relative" style={{ width: '120px', height: '120px', opacity: '0.4' }}>
+                                        <div className="text-center position-relative" style={{ width: '120px', height: '120px', opacity: hasFico ? '1' : '0.4' }}>
                                             <Chart type="doughnut" data={creditScoreData} options={creditScoreOptions} className="w-100 h-100" />
                                             <div className="position-absolute top-50 start-50 translate-middle text-center">
-                                                <h4 className="mb-0 fw-bold text-muted">---</h4>
-                                                <small className="text-muted fs-10">N/A</small>
+                                                <h4 className={`mb-0 fw-bold ${hasFico ? 'text-primary' : 'text-muted'}`}>{hasFico ? displayFico : '---'}</h4>
+                                                <small className="text-muted fs-10">{hasFico ? 'FICO' : 'N/A'}</small>
                                             </div>
                                         </div>
                                         <div className="flex-grow-1 ms-4">
-                                            <p className="text-muted mb-2 fs-13">You haven't started credit scoring yet. Build your credit profile to unlock better financing options.</p>
-
+                                            <p className="text-muted mb-2 fs-13">
+                                                {hasFico 
+                                                    ? `Your current credit score is ${displayFico}. Keep building your credit profile to unlock better financing options.`
+                                                    : "You haven't started credit scoring yet. Build your credit profile to unlock better financing options."
+                                                }
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
