@@ -34,8 +34,8 @@ export default function Sidebar() {
   };
 
   // Resolved logos for different sidebar states
-  const primaryLogo = branding?.primary_logo_full_url 
-  const secondaryLogo = branding?.secondary_logo_full_url 
+  const primaryLogo = branding?.primary_logo_full_url
+  const secondaryLogo = branding?.secondary_logo_full_url
   const displayLogo = isMobile ? secondaryLogo : primaryLogo
   const compactLogo = secondaryLogo
 
@@ -233,7 +233,7 @@ export default function Sidebar() {
                 <span className="trial-expires">Expires {formatTrialDate(trialEndDate)}</span>
               )}
             </div>
-            <span className="trial-badge">TRIAL</span>
+            <span className="trial-badge">FREE</span>
           </div>
         </div>
       )}
