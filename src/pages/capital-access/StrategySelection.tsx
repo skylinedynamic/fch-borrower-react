@@ -38,11 +38,11 @@ export default function StrategySelection() {
                   <i className="ri-arrow-left-line fs-16"></i>
                 </Link>
                 <div>
-                  <h4 className="fs-22 mb-1 fw-bold text-dark">Capital Access Strategy</h4>
-                  <p className="ca-page-subtitle">
-                    Choose a strategy that fits your business funding goals. Each play is a structured sequence of card applications designed to maximize your credit access.
-                  </p>
-                </div>
+                    <h4 className="fs-22 mb-1 fw-bold text-dark">Capital Access Strategy</h4>
+                    <p className="ca-page-subtitle">
+                      Choose a strategy that fits your business funding goals. Each play is a structured sequence of card applications designed to maximize your credit access.
+                    </p>
+                  </div>
               </div>
             </div>
           </div>

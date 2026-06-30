@@ -133,7 +133,6 @@ function ListLoader() {
     <>
       {/* Recommended / Hero card */}
       <div className="mb-4">
-        <SkLine w={160} h={16} mb={12} />
         <SkCard mb={0}>
           <SkCardHeader>
             <SkCircle size={52} />
@@ -151,16 +150,16 @@ function ListLoader() {
                 </div>
               ))}
             </div>
-            <SkLine w="100%" h={14} mb={6} />
-            <SkLine w="80%" h={14} />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 8 }}>
+              <SkRect w={140} h={40} radius={6} />
+            </div>
           </SkCardBody>
         </SkCard>
       </div>
 
       {/* Other strategies list */}
-      <SkLine w={150} h={16} mb={12} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {[1, 2, 3].map((n) => (
+        {[1, 2, 3, 4].map((n) => (
           <div
             key={n}
             style={{
@@ -176,16 +175,18 @@ function ListLoader() {
               gap: 16,
             }}
           >
-            <div
-              style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1 }}
-            >
-              <SkCircle size={48} />
-              <div style={{ flex: 1 }}>
-                <SkLine w="50%" h={17} mb={8} />
-                <SkLine w="75%" h={13} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1, minWidth: 0 }}>
+              <SkCircle size={40} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <SkLine w="50%" h={14} mb={6} />
+                <SkLine w="70%" h={12} />
               </div>
             </div>
-            <SkRect w={110} h={32} radius={20} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+              <SkRect w={90} h={36} radius={6} />
+              <SkRect w={90} h={36} radius={6} />
+              <SkCircle size={20} />
+            </div>
           </div>
         ))}
       </div>
@@ -205,7 +206,7 @@ function DetailLoader() {
             <div className="ca-metric-header">
               <div className="ca-metric-title-block">
                 <h6 className="ca-metric-card-label">
-                  Funding Readiness Score
+                  <SkLine w={160} h={14} />
                 </h6>
                 <div className="ca-score-display">
                   <span className="ca-score-value">
@@ -216,8 +217,8 @@ function DetailLoader() {
                   </span>
                 </div>
               </div>
-              <div className="ca-metric-icon-wrapper readiness-icon">
-                <i className="ri-shield-flash-line" style={{ opacity: 0.3 }}></i>
+              <div className="ca-metric-icon-wrapper">
+                <SkCircle size={44} />
               </div>
             </div>
 
@@ -258,14 +259,14 @@ function DetailLoader() {
             <div className="ca-metric-header">
               <div className="ca-metric-title-block">
                 <h6 className="ca-metric-card-label">
-                  Estimated Total Access
+                  <SkLine w={140} h={14} />
                 </h6>
                 <div className="ca-access-value">
                   <SkLine w={160} h={34} />
                 </div>
               </div>
-              <div className="ca-metric-icon-wrapper access-icon">
-                <i className="ri-money-dollar-box-line" style={{ opacity: 0.3 }}></i>
+              <div className="ca-metric-icon-wrapper">
+                <SkCircle size={44} />
               </div>
             </div>
 
@@ -273,7 +274,7 @@ function DetailLoader() {
               {[1, 2, 3, 4, 5].map((_, index) => (
                 <div
                   key={index}
-                  className="ca-exposure-vertical-bar skeleton-line"
+                  className="skeleton-line"
                   style={{
                     height: `${25 + (index % 3) * 20}%`,
                     width: '24px',
@@ -285,8 +286,9 @@ function DetailLoader() {
               ))}
             </div>
 
-            <div className="ca-access-footer">
-              Across Eligible Plays
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 16 }}>
+              <SkCircle size={6} />
+              <SkLine w={120} h={12} />
             </div>
           </div>
         </div>
@@ -296,13 +298,14 @@ function DetailLoader() {
       <div className="ca-next-step-card">
         <div className="ca-next-step-content">
           <h6 className="ca-next-step-label">
-            Recommended Next Step
+            <SkLine w={180} h={14} mb={8} />
           </h6>
-          <p className="ca-next-step-desc">
-            Select your Capital Access Strategy to begin.
+          <p className="ca-next-step-desc" style={{ margin: 0 }}>
+            <SkLine w="100%" h={12} mb={4} />
+            <SkLine w="65%" h={12} />
           </p>
         </div>
-        <div className="skeleton-line" style={{ width: '180px', height: '41px', borderRadius: 'var(--ca-radius, 4px)' }} />
+        <div className="skeleton-line" style={{ width: '180px', height: '41px', borderRadius: 'var(--ca-radius, 4px)', flexShrink: 0 }} />
       </div>
     </>
   )

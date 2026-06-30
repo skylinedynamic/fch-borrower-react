@@ -40,12 +40,24 @@ export default function CapitalAccess() {
           <CapitalAccessPageHeader />
 
           <div className="ca-dashboard-welcome">
-            <WelcomeHeader firstName={firstName} />
-
             {isLoading ? (
-              <CapitalAccessLoader type="detail" />
+              <>
+                {/* Skeleton welcome header */}
+                <div className="ca-welcome-header">
+                  <div
+                    className="skeleton-line"
+                    style={{ width: 220, height: 28, borderRadius: 6, marginBottom: 10 }}
+                  />
+                  <div
+                    className="skeleton-line"
+                    style={{ width: 180, height: 14, borderRadius: 4 }}
+                  />
+                </div>
+                <CapitalAccessLoader type="detail" />
+              </>
             ) : (
               <>
+                <WelcomeHeader firstName={firstName} />
                 <div className="row g-4 mb-4">
                   <FundingReadinessScoreCard
                     score={score}
