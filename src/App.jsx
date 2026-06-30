@@ -34,6 +34,7 @@ import Funding from '../src/pages/funding/Funding.tsx'
 import FundingDetail from '../src/pages/funding/components/FundingDetail.tsx'
 import FundingRequestWizard from '../src/pages/funding/FundingRequestWizard.tsx'
 import FundingRequestList from '../src/pages/funding-requests/FundingRequestList.tsx'
+import FundingRequestDetailPage from '../src/pages/funding-requests/FundingRequestDetailPage.tsx'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import GlobalModals from './components/Common/Modals/GlobalModals'
@@ -126,6 +127,7 @@ export default function App() {
             <Route path="funding/:id" element={<FundingDetail />} />
             <Route path="funding/:id/review" element={<FundingRequestWizard />} />
             <Route path="funding-requests" element={<FundingRequestList />} />
+            <Route path="funding-requests/:id" element={<FundingRequestDetailPage />} />
 
             <Route path="credit-builder">
               <Route index element={<CreditOverview />} />

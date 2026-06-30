@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useBorrowerFundingRequests } from '../../modules/funding-requests/queries'
 import { DataTable } from '../../components/Table/DataTableWrapper'
 import { Column } from 'primereact/column'
 import { Dropdown } from 'primereact/dropdown'
-import FundingRequestModal from './FundingRequestModal'
 import StatisticsCardSkeleton from '../../components/Common/StatisticsCardSkeleton'
 import StatisticsCard from '../../components/Common/StatisticsCard'
 
 export default function FundingRequestList() {
+    const navigate = useNavigate()
     const [page, setPage] = useState(1)
     const [perPage, setPerPage] = useState(10)
     const [searchText, setSearchText] = useState('')
@@ -16,9 +16,6 @@ export default function FundingRequestList() {
     
     const [appliedSearchText, setAppliedSearchText] = useState('')
     const [appliedStatus, setAppliedStatus] = useState<string | null>(null)
-    
-    const [selectedReview, setSelectedReview] = useState<any>(null)
-    const [showModal, setShowModal] = useState(false)
 
     const [sortField, setSortField] = useState<string>('id')
     const [sortOrder, setSortOrder] = useState<number>(-1)
@@ -54,8 +51,7 @@ export default function FundingRequestList() {
     };
 
     const handleView = (review: any) => {
-        setSelectedReview(review)
-        setShowModal(true)
+        navigate(`/funding-requests/${review.id}`)
     }
 
     const onPage = (e: any) => {
@@ -251,14 +247,6 @@ export default function FundingRequestList() {
                     </div>
                 </div>
             </div>
-
-            {selectedReview && (
-                <FundingRequestModal 
-                    show={showModal} 
-                    onHide={() => setShowModal(false)} 
-                    review={selectedReview} 
-                />
-            )}
         </div>
     )
 }
