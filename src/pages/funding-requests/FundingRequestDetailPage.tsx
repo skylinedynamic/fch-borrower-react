@@ -379,28 +379,133 @@ export default function FundingRequestDetailPage() {
 
     if (loading) {
         return (
-            <div className="page-content">
-                <div className="container-fluid">
-                    <Skeleton w={200} h={16} /><br /><br />
-                    <div className="row g-4">
-                        <div className="col-lg-8">
-                            <div className="card border-0 shadow-sm p-4">
-                                <Skeleton w="40%" h={22} /><br />
-                                <Skeleton w="100%" h={15} /><br /><br />
-                                <Skeleton w="80%" h={12} />
+            <React.Fragment>
+                <style dangerouslySetInnerHTML={{
+                    __html: `
+                    .activity-scroll-container::-webkit-scrollbar { width: 5px; }
+                    .activity-scroll-container::-webkit-scrollbar-track { background: transparent; border-radius: 10px; }
+                    .activity-scroll-container::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 10px; }
+                    .activity-scroll-container::-webkit-scrollbar-thumb:hover { background: #adb5bd; }
+                    `
+                }} />
+                <div className="page-content funding-requests-page">
+                    <div className="container-fluid">
+                        {/* Skeleton Breadcrumb */}
+                        <div className="row pb-1 page-subheader-sticky bg-body">
+                            <div className="col-12">
+                                <div className="d-flex align-items-center justify-content-between flex-row py-2">
+                                    <div className="flex-grow-1">
+                                        <div className="mb-2"><Skeleton w={200} h={24} /></div>
+                                        <div><Skeleton w={280} h={14} /></div>
+                                    </div>
+                                    <div className="mt-0">
+                                        <Skeleton w={70} h={30} rounded={false} />
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div className="col-lg-4">
-                            <div className="card border-0 shadow-sm p-4">
-                                <Skeleton w="60%" h={20} /><br />
-                                {[1, 2, 3].map(i => (
-                                    <div key={i} className="mb-3"><Skeleton w="100%" h={12} /></div>
-                                ))}
+
+                        {/* Skeleton Layout */}
+                        <div className="row g-4 mt-1">
+                            {/* Left Column */}
+                            <div className="col-lg-8">
+                                {/* Summary Card Skeleton */}
+                                <div className="card border-0 shadow-sm mb-4">
+                                    <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
+                                        <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                            <div className="d-flex align-items-center gap-3">
+                                                <Skeleton w={36} h={36} rounded />
+                                                <div>
+                                                    <div className="mb-2"><Skeleton w={140} h={18} /></div>
+                                                    <div><Skeleton w={100} h={12} /></div>
+                                                </div>
+                                            </div>
+                                            <Skeleton w={70} h={20} />
+                                        </div>
+                                    </div>
+                                    <div className="card-body px-4 pb-4 pt-4">
+                                        <div className="row g-3">
+                                            {[1, 2, 3, 4].map(i => (
+                                                <div key={i} className="col-sm-6">
+                                                    <div className="p-3 bg-light rounded-3">
+                                                        <div className="mb-2"><Skeleton w={120} h={14} /></div>
+                                                        <div><Skeleton w={160} h={18} /></div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Documents Card Skeleton */}
+                                <div className="card border-0 shadow-sm mb-4">
+                                    <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
+                                        <div className="d-flex align-items-center gap-2">
+                                            <Skeleton w={16} h={16} rounded />
+                                            <Skeleton w={160} h={18} />
+                                            <Skeleton w={70} h={20} />
+                                        </div>
+                                    </div>
+                                    <div className="card-body px-4 pb-4 pt-4">
+                                        <div className="table-responsive">
+                                            <table className="table table-nowrap align-middle mb-0">
+                                                <thead className="table-light">
+                                                    <tr>
+                                                        <th><Skeleton w={100} h={14} /></th>
+                                                        <th><Skeleton w={60} h={14} /></th>
+                                                        <th><Skeleton w={80} h={14} /></th>
+                                                        <th><Skeleton w={40} h={14} /></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {[1, 2].map(i => (
+                                                        <tr key={i}>
+                                                            <td>
+                                                                <div className="d-flex align-items-center gap-2">
+                                                                    <Skeleton w={24} h={24} rounded />
+                                                                    <Skeleton w={140} h={14} />
+                                                                </div>
+                                                            </td>
+                                                            <td><Skeleton w={60} h={20} /></td>
+                                                            <td><Skeleton w={100} h={14} /></td>
+                                                            <td><Skeleton w={70} h={30} /></td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Right Column: Activity Log Skeleton */}
+                            <div className="col-lg-4">
+                                <div className="card border-0 shadow-sm rounded-3">
+                                    <div className="card-header bg-white border-0 px-3 pt-3 pb-0">
+                                        <div className="d-flex align-items-center gap-2">
+                                            <Skeleton w={18} h={18} rounded />
+                                            <Skeleton w={80} h={20} />
+                                        </div>
+                                    </div>
+                                    <div className="card-body px-3 pt-4 pb-3">
+                                        {[1, 2, 3, 4, 5].map(i => (
+                                            <div key={i} className="d-flex align-items-start p-2 mb-2">
+                                                <div className="me-3 flex-shrink-0">
+                                                    <Skeleton w={36} h={36} rounded />
+                                                </div>
+                                                <div className="flex-grow-1">
+                                                    <div className="mb-2"><Skeleton w="60%" h={14} /></div>
+                                                    <div><Skeleton w="40%" h={12} /></div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </React.Fragment>
         )
     }
 
@@ -440,26 +545,28 @@ export default function FundingRequestDetailPage() {
                 .activity-scroll-container::-webkit-scrollbar-thumb:hover { background: #adb5bd; }
                 `
             }} />
-            <div className="page-content">
+            <div className="page-content funding-requests-page">
                 <div className="container-fluid">
 
                     {/* ── Header / Breadcrumb ─────────────────────────────────── */}
                     <div className="row pb-1 page-subheader-sticky bg-body">
                         <div className="col-12">
-                            <div className="d-flex align-items-center justify-content-between py-2">
+                            <div className="d-flex align-items-center justify-content-between flex-row py-2">
                                 <div className="flex-grow-1">
                                     <h4 className="fs-20 mb-1">Funding Request Detail</h4>
                                     <nav aria-label="breadcrumb">
                                         <ol className="breadcrumb m-0 fs-12 text-muted">
                                             <li className="breadcrumb-item"><Link to="/" className="text-muted">Dashboard</Link></li>
                                             <li className="breadcrumb-item"><Link to="/funding-requests" className="text-muted">Funding Requests</Link></li>
-                                            <li className="breadcrumb-item active text-primary fw-semibold" aria-current="page">{reviewId}</li>
+                                            <li className="breadcrumb-item active text-primary font-weight-bold" aria-current="page">{reviewId}</li>
                                         </ol>
                                     </nav>
                                 </div>
-                                <Link to="/funding-requests" className="btn btn-outline-secondary btn-sm shadow-none">
-                                    <i className="ri-arrow-left-line align-bottom me-1"></i> Back
-                                </Link>
+                                <div className="mt-0">
+                                    <Link to="/funding-requests" className="btn text-white px-3 shadow-none" style={{ backgroundColor: '#022144', borderColor: '#022144', fontSize: '14px' }}>
+                                        &larr; Back
+                                    </Link>
+                                </div>
                             </div>
                         </div>
                     </div>
