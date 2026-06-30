@@ -255,8 +255,8 @@ export default function StepDetail() {
                 <hr className="ca-divider my-4" />
 
                 {/* ── Outcome / Result Section ── */}
-                {step.application ? (
-                  /* ── Submitted Outcome View ── */
+                {step.application && step.application.status === CAPITAL_ACCESS_STATUS.APPROVED ? (
+                  /* ── Submitted Outcome View (read-only, approved only) ── */
                   <div className="p-4 border rounded bg-light">
                     <div className="d-flex align-items-center gap-2 mb-4">
                       <i className="ri-checkbox-circle-line text-success fs-20"></i>
