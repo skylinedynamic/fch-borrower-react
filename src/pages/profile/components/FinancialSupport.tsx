@@ -247,7 +247,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           {errors.average_monthly_deposits && <div className="invalid-feedback d-block">{errors.average_monthly_deposits}</div>}
         </div>
         <div className="col-md-6">
-          <label className="form-label">Monthly Deposit Count <span className="text-danger">*</span></label>
+          <label className="form-label">Number of Monthly Deposits <span className="text-danger">*</span></label>
           <div className="position-relative">
             <input
               type="text"
@@ -262,7 +262,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               <button
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
                 type="button"
-                onClick={() => handleOpenRequestModal('Monthly Deposit Count', 'monthly_deposit_count' as any, data.monthly_deposit_count)}
+                onClick={() => handleOpenRequestModal('Number of Monthly Deposits', 'monthly_deposit_count' as any, data.monthly_deposit_count)}
               >
                 Change Request
               </button>
@@ -271,7 +271,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           {errors.monthly_deposit_count && <div className="invalid-feedback d-block">{errors.monthly_deposit_count}</div>}
         </div>
         <div className="col-md-6">
-          <label className="form-label">Average Daily Balance (ADB) <span className="text-danger">*</span></label>
+          <label className="form-label">Average Daily Balance (ADB)</label>
           <div className="position-relative">
             <input
               type="text"
@@ -317,7 +317,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           {errors.current_business_debt && <div className="invalid-feedback d-block">{errors.current_business_debt}</div>}
         </div>
         <div className="col-md-6">
-          <label className="form-label">NSF Count <span className="text-danger">*</span></label>
+          <label className="form-label">NSF Count</label>
           <div className="position-relative">
             <input
               type="text"
@@ -341,7 +341,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           {errors.nsf_count && <div className="invalid-feedback d-block">{errors.nsf_count}</div>}
         </div>
         <div className="col-md-6">
-          <label className="form-label">Negative Days <span className="text-danger">*</span></label>
+          <label className="form-label">Negative Days</label>
           <div className="position-relative">
             <input
               type="text"
