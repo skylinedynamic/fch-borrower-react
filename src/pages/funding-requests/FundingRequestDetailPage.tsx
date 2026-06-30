@@ -528,7 +528,7 @@ export default function FundingRequestDetailPage() {
     }
 
     const filtered = getFilteredActivities()
-    const reviewId = review.id ? `FR-2024-${String(review.id).padStart(5, '0')}` : ''
+    const pageTitle = review?.funding_sequence?.name || review?.funding_type || 'Funding Request Detail'
 
     // Compute dynamic tab counts
     const countFunding = activities.filter(a => String(a.log_type_raw || '').includes('funding_request') || String(a.event_label || '').toLowerCase().includes('funding')).length
@@ -553,12 +553,12 @@ export default function FundingRequestDetailPage() {
                         <div className="col-12">
                             <div className="d-flex align-items-center justify-content-between flex-row py-2">
                                 <div className="flex-grow-1">
-                                    <h4 className="fs-20 mb-1">Funding Request Detail</h4>
+                                    <h4 className="fs-20 mb-1">{pageTitle}</h4>
                                     <nav aria-label="breadcrumb">
                                         <ol className="breadcrumb m-0 fs-12 text-muted">
                                             <li className="breadcrumb-item"><Link to="/" className="text-muted">Dashboard</Link></li>
                                             <li className="breadcrumb-item"><Link to="/funding-requests" className="text-muted">Funding Requests</Link></li>
-                                            <li className="breadcrumb-item active text-primary font-weight-bold" aria-current="page">{reviewId}</li>
+                                            <li className="breadcrumb-item active text-primary font-weight-bold" aria-current="page">{pageTitle}</li>
                                         </ol>
                                     </nav>
                                 </div>
@@ -587,7 +587,7 @@ export default function FundingRequestDetailPage() {
                                                 </div>
                                             </div>
                                             <div>
-                                                <h5 className="mb-0 fw-bold fs-16">{reviewId}</h5>
+                                                <h5 className="mb-0 fw-bold fs-16">{pageTitle}</h5>
                                                 <p className="mb-0 text-muted fs-12">Submitted on {formatDate(review.created_at)}</p>
                                             </div>
                                         </div>
