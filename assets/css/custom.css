@@ -1167,7 +1167,7 @@ File: Custom Css File
 /* ─── Page Wrapper ───────────────────────────────────────── */
 .ca-page-wrap {
     max-width: 1080px;
-    margin: 28px auto 0;
+    margin: 10px auto 0;
     padding-bottom: 60px;
 }
 
@@ -1464,7 +1464,7 @@ File: Custom Css File
     box-shadow: var(--ca-shadow-sm);
 }
 
-.ca-step-card:hover:not(.locked) {
+.ca-step-card:hover:not(.locked):not(.locked-flat) {
     border-color: var(--ca-primary);
     border-left-color: var(--ca-primary);
     background: var(--ca-primary-light);
@@ -1486,7 +1486,7 @@ File: Custom Css File
     box-shadow: 0 2px 10px rgba(10, 179, 156, 0.1);
 }
 
-.ca-step-card.active.submitted:hover:not(.locked) {
+.ca-step-card.active.submitted:hover:not(.locked):not(.locked-flat) {
     border-color: var(--ca-success);
     border-left-color: var(--ca-success);
     background: rgba(10, 179, 156, 0.14);
@@ -1526,6 +1526,38 @@ File: Custom Css File
 .ca-step-card.locked .ca-badge-warning {
     background: var(--ca-border);
     color: #9ca3af;
+}
+
+.ca-step-card.locked-flat {
+    cursor: default;
+}
+
+.ca-step-card.locked-danger {
+    border-color: rgba(var(--vz-danger-rgb), 0.35) !important;
+    border-left-color: var(--vz-danger) !important;
+    background: rgba(var(--vz-danger-rgb), 0.04);
+    cursor: default;
+}
+
+.ca-step-card.locked-danger:hover {
+    border-color: rgba(var(--vz-danger-rgb), 0.5) !important;
+    border-left-color: var(--vz-danger) !important;
+    background: rgba(var(--vz-danger-rgb), 0.07);
+    transform: translateX(4px);
+    box-shadow: 0 2px 12px rgba(var(--vz-danger-rgb), 0.15);
+}
+
+.ca-locked-reason {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 12px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    background: rgba(var(--vz-danger-rgb), 0.1);
+    color: var(--vz-danger);
+    white-space: nowrap;
 }
 
 /* ─── Radio Option Cards ─────────────────────────────────── */
@@ -2857,7 +2889,6 @@ File: Custom Css File
     left: 0;
     right: 0;
     height: 4px;
-    background: var(--primary-color, #405189);
     z-index: 2;
 }
 
@@ -2973,6 +3004,7 @@ File: Custom Css File
 .ca-strategy-row-premium:active {
     transform: translateY(-1px) translateX(2px);
 }
+
 
 .ca-strategy-icon-wrapper-premium {
     width: 44px;
@@ -3123,6 +3155,30 @@ File: Custom Css File
 }
 
 /* Info callout — success (all complete) */
+.ca-checklist-callout-success {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-radius: 4px;
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px solid rgba(16, 185, 129, 0.18);
+}
+
+.ca-callout-icon {
+    flex-shrink: 0;
+    font-size: 18px;
+    color: #10b981;
+}
+
+.ca-callout-text {
+    white-space: nowrap;
+    margin: 0;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #065f46;
+}
+
 /* ============================================================
    StepDetail Premium Beauty Redesign
    ============================================================ */

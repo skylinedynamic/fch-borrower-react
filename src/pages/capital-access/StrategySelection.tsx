@@ -31,18 +31,18 @@ export default function StrategySelection() {
         {/* ── Content ── */}
         <div className="ca-page-wrap">
           {/* ── Page Header ── */}
-          <div className="row pb-1 page-subheader-sticky bg-body mb-3">
+          <div className="row pb-1 mb-3">
             <div className="col-12">
               <div className="d-flex align-items-center gap-3 py-2 w-100">
                 <Link to="/capital-access" className="ca-back-btn" title="Back to Overview">
                   <i className="ri-arrow-left-line fs-16"></i>
                 </Link>
                 <div>
-                  <h4 className="fs-22 mb-1 fw-bold text-dark">Capital Access Strategy</h4>
-                  <p className="ca-page-subtitle">
-                    Choose a strategy that fits your business funding goals. Each play is a structured sequence of card applications designed to maximize your credit access.
-                  </p>
-                </div>
+                    <h4 className="fs-22 mb-1 fw-bold text-dark">Capital Access Strategy</h4>
+                    <p className="ca-page-subtitle">
+                      Choose a strategy that fits your business funding goals. Each play is a structured sequence of card applications designed to maximize your credit access.
+                    </p>
+                  </div>
               </div>
             </div>
           </div>
@@ -129,7 +129,7 @@ export default function StrategySelection() {
                   <span className="ca-section-label" style={{ fontWeight: 700, fontSize: '11px', color: '#94a3b8' }}>Other Eligible Plays</span>
                   <div className="d-flex flex-column gap-3">
                     {otherPlays.map(play => (
-                      <Link key={play.id} to={`/capital-access/${play.id}/overview`} className="ca-strategy-row-premium text-decoration-none">
+                      <div key={play.id} className="ca-strategy-row-premium text-decoration-none">
                         <div className="d-flex align-items-center gap-3 flex-grow-1" style={{ minWidth: 0 }}>
                           <div className="ca-strategy-icon-wrapper-premium flex-shrink-0">
                             <i className="ri-flashlight-line"></i>
@@ -149,10 +149,10 @@ export default function StrategySelection() {
                             <span className="value success">{play.approval_probability}</span>
                           </div>
                           <div className="ps-2">
-                            <i className="ri-arrow-right-s-line fs-20 text-muted" style={{ transition: 'color 0.2s' }}></i>
+                            <i className="ri-lock-line fs-20 text-muted"></i>
                           </div>
                         </div>
-                      </Link>
+                      </div>
                     ))}
                   </div>
                 </div>

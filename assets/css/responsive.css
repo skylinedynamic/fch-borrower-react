@@ -1381,16 +1381,45 @@
     }
 
     /* --- General typography --- */
-    .capital-access-page .fs-22 { font-size: 1.15rem !important; }
-    .capital-access-page .fs-20 { font-size: 1.1rem !important; }
-    .capital-access-page .fs-18 { font-size: 1rem !important; }
-    .capital-access-page .fs-17 { font-size: 1rem !important; }
-    .capital-access-page .fs-16 { font-size: 0.95rem !important; }
-    .capital-access-page .fs-15 { font-size: 0.9rem !important; }
-    .capital-access-page .fs-14 { font-size: 12px !important; }
-    .capital-access-page .fs-13 { font-size: 11px !important; }
-    .capital-access-page .fs-12 { font-size: 10px !important; }
-    .capital-access-page .fs-11 { font-size: 10px !important; }
+    .capital-access-page .fs-22 {
+        font-size: 1.15rem !important;
+    }
+
+    .capital-access-page .fs-20 {
+        font-size: 1.1rem !important;
+    }
+
+    .capital-access-page .fs-18 {
+        font-size: 1rem !important;
+    }
+
+    .capital-access-page .fs-17 {
+        font-size: 1rem !important;
+    }
+
+    .capital-access-page .fs-16 {
+        font-size: 0.95rem !important;
+    }
+
+    .capital-access-page .fs-15 {
+        font-size: 0.9rem !important;
+    }
+
+    .capital-access-page .fs-14 {
+        font-size: 12px !important;
+    }
+
+    .capital-access-page .fs-13 {
+        font-size: 11px !important;
+    }
+
+    .capital-access-page .fs-12 {
+        font-size: 10px !important;
+    }
+
+    .capital-access-page .fs-11 {
+        font-size: 10px !important;
+    }
 
     /* --- Cards & Headers --- */
     .capital-access-page .ca-card,
@@ -1449,8 +1478,8 @@
         --bs-gutter-y: 0.5rem !important;
     }
 
-    .capital-access-page .row.g-3 > .col-sm-4,
-    .capital-access-page .row.g-3 > .col-md-4 {
+    .capital-access-page .row.g-3>.col-sm-4,
+    .capital-access-page .row.g-3>.col-md-4 {
         flex: 0 0 100% !important;
         max-width: 100% !important;
     }
@@ -1472,7 +1501,7 @@
         gap: 10px !important;
     }
 
-    .capital-access-page .ca-strategy-row-metrics > div {
+    .capital-access-page .ca-strategy-row-metrics>div {
         flex: 1 !important;
         text-align: center !important;
     }
@@ -1506,13 +1535,13 @@
         padding: 12px 14px !important;
     }
 
-    .capital-access-page .ca-step-card > .d-flex.align-items-center.justify-content-between {
+    .capital-access-page .ca-step-card>.d-flex.align-items-center.justify-content-between {
         flex-direction: column !important;
         align-items: flex-start !important;
         gap: 10px !important;
     }
 
-    .capital-access-page .ca-step-card > .d-flex > .d-flex.align-items-center.gap-3 {
+    .capital-access-page .ca-step-card>.d-flex>.d-flex.align-items-center.gap-3 {
         flex-direction: column !important;
         align-items: flex-start !important;
         gap: 8px !important;
@@ -1590,18 +1619,18 @@
     }
 
     /* Button rows */
-    .capital-access-page .ca-card-body > .d-flex.gap-3 {
+    .capital-access-page .ca-card-body>.d-flex.gap-3 {
         flex-direction: column !important;
         gap: 10px !important;
     }
 
-    .capital-access-page .ca-card-body > .d-flex.align-items-center.justify-content-between.gap-3 {
+    .capital-access-page .ca-card-body>.d-flex.align-items-center.justify-content-between.gap-3 {
         flex-direction: column-reverse !important;
         align-items: stretch !important;
         gap: 10px !important;
     }
 
-    .capital-access-page .ca-card.text-center .ca-card-body > .d-flex.gap-3.justify-content-center {
+    .capital-access-page .ca-card.text-center .ca-card-body>.d-flex.gap-3.justify-content-center {
         flex-direction: column !important;
         align-items: stretch !important;
         gap: 10px !important;
@@ -1621,10 +1650,10 @@
         font-size: 12px !important;
     }
 
-    .capital-access-page .ca-card .row.g-2 > .col-4,
-    .capital-access-page .ca-card .row.g-3 > .col-3,
-    .capital-access-page .ca-card .row.g-3 > .col-6,
-    .capital-access-page .ca-card .row.g-3 > .col-4 {
+    .capital-access-page .ca-card .row.g-2>.col-4,
+    .capital-access-page .ca-card .row.g-3>.col-3,
+    .capital-access-page .ca-card .row.g-3>.col-6,
+    .capital-access-page .ca-card .row.g-3>.col-4 {
         padding-left: 5px !important;
         padding-right: 5px !important;
     }
@@ -1664,13 +1693,13 @@
         font-size: 1.15rem !important;
     }
 
-    .capital-access-page .ca-card .row.g-3 > .col-4 {
+    .capital-access-page .ca-card .row.g-3>.col-4 {
         flex: 0 0 100% !important;
         max-width: 100% !important;
         margin-bottom: 8px !important;
     }
 
-    .capital-access-page .ca-card .row.g-3 > .col-4:last-child {
+    .capital-access-page .ca-card .row.g-3>.col-4:last-child {
         margin-bottom: 0 !important;
     }
 
@@ -1703,7 +1732,7 @@
     }
 
     /* Bottom action row (avatars + button) */
-    .capital-access-page .card.shadow-sm.border-0.h-100 .mt-auto > .d-flex.align-items-center.justify-content-between {
+    .capital-access-page .card.shadow-sm.border-0.h-100 .mt-auto>.d-flex.align-items-center.justify-content-between {
         flex-direction: column !important;
         align-items: flex-start !important;
         gap: 12px !important;
@@ -1717,7 +1746,7 @@
     }
 
     .capital-access-page .card.shadow-sm.border-0.h-100 .avatar-group-item img,
-    .capital-access-page .card.shadow-sm.border-0.h-100 .avatar-group-item > div {
+    .capital-access-page .card.shadow-sm.border-0.h-100 .avatar-group-item>div {
         width: 32px !important;
         height: 22px !important;
     }
@@ -1769,7 +1798,7 @@
         row-gap: 0.5rem !important;
     }
 
-    .funding-page .funding-stats-row > * {
+    .funding-page .funding-stats-row>* {
         margin-top: 0 !important;
         padding-right: 0.3rem !important;
         padding-left: 0.3rem !important;
@@ -1805,7 +1834,64 @@
     }
 
     /* ── Funding cards: 1 per row ── */
-    .funding-page .funding-cards-row > [class*="col-"] {
+    .funding-page .funding-cards-row>[class*="col-"] {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* ── Section spacing: tighten search & cards gap ── */
+    .funding-page .funding-filter-row {
+        margin-top: 0.6rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+}
+
+/* ─── Funding Page: Mobile responsive ──────────────────────────────────── */
+@media (max-width: 576px) {
+
+    /* ── Stat cards row mobile overrides ── */
+    .funding-page .funding-stats-row {
+        margin-top: 0.75rem !important;
+        row-gap: 0.5rem !important;
+    }
+
+    .funding-page .funding-stats-row>* {
+        margin-top: 0 !important;
+        padding-right: 0.3rem !important;
+        padding-left: 0.3rem !important;
+    }
+
+    /* ── Stat card body: compact on mobile ── */
+    .funding-stats-row .funding-stat-card-body {
+        padding: 10px 12px !important;
+    }
+
+    /* ── Stat card icon: smaller ── */
+    .funding-stats-row .funding-stat-card-icon {
+        width: 36px !important;
+        height: 36px !important;
+        margin-right: 0.6rem !important;
+    }
+
+    .funding-stats-row .funding-stat-card-icon-i {
+        font-size: 18px !important;
+    }
+
+    /* ── Stat card label: visible & small ── */
+    .funding-stats-row .funding-stat-card-label {
+        font-size: 10px !important;
+        white-space: normal !important;
+        overflow: visible !important;
+        line-height: 1.2 !important;
+    }
+
+    /* ── Stat card value: smaller ── */
+    .funding-stats-row .funding-stat-card-value {
+        font-size: 16px !important;
+    }
+
+    /* ── Funding cards: 1 per row ── */
+    .funding-page .funding-cards-row>[class*="col-"] {
         flex: 0 0 100% !important;
         max-width: 100% !important;
     }
