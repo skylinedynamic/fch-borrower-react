@@ -2,18 +2,18 @@ import React, { useState, useEffect } from 'react'
 import { Modal, ModalBody } from 'reactstrap'
 import { useNavigate } from 'react-router-dom'
 import invoiceLogo from '../../../assets/images/logo-mail.png'
-import { getBorrowerFundingReview } from '../../modules/funding-reviews/services'
-import FundingReviewSkeleton from './FundingReviewSkeleton'
+import { getBorrowerFundingRequest } from '../../modules/funding-requests/services'
+import FundingRequestSkeleton from './FundingRequestSkeleton'
 import { useBrandingStore } from '../../store/brandingStore'
 import { getFileConfig } from '../../config/fileTypeConfig'
 import { FUNDING_REVIEW_STATUS } from '../../config/funding'
-interface FundingReviewModalProps {
+interface FundingRequestModalProps {
     show: boolean
     onHide: () => void
     review: any
 }
 
-export default function FundingReviewModal({ show, onHide, review }: FundingReviewModalProps) {
+export default function FundingRequestModal({ show, onHide, review }: FundingRequestModalProps) {
     const { branding: globalBranding } = useBrandingStore()
     const navigate = useNavigate()
     const [fetching, setFetching] = useState(false)
@@ -22,7 +22,7 @@ export default function FundingReviewModal({ show, onHide, review }: FundingRevi
     useEffect(() => {
         if (show && review?.id) {
             setFetching(true)
-            getBorrowerFundingReview(review.id)
+            getBorrowerFundingRequest(review.id)
                 .then(res => {
                     if (res.success) {
                         setFullReview(res.data)
@@ -63,7 +63,7 @@ export default function FundingReviewModal({ show, onHide, review }: FundingRevi
         <Modal isOpen={show} toggle={onHide} size="lg" centered contentClassName="border-0 shadow-lg" style={{ maxWidth: '920px' }}>
             <ModalBody className="p-0">
                 {fetching && !fullReview ? (
-                    <FundingReviewSkeleton />
+                    <FundingRequestSkeleton />
                 ) : !displayReview ? (
                     <div className="p-5 text-center text-muted">
                         No review data available.
@@ -223,7 +223,7 @@ export default function FundingReviewModal({ show, onHide, review }: FundingRevi
                                         <div className="mt-4">
                                             <div className="alert alert-success">
                                                 <p className="mb-0"><span className="fw-semibold">APPROVED:</span>
-                                                    <span> Your funding review has been approved for {displayReview.funding_type}. Please proceed with the final funding application to complete your request.</span>
+                                                    <span> Your funding request has been approved for {displayReview.funding_type}. Please proceed with the final funding application to complete your request.</span>
                                                 </p>
                                             </div>
                                         </div>

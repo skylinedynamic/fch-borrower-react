@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { useBorrowerFundingReviews } from '../../modules/funding-reviews/queries'
+import { Link, useNavigate } from 'react-router-dom'
+import { useBorrowerFundingRequests } from '../../modules/funding-requests/queries'
 import { DataTable } from '../../components/Table/DataTableWrapper'
 import { Column } from 'primereact/column'
 import { Dropdown } from 'primereact/dropdown'
-import FundingReviewModal from './FundingReviewModal'
 import StatisticsCardSkeleton from '../../components/Common/StatisticsCardSkeleton'
 import StatisticsCard from '../../components/Common/StatisticsCard'
 
-export default function FundingReviewList() {
+export default function FundingRequestList() {
+    const navigate = useNavigate()
     const [page, setPage] = useState(1)
     const [perPage, setPerPage] = useState(10)
     const [searchText, setSearchText] = useState('')
@@ -16,14 +16,11 @@ export default function FundingReviewList() {
     
     const [appliedSearchText, setAppliedSearchText] = useState('')
     const [appliedStatus, setAppliedStatus] = useState<string | null>(null)
-    
-    const [selectedReview, setSelectedReview] = useState<any>(null)
-    const [showModal, setShowModal] = useState(false)
 
     const [sortField, setSortField] = useState<string>('id')
     const [sortOrder, setSortOrder] = useState<number>(-1)
 
-    const { data, isLoading } = useBorrowerFundingReviews({
+    const { data, isLoading } = useBorrowerFundingRequests({
         page,
         per_page: perPage,
         search: appliedSearchText,
@@ -54,8 +51,7 @@ export default function FundingReviewList() {
     };
 
     const handleView = (review: any) => {
-        setSelectedReview(review)
-        setShowModal(true)
+        navigate(`/funding-requests/${review.id}`)
     }
 
     const onPage = (e: any) => {
@@ -91,18 +87,18 @@ export default function FundingReviewList() {
     }
 
     return (
-        <div className="page-content funding-reviews-page">
+        <div className="page-content funding-requests-page">
             <div className="container-fluid">
                 {/* Header */}
                 <div className="row pb-1 page-subheader-sticky bg-body">
                     <div className="col-12">
                         <div className="d-flex align-items-center justify-content-between flex-row py-2">
                             <div className="flex-grow-1">
-                                <h4 className="fs-20 mb-1">Funding Reviews</h4>
+                                <h4 className="fs-20 mb-1">Funding Requests</h4>
                                 <nav aria-label="breadcrumb">
                                     <ol className="breadcrumb m-0 fs-12 text-muted">
                                         <li className="breadcrumb-item"><Link to="/" className="text-muted">Dashboard</Link></li>
-                                        <li className="breadcrumb-item active text-primary font-weight-bold" aria-current="page">Funding Reviews</li>
+                                        <li className="breadcrumb-item active text-primary font-weight-bold" aria-current="page">Funding Requests</li>
                                     </ol>
                                 </nav>
                             </div>
@@ -222,7 +218,7 @@ export default function FundingReviewList() {
                                         sortOrder={sortOrder as any}
                                         loading={isLoading}
                                         dataKey="id"
-                                        emptyMessage={<div className="text-center p-3">No funding reviews found.</div>}
+                                        emptyMessage={<div className="text-center p-3">No funding requests found.</div>}
                                     >
                                         <Column field="funding_type" header="Funding Type" sortable body={(row) => row.funding_type || 'N/A'}></Column>
                                         <Column field="use_of_funds" header="Uses" sortable body={(row) => row.use_of_funds || 'N/A'}></Column>
@@ -251,14 +247,6 @@ export default function FundingReviewList() {
                     </div>
                 </div>
             </div>
-
-            {selectedReview && (
-                <FundingReviewModal 
-                    show={showModal} 
-                    onHide={() => setShowModal(false)} 
-                    review={selectedReview} 
-                />
-            )}
         </div>
     )
 }

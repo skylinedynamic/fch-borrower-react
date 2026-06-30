@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { fetchFundingDetail, fetchReadinessFactors } from '../../../modules/funding/services';
-import { FUNDING_ICON_MAP, QUALIFY_REASONS_MAP } from '../../../config/funding';
+import { FUNDING_ICON_MAP, QUALIFY_REASONS_MAP, FUNDING_REVIEW_STATUS } from '../../../config/funding';
 import { getFundingColorStyles } from '../../../config/fundingColor';
 import { toast } from 'react-toastify';
+import { UncontrolledTooltip } from 'reactstrap';
 
 // ─── Icon resolver ────────────────────────────────────────────────────────────
 const resolveIcon = (icon: any): string => {
@@ -185,13 +186,16 @@ const FundingDetail = () => {
         qualify_reasons = [],
         readiness_factors = [],
         missing_documents = [],
+        latest_review_status,
     } = data;
 
     const colors = getFundingColorStyles(icon_color);
     const iconClass = resolveIcon(icon);
-    const isGreyedOut = engine_status === 'Greyed Out';
-
-
+    
+    // Force active state as per user request
+    const isGreyedOut = false;
+    const finalEngineStatus = 'Active';
+    const displayLabel = 'Likely Eligible';
 
     // Meta row items
     const metaItems = [
@@ -204,6 +208,7 @@ const FundingDetail = () => {
     const ctaSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
     const hasMissingFactors = dynamicReadiness.some((r: any) => r.status === 'Missing');
+    const isPending = latest_review_status === FUNDING_REVIEW_STATUS.PENDING;
 
     return (
         <div className="page-content">
@@ -242,11 +247,11 @@ const FundingDetail = () => {
                                 {/* Icon circle */}
                                 <div style={{
                                     width: 56, height: 56, borderRadius: '50%',
-                                    background: isGreyedOut ? '#f0f3f7' : colors.bg,
+                                    background: colors.bg,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    flexShrink: 0, filter: isGreyedOut ? 'grayscale(100%)' : 'none',
+                                    flexShrink: 0,
                                 }}>
-                                    <i className={iconClass} style={{ fontSize: 28, color: isGreyedOut ? '#6c757d' : colors.text }} />
+                                    <i className={iconClass} style={{ fontSize: 28, color: colors.text }} />
                                 </div>
                                 <div>
                                     <h4 className="mb-1 fw-bold" style={{ fontSize: 20, color: '#0f1b2d' }}>{name}</h4>
@@ -256,10 +261,10 @@ const FundingDetail = () => {
 
                             {/* Eligibility badge — pill style matching reference */}
                             <div className="text-end flex-shrink-0">
-                                <div className={`funding-detail-badge funding-detail-badge-${engine_status.toLowerCase().replace(' ', '-')}`}>
-                                    {(engine_status_label === 'Eligible Now' || engine_status_label === 'Manual Review Required') ? 'Likely Eligible' : engine_status_label}
+                                <div className={`funding-detail-badge funding-detail-badge-${finalEngineStatus.toLowerCase().replace(' ', '-')}`}>
+                                    {displayLabel}
                                 </div>
-                                {(engine_status === 'Active' || engine_status === 'Review') && (
+                                {(finalEngineStatus === 'Active' || finalEngineStatus === 'Review') && (
                                     <p className="mb-0 mt-1 text-muted" style={{ fontSize: 11, textAlign: 'right', fontWeight: 'bold' }}>High Match</p>
                                 )}
                             </div>
@@ -396,26 +401,31 @@ const FundingDetail = () => {
                     }}>
                         <div>
                             <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: '#0f1b2d' }}>
-                                {isGreyedOut ? 'Currently Unavailable' : 'Next Step'}
+                                Next Step
                             </p>
                             <p style={{ margin: 0, fontSize: 12, color: '#6b7280', marginTop: 3 }}>
-                                {isGreyedOut
-                                    ? 'You do not meet the minimum requirements for this funding option at this time.'
+                                {isPending
+                                    ? 'You have already applied for this funding option. Please wait for approval or rejection.'
                                     : hasMissingFactors 
                                         ? 'Please address missing readiness factors before starting your review.'
-                                        : 'Start your funding review by providing a few details and uploading missing documents.'}
+                                        : 'Start your funding request by providing a few details and uploading missing documents.'}
                             </p>
                         </div>
-                        {!isGreyedOut && (
+                        <span id="btn-start-funding-request-wrapper" style={{ display: 'inline-block' }}>
                             <Link
-                                to={hasMissingFactors ? '#' : `/funding/${id}/review`}
-                                className={`funding-detail-btn-review ${hasMissingFactors ? 'disabled' : ''}`}
-                                style={hasMissingFactors ? { opacity: 0.5, pointerEvents: 'none', cursor: 'not-allowed' } : {}}
-                                onClick={(e) => { if (hasMissingFactors) e.preventDefault(); }}
+                                to={(hasMissingFactors || isPending) ? '#' : `/funding/${id}/review`}
+                                className={`funding-detail-btn-review ${(hasMissingFactors || isPending) ? 'disabled' : ''}`}
+                                style={(hasMissingFactors || isPending) ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                                onClick={(e) => { if (hasMissingFactors || isPending) e.preventDefault(); }}
                             >
-                                Start Funding Review
+                                Start Funding Request
                                 <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />
                             </Link>
+                        </span>
+                        {isPending && (
+                            <UncontrolledTooltip placement="top" target="btn-start-funding-request-wrapper">
+                                Already applied. Please wait for approval or rejection.
+                            </UncontrolledTooltip>
                         )}
                     </div>
                 </div>
