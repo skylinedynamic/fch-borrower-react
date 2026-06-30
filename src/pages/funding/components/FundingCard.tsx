@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FUNDING_ICON_MAP } from '../../../config/funding';
+import { FUNDING_ICON_MAP, FUNDING_REVIEW_STATUS } from '../../../config/funding';
 import { getFundingColorStyles } from '../../../config/fundingColor';
+import { UncontrolledTooltip } from 'reactstrap';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface FundingCardProps {
@@ -15,6 +16,7 @@ interface FundingCardProps {
     action_url?: string;
     engine_status?: string;
     engine_status_label?: string;
+    latest_review_status?: string;
 }
 
 const resolveIcon = (icon: any): string => {
@@ -78,6 +80,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
     action_url,
     engine_status = 'Active',
     engine_status_label = 'Eligible Now',
+    latest_review_status,
 }) => {
     const navigate = useNavigate();
     const iconClass = resolveIcon(icon);
@@ -104,78 +107,91 @@ const FundingCard: React.FC<FundingCardProps> = ({
 
     // Convert generic "Eligible Now" and "Manual Review Required" to the design's "Likely Eligible"
     const displayLabel = 'Likely Eligible';
+    const isPending = latest_review_status === FUNDING_REVIEW_STATUS.PENDING;
 
     return (
-        <div
-            className={`funding-card`}
-            onClick={() => {
-                if (destination.startsWith('http')) {
-                    window.open(destination, '_blank');
-                } else {
-                    navigate(destination);
-                }
-            }}
-        >
-            {/* ── Top Section: Icon & Text ───────────────────────────────────────────── */}
-            <div className="funding-card-top">
-                {/* Icon Badge */}
-                <div
-                    className={`funding-card-icon-wrapper`}
-                    style={{ background: colors.bg }}
-                >
-                    <i className={iconClass} style={{ color: colors.text }} />
-                </div>
-
-                {/* Text Content */}
-                <div className="funding-card-text-content">
-                    <p className="funding-card-title">
-                        {name}
-                    </p>
-                    <p
-                        className="funding-card-subtitle"
-                        style={{ color: subtitle ? '#6b7280' : 'transparent' }}
+        <>
+            <div
+                id={`funding-card-${id}`}
+                className={`funding-card ${isPending ? 'funding-card-disabled' : ''}`}
+                onClick={(e) => {
+                    if (isPending) {
+                        e.preventDefault();
+                        return;
+                    }
+                    if (destination.startsWith('http')) {
+                        window.open(destination, '_blank');
+                    } else {
+                        navigate(destination);
+                    }
+                }}
+            >
+                {/* ── Top Section: Icon & Text ───────────────────────────────────────────── */}
+                <div className="funding-card-top">
+                    {/* Icon Badge */}
+                    <div
+                        className={`funding-card-icon-wrapper ${isPending ? 'disabled' : ''}`}
+                        style={{ background: colors.bg }}
                     >
-                        {subtitle || '\u00A0'}
-                    </p>
-                </div>
-            </div>
+                        <i className={iconClass} style={{ color: colors.text }} />
+                    </div>
 
-            {/* ── Bottom Section: Amount, Status & Arrow ────────────────────────────── */}
-            <div className="funding-card-bottom">
-                <div className="funding-card-meta">
-                    {amount_range && (
-                        <span className="funding-card-amount">
-                            {amount_range}
-                        </span>
-                    )}
-                    <div style={{ alignSelf: 'flex-start' }}>
-                        {isEligible ? (() => {
-                            const sec = getCSSVar('--secondary-color', '#1cbfca');
-                            return (
-                                <Pill
-                                    label={displayLabel}
-                                    bg={`${sec}1a`}
-                                    color={sec}
-                                    className="large-pill"
-                                />
-                            );
-                        })() : (
-                            <Pill
-                                label={displayLabel}
-                                bg={statusStyle!.bg}
-                                color={statusStyle!.color}
-                                className="large-pill"
-                            />
-                        )}
+                    {/* Text Content */}
+                    <div className="funding-card-text-content">
+                        <p className="funding-card-title">
+                            {name}
+                        </p>
+                        <p
+                            className="funding-card-subtitle"
+                            style={{ color: subtitle ? '#6b7280' : 'transparent' }}
+                        >
+                            {subtitle || '\u00A0'}
+                        </p>
                     </div>
                 </div>
 
-                {/* Arrow Button */}
-                <div className="funding-card-arrow">
-                    <i className="ri-arrow-right-s-line" />
+                {/* ── Bottom Section: Amount, Status & Arrow ────────────────────────────── */}
+                <div className="funding-card-bottom">
+                    <div className="funding-card-meta">
+                        {amount_range && (
+                            <span className="funding-card-amount">
+                                {amount_range}
+                            </span>
+                        )}
+                        <div style={{ alignSelf: 'flex-start' }}>
+                            {isEligible ? (() => {
+                                const sec = getCSSVar('--secondary-color', '#1cbfca');
+                                return (
+                                    <Pill
+                                        label={displayLabel}
+                                        bg={`${sec}1a`}
+                                        color={sec}
+                                        className="large-pill"
+                                    />
+                                );
+                            })() : (
+                                <Pill
+                                    label={displayLabel}
+                                    bg={getStatusStyle()!.bg}
+                                    color={getStatusStyle()!.color}
+                                    className="large-pill"
+                                />
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Arrow Button */}
+                    <div className="funding-card-arrow">
+                        <i className="ri-arrow-right-s-line" />
+                    </div>
                 </div>
             </div>
-        </div>
+            {isPending && (
+                <UncontrolledTooltip placement="top" target={`funding-card-${id}`}>
+                    Already applied. Please wait for approval or rejection.
+                </UncontrolledTooltip>
+            )}
+        </>
     );
 };
 

@@ -244,6 +244,7 @@ const Funding = () => {
                                             action_url={seq.action_url}
                                             engine_status={seq.engine_status}
                                             engine_status_label={seq.engine_status_label}
+                                            latest_review_status={seq.latest_review_status}
                                         />
                                     </div>
                                 ))}

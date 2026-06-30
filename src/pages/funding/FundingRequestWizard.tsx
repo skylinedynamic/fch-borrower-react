@@ -13,7 +13,7 @@ import { getUser } from '../../lib/auth/auth';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../lib/query';
 import { useBusinessDetails, useFinancialInfo } from '../../modules/profile/queries';
-import { FUNDING_WIZARD_STEPS } from '../../config/funding';
+import { FUNDING_WIZARD_STEPS, FUNDING_REVIEW_STATUS } from '../../config/funding';
 import { useBrandingStore } from '../../store/brandingStore';
 const steps = FUNDING_WIZARD_STEPS;
 
@@ -69,6 +69,11 @@ const FundingRequestWizard = () => {
             fetchFundingDetail(id)
                 .then(res => {
                     if (res.status) {
+                        if (res.data.latest_review_status === FUNDING_REVIEW_STATUS.PENDING) {
+                            toast.warning('Already applied. Please wait for approval or rejection.');
+                            navigate('/funding');
+                            return;
+                        }
                         setFundingDetail(res.data);
                         setMissingDocs(res.data.missing_documents || []);
 

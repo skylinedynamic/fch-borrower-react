@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { fetchFundingDetail, fetchReadinessFactors } from '../../../modules/funding/services';
-import { FUNDING_ICON_MAP, QUALIFY_REASONS_MAP } from '../../../config/funding';
+import { FUNDING_ICON_MAP, QUALIFY_REASONS_MAP, FUNDING_REVIEW_STATUS } from '../../../config/funding';
 import { getFundingColorStyles } from '../../../config/fundingColor';
 import { toast } from 'react-toastify';
+import { UncontrolledTooltip } from 'reactstrap';
 
 // ─── Icon resolver ────────────────────────────────────────────────────────────
 const resolveIcon = (icon: any): string => {
@@ -185,6 +186,7 @@ const FundingDetail = () => {
         qualify_reasons = [],
         readiness_factors = [],
         missing_documents = [],
+        latest_review_status,
     } = data;
 
     const colors = getFundingColorStyles(icon_color);
@@ -206,6 +208,7 @@ const FundingDetail = () => {
     const ctaSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
     const hasMissingFactors = dynamicReadiness.some((r: any) => r.status === 'Missing');
+    const isPending = latest_review_status === FUNDING_REVIEW_STATUS.PENDING;
 
     return (
         <div className="page-content">
@@ -401,20 +404,29 @@ const FundingDetail = () => {
                                 Next Step
                             </p>
                             <p style={{ margin: 0, fontSize: 12, color: '#6b7280', marginTop: 3 }}>
-                                {hasMissingFactors 
-                                    ? 'Please address missing readiness factors before starting your review.'
-                                    : 'Start your funding request by providing a few details and uploading missing documents.'}
+                                {isPending
+                                    ? 'You have already applied for this funding option. Please wait for approval or rejection.'
+                                    : hasMissingFactors 
+                                        ? 'Please address missing readiness factors before starting your review.'
+                                        : 'Start your funding request by providing a few details and uploading missing documents.'}
                             </p>
                         </div>
-                        <Link
-                            to={hasMissingFactors ? '#' : `/funding/${id}/review`}
-                            className={`funding-detail-btn-review ${hasMissingFactors ? 'disabled' : ''}`}
-                            style={hasMissingFactors ? { opacity: 0.5, pointerEvents: 'none', cursor: 'not-allowed' } : {}}
-                            onClick={(e) => { if (hasMissingFactors) e.preventDefault(); }}
-                        >
-                            Start Funding Request
-                            <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />
-                        </Link>
+                        <span id="btn-start-funding-request-wrapper" style={{ display: 'inline-block' }}>
+                            <Link
+                                to={(hasMissingFactors || isPending) ? '#' : `/funding/${id}/review`}
+                                className={`funding-detail-btn-review ${(hasMissingFactors || isPending) ? 'disabled' : ''}`}
+                                style={(hasMissingFactors || isPending) ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                                onClick={(e) => { if (hasMissingFactors || isPending) e.preventDefault(); }}
+                            >
+                                Start Funding Request
+                                <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />
+                            </Link>
+                        </span>
+                        {isPending && (
+                            <UncontrolledTooltip placement="top" target="btn-start-funding-request-wrapper">
+                                Already applied. Please wait for approval or rejection.
+                            </UncontrolledTooltip>
+                        )}
                     </div>
                 </div>
 
