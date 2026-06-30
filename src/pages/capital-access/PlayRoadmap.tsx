@@ -3,7 +3,7 @@ import { Link, useParams, Navigate } from 'react-router-dom';
 import { useCapitalAccessStrategyRoadmap, useCapitalAccessStrategies } from '../../modules/capital-access/queries';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
 import type { RoadmapCard } from '../../modules/capital-access/types';
-import { ACCESS_TIME } from '../../config/capitalAccessStatusOptions';
+import { ACCESS_TIME, CAPITAL_ACCESS_STATUS } from '../../config/capitalAccessStatusOptions';
 
 // ── Access time label helper ────────────────────────────────────────────────
 function accessScheduleLabel(card: RoadmapCard): string {
@@ -211,7 +211,7 @@ export default function PlayRoadmap() {
                   <div className="ca-stepper-line"></div>
 
                   {roadmap.map((card: RoadmapCard, idx: number) => {
-                    const hasUnsubmittedPrevious = roadmap.slice(0, idx).some(c => !c.application_status);
+                    const hasUnsubmittedPrevious = roadmap.slice(0, idx).some(c => c.application_status !== CAPITAL_ACCESS_STATUS.APPROVED);
 
                     const timeCheck = isTimeActive(card, idx === 0);
                     const isTimeLocked = !timeCheck.active;
