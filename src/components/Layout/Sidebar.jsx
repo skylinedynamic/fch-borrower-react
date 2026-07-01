@@ -180,7 +180,7 @@ export default function Sidebar() {
             <LinkItem to="/my-applications" label="My Applications" icon="ri-file-list-line" restricted={isRestricted} />
 
             {/* Capital Access — locked on free trial */}
-            <LinkItem to="/capital-access" label="Capital Access" icon="ri-funds-line" restricted={isFreeTierModule} />
+            <LinkItem to="/capital-access" label="Capital Access" icon="ri-funds-line" restricted={isFreeTierModule || isRestricted} />
 
             {/* Invoices — locked on free trial */}
             <LinkItem to="/invoices" label="Invoices" icon="ri-article-line" restricted={isFreeTierModule} />
@@ -191,7 +191,7 @@ export default function Sidebar() {
             <LinkItem to="/documents" label="Documents" icon="ri-file-2-line" restricted={isRestricted} />
 
             {/* Resource Hub — locked on free trial */}
-            <LinkItem to="/resources" label="Resource Hub" icon="ri-book-read-line" restricted={isFreeTierModule} />
+            <LinkItem to="/resources" label="Resource Hub" icon="ri-book-read-line" restricted={isFreeTierModule || isRestricted} />
 
             <LinkItem to="/appointment" label="Appointment" icon="ri-calendar-2-line" restricted={isRestricted} />
 
