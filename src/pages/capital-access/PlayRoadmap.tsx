@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
 import { useCapitalAccessStrategyRoadmap, useCapitalAccessStrategies } from '../../modules/capital-access/queries';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
@@ -49,8 +49,7 @@ function formatDecimalHour(decimalHour: number): string {
 }
 
 // ── Time Active Checker Helper ──────────────────────────────────────────────
-function isTimeActive(card: RoadmapCard, isFirstCard: boolean, playStartDate?: string | null): { active: boolean; reason: string } {
-  const now = new Date();
+function isTimeActive(card: RoadmapCard, isFirstCard: boolean, playStartDate: string | null | undefined, now: Date): { active: boolean; reason: string } {
   const currentHourDecimal = now.getHours() + now.getMinutes() / 60;
 
   if (card.application_status) {
@@ -112,10 +111,87 @@ function isTimeActive(card: RoadmapCard, isFirstCard: boolean, playStartDate?: s
   return { active: true, reason: '' };
 }
 
+// ── Unlock Time Remaining Helper ──────────────────────────────────────────
+function getUnlockTimeRemaining(card: RoadmapCard, playStartDate: string | null | undefined, now: Date): string | null {
+  if (card.application_status) return null;
+
+  // 1. Determine target day offset
+  let targetDay = 0;
+  if (card.access_time === ACCESS_TIME.DAY && card.access_day) {
+    targetDay = card.access_day;
+  }
+
+  // 2. Determine target start hour and end hour
+  let startHour = 0;
+  let endHour = 24;
+  let detail: any = null;
+
+  if (card.access_time === ACCESS_TIME.DAY && card.access_day_time && card.access_day_time !== ACCESS_TIME.ANYTIME) {
+    detail = card.access_day_time_detail;
+  } else if (card.access_time && card.access_time !== ACCESS_TIME.ANYTIME && card.access_time !== ACCESS_TIME.DAY) {
+    detail = card.access_time_detail;
+  }
+
+  if (detail) {
+    startHour = detail.start ?? detail.min_value ?? 0;
+    endHour = detail.end ?? detail.max_value ?? 24;
+  }
+
+  // 3. Get base activation date
+  let baseDate = new Date();
+  if (playStartDate) {
+    const parsed = new Date(playStartDate);
+    if (!isNaN(parsed.getTime())) {
+      baseDate = parsed;
+    }
+  }
+
+  // Target date construction (midnight of target day)
+  const targetDate = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate() + targetDay);
+  
+  const startWholeHours = Math.floor(startHour);
+  const startMinutes = Math.round((startHour - startWholeHours) * 60);
+  targetDate.setHours(startWholeHours, startMinutes, 0, 0);
+
+  // If the target date is today but we have already passed the end time of the window,
+  // it means the next unlock will be tomorrow (targetDay + 1)
+  const targetEndDate = new Date(targetDate);
+  const endWholeHours = Math.floor(endHour);
+  const endMinutes = Math.round((endHour - endWholeHours) * 60);
+  targetEndDate.setHours(endWholeHours, endMinutes, 0, 0);
+
+  if (now > targetEndDate) {
+    targetDate.setDate(targetDate.getDate() + 1);
+  }
+
+  const remainingMs = targetDate.getTime() - now.getTime();
+
+  if (remainingMs > 0 && remainingMs < 24 * 60 * 60 * 1000) {
+    const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+    const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 0) {
+      return `Unlocks in ${hours}h ${minutes}m`;
+    }
+    return `Unlocks in ${minutes}m`;
+  }
+
+  return null;
+}
+
 export default function PlayRoadmap() {
   const { id } = useParams<{ id: string }>();
   const { data: play, isLoading: isPlayLoading, isError } = useCapitalAccessStrategyRoadmap(id);
   const { data: strategies, isLoading: isStrategiesLoading } = useCapitalAccessStrategies();
+
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 10000);
+    return () => clearInterval(timer);
+  }, []);
 
   const isLoading = isPlayLoading || isStrategiesLoading;
 
@@ -234,8 +310,9 @@ export default function PlayRoadmap() {
                   {roadmap.map((card: RoadmapCard, idx: number) => {
                     const hasUnsubmittedPrevious = roadmap.slice(0, idx).some(c => c.application_status !== CAPITAL_ACCESS_STATUS.APPROVED);
 
-                    const timeCheck = isTimeActive(card, idx === 0, play.first_submitted_at);
+                    const timeCheck = isTimeActive(card, idx === 0, play.first_submitted_at, currentTime);
                     const isTimeLocked = !timeCheck.active;
+                    const remainingTimeText = getUnlockTimeRemaining(card, play.first_submitted_at, currentTime);
 
                     const isLocked = (card.probability_status === false || hasUnsubmittedPrevious || isTimeLocked) && !card.application_status;
 
@@ -275,6 +352,12 @@ export default function PlayRoadmap() {
                                       <i className="ri-calendar-event-line me-1"></i>
                                       {accessScheduleLabel(card)}
                                     </span>
+                                    {remainingTimeText && (
+                                      <span className="ca-badge bg-warning-subtle text-warning font-semibold">
+                                        <i className="ri-time-line me-1"></i>
+                                        {remainingTimeText}
+                                      </span>
+                                    )}
                                     <span className="text-muted fs-12">Est. {card.exposure}</span>
                                     {card.hard_pull === 'Yes' && (
                                       <span className="ca-badge ca-badge-warning">Hard Pull</span>
