@@ -83,6 +83,7 @@ export const fetchCapitalAccessStrategyRoadmap = async (id: string | number): Pr
     reason_code: raw.reason_code ?? null,
     target_exposure: raw.target_exposure ?? '',
     est_timeline: raw.est_timeline ?? '',
+    first_submitted_at: raw.first_submitted_at ?? null,
     roadmap: Array.isArray(raw.roadmap) ? raw.roadmap : [],
   }
 }
