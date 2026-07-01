@@ -61,15 +61,17 @@ function isTimeActive(card: RoadmapCard, isFirstCard: boolean, playStartDate?: s
   if (card.access_time === ACCESS_TIME.DAY && card.access_day) {
     if (playStartDate) {
       const startDate = new Date(playStartDate);
-      const startCalendarDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-      const nowCalendarDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const diffDays = Math.floor((nowCalendarDate.getTime() - startCalendarDate.getTime()) / (1000 * 60 * 60 * 24));
+      if (!isNaN(startDate.getTime())) {
+        const startCalendarDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+        const nowCalendarDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const diffDays = Math.floor((nowCalendarDate.getTime() - startCalendarDate.getTime()) / (1000 * 60 * 60 * 24));
 
-      if (diffDays < card.access_day) {
-        return {
-          active: false,
-          reason: `Unlocks on Day ${card.access_day} (Tomorrow or later)`
-        };
+        if (diffDays < card.access_day) {
+          return {
+            active: false,
+            reason: `Unlocks on Day ${card.access_day} (Tomorrow or later)`
+          };
+        }
       }
     }
   }
