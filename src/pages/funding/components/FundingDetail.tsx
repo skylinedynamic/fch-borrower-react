@@ -28,11 +28,11 @@ const resolveIcon = (icon: any): string => {
 const ReadinessBadge: React.FC<{ status: string }> = ({ status }) => {
     const s = (status || '').toLowerCase();
     const cfg: Record<string, { icon: string; bg: string; color: string }> = {
-        good:    { icon: 'ri-checkbox-circle-fill', bg: '#e8f9f0', color: '#1a7a4a' },
-        strong:  { icon: 'ri-checkbox-circle-fill', bg: '#dbeafe', color: '#1d4ed8' },
-        fair:    { icon: 'ri-error-warning-fill',   bg: '#fef3c7', color: '#92400e' },
-        missing: { icon: 'ri-information-fill',     bg: '#fff3cd', color: '#92400e' },
-        weak:    { icon: 'ri-close-circle-fill',    bg: '#fee2e2', color: '#991b1b' },
+        good:       { icon: 'ri-checkbox-circle-fill', bg: '#e8f9f0', color: '#1a7a4a' },
+        strong:     { icon: 'ri-checkbox-circle-fill', bg: '#dbeafe', color: '#1d4ed8' },
+        fair:       { icon: 'ri-error-warning-fill',   bg: '#fef3c7', color: '#92400e' },
+        missing:    { icon: 'ri-information-fill',     bg: '#fff3cd', color: '#92400e' },
+        weak:       { icon: 'ri-close-circle-fill',    bg: '#fee2e2', color: '#991b1b' },
     };
     const style = cfg[s] || { icon: 'ri-question-line', bg: '#f0f3f7', color: '#4b5563' };
     return (
