@@ -67,3 +67,23 @@ export const getFileTypeLabel = (filePath: string): string => {
 
     return `${ext} File`;
 };
+
+export const DOCUMENT_STATUS = {
+    UPLOADED: 'Uploaded',
+    UNDER_REVIEW: 'Under Review',
+    ACCEPTED: 'Accepted',
+    REJECTED: 'Rejected',
+    PENDING: 'Pending'
+} as const;
+
+export const DOCUMENT_STATUS_BADGE_MAP: Record<string, string> = {
+    [DOCUMENT_STATUS.ACCEPTED]: 'bg-success-subtle text-success',
+    [DOCUMENT_STATUS.REJECTED]: 'bg-danger-subtle text-danger',
+    [DOCUMENT_STATUS.UNDER_REVIEW]: 'bg-warning-subtle text-warning',
+    [DOCUMENT_STATUS.UPLOADED]: 'bg-info-subtle text-info',
+    [DOCUMENT_STATUS.PENDING]: 'bg-secondary-subtle text-secondary'
+};
+
+export const getDocumentStatusBadgeClass = (status: string): string => {
+    return DOCUMENT_STATUS_BADGE_MAP[status] || 'bg-info-subtle text-info';
+};
