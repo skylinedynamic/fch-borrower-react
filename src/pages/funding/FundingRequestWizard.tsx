@@ -161,7 +161,7 @@ const FundingRequestWizard = () => {
 
         setSubmitting(true);
         try {
-            const response = await apiClient.post('/borrower/funding/reviews', {
+            const response = await apiClient.post('/borrower/funding/requests', {
                 funding_sequence_id: fundingDetail.id,
                 funding_type: fundingDetail.name,
                 requested_amount: formData.requested_amount,
