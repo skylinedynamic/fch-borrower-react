@@ -54,3 +54,12 @@ export function isSubscriptionRestricted(subscription: UserSubscription | null |
 
     return false;
 }
+
+/**
+ * Returns true when the borrower is on the Limited Free Edition (free trial).
+ * While on the free trial the following modules must be locked:
+ *   Capital Access, Invoices, Payments, Resource Hub, Credit Builder
+ */
+export function isFreeTrialLocked(subscription: UserSubscription | null | undefined): boolean {
+    return !!subscription?.is_free_trail;
+}

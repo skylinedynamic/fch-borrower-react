@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/auth'
-import { isSubscriptionRestricted } from './subscriptionUtils'
+import { isSubscriptionRestricted, isFreeTrialLocked } from './subscriptionUtils'
 import { clearAuth } from './auth'
 import { logout } from '../../modules/auth/services'
 
@@ -21,6 +21,15 @@ function isTrialEndDateExpired(trialEndDate: string): boolean {
   return Date.now() > localExpiryDate.getTime()
 }
 
+// Paths that are blocked while on the Limited Free Edition (free trial)
+const FREE_TRIAL_LOCKED_PATHS = [
+  '/capital-access',
+  '/invoices',
+  '/payments',
+  '/resources',
+  '/credit-builder',
+]
+
 export default function ProtectedRoute() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -32,15 +41,6 @@ export default function ProtectedRoute() {
   const trialEndDate = (user?.free_trail_end_date || userSubscription?.free_trail_end_date) as string | undefined
 
   const isTrialExpired = !!trialEndDate && isTrialEndDateExpired(trialEndDate)
-
-  console.log("ProtectedRoute Debug:", {
-    token: !!token,
-    isFreeTrial,
-    trialEndDate,
-    isTrialExpired,
-    user,
-    userSubscription
-  })
 
   useEffect(() => {
     if (token && isTrialExpired) {
@@ -73,6 +73,14 @@ export default function ProtectedRoute() {
     const isAllowed = location.pathname === '/' || allowedPaths.some(path => location.pathname.startsWith(path))
     
     if (!isAllowed) {
+      return <Navigate to="/dashboard" replace />
+    }
+  }
+
+  // Block free-trial users from accessing premium modules via direct URL
+  if (isFreeTrialLocked(userSubscription)) {
+    const isLockedPath = FREE_TRIAL_LOCKED_PATHS.some(path => location.pathname.startsWith(path))
+    if (isLockedPath) {
       return <Navigate to="/dashboard" replace />
     }
   }
