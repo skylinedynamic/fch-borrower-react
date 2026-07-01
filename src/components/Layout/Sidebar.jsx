@@ -4,7 +4,7 @@ import { clearAuth } from '../../lib/auth'
 import { logout } from '../../modules/auth/services'
 import { useAuthStore } from '../../store/auth'
 import { useBrandingStore } from '../../store/brandingStore'
-import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils'
+import { isSubscriptionRestricted, isFreeTrialLocked } from '../../lib/auth/subscriptionUtils'
 import { PARTNER_TYPES } from '../../config/partnerTypeOptions'
 import logoImg from '../../../assets/images/fch-logo-wide.png'
 import avatarDefault from '../../../assets/images/users/avatar-1.jpg'
@@ -21,6 +21,8 @@ export default function Sidebar() {
   const isRestricted = isSubscriptionRestricted(userSubscription)
 
   const isFreeTrial = !!userSubscription?.is_free_trail;
+  // Modules locked exclusively during the Limited Free Edition (free trial)
+  const isFreeTierModule = isFreeTrialLocked(userSubscription);
   const trialEndDate = userSubscription?.free_trail_end_date;
 
   const formatTrialDate = (dateStr) => {
@@ -176,36 +178,59 @@ export default function Sidebar() {
             <LinkItem to="/pre-qualification" label="Pre Qualification" icon="ri-clipboard-line" restricted={isRestricted} />
             <LinkItem to="/fund-application" label="Fund Application" icon="ri-hand-coin-line" restricted={isRestricted} />
             <LinkItem to="/my-applications" label="My Applications" icon="ri-file-list-line" restricted={isRestricted} />
-            <LinkItem to="/invoices" label="Invoices" icon="ri-article-line" />
-            <LinkItem to="/payments" label="Payments" icon="ri-money-dollar-box-line" />
+
+            {/* Capital Access — locked on free trial */}
+            <LinkItem to="/capital-access" label="Capital Access" icon="ri-funds-line" restricted={isFreeTierModule} />
+
+            {/* Invoices — locked on free trial */}
+            <LinkItem to="/invoices" label="Invoices" icon="ri-article-line" restricted={isFreeTierModule} />
+
+            {/* Payments — locked on free trial */}
+            <LinkItem to="/payments" label="Payments" icon="ri-money-dollar-box-line" restricted={isFreeTierModule} />
 
             <LinkItem to="/documents" label="Documents" icon="ri-file-2-line" restricted={isRestricted} />
-            <LinkItem to="/resources" label="Resource Hub" icon="ri-book-read-line" />
+
+            {/* Resource Hub — locked on free trial */}
+            <LinkItem to="/resources" label="Resource Hub" icon="ri-book-read-line" restricted={isFreeTierModule} />
+
             <LinkItem to="/appointment" label="Appointment" icon="ri-calendar-2-line" restricted={isRestricted} />
 
+            {/* Credit Builder — locked on free trial */}
             <li className="nav-item">
               <button
                 type="button"
                 className={`nav-link menu-link btn material-shadow-none w-100 text-start`}
-                onClick={(e) => {
-                  if (isRestricted) return;
+                onClick={() => {
+                  if (isRestricted || isFreeTierModule) return;
                   setCreditOpen((s) => !s);
                 }}
                 aria-expanded={creditOpen}
                 aria-controls="creditBuilderMenu"
               >
-                <i className="ri-building-2-line"></i> <span>Credit Builder {isRestricted && <i className="ri-lock-line align-middle ms-1"></i>}</span>
+                <i className="ri-building-2-line"></i> <span>Credit Builder {(isRestricted || isFreeTierModule) && <i className="ri-lock-line align-middle ms-1"></i>}</span>
                 <i className={`ri-arrow-down-s-line float-end submenu-caret ${creditOpen ? 'open' : ''}`}></i>
               </button>
               <ul id="creditBuilderMenu" className={`navbar-nav submenu-collapse ${creditOpen ? 'open' : ''}`}>
                 <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/overview" onClick={() => isMobile && closeSidebar()}><i className="ri-subtract-line"></i> <span>Overview</span></NavLink>
+                  <NavLink
+                    className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'}
+                    to="/credit-builder/overview"
+                    onClick={(e) => { if (isFreeTierModule) { e.preventDefault(); return; } isMobile && closeSidebar(); }}
+                  ><i className="ri-subtract-line"></i> <span>Overview</span></NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/guide" onClick={() => isMobile && closeSidebar()}><i className="ri-subtract-line"></i> <span>Step-By-Step Guide</span></NavLink>
+                  <NavLink
+                    className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'}
+                    to="/credit-builder/guide"
+                    onClick={(e) => { if (isFreeTierModule) { e.preventDefault(); return; } isMobile && closeSidebar(); }}
+                  ><i className="ri-subtract-line"></i> <span>Step-By-Step Guide</span></NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'} to="/credit-builder/credit-accounts" onClick={() => isMobile && closeSidebar()}><i className="ri-subtract-line"></i> <span>Credit Accounts</span></NavLink>
+                  <NavLink
+                    className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'}
+                    to="/credit-builder/credit-accounts"
+                    onClick={(e) => { if (isFreeTierModule) { e.preventDefault(); return; } isMobile && closeSidebar(); }}
+                  ><i className="ri-subtract-line"></i> <span>Credit Accounts</span></NavLink>
                 </li>
               </ul>
             </li>
@@ -228,7 +253,7 @@ export default function Sidebar() {
               <i className="ri-vip-crown-2-fill"></i>
             </div>
             <div className="trial-text-wrap">
-              <span className="trial-label">Free Trial</span>
+              <span className="trial-label">Free Edition</span>
               {trialEndDate && (
                 <span className="trial-expires">Expires {formatTrialDate(trialEndDate)}</span>
               )}
