@@ -3,8 +3,8 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import { getBorrowerFundingRequest } from '../../modules/funding-requests/services'
 import { getBorrowerActivityLogs, downloadActivityAttachment } from '../../modules/activity-log/services'
 import { downloadBorrowerDocument } from '../../modules/documents/services'
-import { downloadBlob, downloadFileFromUrl } from '../../utils/fileDownload'
-import { getFileConfig } from '../../config/fileTypeConfig'
+import { downloadBlob, downloadFileFromUrl, handleFileDownload } from '../../utils/fileDownload'
+import { getFileConfig, getDocumentStatusBadgeClass } from '../../config/fileTypeConfig'
 import { FUNDING_REVIEW_STATUS } from '../../config/funding'
 import { toast } from 'react-toastify'
 import '../../components/Common/StatisticsCardSkeleton.css'
@@ -157,8 +157,6 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
 
                             {/* Subtitle / Meta */}
                             <p className="mb-2 text-muted fs-11 mt-1 d-flex align-items-center flex-wrap">
-                                <span>by {causedBy}</span>
-                                <span style={{ margin: '0 6px' }}>•</span>
                                 <i className="ri-time-line align-middle me-1 fs-11 text-muted" style={{ marginRight: '2px' }}></i>
                                 <span>{timestamp}</span>
                             </p>
@@ -656,6 +654,28 @@ export default function FundingRequestDetailPage() {
                                                 <tbody>
                                                     {review.actual_documents.map((doc: any, idx: number) => {
                                                         const config = getFileConfig(doc.document_url || doc.file_path || doc.document_name || '')
+                                                        
+                                                        const handleDownload = (e: React.MouseEvent) => {
+                                                            e.preventDefault();
+                                                            let fileName = doc.document_name || 'document';
+                                                            const ext = (doc.document_url?.split(/[#?]/)[0].split('.').pop() || '').trim().toLowerCase();
+                                                            if (ext && !fileName.toLowerCase().endsWith(`.${ext}`)) {
+                                                                fileName += `.${ext}`;
+                                                            }
+                                                            
+                                                            if (doc.id && !String(doc.id).startsWith('missing_')) {
+                                                                handleFileDownload(
+                                                                    () => downloadBorrowerDocument(doc.id),
+                                                                    fileName,
+                                                                    doc.document_url
+                                                                );
+                                                            } else if (doc.document_url) {
+                                                                downloadFileFromUrl(doc.document_url, fileName);
+                                                            } else {
+                                                                toast.error('Unable to download this document.');
+                                                            }
+                                                        };
+
                                                         return (
                                                             <tr key={idx} className="border-bottom border-bottom-dashed">
                                                                 <td className="text-start fw-medium text-dark">
@@ -665,67 +685,22 @@ export default function FundingRequestDetailPage() {
                                                                                 <i className={config.icon}></i>
                                                                             </div>
                                                                         </div>
-                                                                        <a href="#" onClick={(e) => {
-                                                                            e.preventDefault()
-                                                                            if (doc.document_url) {
-                                                                                window.open(doc.document_url, '_blank')
-                                                                            }
-                                                                        }}
-                                                                            className="text-body fw-medium text-truncate d-block" style={{ maxWidth: 260 }}>
+                                                                        <a href="#" onClick={handleDownload} className="text-body fw-medium text-truncate d-block" style={{ maxWidth: 260 }}>
                                                                             {doc.document_name}
                                                                         </a>
                                                                     </div>
                                                                 </td>
                                                                 <td className="text-center">
-                                                                    {doc.status === 'Accepted' ? (
-                                                                        <span className="badge bg-success-subtle text-success">Accepted</span>
-                                                                    ) : doc.status === 'Rejected' ? (
-                                                                        <span className="badge bg-danger-subtle text-danger">Rejected</span>
-                                                                    ) : doc.status === 'Under Review' ? (
-                                                                        <span className="badge bg-warning-subtle text-warning">Under Review</span>
-                                                                    ) : (
-                                                                        <span className="badge bg-info-subtle text-info">Uploaded</span>
-                                                                    )}
+                                                                    <span className={`badge ${getDocumentStatusBadgeClass(doc.status)}`}>
+                                                                        {doc.status || 'Uploaded'}
+                                                                    </span>
                                                                 </td>
                                                                 <td className="text-center text-muted fs-12">
                                                                     {formatDateTime(doc.created_at)}
                                                                 </td>
                                                                 <td className="text-end">
                                                                     <div className="d-flex gap-2 justify-content-end">
-                                                                        <button className="btn btn-sm btn-light border d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }} onClick={() => {
-                                                                            if (doc.document_url) {
-                                                                                window.open(doc.document_url, '_blank')
-                                                                            }
-                                                                        }} title="View">
-                                                                            <i className="ri-eye-line fs-14"></i>
-                                                                        </button>
-                                                                        <button className="btn btn-sm btn-light border d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }} onClick={async (e) => {
-                                                                            e.preventDefault()
-                                                                            try {
-                                                                                let fileName = doc.document_name || 'document';
-                                                                                const ext = (doc.document_url?.split(/[#?]/)[0].split('.').pop() || '').trim().toLowerCase();
-                                                                                if (ext && !fileName.toLowerCase().endsWith(`.${ext}`)) {
-                                                                                    fileName += `.${ext}`;
-                                                                                }
-
-                                                                                if (doc.id && !String(doc.id).startsWith('missing_')) {
-                                                                                    const response = await downloadBorrowerDocument(doc.id);
-                                                                                    let blob = response.data instanceof Blob ? response.data : new Blob([response.data]);
-                                                                                    downloadBlob(blob, fileName);
-                                                                                } else if (doc.document_url) {
-                                                                                    downloadFileFromUrl(doc.document_url, fileName);
-                                                                                } else {
-                                                                                    toast.error('Unable to download this document.');
-                                                                                }
-                                                                            } catch (error) {
-                                                                                console.error('API download failed', error);
-                                                                                if (doc.document_url) {
-                                                                                    window.open(doc.document_url, '_blank');
-                                                                                } else {
-                                                                                    toast.error('Failed to download document.');
-                                                                                }
-                                                                            }
-                                                                        }} title="Download">
+                                                                        <button className="btn btn-sm btn-light border d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }} onClick={handleDownload} title="Download">
                                                                             <i className="ri-download-2-line fs-14"></i>
                                                                         </button>
                                                                     </div>
