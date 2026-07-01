@@ -12,29 +12,45 @@ export default function PreFlightChecklist() {
   const isLoading = isPlayLoading || isStrategiesLoading;
 
   const recommendedPlay = strategies?.find(p => p.isRecommended) || strategies?.[0];
-  const isAccessible = recommendedPlay ? String(recommendedPlay.id) === String(id) : true;
+  const isCompleted = strategies?.some(p => String(p.id) === String(id) && p.isCompleted);
+  const isAccessible = recommendedPlay ? (String(recommendedPlay.id) === String(id) || isCompleted) : true;
 
-  if (!isLoading && (isError || !play || !isAccessible)) return <Navigate to="/capital-access/strategy" />;
 
-  const allComplete = play?.checklist ? play.checklist.every((item: any) => item.complete !== false) : false;
-  const completedCount = play?.checklist ? play.checklist.filter((item: any) => item.complete !== false).length : 0;
-  const totalCount = play?.checklist ? play.checklist.length : 0;
+  if (isLoading) {
+    return (
+      <div className="page-content capital-access-page">
+        <div className="container-fluid">
+          <div className="ca-page-wrap text-start">
+            <CapitalAccessLoader type="checklist" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !play || !isAccessible) {
+    return <Navigate to="/capital-access/strategy" />;
+  }
+
+  const allComplete = play.checklist ? play.checklist.every((item: any) => item.complete !== false) : false;
+  const completedCount = play.checklist ? play.checklist.filter((item: any) => item.complete !== false).length : 0;
+  const totalCount = play.checklist ? play.checklist.length : 0;
 
   return (
     <div className="page-content capital-access-page">
       <div className="container-fluid">
 
-        <div className="ca-page-wrap">
+        <div className="ca-page-wrap text-start">
           {/* ── Page Header ── */}
           <div className="row pb-1 mb-3">
             <div className="col-12">
               <div className="d-flex align-items-center gap-3 py-2 w-100">
-                <Link to={play?.id ? `/capital-access/${play.id}/overview` : "/capital-access/strategy"} className="ca-back-btn" title="Back to Overview">
+                <Link to={play.id ? `/capital-access/${play.id}/overview` : "/capital-access/strategy"} className="ca-back-btn" title="Back to Overview">
                   <i className="ri-arrow-left-line fs-16"></i>
                 </Link>
                 <div>
                   <h4 className="fs-22 mb-1 fw-bold text-dark">Pre-Flight Checklist</h4>
-                  <p className="ca-page-subtitle">
+                  <p className="ca-page-subtitle mb-0">
                     Confirm all requirements are completed before starting this play.
                   </p>
                 </div>
@@ -42,9 +58,8 @@ export default function PreFlightChecklist() {
             </div>
           </div>
 
-          {isLoading ? (
-            <CapitalAccessLoader type="checklist" />
-          ) : play.approval_status === false ? (
+          {play.approval_status === false ? (
+
             /* ── Ineligible / Locked State ── */
             <div className="ca-hero-card-premium border-danger-subtle">
               <div className="ca-hero-header-premium ca-hero-header-no-border">
@@ -70,7 +85,7 @@ export default function PreFlightChecklist() {
                 </div>
 
                 <div className="d-flex align-items-center justify-content-end w-100">
-                  <Link to="/capital-access/strategy" className="ca-btn ca-btn-outline">
+                  <Link to="/capital-access/strategy" className="ca-btn ca-btn-outline" style={{ minWidth: '180px' }}>
                     <i className="ri-arrow-left-line"></i> Back to Strategies
                   </Link>
                 </div>
@@ -159,15 +174,15 @@ export default function PreFlightChecklist() {
                 <hr className="ca-divider my-4" />
 
                 <div className="d-flex align-items-center justify-content-end gap-3 w-100">
-                  <Link to={`/capital-access/${play.id}/overview`} className="ca-btn ca-btn-outline">
+                  <Link to={`/capital-access/${play.id}/overview`} className="ca-btn ca-btn-outline" style={{ minWidth: '180px' }}>
                     <i className="ri-arrow-left-line"></i> Back
                   </Link>
                   {allComplete ? (
-                    <Link to={`/capital-access/${play.id}/roadmap`} className="ca-btn ca-btn-primary">
+                    <Link to={`/capital-access/${play.id}/roadmap`} className="ca-btn ca-btn-primary" style={{ minWidth: '180px' }}>
                       View Roadmap <i className="ri-map-2-line"></i>
                     </Link>
                   ) : (
-                    <button disabled className="ca-btn ca-btn-primary ca-btn-disabled">
+                    <button disabled className="ca-btn ca-btn-primary ca-btn-disabled" style={{ minWidth: '180px' }}>
                       View Roadmap <i className="ri-map-2-line"></i>
                     </button>
                   )}

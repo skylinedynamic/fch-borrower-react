@@ -89,6 +89,7 @@ export interface CapitalAccessStrategy {
   name: string;
   description: string;
   isRecommended: boolean;
+  isCompleted: boolean;
   target_exposure: string;    // e.g. "$5,000 - $55,000"
   est_timeline: string;       // e.g. "11 - 16 days"
   approval_probability: string; // e.g. "95%"
@@ -96,6 +97,7 @@ export interface CapitalAccessStrategy {
   checklist: Array<{ id: string; label: string; complete: boolean }>;
   roadmap: RoadmapStep[];
 }
+
 
 export interface CapitalAccessStrategyOverview {
   id: number;

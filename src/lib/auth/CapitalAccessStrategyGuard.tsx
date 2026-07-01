@@ -27,12 +27,14 @@ export default function CapitalAccessStrategyGuard() {
   }
 
   const recommended = strategies?.find(p => p.isRecommended) || strategies?.[0]
+  const isCompleted = strategies?.some(p => String(p.id) === String(id) && p.isCompleted)
 
   // If strategies have loaded and the requested ID doesn't match the
-  // recommended play, redirect to strategy selection.
-  if (recommended && String(recommended.id) !== String(id)) {
+  // recommended play AND is not completed, redirect to strategy selection.
+  if (recommended && String(recommended.id) !== String(id) && !isCompleted) {
     return <Navigate to="/capital-access/strategy" replace />
   }
 
   return <Outlet />
 }
+
