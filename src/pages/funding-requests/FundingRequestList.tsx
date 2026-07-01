@@ -6,6 +6,7 @@ import { Column } from 'primereact/column'
 import { Dropdown } from 'primereact/dropdown'
 import StatisticsCardSkeleton from '../../components/Common/StatisticsCardSkeleton'
 import StatisticsCard from '../../components/Common/StatisticsCard'
+import { FUNDING_REVIEW_STATUS } from '../../config/funding'
 
 export default function FundingRequestList() {
     const navigate = useNavigate()
@@ -177,11 +178,10 @@ export default function FundingRequestList() {
                                         <div className="col-xxl-4 col-sm-6">
                                             <Dropdown
                                                 value={selectedStatus}
-                                                options={[
-                                                    { label: 'Pending', value: 'Pending' },
-                                                    { label: 'Approved', value: 'Approved' },
-                                                    { label: 'Rejected', value: 'Rejected' }
-                                                ]}
+                                                options={Object.values(FUNDING_REVIEW_STATUS).map(status => ({
+                                                    label: status,
+                                                    value: status
+                                                }))}
                                                 onChange={(e) => setSelectedStatus(e.value)}
                                                 placeholder="All Statuses"
                                                 className="w-100 bg-light border-light"
