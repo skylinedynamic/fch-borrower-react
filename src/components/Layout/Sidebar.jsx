@@ -197,8 +197,6 @@ export default function Sidebar() {
             <LinkItem to="/appointment" label="Appointment" icon="ri-calendar-2-line" restricted={isRestricted} />
 
             <LinkItem to="/funding" label="Funding" icon="ri-money-dollar-circle-line" restricted={isRestricted} />
-
-            <LinkItem to="/funding" label="Funding" icon="ri-money-dollar-circle-line" restricted={isRestricted} />
             {/* Credit Builder — locked on free trial */}
             <li className="nav-item">
               <button
