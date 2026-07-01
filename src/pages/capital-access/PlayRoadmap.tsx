@@ -322,7 +322,11 @@ export default function PlayRoadmap() {
                     } else if (hasUnsubmittedPrevious) {
                       lockReason = 'Complete the previous step to unlock this card';
                     } else if (isTimeLocked) {
-                      lockReason = timeCheck.reason;
+                      if (remainingTimeText) {
+                        lockReason = `This will Unlock in ${remainingTimeText.replace('Unlocks in ', '')}`;
+                      } else {
+                        lockReason = timeCheck.reason;
+                      }
                     }
 
                     return (
@@ -352,12 +356,6 @@ export default function PlayRoadmap() {
                                       <i className="ri-calendar-event-line me-1"></i>
                                       {accessScheduleLabel(card)}
                                     </span>
-                                    {remainingTimeText && (
-                                      <span className="ca-badge bg-warning-subtle text-warning font-semibold">
-                                        <i className="ri-time-line me-1"></i>
-                                        {remainingTimeText}
-                                      </span>
-                                    )}
                                     <span className="text-muted fs-12">Est. {card.exposure}</span>
                                     {card.hard_pull === 'Yes' && (
                                       <span className="ca-badge ca-badge-warning">Hard Pull</span>
