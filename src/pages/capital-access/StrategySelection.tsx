@@ -4,8 +4,6 @@ import { useCapitalAccessStrategies } from '../../modules/capital-access/queries
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
 import CommonErrorPage from '../../components/Common/CommonErrorPage';
 
-
-
 export default function StrategySelection() {
   const { data, isLoading, isError } = useCapitalAccessStrategies();
 
@@ -19,17 +17,25 @@ export default function StrategySelection() {
   }
 
   const strategies = data || [];
-  const recommendedPlay = strategies.find(p => p.isRecommended) || strategies[0];
+
+  // Filter completed and active plays
+  const completedPlays = strategies.filter(p => p.isCompleted);
+  const activePlays = strategies.filter(p => !p.isCompleted);
+
+  // Recommended play is the recommended one among active plays, or falls back to the first active play
+  const recommendedPlay = activePlays.find(p => p.isRecommended) || activePlays[0];
+
+  // Other eligible plays are active plays minus the recommended one
   const otherPlays = recommendedPlay
-    ? strategies.filter(p => String(p.id) !== String(recommendedPlay.id))
-    : [];
+    ? activePlays.filter(p => String(p.id) !== String(recommendedPlay.id))
+    : activePlays;
 
   return (
     <div className="page-content capital-access-page">
       <div className="container-fluid">
 
-        {/* ── Content ── */}
-        <div className="ca-page-wrap">
+        {/* ── Page Content ── */}
+        <div className="ca-page-wrap text-start">
           {/* ── Page Header ── */}
           <div className="row pb-1 mb-3">
             <div className="col-12">
@@ -38,11 +44,11 @@ export default function StrategySelection() {
                   <i className="ri-arrow-left-line fs-16"></i>
                 </Link>
                 <div>
-                    <h4 className="fs-22 mb-1 fw-bold text-dark">Capital Access Strategy</h4>
-                    <p className="ca-page-subtitle">
-                      Choose a strategy that fits your business funding goals. Each play is a structured sequence of card applications designed to maximize your credit access.
-                    </p>
-                  </div>
+                  <h4 className="fs-22 mb-1 fw-bold text-dark">Capital Access Strategy</h4>
+                  <p className="ca-page-subtitle mb-0">
+                    Choose a strategy that fits your business funding goals. Each play is a structured sequence of card applications designed to maximize your credit access.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -62,7 +68,7 @@ export default function StrategySelection() {
             </div>
           ) : (
             <>
-              {/* Recommended Play */}
+              {/* ── Section 1: Recommended Play (Active) ── */}
               {recommendedPlay && (
                 <div className="mb-4">
                   <div className="ca-hero-card-premium">
@@ -88,7 +94,7 @@ export default function StrategySelection() {
                         <div className="col-sm-4">
                           <div className="ca-metric-card-premium">
                             <span className="ca-metric-label-premium">
-                              <i className="ri-money-dollar-circle-line fs-14" style={{ color: '#60a5fa' }}></i> Target Exposure
+                              <i className="ri-money-dollar-circle-line fs-14 text-primary"></i> Target Exposure
                             </span>
                             <p className="ca-metric-value-premium primary">
                               {recommendedPlay.target_exposure}
@@ -98,7 +104,7 @@ export default function StrategySelection() {
                         <div className="col-sm-4">
                           <div className="ca-metric-card-premium">
                             <span className="ca-metric-label-premium">
-                              <i className="ri-percent-line fs-14" style={{ color: '#34d399' }}></i> Approval Probability
+                              <i className="ri-percent-line fs-14 text-success"></i> Approval Probability
                             </span>
                             <p className="ca-metric-value-premium success">{recommendedPlay.approval_probability}</p>
                           </div>
@@ -106,7 +112,7 @@ export default function StrategySelection() {
                         <div className="col-sm-4">
                           <div className="ca-metric-card-premium">
                             <span className="ca-metric-label-premium">
-                              <i className="ri-calendar-line fs-14" style={{ color: '#38bdf8' }}></i> Est. Timeline
+                              <i className="ri-calendar-line fs-14 text-info"></i> Est. Timeline
                             </span>
                             <p className="ca-metric-value-premium timeline">{recommendedPlay.est_timeline}</p>
                           </div>
@@ -114,8 +120,8 @@ export default function StrategySelection() {
                       </div>
 
                       <div className="d-flex justify-content-end pt-2">
-                        <Link to={`/capital-access/${recommendedPlay.id}/overview`} className="ca-btn ca-btn-primary">
-                          View Strategy <i className="ri-arrow-right-line"></i>
+                        <Link to={`/capital-access/${recommendedPlay.id}/overview`} className="ca-btn ca-btn-primary" style={{ minWidth: '180px' }}>
+                          View Strategy <i className="ri-arrow-right-line ms-1"></i>
                         </Link>
                       </div>
                     </div>
@@ -123,13 +129,18 @@ export default function StrategySelection() {
                 </div>
               )}
 
-              {/* Other Plays */}
+              {/* ── Section 2: Other Eligible Plays (Active) ── */}
               {otherPlays.length > 0 && (
-                <div>
-                  <span className="ca-section-label" style={{ fontWeight: 700, fontSize: '11px', color: '#94a3b8' }}>Other Eligible Plays</span>
+                <div className="mb-4">
+                  <div className="d-flex align-items-center justify-content-between mb-3">
+                    <span className="ca-section-label fw-bold fs-11 text-uppercase text-muted" style={{ letterSpacing: '0.08em' }}>
+                      Other Eligible Plays
+                    </span>
+                    <span className="badge bg-light text-muted border">{otherPlays.length} available</span>
+                  </div>
                   <div className="d-flex flex-column gap-3">
                     {otherPlays.map(play => (
-                      <div key={play.id} className="ca-strategy-row-premium text-decoration-none">
+                      <div key={play.id} className="ca-strategy-row-premium">
                         <div className="d-flex align-items-center gap-3 flex-grow-1" style={{ minWidth: 0 }}>
                           <div className="ca-strategy-icon-wrapper-premium flex-shrink-0">
                             <i className="ri-flashlight-line"></i>
@@ -153,6 +164,47 @@ export default function StrategySelection() {
                           </div>
                         </div>
                       </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Section 3: Completed Plays ── */}
+              {completedPlays.length > 0 && (
+                <div className="mt-5">
+                  <div className="d-flex align-items-center justify-content-between">
+                    <span className="ca-section-label fw-bold fs-11 text-uppercase text-success" style={{ letterSpacing: '0.08em' }}>
+                      Completed Plays
+                    </span>
+                    <span className="badge bg-success-subtle text-success border border-success-subtle">{completedPlays.length} completed</span>
+                  </div>
+                  <div className="d-flex flex-column gap-3">
+                    {completedPlays.map(play => (
+                      <Link
+                        key={play.id}
+                        to={`/capital-access/${play.id}/roadmap`}
+                        className="ca-strategy-row-premium text-decoration-none"
+                        style={{ borderLeft: '4px solid #10b981', background: '#f0fdf4' }}
+                      >
+                        <div className="d-flex align-items-center gap-3 flex-grow-1" style={{ minWidth: 0 }}>
+                          <div className="ca-strategy-icon-wrapper-premium flex-shrink-0" style={{ background: '#d1fae5', color: '#059669' }}>
+                            <i className="ri-checkbox-circle-fill"></i>
+                          </div>
+                          <div style={{ minWidth: 0 }}>
+                            <h6 className="mb-1 fw-bold fs-14 text-dark">{play.name}</h6>
+                            <p className="text-muted fs-12 mb-0 text-truncate">{play.description}</p>
+                          </div>
+                        </div>
+                        <div className="d-flex align-items-center gap-3">
+                          <div className="ca-row-metric-badge d-none d-sm-block" style={{ background: '#ffffff' }}>
+                            <span className="label">Exposure Achieved</span>
+                            <span className="value text-success">{play.target_exposure}</span>
+                          </div>
+                          <div className="ps-2 text-success">
+                            <i className="ri-arrow-right-line fs-20"></i>
+                          </div>
+                        </div>
+                      </Link>
                     ))}
                   </div>
                 </div>

@@ -101,9 +101,11 @@ export default function PlayRoadmap() {
   const isLoading = isPlayLoading || isStrategiesLoading;
 
   const recommendedPlay = strategies?.find(p => p.isRecommended) || strategies?.[0];
-  const isAccessible = recommendedPlay ? String(recommendedPlay.id) === String(id) : true;
+  const isCompleted = strategies?.some(p => String(p.id) === String(id) && p.isCompleted);
+  const isAccessible = recommendedPlay ? (String(recommendedPlay.id) === String(id) || isCompleted) : true;
 
   if (!isLoading && (isError || !play || !isAccessible)) return <Navigate to="/capital-access/strategy" />;
+
 
   // Strategy-level lock
   if (!isLoading && play && play.approval_status === false) {
@@ -325,9 +327,14 @@ export default function PlayRoadmap() {
                                         result: null,
                                       },
                                     }}
-                                    className="ca-btn ca-btn-sm ca-btn-outline"
+                                    className={`ca-btn ca-btn-sm ${
+                                      card.application_status === CAPITAL_ACCESS_STATUS.APPROVED ? 'ca-btn-success' :
+                                      card.application_status === CAPITAL_ACCESS_STATUS.PENDING ? 'ca-btn-warning' :
+                                      card.application_status === CAPITAL_ACCESS_STATUS.DECLINED ? 'ca-btn-danger' :
+                                      'ca-btn-outline'
+                                    }`}
                                   >
-                                    Manage Status <i className="ri-arrow-right-line"></i>
+                                    {card.application_status || 'Manage Status'} <i className="ri-arrow-right-line"></i>
                                   </Link>
                                   {!card.application_status && (
                                     <a
@@ -352,11 +359,17 @@ export default function PlayRoadmap() {
 
                 <hr className="ca-divider mt-4 mb-3" />
 
-                <div className="d-flex gap-3 justify-content-center">
-                  <Link to={`/capital-access/${play.id}/pre-flight`} className="ca-btn ca-btn-outline flex-fill justify-content-center">
-                    <i className="ri-arrow-left-line"></i> Back to Checklist
-                  </Link>
-                  <Link to="/capital-access/strategy" className="ca-btn ca-btn-primary flex-fill justify-content-center">
+                <div className="d-flex align-items-center justify-content-end gap-3 w-100">
+                  {isCompleted ? (
+                    <Link to="/capital-access/strategy" className="ca-btn ca-btn-outline" style={{ minWidth: '180px' }}>
+                      <i className="ri-arrow-left-line"></i> Back to Strategy List
+                    </Link>
+                  ) : (
+                    <Link to={`/capital-access/${play.id}/pre-flight`} className="ca-btn ca-btn-outline" style={{ minWidth: '180px' }}>
+                      <i className="ri-arrow-left-line"></i> Back to Checklist
+                    </Link>
+                  )}
+                  <Link to="/capital-access/strategy" className="ca-btn ca-btn-primary" style={{ minWidth: '180px' }}>
                     All Strategies <i className="ri-list-check-3"></i>
                   </Link>
                 </div>

@@ -13,15 +13,31 @@ export default function PlayOverview() {
   const isLoading = isPlayLoading || isStrategiesLoading;
 
   const recommendedPlay = strategies?.find(p => p.isRecommended) || strategies?.[0];
-  const isAccessible = recommendedPlay ? String(recommendedPlay.id) === String(id) : true;
+  const isCompleted = strategies?.some(p => String(p.id) === String(id) && p.isCompleted);
+  const isAccessible = recommendedPlay ? (String(recommendedPlay.id) === String(id) || isCompleted) : true;
 
-  if (!isLoading && (isError || !play || !isAccessible)) return <Navigate to="/capital-access/strategy" />;
+
+  if (isLoading) {
+    return (
+      <div className="page-content capital-access-page">
+        <div className="container-fluid">
+          <div className="ca-page-wrap text-start">
+            <CapitalAccessLoader type="overview" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !play || !isAccessible) {
+    return <Navigate to="/capital-access/strategy" />;
+  }
 
   return (
     <div className="page-content capital-access-page">
       <div className="container-fluid">
 
-        <div className="ca-page-wrap">
+        <div className="ca-page-wrap text-start">
           {/* ── Page Header ── */}
           <div className="row pb-1 mb-3">
             <div className="col-12">
@@ -31,9 +47,9 @@ export default function PlayOverview() {
                 </Link>
                 <div>
                   <h4 className="fs-22 mb-1 fw-bold text-dark">
-                    {isLoading || !play ? 'Strategy Overview' : play.name}
+                    {play.name}
                   </h4>
-                  <p className="ca-page-subtitle">
+                  <p className="ca-page-subtitle mb-0">
                     Review the target exposure, approval probability, and benefits of this play.
                   </p>
                 </div>
@@ -41,9 +57,8 @@ export default function PlayOverview() {
             </div>
           </div>
 
-          {isLoading ? (
-            <CapitalAccessLoader type="overview" />
-          ) : play.approval_status === false ? (
+          {play.approval_status === false ? (
+
             <div className="ca-hero-card-premium border-danger-subtle">
               <div className="ca-hero-header-premium" style={{ borderBottom: 'none' }}>
                 <div className="d-flex align-items-center gap-3 w-100">
@@ -149,10 +164,10 @@ export default function PlayOverview() {
                 <hr className="ca-divider my-4" />
 
                 <div className="d-flex align-items-center justify-content-end gap-3 w-100">
-                  <Link to="/capital-access/strategy" className="ca-btn ca-btn-outline">
+                  <Link to="/capital-access/strategy" className="ca-btn ca-btn-outline" style={{ minWidth: '180px' }}>
                     <i className="ri-arrow-left-line"></i> Back
                   </Link>
-                  <Link to={`/capital-access/${play?.id}/pre-flight`} className="ca-btn ca-btn-primary">
+                  <Link to={`/capital-access/${play?.id}/pre-flight`} className="ca-btn ca-btn-primary" style={{ minWidth: '180px' }}>
                     Start This Play <i className="ri-arrow-right-line"></i>
                   </Link>
                 </div>

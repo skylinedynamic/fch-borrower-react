@@ -15,7 +15,9 @@ export default function StepDetail() {
   const isLoading = isStepLoading || isStrategiesLoading;
 
   const recommendedPlay = strategies?.find(p => p.isRecommended) || strategies?.[0];
-  const isAccessible = recommendedPlay ? String(recommendedPlay.id) === String(strategyId) : true;
+  const isCompleted = strategies?.some(p => String(p.id) === String(strategyId) && p.isCompleted);
+  const isAccessible = recommendedPlay ? (String(recommendedPlay.id) === String(strategyId) || isCompleted) : true;
+
 
   const [creditLimit, setCreditLimit] = useState('');
   const [notes, setNotes] = useState('');
@@ -42,26 +44,15 @@ export default function StepDetail() {
   }, [step]);
 
   const validateCreditLimit = (val: string) => {
-    if (!val) {
-      return 'Approved Credit Limit is required.';
-    }
+    if (!val) return 'Approved Credit Limit is required.';
     const num = parseFloat(val);
-    if (isNaN(num)) {
-      return 'Approved Credit Limit must be a number.';
-    }
-    if (num < 0) {
-      return 'Approved Credit Limit cannot be negative.';
-    }
+    if (isNaN(num)) return 'Approved Credit Limit must be a number.';
+    if (num < 0) return 'Approved Credit Limit cannot be negative.';
     if (step) {
       const min = step.est_limit_min ?? 0;
-      if (num < min) {
-        return `Approved Credit Limit must be at least $${min.toLocaleString()}.`;
-      }
+      if (num < min) return `Approved Credit Limit must be at least $${min.toLocaleString()}.`;
       if (step.est_limit_max !== null && step.est_limit_max !== undefined) {
-        const max = step.est_limit_max;
-        if (num > max) {
-          return `Approved Credit Limit must be at most $${max.toLocaleString()}.`;
-        }
+        if (num > step.est_limit_max) return `Approved Credit Limit must be at most $${step.est_limit_max.toLocaleString()}.`;
       }
     }
     return '';
@@ -76,10 +67,7 @@ export default function StepDetail() {
     let finalLimit = creditLimit;
     if (status === CAPITAL_ACCESS_STATUS.APPROVED) {
       const errorMsg = validateCreditLimit(creditLimit);
-      if (errorMsg) {
-        setValidationError(errorMsg);
-        return;
-      }
+      if (errorMsg) { setValidationError(errorMsg); return; }
     } else {
       finalLimit = '';
     }
@@ -88,7 +76,7 @@ export default function StepDetail() {
       await submitMutation.mutateAsync({
         credit_limit: finalLimit || null,
         notes: notes || null,
-        status: status,
+        status,
       });
       toast.success('Application details submitted successfully!');
     } catch (err: any) {
@@ -101,19 +89,55 @@ export default function StepDetail() {
 
   const scheduleLabel = (s: CapitalAccessStepDetail) => {
     if (s.access_time === 'Day' && s.access_day) {
-      return `Day ${s.access_day}${s.access_day_time ? ` (${s.access_day_time})` : ''}`;
+      return `Day ${s.access_day}${s.access_day_time ? ` · ${s.access_day_time}` : ''}`;
     }
     return s.access_time ?? '';
   };
 
-  const oddsNum = (step && step.approval_odds) ? parseInt(step.approval_odds, 10) : null;
-  const oddsColor = oddsNum === null ? 'inherit' : oddsNum >= 70 ? 'var(--vz-success)' : oddsNum >= 45 ? '#f59e0b' : 'var(--vz-danger)';
+  const oddsNum = step?.approval_odds ? parseInt(step.approval_odds, 10) : null;
+  const oddsColor =
+    oddsNum === null ? 'inherit'
+    : oddsNum >= 70 ? 'var(--vz-success)'
+    : oddsNum >= 45 ? '#f59e0b'
+    : 'var(--vz-danger)';
+
+  const statusConfig = {
+    [CAPITAL_ACCESS_STATUS.APPROVED]: {
+      icon: 'ri-checkbox-circle-fill',
+      outlineIcon: 'ri-checkbox-circle-line',
+      label: 'Approved',
+      desc: 'I was approved for this card',
+      colorClass: 'ca-status-card-success',
+      textColor: 'text-success',
+      badgeCls: 'bg-success-subtle text-success',
+    },
+    [CAPITAL_ACCESS_STATUS.PENDING]: {
+      icon: 'ri-time-fill',
+      outlineIcon: 'ri-time-line',
+      label: 'Pending',
+      desc: 'Application is still under review',
+      colorClass: 'ca-status-card-warning',
+      textColor: 'text-warning',
+      badgeCls: 'bg-warning-subtle text-warning',
+    },
+    [CAPITAL_ACCESS_STATUS.DECLINED]: {
+      icon: 'ri-close-circle-fill',
+      outlineIcon: 'ri-close-circle-line',
+      label: 'Declined',
+      desc: 'Application was not approved',
+      colorClass: 'ca-status-card-danger',
+      textColor: 'text-danger',
+      badgeCls: 'bg-danger-subtle text-danger',
+    },
+  } as const;
 
   const statuses = [
     CAPITAL_ACCESS_STATUS.APPROVED,
     CAPITAL_ACCESS_STATUS.PENDING,
     CAPITAL_ACCESS_STATUS.DECLINED,
-  ];
+  ] as CapitalAccessStatus[];
+
+  const isSubmitted = !!(step?.application && step.application.status === CAPITAL_ACCESS_STATUS.APPROVED);
 
   return (
     <div className="page-content capital-access-page">
@@ -121,41 +145,43 @@ export default function StepDetail() {
         <div className="ca-page-wrap text-start">
 
           {/* ── Page Header ── */}
-          <div className="row pb-1 mb-3">
-            <div className="col-12">
-              <div className="d-flex align-items-center gap-3 py-2 w-100">
-                <Link
-                  to={step ? `/capital-access/${step.play.id}/roadmap` : '/capital-access/strategy'}
-                  className="ca-back-btn"
-                  title="Back to Roadmap"
-                >
-                  <i className="ri-arrow-left-line fs-16"></i>
-                </Link>
-                <div>
-                  <h4 className="fs-22 mb-1 fw-bold text-dark">
-                    {isLoading || !step ? 'Card Detail' : `${step.card_name}`}
-                  </h4>
-                  <p className="ca-page-subtitle">
-                    {isLoading || !step ? '' : `${step.play.name} · Step ${step.sequence_order}`}
-                  </p>
-                </div>
-              </div>
+          <div className="d-flex align-items-center gap-3 mb-4">
+            <Link
+              to={step ? `/capital-access/${step.play.id}/roadmap` : '/capital-access/strategy'}
+              className="ca-back-btn"
+              title="Back to Roadmap"
+            >
+              <i className="ri-arrow-left-line fs-16"></i>
+            </Link>
+            <div className="flex-grow-1">
+              <h4 className="fs-20 mb-0 fw-bold text-dark">
+                {isLoading || !step ? 'Card Detail' : step.card_name}
+              </h4>
+              {!isLoading && step && (
+                <p className="ca-page-subtitle mb-0 mt-1">
+                  {step.play.name}&nbsp;&bull;&nbsp;Step {step.sequence_order}
+                </p>
+              )}
             </div>
           </div>
 
+          {/* ── Loading State ── */}
           {isLoading || !step ? (
             <CapitalAccessLoader type="checklist" />
           ) : (
             <div className="ca-hero-card-premium">
-              {/* ── Card Header ── */}
+
+              {/* ══════════════════════════════════
+                  ZONE 1 — Card Identity Header
+              ══════════════════════════════════ */}
               <div className="ca-hero-header-premium">
-                <div className="d-flex align-items-center gap-3 flex-grow-1">
+                <div className="d-flex align-items-center gap-3 flex-grow-1 min-w-0">
                   {step.full_image_url ? (
                     <img
                       src={step.full_image_url}
                       alt={step.card_name}
-                      className="rounded border bg-white"
-                      style={{ width: '60px', height: '38px', objectFit: 'contain' }}
+                      className="rounded border bg-white flex-shrink-0"
+                      style={{ width: 64, height: 40, objectFit: 'contain' }}
                     />
                   ) : (
                     <div className="avatar-sm flex-shrink-0">
@@ -164,21 +190,34 @@ export default function StepDetail() {
                       </span>
                     </div>
                   )}
-                  <div>
-                    <p className="ca-metric-label mb-0">{step.play.name} &bull; Step {step.sequence_order}</p>
-                    <h5 className="fw-bold mb-0 fs-17 text-dark">
-                      {step.card_name}
-                      <span className="text-muted fw-normal fs-14"> ({step.issuer})</span>
+                  <div className="min-w-0">
+                    <p className="ca-metric-label mb-0 text-truncate">
+                      {step.play.name}&nbsp;&bull;&nbsp;Step {step.sequence_order}
+                    </p>
+                    <h5 className="fw-bold mb-0 fs-17 text-dark text-truncate">
+                      {step.card_name}&nbsp;
+                      <span className="text-muted fw-normal fs-14">({step.issuer})</span>
                     </h5>
                   </div>
                 </div>
-                <span className="ca-checklist-badge-clear flex-shrink-0">
-                  <i className="ri-calendar-event-line"></i> {scheduleLabel(step)}
-                </span>
+                <div className="d-flex align-items-center gap-2 flex-shrink-0">
+                  {isSubmitted && (
+                    <span className="ca-outcome-badge">
+                      <i className="ri-checkbox-circle-fill"></i> Submitted
+                    </span>
+                  )}
+                  <span className="ca-checklist-badge-clear">
+                    <i className="ri-calendar-event-line"></i>
+                    {scheduleLabel(step)}
+                  </span>
+                </div>
               </div>
 
               <div className="ca-card-body p-4">
-                {/* ── Metrics Row ── */}
+
+                {/* ══════════════════════════════════
+                    ZONE 2 — Key Metrics Row
+                ══════════════════════════════════ */}
                 <div className="row g-3 mb-4">
                   {step.approval_odds && parseInt(step.approval_odds, 10) !== 0 && (
                     <div className="col-sm-4">
@@ -186,8 +225,8 @@ export default function StepDetail() {
                         <div className="ca-metric-icon-wrap success-glow">
                           <i className="ri-percent-line"></i>
                         </div>
-                        <span className="ca-metric-label-premium d-block mb-1">Approval Odds</span>
-                        <p className="ca-metric-value-premium mb-0" style={{ color: oddsColor }}>
+                        <span className="ca-metric-label-premium d-block">Approval Odds</span>
+                        <p className="ca-metric-value-premium mb-0 fs-24" style={{ color: oddsColor }}>
                           {step.approval_odds}
                         </p>
                       </div>
@@ -198,8 +237,8 @@ export default function StepDetail() {
                       <div className="ca-metric-icon-wrap primary-glow">
                         <i className="ri-money-dollar-circle-line"></i>
                       </div>
-                      <span className="ca-metric-label-premium d-block mb-1">Est. Limit</span>
-                      <p className="ca-metric-value-premium mb-0 text-dark">
+                      <span className="ca-metric-label-premium d-block">Estimated Limit</span>
+                      <p className="ca-metric-value-premium mb-0 text-dark fs-24">
                         {step.exposure}
                       </p>
                     </div>
@@ -209,41 +248,42 @@ export default function StepDetail() {
                       <div className="ca-metric-icon-wrap warning-glow">
                         <i className="ri-file-search-line"></i>
                       </div>
-                      <span className="ca-metric-label-premium d-block mb-1">Hard Pull</span>
-                      <p className={`ca-metric-value-premium mb-0 ${step.hard_pull === 'Yes' ? 'danger' : 'success'}`}>
+                      <span className="ca-metric-label-premium d-block">Hard Pull</span>
+                      <p className={`ca-metric-value-premium mb-0 fs-24 ${step.hard_pull === 'Yes' ? 'text-danger' : 'text-success'}`}>
                         {step.hard_pull}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* ── Why This Card & Requirements Side by Side ── */}
+                {/* ══════════════════════════════════
+                    ZONE 3 — Why This Card + Requirements
+                ══════════════════════════════════ */}
                 <div className="row g-4 mb-4">
-                  <div className={step.requirements && step.requirements.length > 0 ? "col-md-6" : "col-12"}>
+                  <div className={step.requirements && step.requirements.length > 0 ? 'col-md-6' : 'col-12'}>
                     <div className="ca-insight-box h-100 mb-0">
                       <div className="ca-insight-header">
                         <i className="ri-lightbulb-flash-line"></i>
-                        <span> Why This Card?</span>
+                        Why This Card?
                       </div>
-                      <p className="ca-insight-text">
-                        {step.why_this_card}
-                      </p>
+                      <p className="ca-insight-text mb-0">{step.why_this_card}</p>
                     </div>
                   </div>
+
                   {step.requirements && step.requirements.length > 0 && (
                     <div className="col-md-6">
-                      <div className="d-flex flex-column h-100">
+                      <div className="h-100">
                         <div className="d-flex align-items-center justify-content-between mb-2">
                           <span className="ca-section-label mb-0">Requirements</span>
-                          <span className="text-muted fs-12">{step.requirements.length} items</span>
+                          <span className="badge bg-primary-subtle text-primary fs-11">
+                            {step.requirements.length} items
+                          </span>
                         </div>
-                        <div className="row g-2">
+                        <div className="d-flex flex-column gap-2">
                           {step.requirements.map((req: string, idx: number) => (
-                            <div key={idx} className="col-12">
-                              <div className="ca-req-card">
-                                <i className="ri-checkbox-circle-fill text-success fs-16 flex-shrink-0"></i>
-                                <span className="fw-semibold fs-13 text-dark">{req}</span>
-                              </div>
+                            <div key={idx} className="ca-req-card">
+                              <i className="ri-checkbox-circle-fill text-success fs-16 flex-shrink-0"></i>
+                              <span className="fw-semibold fs-13 text-dark">{req}</span>
                             </div>
                           ))}
                         </div>
@@ -252,152 +292,269 @@ export default function StepDetail() {
                   )}
                 </div>
 
-                <hr className="ca-divider my-4" />
+                {/* ── Section Divider ── */}
+                <div className="d-flex align-items-center gap-3 my-4">
+                  <div style={{ flex: 1, height: 1, background: 'var(--ca-border, #e3e6eb)' }}></div>
+                  <span className="text-muted fs-11 fw-bold text-uppercase letter-spacing-1"
+                    style={{ letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
+                    Application Outcome
+                  </span>
+                  <div style={{ flex: 1, height: 1, background: 'var(--ca-border, #e3e6eb)' }}></div>
+                </div>
 
-                {/* ── Outcome / Result Section ── */}
-                {step.application && step.application.status === CAPITAL_ACCESS_STATUS.APPROVED ? (
-                  /* ── Submitted Outcome View (read-only, approved only) ── */
-                  <div className="p-4 border rounded bg-light">
-                    <div className="d-flex align-items-center gap-2 mb-4">
-                      <i className="ri-checkbox-circle-line text-success fs-20"></i>
-                      <h6 className="fw-bold mb-0 text-dark fs-15">Application Outcome Submitted</h6>
-                    </div>
-
-                    <div className="row g-3">
-                      <div className="col-md-4">
-                        <span className="text-muted fs-11 fw-bold text-uppercase d-block mb-1">Status</span>
-                        <span className={`badge fs-13 px-3 py-2 ${
-                          step.application.status === CAPITAL_ACCESS_STATUS.APPROVED ? 'bg-success-subtle text-success' :
-                          step.application.status === CAPITAL_ACCESS_STATUS.PENDING ? 'bg-warning-subtle text-warning' :
-                          'bg-danger-subtle text-danger'
-                        }`}>
-                          {step.application.status}
-                        </span>
-                      </div>
-
-                      {step.application.status === CAPITAL_ACCESS_STATUS.APPROVED && (
-                        <div className="col-md-4">
-                          <span className="text-muted fs-11 fw-bold text-uppercase d-block mb-1">Approved Limit</span>
-                          <span className="fw-bold fs-16 text-dark d-block mt-2">
-                            {step.application.credit_limit ? `$${parseFloat(step.application.credit_limit).toLocaleString()}` : '$0.00'}
-                          </span>
+                {/* ══════════════════════════════════
+                    ZONE 4A — Submitted / Read-Only View
+                ══════════════════════════════════ */}
+                {isSubmitted ? (
+                  <div className="ca-outcome-card">
+                    {/* Outcome header banner */}
+                    <div className="ca-outcome-header">
+                      <div className="d-flex align-items-center gap-3">
+                        <div
+                          className="d-flex align-items-center justify-content-center rounded-circle bg-success text-white flex-shrink-0"
+                          style={{ width: 40, height: 40 }}
+                        >
+                          <i className="ri-checkbox-circle-line fs-20"></i>
                         </div>
-                      )}
-
-                      <div className="col-12 mt-3">
-                        <span className="text-muted fs-11 fw-bold text-uppercase d-block mb-2">Submitted Notes</span>
-                        {step.application.notes ? (
-                          <div className="ca-outcome-notes-box p-3 bg-white border rounded">
-                            "{step.application.notes}"
-                          </div>
-                        ) : (
-                          <span className="text-muted fs-13 italic">No notes submitted.</span>
-                        )}
+                        <div>
+                          <h6 className="fw-bold mb-0 text-dark fs-15">Application Outcome Recorded</h6>
+                          <p className="text-muted fs-12 mb-0">
+                            Your result for this step has been saved and locked.
+                          </p>
+                        </div>
                       </div>
+                      <span className={`badge fs-12 px-3 py-2 ${statusConfig[CAPITAL_ACCESS_STATUS.APPROVED].badgeCls}`}>
+                        <i className="ri-checkbox-circle-fill me-1"></i>
+                        {step.application!.status}
+                      </span>
                     </div>
 
-                    <div className="col-12 mt-4 d-flex justify-content-end gap-3">
-                      <Link
-                        to={`/capital-access/${step.play.id}/roadmap`}
-                        className="ca-btn ca-btn-outline"
-                        style={{ minWidth: '160px' }}
-                      >
-                        <i className="ri-arrow-left-line"></i> Back to Roadmap
-                      </Link>
+                    {/* Outcome body */}
+                    <div className="p-4">
+                      <div className="row g-4">
+                        {/* Approved credit limit — large display */}
+                        <div className="col-md-5">
+                          <div className="ca-limit-display-card h-100">
+                            <span
+                              className="d-block fs-11 fw-bold text-uppercase mb-1"
+                              style={{ color: 'var(--ca-success)', letterSpacing: '0.08em' }}
+                            >
+                              Approved Credit Limit
+                            </span>
+                            <div className="ca-limit-val">
+                              {step.application!.credit_limit
+                                ? `$${parseFloat(step.application!.credit_limit).toLocaleString()}`
+                                : '$0.00'}
+                            </div>
+                            <p className="text-muted fs-12 mb-0 mt-2">
+                              Within estimated range of <strong>{step.exposure}</strong>
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Notes */}
+                        <div className="col-md-7">
+                          <span className="d-block fs-11 fw-bold text-uppercase text-muted mb-2"
+                            style={{ letterSpacing: '0.08em' }}>
+                            Submitted Notes
+                          </span>
+                          {step.application!.notes ? (
+                            <div className="ca-outcome-notes-box">
+                              <i className="ri-double-quotes-l text-muted fs-18 me-1"></i>
+                              {step.application!.notes}
+                            </div>
+                          ) : (
+                            <div className="ca-outcome-notes-box text-muted fst-italic">
+                              No notes were submitted for this step.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Footer actions */}
+                      <div className="d-flex justify-content-end mt-4 pt-3 border-top">
+                        <Link
+                          to={`/capital-access/${step.play.id}/roadmap`}
+                          className="ca-btn ca-btn-primary"
+                          style={{
+                            minWidth: 180,
+                            background: 'var(--primary-color, #405189)',
+                            borderColor: 'var(--primary-color, #405189)',
+                          }}
+                        >
+                          <i className="ri-arrow-left-line me-1"></i> Back to Roadmap
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                ) : (
-                  /* ── Form View (Before Submit) ── */
-                  <form onSubmit={handleSubmit}>
-                    <div className="mb-4">
-                      <label className="form-label fw-bold fs-14 mb-2 text-dark">What Happened?</label>
-                      <div className="d-flex align-items-center gap-4 p-3 border rounded bg-white">
-                        {statuses.map(st => {
-                          const isSelected = status === st;
-                          let iconClass = 'ri-checkbox-blank-circle-line text-muted';
-                          if (isSelected) {
-                            if (st === CAPITAL_ACCESS_STATUS.APPROVED) iconClass = 'ri-checkbox-circle-fill text-success';
-                            else if (st === CAPITAL_ACCESS_STATUS.PENDING) iconClass = 'ri-checkbox-circle-fill text-warning';
-                            else if (st === CAPITAL_ACCESS_STATUS.DECLINED) iconClass = 'ri-checkbox-circle-fill text-danger';
-                          }
-                          return (
-                            <div
-                              key={st}
-                              className="d-flex align-items-center gap-2 cursor-pointer"
-                              onClick={() => {
-                                setStatus(st);
-                                if (st !== CAPITAL_ACCESS_STATUS.APPROVED) {
-                                  setValidationError('');
-                                }
-                              }}
-                              style={{ cursor: 'pointer' }}
-                            >
-                              <i className={`${iconClass} fs-20`}></i>
-                              <span className={`fs-14 ${isSelected ? 'fw-bold text-dark' : 'text-muted'}`}>{st}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
 
-                    {status === CAPITAL_ACCESS_STATUS.APPROVED && (
-                      <div className="mb-4">
-                        <label className="form-label fw-bold fs-14 mb-2 text-dark">
-                          Enter Credit Limit (if approved) <span className="text-danger">*</span>
-                        </label>
-                        <div className="input-group">
-                          <span className="input-group-text bg-light text-muted">$</span>
-                          <input
-                            type="number"
-                            className="form-control"
-                            placeholder="e.g. 12000"
-                            value={creditLimit}
-                            onChange={e => {
-                              const val = e.target.value;
-                              setCreditLimit(val);
-                              if (validationError) {
-                                setValidationError(validateCreditLimit(val));
-                              }
-                            }}
-                          />
+                ) : (
+
+                  /* ══════════════════════════════════
+                      ZONE 4B — Application Form
+                  ══════════════════════════════════ */
+                  <form onSubmit={handleSubmit}>
+                    <div className="ca-form-card">
+
+                      {/* Form header */}
+                      <div className="ca-form-header d-flex align-items-center gap-2">
+                        <i className="ri-edit-2-line text-primary fs-16"></i>
+                        <div>
+                          <h6 className="fw-bold mb-0 text-dark fs-15">Record Your Outcome</h6>
+                          <p className="text-muted fs-12 mb-0">
+                            Tell us what happened when you applied for this card.
+                          </p>
                         </div>
-                        {validationError && (
-                          <div className="invalid-feedback d-block mt-1">
-                            {validationError}
+                      </div>
+
+                      <div className="p-4">
+
+                        {/* ── Status Selector Cards ── */}
+                        <div className="mb-4">
+                          <label className="d-block fw-bold fs-13 text-dark mb-3">
+                            What was the result?
+                          </label>
+                          <div className="row g-3">
+                            {statuses.map(st => {
+                              const cfg = statusConfig[st];
+                              const isSelected = status === st;
+                              return (
+                                <div key={st} className="col-md-4">
+                                  <div
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => {
+                                      setStatus(st);
+                                      if (st !== CAPITAL_ACCESS_STATUS.APPROVED) setValidationError('');
+                                    }}
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter' || e.key === ' ') {
+                                        setStatus(st);
+                                        if (st !== CAPITAL_ACCESS_STATUS.APPROVED) setValidationError('');
+                                      }
+                                    }}
+                                    style={{
+                                      cursor: 'pointer',
+                                      border: isSelected
+                                        ? `2px solid ${st === CAPITAL_ACCESS_STATUS.APPROVED ? 'var(--vz-success)' : st === CAPITAL_ACCESS_STATUS.PENDING ? '#f59e0b' : 'var(--vz-danger)'}`
+                                        : '2px solid var(--ca-border, #e3e6eb)',
+                                      borderRadius: 10,
+                                      padding: '16px 18px',
+                                      background: isSelected
+                                        ? st === CAPITAL_ACCESS_STATUS.APPROVED ? 'rgba(10,179,156,0.06)'
+                                          : st === CAPITAL_ACCESS_STATUS.PENDING ? 'rgba(245,158,11,0.06)'
+                                          : 'rgba(240,101,72,0.06)'
+                                        : '#ffffff',
+                                      transition: 'all 0.2s ease',
+                                      userSelect: 'none',
+                                    }}
+                                  >
+                                    <div className="d-flex align-items-center gap-2 mb-1">
+                                      <i className={`${isSelected ? cfg.icon : cfg.outlineIcon} fs-22 ${cfg.textColor}`}></i>
+                                      <span className={`fw-bold fs-14 ${cfg.textColor}`}>{cfg.label}</span>
+                                    </div>
+                                    <p className="text-muted fs-12 mb-0">{cfg.desc}</p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* ── Credit Limit Input (conditional) ── */}
+                        {status === CAPITAL_ACCESS_STATUS.APPROVED && (
+                          <div className="mb-4">
+                            <label className="form-label fw-bold fs-13 mb-2 text-dark">
+                              Approved Credit Limit <span className="text-danger">*</span>
+                            </label>
+                            <div className="input-group input-group-lg shadow-sm">
+                              <span
+                                className="input-group-text fw-bold fs-16"
+                                style={{ background: '#f9fafb', borderRight: 'none', color: '#6b7280' }}
+                              >
+                                $
+                              </span>
+                              <input
+                                type="number"
+                                className={`form-control border-start-0 fs-15 ps-1 ${validationError ? 'is-invalid' : ''}`}
+                                style={{ background: '#f9fafb' }}
+                                placeholder={`e.g. ${step.est_limit_min ? step.est_limit_min.toLocaleString() : '5000'}`}
+                                value={creditLimit}
+                                min={step.est_limit_min ?? 0}
+                                max={step.est_limit_max ?? undefined}
+                                onChange={e => {
+                                  const val = e.target.value;
+                                  setCreditLimit(val);
+                                  if (validationError) setValidationError(validateCreditLimit(val));
+                                }}
+                              />
+                            </div>
+                            {step.est_limit_min !== null && step.est_limit_min !== undefined && (
+                              <div className="d-flex align-items-center gap-1 mt-1">
+                                <i className="ri-information-line text-muted fs-13"></i>
+                                <span className="text-muted fs-12">
+                                  Expected range: <strong>${step.est_limit_min.toLocaleString()}</strong>
+                                  {step.est_limit_max ? ` – $${step.est_limit_max.toLocaleString()}` : '+'}
+                                </span>
+                              </div>
+                            )}
+                            {validationError && (
+                              <div className="invalid-feedback d-block mt-1">
+                                <i className="ri-error-warning-line me-1"></i>{validationError}
+                              </div>
+                            )}
                           </div>
                         )}
+
+                        {/* ── Notes Textarea ── */}
+                        <div className="mb-4">
+                          <label className="form-label fw-bold fs-13 mb-2 text-dark">
+                            Notes&nbsp;
+                            <span className="text-muted fw-normal fs-12">(optional)</span>
+                          </label>
+                          <textarea
+                            className="form-control fs-14"
+                            rows={4}
+                            style={{ background: '#f9fafb', borderRadius: 8, resize: 'vertical' }}
+                            placeholder="Any additional details about your application experience…"
+                            value={notes}
+                            onChange={e => setNotes(e.target.value)}
+                          ></textarea>
+                        </div>
+
+                        {/* ── Footer Buttons ── */}
+                        <div className="d-flex justify-content-end gap-3 pt-3 border-top">
+                          <Link
+                            to={`/capital-access/${step.play.id}/roadmap`}
+                            className="ca-btn ca-btn-outline"
+                            style={{ minWidth: 180 }}
+                          >
+                            <i className="ri-arrow-left-line me-1"></i> Back
+                          </Link>
+                          <button
+                            type="submit"
+                            className="ca-btn ca-btn-primary"
+                            style={{
+                              minWidth: 180,
+                              background: 'var(--primary-color, #405189)',
+                              borderColor: 'var(--primary-color, #405189)',
+                            }}
+                            disabled={submitMutation.isPending}
+                          >
+                            {submitMutation.isPending ? (
+                              <>
+                                <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                Saving…
+                              </>
+                            ) : (
+                              <>
+                                <i className="ri-save-3-line me-1"></i> Save & Continue
+                              </>
+                            )}
+                          </button>
+                        </div>
+
                       </div>
-                    )}
-
-                    <div className="mb-4">
-                      <label className="form-label fw-bold fs-14 mb-2 text-dark">
-                        Notes <span className="text-muted fw-normal">(optional)</span>
-                      </label>
-                      <textarea
-                        className="form-control"
-                        rows={3}
-                        placeholder="Add any notes here..."
-                        value={notes}
-                        onChange={e => setNotes(e.target.value)}
-                      ></textarea>
-                    </div>
-
-                    <div className="d-flex justify-content-end gap-2 mt-4">
-                      <Link
-                        to={`/capital-access/${step.play.id}/roadmap`}
-                        className="ca-btn ca-btn-sm ca-btn-outline"
-                        style={{ minWidth: '130px' }}
-                      >
-                        Back to Roadmap
-                      </Link>
-                      <button
-                        type="submit"
-                        className="ca-btn ca-btn-sm ca-btn-primary"
-                        style={{ minWidth: '130px', background: 'var(--primary-color, #405189)', borderColor: 'var(--primary-color, #405189)' }}
-                        disabled={submitMutation.isPending}
-                      >
-                        {submitMutation.isPending ? 'Saving...' : 'Save & Continue'}
-                      </button>
                     </div>
                   </form>
                 )}

@@ -68,8 +68,14 @@ export const useSubmitCapitalAccessStep = (
     mutationFn: (payload: { credit_limit?: number | string | null; notes?: string | null; status?: string }) =>
       submitCapitalAccessStepDetail(strategyId || 0, sequenceId || 0, payload),
     onSuccess: () => {
+      // Refresh the submitted step detail
       queryClient.invalidateQueries({ queryKey: queryKeys.capitalAccess.detailStep(strategyId || 0, sequenceId || 0) })
+      // Refresh roadmap so step status badges update
       queryClient.invalidateQueries({ queryKey: queryKeys.capitalAccess.detailRoadmap(strategyId || 0) })
+      // Refresh strategies list so isCompleted updates (drives StrategySelection & StepDetail access logic)
+      queryClient.invalidateQueries({ queryKey: queryKeys.capitalAccess.strategies() })
+      // Refresh overview so current_play & dashboard status update
+      queryClient.invalidateQueries({ queryKey: queryKeys.capitalAccess.overview() })
     },
   })
 }
