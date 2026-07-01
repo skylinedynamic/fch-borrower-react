@@ -49,12 +49,29 @@ function formatDecimalHour(decimalHour: number): string {
 }
 
 // ── Time Active Checker Helper ──────────────────────────────────────────────
-function isTimeActive(card: RoadmapCard, isFirstCard: boolean): { active: boolean; reason: string } {
+function isTimeActive(card: RoadmapCard, isFirstCard: boolean, playStartDate?: string | null): { active: boolean; reason: string } {
   const now = new Date();
   const currentHourDecimal = now.getHours() + now.getMinutes() / 60;
 
   if (card.application_status) {
     return { active: true, reason: '' };
+  }
+
+  // Enforce access day delay since play started
+  if (card.access_time === ACCESS_TIME.DAY && card.access_day) {
+    if (playStartDate) {
+      const startDate = new Date(playStartDate);
+      const startCalendarDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+      const nowCalendarDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const diffDays = Math.floor((nowCalendarDate.getTime() - startCalendarDate.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (diffDays < card.access_day) {
+        return {
+          active: false,
+          reason: `Unlocks on Day ${card.access_day} (Tomorrow or later)`
+        };
+      }
+    }
   }
 
   // Extract time window — Day cards use access_day_time_detail, others use access_time_detail
@@ -215,7 +232,7 @@ export default function PlayRoadmap() {
                   {roadmap.map((card: RoadmapCard, idx: number) => {
                     const hasUnsubmittedPrevious = roadmap.slice(0, idx).some(c => c.application_status !== CAPITAL_ACCESS_STATUS.APPROVED);
 
-                    const timeCheck = isTimeActive(card, idx === 0);
+                    const timeCheck = isTimeActive(card, idx === 0, play.first_submitted_at);
                     const isTimeLocked = !timeCheck.active;
 
                     const isLocked = (card.probability_status === false || hasUnsubmittedPrevious || isTimeLocked) && !card.application_status;
