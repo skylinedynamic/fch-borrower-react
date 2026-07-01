@@ -62,14 +62,15 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
     const payload: SaveFinancialInfoRequest = {
       currency: data.currency,
       years_in_business: data.years_in_business,
-      monthly_revenue: parseFloat(unformatCurrency(data.monthly_revenue)) || 0,
-      annual_revenue: parseFloat(unformatCurrency(data.annual_revenue)) || 0,
+      monthly_revenue: data.monthly_revenue ? parseFloat(unformatCurrency(data.monthly_revenue)) : undefined,
+      annual_revenue: data.annual_revenue ? parseFloat(unformatCurrency(data.annual_revenue)) : undefined,
+      annual_personal_income: data.annual_personal_income ? parseFloat(unformatCurrency(data.annual_personal_income)) : undefined,
       average_monthly_deposits: data.average_monthly_deposits ? parseFloat(unformatCurrency(data.average_monthly_deposits)) : undefined,
-      monthly_deposit_count: data.monthly_deposit_count ? parseInt(data.monthly_deposit_count, 10) : undefined,
+      monthly_deposit_count: (data.monthly_deposit_count !== '' && data.monthly_deposit_count !== undefined && data.monthly_deposit_count !== null) ? parseInt(data.monthly_deposit_count, 10) : undefined,
       avg_bank_balance: data.avg_bank_balance ? parseFloat(unformatCurrency(data.avg_bank_balance)) : undefined,
       current_business_debt: data.current_business_debt ? parseFloat(unformatCurrency(data.current_business_debt)) : undefined,
-      nsf_count: data.nsf_count ? parseInt(data.nsf_count, 10) : undefined,
-      negative_days: data.negative_days ? parseInt(data.negative_days, 10) : undefined,
+      nsf_count: (data.nsf_count !== '' && data.nsf_count !== undefined && data.nsf_count !== null) ? parseInt(data.nsf_count, 10) : undefined,
+      negative_days: (data.negative_days !== '' && data.negative_days !== undefined && data.negative_days !== null) ? parseInt(data.negative_days, 10) : undefined,
     }
 
     saveFinancial(payload, {
@@ -102,6 +103,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
         years_in_business: apiData.years_in_business,
         monthly_revenue: apiData.monthly_revenue ? formatCurrency(apiData.monthly_revenue) : '',
         annual_revenue: apiData.annual_revenue ? formatCurrency(apiData.annual_revenue) : '',
+        annual_personal_income: apiData.annual_personal_income ? formatCurrency(apiData.annual_personal_income) : '',
         average_monthly_deposits: apiData.average_monthly_deposits ? formatCurrency(apiData.average_monthly_deposits) : '',
         monthly_deposit_count: apiData.monthly_deposit_count ?? '',
         avg_bank_balance: apiData.avg_bank_balance ? formatCurrency(apiData.avg_bank_balance) : '',
@@ -224,6 +226,29 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           {errors.annual_revenue && <div className="invalid-feedback d-block">{errors.annual_revenue}</div>}
         </div>
         <div className="col-md-6">
+          <label className="form-label">Annual Personal Income <span className="text-danger">*</span></label>
+          <div className="position-relative">
+            <input
+              type="text"
+              placeholder="$50,000"
+              value={data.annual_personal_income ?? ''}
+              onChange={(e) => onChange({ ...data, annual_personal_income: formatCurrency(e.target.value) })}
+              className={`form-control ${errors.annual_personal_income ? 'is-invalid' : ''} ${isFieldLocked('annual_personal_income' as any) ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              readOnly={isFieldLocked('annual_personal_income' as any)}
+            />
+            {isFieldLocked('annual_personal_income' as any) && (
+              <button
+                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                type="button"
+                onClick={() => handleOpenRequestModal('Annual Personal Income', 'annual_personal_income' as any, data.annual_personal_income)}
+              >
+                Change Request
+              </button>
+            )}
+          </div>
+          {errors.annual_personal_income && <div className="invalid-feedback d-block">{errors.annual_personal_income}</div>}
+        </div>
+        <div className="col-md-6">
           <label className="form-label">Average Monthly Deposits <span className="text-danger">*</span></label>
           <div className="position-relative">
             <input
@@ -247,7 +272,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           {errors.average_monthly_deposits && <div className="invalid-feedback d-block">{errors.average_monthly_deposits}</div>}
         </div>
         <div className="col-md-6">
-          <label className="form-label">Monthly Deposit Count <span className="text-danger">*</span></label>
+          <label className="form-label">Number of Monthly Deposits </label>
           <div className="position-relative">
             <input
               type="text"
@@ -256,12 +281,13 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               onChange={(e) => onChange({ ...data, monthly_deposit_count: e.target.value.replace(/[^0-9]/g, '') })}
               className={`form-control ${errors.monthly_deposit_count ? 'is-invalid' : ''} ${isFieldLocked('monthly_deposit_count' as any) ? 'bg-light border-dashed locked-field-padding' : ''}`}
               readOnly={isFieldLocked('monthly_deposit_count' as any)}
+              maxLength={5}
             />
             {isFieldLocked('monthly_deposit_count' as any) && (
               <button
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
                 type="button"
-                onClick={() => handleOpenRequestModal('Monthly Deposit Count', 'monthly_deposit_count' as any, data.monthly_deposit_count)}
+                onClick={() => handleOpenRequestModal('Number of Monthly Deposits', 'monthly_deposit_count' as any, data.monthly_deposit_count)}
               >
                 Change Request
               </button>
@@ -270,7 +296,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           {errors.monthly_deposit_count && <div className="invalid-feedback d-block">{errors.monthly_deposit_count}</div>}
         </div>
         <div className="col-md-6">
-          <label className="form-label">Average Daily Balance (ADB) <span className="text-danger">*</span></label>
+          <label className="form-label">Average Daily Balance (ADB)</label>
           <div className="position-relative">
             <input
               type="text"
@@ -316,7 +342,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           {errors.current_business_debt && <div className="invalid-feedback d-block">{errors.current_business_debt}</div>}
         </div>
         <div className="col-md-6">
-          <label className="form-label">NSF Count <span className="text-danger">*</span></label>
+          <label className="form-label">NSF Count</label>
           <div className="position-relative">
             <input
               type="text"
@@ -325,6 +351,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               onChange={(e) => onChange({ ...data, nsf_count: e.target.value.replace(/[^0-9]/g, '') })}
               className={`form-control ${errors.nsf_count ? 'is-invalid' : ''} ${isFieldLocked('nsf_count' as any) ? 'bg-light border-dashed locked-field-padding' : ''}`}
               readOnly={isFieldLocked('nsf_count' as any)}
+              maxLength={5}
             />
             {isFieldLocked('nsf_count' as any) && (
               <button
@@ -339,7 +366,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           {errors.nsf_count && <div className="invalid-feedback d-block">{errors.nsf_count}</div>}
         </div>
         <div className="col-md-6">
-          <label className="form-label">Negative Days <span className="text-danger">*</span></label>
+          <label className="form-label">Negative Days</label>
           <div className="position-relative">
             <input
               type="text"
@@ -348,6 +375,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               onChange={(e) => onChange({ ...data, negative_days: e.target.value.replace(/[^0-9]/g, '') })}
               className={`form-control ${errors.negative_days ? 'is-invalid' : ''} ${isFieldLocked('negative_days' as any) ? 'bg-light border-dashed locked-field-padding' : ''}`}
               readOnly={isFieldLocked('negative_days' as any)}
+              maxLength={5}
             />
             {isFieldLocked('negative_days' as any) && (
               <button
@@ -385,7 +413,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               className="form-control bg-light"
               value={updateRequest.key === 'years_in_business'
                 ? (yearsInBusinessOptions.find(opt => opt.value === updateRequest.currentValue)?.label || updateRequest.currentValue)
-                : ((['monthly_revenue', 'annual_revenue', 'average_monthly_deposits', 'avg_bank_balance', 'current_business_debt'].includes(updateRequest.key))
+                : ((['monthly_revenue', 'annual_revenue', 'annual_personal_income', 'average_monthly_deposits', 'avg_bank_balance', 'current_business_debt'].includes(updateRequest.key))
                   ? formatCurrency(String(updateRequest.currentValue))
                   : updateRequest.currentValue)}
               readOnly
@@ -422,10 +450,13 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
                 className={`form-control ${modalErrors.new_value ? 'is-invalid' : ''}`}
                 placeholder={`Enter the updated ${updateRequest.label}`}
                 value={updateRequest.newValue}
+                maxLength={['nsf_count', 'negative_days', 'monthly_deposit_count'].includes(updateRequest.key) ? 5 : undefined}
                 onChange={(e) => {
                   let val = e.target.value;
                   if (updateRequest.key === 'monthly_revenue' || updateRequest.key === 'annual_revenue') {
                     val = formatCurrency(val);
+                  } else if (['nsf_count', 'negative_days', 'monthly_deposit_count'].includes(updateRequest.key)) {
+                    val = val.replace(/[^0-9]/g, '');
                   }
                   setUpdateRequest({ ...updateRequest, newValue: val });
                 }}

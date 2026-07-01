@@ -11,12 +11,12 @@ const WizardLoader = () => {
                     <div className="col-12">
                         <div className="d-flex align-items-center justify-content-between flex-row py-2">
                             <div className="flex-grow-1">
-                                <h4 className="fs-20 mb-1">Funding Review</h4>
+                                <h4 className="fs-20 mb-1">Funding Request</h4>
                                 <nav aria-label="breadcrumb">
                                     <ol className="breadcrumb m-0">
                                         <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>
                                         <li className="breadcrumb-item"><Link to="/funding">Funding Options</Link></li>
-                                        <li className="breadcrumb-item active fw-medium" aria-current="page">Funding Review</li>
+                                        <li className="breadcrumb-item active fw-medium" aria-current="page">Funding Request</li>
                                     </ol>
                                 </nav>
                             </div>

@@ -13,11 +13,11 @@ import { getUser } from '../../lib/auth/auth';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../lib/query';
 import { useBusinessDetails, useFinancialInfo } from '../../modules/profile/queries';
-import { FUNDING_WIZARD_STEPS } from '../../config/funding';
+import { FUNDING_WIZARD_STEPS, FUNDING_REVIEW_STATUS } from '../../config/funding';
 import { useBrandingStore } from '../../store/brandingStore';
 const steps = FUNDING_WIZARD_STEPS;
 
-const FundingReviewWizard = () => {
+const FundingRequestWizard = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
@@ -69,6 +69,11 @@ const FundingReviewWizard = () => {
             fetchFundingDetail(id)
                 .then(res => {
                     if (res.status) {
+                        if (res.data.latest_review_status === FUNDING_REVIEW_STATUS.PENDING) {
+                            toast.warning('Already applied. Please wait for approval or rejection.');
+                            navigate('/funding');
+                            return;
+                        }
                         setFundingDetail(res.data);
                         setMissingDocs(res.data.missing_documents || []);
 
@@ -172,7 +177,7 @@ const FundingReviewWizard = () => {
             }
             setCurrentStep(4);
         } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to submit funding review');
+            toast.error(error.response?.data?.message || 'Failed to submit funding request');
         } finally {
             setSubmitting(false);
         }
@@ -207,13 +212,13 @@ const FundingReviewWizard = () => {
                     <div className="col-12">
                         <div className="d-flex align-items-center justify-content-between flex-row py-2">
                             <div className="flex-grow-1">
-                                <h4 className="fs-20 mb-1">Funding Review</h4>
+                                <h4 className="fs-20 mb-1">Funding Request</h4>
                                 <nav aria-label="breadcrumb">
                                     <ol className="breadcrumb m-0">
                                         <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>
                                         <li className="breadcrumb-item"><Link to="/funding">Funding Options</Link></li>
                                         <li className="breadcrumb-item"><Link to={`/funding/${id}`}>{fundingDetail?.name}</Link></li>
-                                        <li className="breadcrumb-item active fw-medium" aria-current="page">Funding Review</li>
+                                        <li className="breadcrumb-item active fw-medium" aria-current="page">Funding Request</li>
                                     </ol>
                                 </nav>
                             </div>
@@ -276,7 +281,7 @@ const FundingReviewWizard = () => {
                             {/* Step 1: Review Summary */}
                             {currentStep === 1 && (
                                 <div>
-                                    <h3 className="fw-bold mb-2" style={{ color: '#0f172a' }}>Funding Review Summary</h3>
+                                    <h3 className="fw-bold mb-2" style={{ color: '#0f172a' }}>Funding Request Summary</h3>
                                     <p className="mb-4 fs-14" style={{ color: '#64748b' }}>Please confirm your request details</p>
 
                                     <div className="border rounded p-4 mb-4" style={{ borderColor: '#e2e8f0', backgroundColor: '#ffffff' }}>
@@ -618,7 +623,7 @@ const FundingReviewWizard = () => {
                                             <i className="ri-check-line fw-bolder" style={{ fontSize: '40px', color: 'var(--primary-color, #0a192f)' }}></i>
                                         </div>
                                     </div>
-                                    <h3 className="fw-bold mb-3" style={{ color: '#0f172a' }}>Funding Review Submitted!</h3>
+                                    <h3 className="fw-bold mb-3" style={{ color: '#0f172a' }}>Funding Request Submitted!</h3>
                                     <p className="text-muted mb-4 fs-15 px-md-5">Your request has been received and is now under<br />{reviewerName} underwriting review.</p>
 
                                     <div className="rounded-3 p-4 text-start mx-auto mb-4" style={{ maxWidth: '600px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
@@ -721,7 +726,7 @@ const FundingReviewWizard = () => {
                                     <button
                                         className="btn w-100 mb-3 fw-bold text-white d-flex align-items-center justify-content-center gap-2"
                                         style={{ backgroundColor: 'var(--primary-color, #0a192f)', borderColor: 'var(--primary-color, #0a192f)', padding: '12px' }}
-                                        onClick={() => navigate('/funding-reviews')}
+                                        onClick={() => navigate('/funding-requests')}
                                     >
                                         <i className="ri-bar-chart-fill fs-16"></i> View Review Status
                                     </button>
@@ -743,4 +748,4 @@ const FundingReviewWizard = () => {
     );
 };
 
-export default FundingReviewWizard;
+export default FundingRequestWizard;

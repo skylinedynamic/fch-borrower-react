@@ -52,6 +52,7 @@ export const FUNDING_COLOR_MAP: Record<string, string> = {
 
 export const FUNDING_REVIEW_STATUS = {
   PENDING: 'Pending',
+  IN_PROGRESS: 'In Progress',
   APPROVED: 'Approved',
   REJECTED: 'Rejected'
 };
