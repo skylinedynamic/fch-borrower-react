@@ -23,7 +23,7 @@ export const downloadBlob = (blob: Blob, fileName: string, mimeType?: string) =>
     link.download = fileName;
     document.body.appendChild(link);
     link.click();
-    
+
     setTimeout(() => {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
@@ -73,7 +73,7 @@ export const handleFileDownload = async (
         if (filePath) {
             await downloadFileFromUrl(filePath, fileName);
         } else {
-            toast.error('Download failed: unable to download the document.');
+            toast.error('Download failed');
         }
     }
 };
