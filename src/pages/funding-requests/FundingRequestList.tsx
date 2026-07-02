@@ -21,7 +21,7 @@ export default function FundingRequestList() {
     const [sortField, setSortField] = useState<string>('id')
     const [sortOrder, setSortOrder] = useState<number>(-1)
 
-    const { data, isLoading } = useBorrowerFundingRequests({
+    const { data, isLoading, isFetching } = useBorrowerFundingRequests({
         page,
         per_page: perPage,
         search: appliedSearchText,
@@ -216,7 +216,7 @@ export default function FundingRequestList() {
                                         onSort={onSort}
                                         sortField={sortField}
                                         sortOrder={sortOrder as any}
-                                        loading={isLoading}
+                                        loading={isLoading || isFetching}
                                         dataKey="id"
                                         emptyMessage={<div className="text-center p-3">No funding requests found.</div>}
                                     >

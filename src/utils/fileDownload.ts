@@ -49,7 +49,7 @@ export const downloadFileFromUrl = async (url: string, fileName: string): Promis
         downloadBlob(blob, fileName);
     } catch (error) {
         console.error('Download failed:', error);
-        toast.error('Download failed: unable to reach the file.');
+        toast.error('Download failed');
     }
 }
 
