@@ -1,3 +1,5 @@
+import { toast } from 'react-toastify';
+
 export const getMimeType = (fileName: string): string => {
     if (!fileName) return 'application/octet-stream';
     const ext = fileName.split('.').pop()?.toLowerCase() || '';
@@ -28,24 +30,26 @@ export const downloadBlob = (blob: Blob, fileName: string, mimeType?: string) =>
     }, 100);
 }
 
-export const downloadFileFromUrl = async (url: string, fileName: string) => {
+/**
+ * Download file from URL using fetch (prevents browser redirect on 404)
+ * Shows toast error if URL is missing, not found, or download fails
+ */
+export const downloadFileFromUrl = async (url: string, fileName: string): Promise<void> => {
+    if (!url) {
+        toast.error('Download failed: file URL is missing.');
+        return;
+    }
     try {
-        const response = await fetch(url)
-        if (!response.ok) throw new Error('Network response was not ok')
-        const blob = await response.blob()
-        downloadBlob(blob, fileName)
+        const response = await fetch(url);
+        if (!response.ok) {
+            toast.error(`Download failed: file not found (${response.status}).`);
+            return;
+        }
+        const blob = await response.blob();
+        downloadBlob(blob, fileName);
     } catch (error) {
-        console.error('Download failed:', error)
-        
-        // Final fallback: try forcing it via standard anchor link without target=_blank
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        setTimeout(() => {
-            document.body.removeChild(link);
-        }, 100);
+        console.error('Download failed:', error);
+        toast.error('Download failed: unable to reach the file.');
     }
 }
 
@@ -67,18 +71,9 @@ export const handleFileDownload = async (
     } catch (error) {
         console.error("Download failed via API", error);
         if (filePath) {
-            try {
-                const link = document.createElement('a');
-                link.href = filePath;
-                link.download = fileName;
-                document.body.appendChild(link);
-                link.click();
-                setTimeout(() => {
-                    document.body.removeChild(link);
-                }, 100);
-            } catch (fallbackError) {
-                console.error("Direct download also failed", fallbackError);
-            }
+            await downloadFileFromUrl(filePath, fileName);
+        } else {
+            toast.error('Download failed: unable to download the document.');
         }
     }
 };
