@@ -115,7 +115,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
 
     const getStatusColor = (status: string) => {
         const s = status.toLowerCase();
-        
+
         const configKey = Object.keys(FUNDING_REVIEW_STATUS_COLORS).find(
             key => key.toLowerCase() === s || s.includes(key.toLowerCase())
         );
@@ -288,33 +288,73 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
                                 {isFirst ? (
                                     /* Request details layout (Adapted for sidebar width) */
                                     <div className="pt-1">
-                                        <h6 className="fw-semibold text-dark fs-12 mb-2">Request Details</h6>
-                                        <div className="row g-2 bg-light rounded-3 p-2.5 mb-2 mx-0 border border-light-subtle">
-                                            <div className="col-6">
-                                                <p className="text-muted fs-10 text-uppercase mb-1" style={{ letterSpacing: '0.3px' }}>Amount Requested</p>
-                                                <h6 className="mb-0 fw-bold text-dark fs-12">
-                                                    {review.requested_amount ? `$${Number(review.requested_amount).toLocaleString()}` : 'N/A'}
-                                                </h6>
+                                        <h6 className="activity-section-title">
+                                            Request Details
+                                        </h6>
+
+                                        <div className="activity-detail-card mb-2">
+
+                                            <div className="row g-0">
+
+                                                <div className="col-6 activity-detail-item">
+                                                    <p className="activity-detail-label">
+                                                        Amount Requested
+                                                    </p>
+
+                                                    <h6 className="activity-detail-value">
+                                                        {review.requested_amount
+                                                            ? `$${Number(review.requested_amount).toLocaleString()}`
+                                                            : 'N/A'}
+                                                    </h6>
+                                                </div>
+
+                                                <div className="col-6 activity-detail-item">
+                                                    <p className="activity-detail-label">
+                                                        Funding Purpose
+                                                    </p>
+
+                                                    <h6 className="activity-detail-value text-truncate">
+                                                        {review.use_of_funds || 'Working Capital'}
+                                                    </h6>
+                                                </div>
+
                                             </div>
-                                            <div className="col-6">
-                                                <p className="text-muted fs-10 text-uppercase mb-1" style={{ letterSpacing: '0.3px' }}>Funding Purpose</p>
-                                                <h6 className="mb-0 fw-bold text-dark fs-12 text-truncate">{review.use_of_funds || 'Working Capital'}</h6>
-                                            </div>
+
                                         </div>
                                     </div>
                                 ) : isApprove ? (
                                     /* Approval details layout */
                                     <div className="pt-1">
-                                        <h6 className="fw-semibold text-dark fs-12 mb-2">Approval Details</h6>
-                                        <div className="row g-2 bg-light rounded-3 p-2.5 mb-2 mx-0 border border-light-subtle">
-                                            <div className="col-6">
-                                                <p className="text-muted fs-10 text-uppercase mb-1" style={{ letterSpacing: '0.3px' }}>Approved By</p>
-                                                <h6 className="mb-0 fw-bold text-dark fs-12">{review.reviewer?.name || causedBy}</h6>
+                                        <h6 className="activity-section-title">
+                                            Approval Details
+                                        </h6>
+
+                                        <div className="activity-detail-card mb-2">
+
+                                            <div className="row g-0">
+
+                                                <div className="col-6 activity-detail-item">
+                                                    <p className="activity-detail-label">
+                                                        Approved By
+                                                    </p>
+
+                                                    <h6 className="activity-detail-value">
+                                                        {review.reviewer?.name || causedBy}
+                                                    </h6>
+                                                </div>
+
+                                                <div className="col-6 activity-detail-item">
+                                                    <p className="activity-detail-label">
+                                                        Funding Sequence
+                                                    </p>
+
+                                                    <h6 className="activity-detail-value text-truncate">
+                                                        {categoryName}
+                                                    </h6>
+                                                </div>
+
                                             </div>
-                                            <div className="col-6">
-                                                <p className="text-muted fs-10 text-uppercase mb-1" style={{ letterSpacing: '0.3px' }}>Funding Sequence</p>
-                                                <h6 className="mb-0 fw-bold text-dark fs-12 text-truncate">{categoryName}</h6>
-                                            </div>
+
                                         </div>
                                     </div>
                                 ) : (
@@ -739,7 +779,7 @@ export default function FundingRequestDetailPage() {
                                                 <tbody>
                                                     {review.actual_documents.map((doc: any, idx: number) => {
                                                         const config = getFileConfig(doc.document_url || doc.file_path || doc.document_name || '')
-                                                        
+
                                                         const handleDownload = (e: React.MouseEvent) => {
                                                             e.preventDefault();
                                                             let fileName = doc.document_name || 'document';
@@ -747,7 +787,7 @@ export default function FundingRequestDetailPage() {
                                                             if (ext && !fileName.toLowerCase().endsWith(`.${ext}`)) {
                                                                 fileName += `.${ext}`;
                                                             }
-                                                            
+
                                                             if (doc.id && !String(doc.id).startsWith('missing_')) {
                                                                 handleFileDownload(
                                                                     () => downloadBorrowerDocument(doc.id),
