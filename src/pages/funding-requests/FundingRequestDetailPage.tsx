@@ -5,7 +5,7 @@ import { getBorrowerActivityLogs, downloadActivityAttachment } from '../../modul
 import { downloadBorrowerDocument } from '../../modules/documents/services'
 import { downloadBlob, downloadFileFromUrl, handleFileDownload } from '../../utils/fileDownload'
 import { getFileConfig, getDocumentStatusBadgeClass } from '../../config/fileTypeConfig'
-import { FUNDING_REVIEW_STATUS } from '../../config/funding'
+import { FUNDING_REVIEW_STATUS, FUNDING_REVIEW_STATUS_COLORS } from '../../config/funding'
 import { toast } from 'react-toastify'
 import '../../components/Common/StatisticsCardSkeleton.css'
 
@@ -113,6 +113,92 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
 
     const toggleExpand = () => setExpanded(!expanded)
 
+    const getStatusColor = (status: string) => {
+        const s = status.toLowerCase();
+        
+        const configKey = Object.keys(FUNDING_REVIEW_STATUS_COLORS).find(
+            key => key.toLowerCase() === s || s.includes(key.toLowerCase())
+        );
+        if (configKey) {
+            return FUNDING_REVIEW_STATUS_COLORS[configKey];
+        }
+
+        if (s === 'good' || s === 'strong') {
+            return '#10B981';
+        }
+        if (s.includes('fail') || s.includes('miss')) {
+            return '#EF4444';
+        }
+        return 'inherit';
+    };
+
+    const formatActivityTitle = (rawTitle: string) => {
+        if (typeof rawTitle !== 'string') return rawTitle;
+
+        // Check if there is an explicit old status and new status in changes/old_values
+        const oldStatus = activity.old_values?.status || activity.properties?.old?.status;
+        const newStatus = activity.status || activity.properties?.status;
+
+        if (rawTitle.includes('Status Changed:') || rawTitle.includes('Status Changed') || ((rawTitle === 'Funding Request Status Updated' || rawTitle === 'Funding Request Status Changed') && oldStatus && newStatus)) {
+            let prefix = 'Funding Request Status Changed:';
+            let oldFormatted = oldStatus ? (oldStatus.charAt(0).toUpperCase() + oldStatus.slice(1)) : '';
+            let newFormatted = newStatus ? (newStatus.charAt(0).toUpperCase() + newStatus.slice(1)) : '';
+
+            if (rawTitle.includes('Status Changed:') || rawTitle.includes('Status Changed')) {
+                const separator = rawTitle.includes('Status Changed:') ? 'Status Changed:' : 'Status Changed';
+                const parts = rawTitle.split(separator);
+                prefix = (parts[0] + separator).trim();
+                const statusPart = parts.slice(1).join(separator).trim();
+
+                const arrow = statusPart.includes('→') ? '→' : (statusPart.includes('->') ? '->' : null);
+                if (arrow) {
+                    const statuses = statusPart.split(arrow);
+                    oldFormatted = statuses[0].trim();
+                    newFormatted = statuses[1].trim();
+                } else {
+                    oldFormatted = '';
+                    newFormatted = statusPart;
+                }
+            }
+
+            if (oldFormatted && newFormatted) {
+                return (
+                    <span className="d-block" style={{ lineHeight: '1.4' }}>
+                        <span className="text-dark fw-bold d-block">{prefix}</span>
+                        <span className="d-inline-flex align-items-center flex-wrap gap-1 mt-1">
+                            <span style={{ color: getStatusColor(oldFormatted), fontWeight: '700' }}>{oldFormatted}</span>
+                            <span className="text-muted px-1" style={{ fontSize: '11px' }}>→</span>
+                            <span style={{ color: getStatusColor(newFormatted), fontWeight: '700' }}>{newFormatted}</span>
+                        </span>
+                    </span>
+                );
+            } else if (newFormatted) {
+                return (
+                    <span className="d-block" style={{ lineHeight: '1.4' }}>
+                        <span className="text-dark fw-bold d-block">{prefix}</span>
+                        <span style={{ color: getStatusColor(newFormatted), fontWeight: '700' }} className="d-block mt-1">{newFormatted}</span>
+                    </span>
+                );
+            }
+        }
+
+        // Support direct formats like "Funding Request InProgress to Pending Status Updated"
+        if (rawTitle.includes('InProgress to Pending')) {
+            return (
+                <span className="d-block" style={{ lineHeight: '1.4' }}>
+                    <span className="text-dark fw-bold d-block">Funding Request Status Changed:</span>
+                    <span className="d-inline-flex align-items-center flex-wrap gap-1 mt-1">
+                        <span style={{ color: getStatusColor('In Progress'), fontWeight: '700' }}>In Progress</span>
+                        <span className="text-muted px-1" style={{ fontSize: '11px' }}>→</span>
+                        <span style={{ color: getStatusColor('Pending'), fontWeight: '700' }}>Pending</span>
+                    </span>
+                </span>
+            );
+        }
+
+        return rawTitle;
+    };
+
     const handleDownload = async (activityId: number | string, file: any) => {
         try {
             const fileName = file.name || file;
@@ -141,7 +227,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
     return (
         <div className="d-flex timeline-item-row position-relative mb-2">
             {/* Left timeline dot */}
-            <div className="timeline-dot-container me-3 position-relative" style={{ zIndex: 2 }}>
+            <div className="timeline-dot-container me-3 position-relative" style={{ zIndex: 2, marginTop: '2px' }}>
                 <div className={`avatar-sm rounded-circle d-flex align-items-center justify-content-center ${bg} ${color} shadow-sm border border-white`} style={{ width: 36, height: 36 }}>
                     <i className={`${icon} fs-16`}></i>
                 </div>
@@ -153,11 +239,11 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
                     <div className="d-flex align-items-start justify-content-between gap-3">
                         <div style={{ minWidth: 0 }} onClick={toggleExpand} className="cursor-pointer flex-grow-1">
                             {/* Title */}
-                            <h6 className="mb-0 fw-bold text-dark fs-13">{title}</h6>
+                            <h6 className="mb-0 fw-bold text-dark fs-13">{formatActivityTitle(title)}</h6>
 
                             {/* Subtitle / Meta */}
-                            <p className="mb-2 text-muted fs-11 mt-1 d-flex align-items-center flex-wrap">
-                                <i className="ri-time-line align-middle me-1 fs-11 text-muted" style={{ marginRight: '2px' }}></i>
+                            <p className="mb-2 text-muted fs-11 mt-1 d-flex align-items-center gap-1">
+                                <i className="ri-time-line text-muted fs-11"></i>
                                 <span>{timestamp}</span>
                             </p>
 
@@ -194,40 +280,39 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
                             display: 'grid',
                             gridTemplateRows: expanded ? '1fr' : '0fr',
                             transition: 'grid-template-rows 0.3s ease',
+                            overflow: 'hidden',
                         }}
                     >
                         <div style={{ overflow: 'hidden', paddingLeft: '2px' }}>
                             <div className={isFirst || isApprove ? "mt-3 pt-3 border-top border-light-subtle" : "mt-2"}>
                                 {isFirst ? (
                                     /* Request details layout (Adapted for sidebar width) */
-                                    <div>
-                                        <div className="pt-3 border-top border-light-subtle mb-3">
-                                            <h6 className="fw-semibold text-dark fs-13 mb-3">Request Details</h6>
-                                            <div className="row g-3">
-                                                <div className="col-6">
-                                                    <p className="fs-11 text-muted mb-1">Amount Requested</p>
-                                                    <h6 className="mb-0 fw-semibold text-dark fs-13">
-                                                        {review.requested_amount ? `$${Number(review.requested_amount).toLocaleString()}` : 'N/A'}
-                                                    </h6>
-                                                </div>
-                                                <div className="col-6">
-                                                    <p className="fs-11 text-muted mb-1">Funding Purpose</p>
-                                                    <h6 className="mb-0 fw-semibold text-dark fs-13">{review.use_of_funds || 'Working Capital'}</h6>
-                                                </div>
+                                    <div className="pt-1">
+                                        <h6 className="fw-semibold text-dark fs-12 mb-2">Request Details</h6>
+                                        <div className="row g-2 bg-light rounded-3 p-2.5 mb-2 mx-0 border border-light-subtle">
+                                            <div className="col-6">
+                                                <p className="text-muted fs-10 text-uppercase mb-1" style={{ letterSpacing: '0.3px' }}>Amount Requested</p>
+                                                <h6 className="mb-0 fw-bold text-dark fs-12">
+                                                    {review.requested_amount ? `$${Number(review.requested_amount).toLocaleString()}` : 'N/A'}
+                                                </h6>
+                                            </div>
+                                            <div className="col-6">
+                                                <p className="text-muted fs-10 text-uppercase mb-1" style={{ letterSpacing: '0.3px' }}>Funding Purpose</p>
+                                                <h6 className="mb-0 fw-bold text-dark fs-12 text-truncate">{review.use_of_funds || 'Working Capital'}</h6>
                                             </div>
                                         </div>
                                     </div>
                                 ) : isApprove ? (
                                     /* Approval details layout */
-                                    <div>
+                                    <div className="pt-1">
                                         <h6 className="fw-semibold text-dark fs-12 mb-2">Approval Details</h6>
-                                        <div className="row g-2 bg-light rounded-3 p-2.5 mb-2 mx-0">
+                                        <div className="row g-2 bg-light rounded-3 p-2.5 mb-2 mx-0 border border-light-subtle">
                                             <div className="col-6">
-                                                <p className="text-muted fs-10 text-uppercase mb-0.5">Approved By</p>
+                                                <p className="text-muted fs-10 text-uppercase mb-1" style={{ letterSpacing: '0.3px' }}>Approved By</p>
                                                 <h6 className="mb-0 fw-bold text-dark fs-12">{review.reviewer?.name || causedBy}</h6>
                                             </div>
                                             <div className="col-6">
-                                                <p className="text-muted fs-10 text-uppercase mb-0.5">Funding sequence</p>
+                                                <p className="text-muted fs-10 text-uppercase mb-1" style={{ letterSpacing: '0.3px' }}>Funding Sequence</p>
                                                 <h6 className="mb-0 fw-bold text-dark fs-12 text-truncate">{categoryName}</h6>
                                             </div>
                                         </div>
