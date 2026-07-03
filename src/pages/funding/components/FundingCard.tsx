@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FUNDING_ICON_MAP, FUNDING_REVIEW_STATUS } from '../../../config/funding';
 import { getFundingColorStyles } from '../../../config/fundingColor';
-import { UncontrolledTooltip } from 'reactstrap';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+interface ReadinessFactor {
+    label: string;
+    status: string;
+    borrower_value?: any;
+    required_value?: any;
+}
+
 interface FundingCardProps {
     id: number | string;
     icon: string;
@@ -17,6 +23,7 @@ interface FundingCardProps {
     engine_status?: string;
     engine_status_label?: string;
     latest_review_status?: string;
+    readiness_factors?: ReadinessFactor[];
 }
 
 const resolveIcon = (icon: any): string => {
@@ -36,8 +43,7 @@ const resolveIcon = (icon: any): string => {
         return mapped.startsWith('ri-') ? mapped : `ri-${mapped}-line`;
     }
 
-    const generated = `ri-${alt}-line`;
-    return generated;
+    return `ri-${alt}-line`;
 };
 
 const resolveColor = (color: any): { bg: string; text: string } => {
@@ -68,6 +74,161 @@ const getCSSVar = (name: string, fallback: string): string => {
     return fallback;
 };
 
+// Helper to format readiness comparison details professionally
+const formatFactorDetail = (factor: ReadinessFactor): string => {
+    const label = factor.label;
+    const req = factor.required_value;
+    const act = factor.borrower_value;
+
+    if (req === undefined || req === null) {
+        return label;
+    }
+
+    const lowerLabel = label.toLowerCase();
+
+    // FICO / Credit
+    if (lowerLabel.includes('credit')) {
+        return `${label}: ${act ?? 0} (Required: ${req})`;
+    }
+
+    // Revenue / Balance / Deposits
+    if (lowerLabel.includes('revenue') || lowerLabel.includes('deposit') || lowerLabel.includes('balance')) {
+        const fmt = (val: any) => {
+            const num = Number(val);
+            if (isNaN(num)) return val || '0';
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(num);
+        };
+        return `${label}: ${fmt(act)} (Required: ${fmt(req)})`;
+    }
+
+    // Time in Business
+    if (lowerLabel.includes('time') || lowerLabel === 'time in business') {
+        const fmtMonths = (months: any) => {
+            const m = Number(months);
+            if (isNaN(m)) return months || '0 months';
+            if (m >= 12) {
+                const yrs = (m / 12).toFixed(1).replace(/\.0$/, '');
+                return `${yrs} yr${Number(yrs) > 1 ? 's' : ''}`;
+            }
+            return `${m} month${m !== 1 ? 's' : ''}`;
+        };
+        return `${label}: ${fmtMonths(act)} (Required: ${fmtMonths(req)})`;
+    }
+
+    return `${label}: ${act} (Required: ${req})`;
+};
+
+// ─── Missing Factors Tooltip ──────────────────────────────────────────────────
+const MissingTooltip: React.FC<{ factors: ReadinessFactor[]; visible: boolean }> = ({ factors, visible }) => {
+    if (!visible || factors.length === 0) return null;
+    return (
+        <div className="funding-missing-tooltip">
+            <div className="funding-missing-tooltip-header">
+                <i className="ri-error-warning-fill" style={{ color: '#F59E0B', fontSize: 18 }} />
+                <span>Missing Requirements</span>
+            </div>
+            
+            <p className="funding-missing-tooltip-desc">
+                This funding option is currently locked because the following requirement(s) are not met.
+            </p>
+            
+            <div className="funding-missing-tooltip-divider" />
+            
+            <ul className="funding-missing-tooltip-list">
+                {factors.map((f, i) => {
+                    const label = f.label;
+                    const req = f.required_value;
+                    const act = f.borrower_value;
+                    
+                    const lowerLabel = label.toLowerCase();
+                    let actVal = act;
+                    let reqVal = req;
+                    
+                    if (req !== undefined && req !== null) {
+                        if (lowerLabel.includes('revenue') || lowerLabel.includes('deposit') || lowerLabel.includes('balance')) {
+                            const fmt = (val: any) => {
+                                const num = Number(val);
+                                if (isNaN(num)) return val || '0';
+                                return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(num);
+                            };
+                            actVal = fmt(act);
+                            reqVal = fmt(req);
+                        } else if (lowerLabel.includes('time') || lowerLabel === 'time in business') {
+                            const fmtMonths = (months: any) => {
+                                const m = Number(months);
+                                if (isNaN(m)) return months || '0 months';
+                                if (m >= 12) {
+                                    const yrs = (m / 12).toFixed(1).replace(/\.0$/, '');
+                                    return `${yrs} yr${Number(yrs) > 1 ? 's' : ''}`;
+                                }
+                                return `${m} month${m !== 1 ? 's' : ''}`;
+                            };
+                            actVal = fmtMonths(act);
+                            reqVal = fmtMonths(req);
+                        }
+                    }
+
+                    return (
+                        <li key={i} className="funding-missing-tooltip-item">
+                            <div className="d-flex align-items-start gap-2">
+                                <i className="ri-close-circle-fill" style={{ color: '#EF4444', fontSize: 15, marginTop: 1 }} />
+                                <div>
+                                    <div className="tooltip-item-title">{label}: {actVal ?? 'Missing'}</div>
+                                    {req !== undefined && req !== null && (
+                                        <div className="tooltip-item-req">Required: {reqVal}</div>
+                                    )}
+                                </div>
+                            </div>
+                        </li>
+                    );
+                })}
+            </ul>
+            
+            <div className="funding-missing-tooltip-divider" />
+            
+            <div className="funding-missing-tooltip-footer-info">
+                <i className="ri-information-fill" style={{ color: '#3B82F6', fontSize: 16, marginTop: 1 }} />
+                <span>Update the missing requirement(s) above to unlock this funding option.</span>
+            </div>
+        </div>
+    );
+};
+
+// ─── Pending Tooltip ───────────────────────────────────────────────────────────
+const PendingTooltip: React.FC<{ visible: boolean }> = ({ visible }) => {
+    if (!visible) return null;
+    return (
+        <div className="funding-missing-tooltip">
+            <div className="funding-missing-tooltip-header">
+                <i className="ri-time-fill" style={{ color: '#3B82F6', fontSize: 18 }} />
+                <span>Application Under Review</span>
+            </div>
+            
+            <p className="funding-missing-tooltip-desc">
+                You have already submitted an application for this funding option.
+            </p>
+            
+            <div className="funding-missing-tooltip-divider" />
+            
+            <ul className="funding-missing-tooltip-list">
+                <li className="funding-missing-tooltip-item">
+                    <div className="d-flex align-items-start gap-2">
+                        <i className="ri-information-line" style={{ color: '#3B82F6', fontSize: 15, marginTop: 1 }} />
+                        <div className="tooltip-item-title">Status: Awaiting Review</div>
+                    </div>
+                </li>
+            </ul>
+            
+            <div className="funding-missing-tooltip-divider" />
+            
+            <div className="funding-missing-tooltip-footer-info">
+                <i className="ri-information-fill" style={{ color: '#3B82F6', fontSize: 16, marginTop: 1 }} />
+                <span>Please wait for approval or rejection before reapplying.</span>
+            </div>
+        </div>
+    );
+};
+
 // ─── Component ────────────────────────────────────────────────────────────────
 const FundingCard: React.FC<FundingCardProps> = ({
     id,
@@ -81,41 +242,44 @@ const FundingCard: React.FC<FundingCardProps> = ({
     engine_status = 'Active',
     engine_status_label = 'Eligible Now',
     latest_review_status,
+    readiness_factors = [],
 }) => {
     const navigate = useNavigate();
+    const cardRef = useRef<HTMLDivElement>(null);
+    const [tooltipVisible, setTooltipVisible] = useState(false);
+
     const iconClass = resolveIcon(icon);
     const colors = resolveColor(icon_color);
+
+    // Detect missing readiness factors
+    const missingFactors = readiness_factors.filter(f => f.status?.toLowerCase() === 'missing');
+    const hasMissing = missingFactors.length > 0;
+
+    // Pending = already applied, awaiting review
+    const isPending = latest_review_status === FUNDING_REVIEW_STATUS.PENDING;
+
+    const isDisabled = isPending || hasMissing;
+
+    // Pill label & color (matching mockup yellow/brown for missing)
+    const sec = getCSSVar('--secondary-color', '#1cbfca');
+    const displayLabel = hasMissing ? 'Missing Info' : isPending ? 'Under Review' : 'Likely Eligible';
+    const pillBg    = hasMissing ? '#fef3c7' : isPending ? '#f0f0ff' : `${sec}1a`;
+    const pillColor = hasMissing ? '#78350f' : isPending ? '#4f52c8' : sec;
 
     // Ensure action_url is a valid path or external URL, otherwise fallback to default
     const isValidUrl = action_url && (action_url.startsWith('/') || action_url.startsWith('http'));
     const destination = isValidUrl ? action_url : `/funding/${id}`;
 
-    // Status visual map — null = use secondary CSS class (.funding-pill-eligible)
-    const getStatusStyle = (): { bg: string; color: string } | null => {
-        switch (engine_status) {
-            case 'Warning':    return { bg: '#fffbeb', color: '#d97706' }; // Conditional
-            case 'Greyed Out': return { bg: '#f3f4f6', color: '#4b5563' }; // Better Fit Later
-            case 'Hidden':     return { bg: '#fee2e2', color: '#ef4444' }; // Not Eligible
-            default:           return null; // Active / Review → Likely Eligible = secondary color
-        }
-    };
-
-    // Force all active sequences to show as Active and not greyed out per user request
-    const forcedEngineStatus = 'Active';
-    const isGreyedOut = false;
-    const isEligible = true;
-
-    // Convert generic "Eligible Now" and "Manual Review Required" to the design's "Likely Eligible"
-    const displayLabel = 'Likely Eligible';
-    const isPending = latest_review_status === FUNDING_REVIEW_STATUS.PENDING;
-
     return (
-        <>
+        <div style={{ position: 'relative', width: '100%' }}>
             <div
                 id={`funding-card-${id}`}
-                className={`funding-card ${isPending ? 'funding-card-disabled' : ''}`}
+                ref={cardRef}
+                className={`funding-card ${isDisabled ? 'funding-card-grayed' : ''}`}
+                onMouseEnter={() => isDisabled && setTooltipVisible(true)}
+                onMouseLeave={() => setTooltipVisible(false)}
                 onClick={(e) => {
-                    if (isPending) {
+                    if (isDisabled) {
                         e.preventDefault();
                         return;
                     }
@@ -126,21 +290,29 @@ const FundingCard: React.FC<FundingCardProps> = ({
                     }
                 }}
             >
-                {/* ── Top Section: Icon & Text ───────────────────────────────────────────── */}
+                {/* ── Lock / Clock Badge (Top-Right as per Mockup) ──────────── */}
+                {hasMissing && (
+                    <div className="funding-card-missing-badge" style={{ position: 'absolute', top: '14px', right: '14px', left: 'auto' }}>
+                        <i className="ri-lock-line" />
+                    </div>
+                )}
+                {isPending && !hasMissing && (
+                    <div className="funding-card-missing-badge funding-card-pending-badge" style={{ position: 'absolute', top: '14px', right: '14px', left: 'auto' }}>
+                        <i className="ri-time-line" />
+                    </div>
+                )}
+
+                {/* ── Top Section: Icon & Text ───────────────────────────────── */}
                 <div className="funding-card-top">
-                    {/* Icon Badge */}
                     <div
-                        className={`funding-card-icon-wrapper ${isPending ? 'disabled' : ''}`}
+                        className={`funding-card-icon-wrapper ${isDisabled ? 'disabled' : ''}`}
                         style={{ background: colors.bg }}
                     >
                         <i className={iconClass} style={{ color: colors.text }} />
                     </div>
 
-                    {/* Text Content */}
                     <div className="funding-card-text-content">
-                        <p className="funding-card-title">
-                            {name}
-                        </p>
+                        <p className="funding-card-title">{name}</p>
                         <p
                             className="funding-card-subtitle"
                             style={{ color: subtitle ? '#6b7280' : 'transparent' }}
@@ -150,48 +322,35 @@ const FundingCard: React.FC<FundingCardProps> = ({
                     </div>
                 </div>
 
-                {/* ── Bottom Section: Amount, Status & Arrow ────────────────────────────── */}
+                {/* ── Bottom Section: Amount, Status & Arrow ────────────────── */}
                 <div className="funding-card-bottom">
                     <div className="funding-card-meta">
                         {amount_range && (
-                            <span className="funding-card-amount">
-                                {amount_range}
-                            </span>
+                            <span className="funding-card-amount">{amount_range}</span>
                         )}
                         <div style={{ alignSelf: 'flex-start' }}>
-                            {isEligible ? (() => {
-                                const sec = getCSSVar('--secondary-color', '#1cbfca');
-                                return (
-                                    <Pill
-                                        label={displayLabel}
-                                        bg={`${sec}1a`}
-                                        color={sec}
-                                        className="large-pill"
-                                    />
-                                );
-                            })() : (
-                                <Pill
-                                    label={displayLabel}
-                                    bg={getStatusStyle()!.bg}
-                                    color={getStatusStyle()!.color}
-                                    className="large-pill"
-                                />
-                            )}
+                            <Pill
+                                label={displayLabel}
+                                bg={pillBg}
+                                color={pillColor}
+                                className="large-pill"
+                            />
                         </div>
                     </div>
 
-                    {/* Arrow Button */}
+                    {/* Arrow Button (always right-arrow as per mockup) */}
                     <div className="funding-card-arrow">
                         <i className="ri-arrow-right-s-line" />
                     </div>
                 </div>
             </div>
-            {isPending && (
-                <UncontrolledTooltip placement="top" target={`funding-card-${id}`}>
-                    Already applied. Please wait for approval or rejection.
-                </UncontrolledTooltip>
-            )}
-        </>
+
+            {/* ── Missing Tooltip ───────────────────────────────────────────── */}
+            <MissingTooltip factors={missingFactors} visible={tooltipVisible && hasMissing} />
+
+            {/* ── Pending Tooltip ───────────────────────────────────────────── */}
+            <PendingTooltip visible={tooltipVisible && isPending && !hasMissing} />
+        </div>
     );
 };
 
