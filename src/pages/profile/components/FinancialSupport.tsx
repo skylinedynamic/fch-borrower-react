@@ -113,9 +113,9 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
     const payload: SaveFinancialInfoRequest = {
       currency: data.currency,
       years_in_business: data.years_in_business,
-      monthly_revenue: data.monthly_revenue || 0,
-      annual_revenue: data.annual_revenue || 0,
-      annual_personal_income: data.annual_personal_income || 0,
+      monthly_revenue: parseFloat(unformatCurrency(String(data.monthly_revenue || ''))) || 0,
+      annual_revenue: parseFloat(unformatCurrency(String(data.annual_revenue || ''))) || 0,
+      annual_personal_income: parseFloat(unformatCurrency(String(data.annual_personal_income || ''))) || 0,
       bank_accounts: data.bank_accounts || []
     }
 
