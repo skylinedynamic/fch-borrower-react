@@ -144,13 +144,13 @@ export default function FundApplication() {
   // Initialize funding state from location.state
   useEffect(() => {
     const state = location.state as any;
-    if (state && (state.purpose || state.approved_funding || state.requested_amount)) {
+    if (state && (state.purpose || state.approved_funding || state.requested_amount || state.funding_type)) {
       setFunding(prev => ({
         ...prev,
         purpose: state.purpose || prev.purpose,
         approvedFunding: state.approved_funding || prev.approvedFunding,
         requestedAmount: state.requested_amount || prev.requestedAmount,
-        fundingType: state.approved_funding || prev.fundingType,
+        fundingType: state.funding_type || prev.fundingType,
       }))
     }
   }, [location.state])

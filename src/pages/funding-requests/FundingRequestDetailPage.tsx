@@ -879,6 +879,21 @@ export default function FundingRequestDetailPage() {
                                                             <span className="fw-bold">Approved:</span>{' '}
                                                             Your funding request has been approved for {review.funding_type}. Please proceed with the final funding application.
                                                         </p>
+                                                        <div className="mt-3">
+                                                            <Link 
+                                                                to="/fund-application" 
+                                                                state={{
+                                                                    purpose: review.use_of_funds === 'Working Capital' ? 'Working Capital (General Use)' : review.use_of_funds,
+                                                                    requested_amount: review.requested_amount,
+                                                                    approved_funding: review.funding_sequence?.name || review.funding_type,
+                                                                    funding_type: review.funding_type
+                                                                }}
+                                                                className="btn btn-success btn-sm fw-medium px-4 d-inline-flex align-items-center"
+                                                            >
+                                                                Process Funding Application
+                                                                <i className="ri-arrow-right-line ms-2"></i>
+                                                            </Link>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}
