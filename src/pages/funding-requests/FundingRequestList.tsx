@@ -39,9 +39,9 @@ export default function FundingRequestList() {
         if (!data?.data) return null;
         let approved = 0, pending = 0, rejected = 0;
         data.data.forEach((r: any) => {
-            if (r.status === 'Approved') approved++;
-            if (r.status === 'Pending') pending++;
-            if (r.status === 'Rejected') rejected++;
+            if (r.status === FUNDING_REVIEW_STATUS.APPROVED || r.status === FUNDING_REVIEW_STATUS.ACCEPTED) approved++;
+            if (r.status === FUNDING_REVIEW_STATUS.PENDING) pending++;
+            if (r.status === FUNDING_REVIEW_STATUS.REJECTED) rejected++;
         });
         return {
             total_reviews: total,
@@ -82,8 +82,8 @@ export default function FundingRequestList() {
 
     const statusBodyTemplate = (row: any) => {
         let bg = 'warning'
-        if (row.status === 'Approved') bg = 'success'
-        if (row.status === 'Rejected') bg = 'danger'
+        if (row.status === FUNDING_REVIEW_STATUS.APPROVED || row.status === FUNDING_REVIEW_STATUS.ACCEPTED) bg = 'success'
+        if (row.status === FUNDING_REVIEW_STATUS.REJECTED) bg = 'danger'
         return <span className={`badge bg-${bg}`}>{row.status}</span>
     }
 
@@ -234,12 +234,27 @@ export default function FundingRequestList() {
                                         <Column field="status" header="Status" sortable body={statusBodyTemplate}></Column>
                                         <Column field="created_at" header="Created At" sortable body={(row) => row.created_at ? new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : 'N/A'}></Column>
                                         <Column header="Actions" body={(row: any) => (
-                                            <div className="d-flex gap-2">
-                                                <button className="btn btn-sm btn-primary" onClick={() => handleView(row)}>
+                                            <div className="d-flex gap-2 align-items-center">
+                                                <button className="btn btn-sm btn-primary text-nowrap" onClick={() => handleView(row)}>
                                                     <i className="ri-eye-line align-bottom me-1"></i> Details
                                                 </button>
+                                                {(row.status === FUNDING_REVIEW_STATUS.APPROVED || row.status === FUNDING_REVIEW_STATUS.ACCEPTED) && (
+                                                        <Link 
+                                                        to="/fund-application" 
+                                                        state={{
+                                                            purpose: row.use_of_funds === 'Working Capital' ? 'Working Capital (General Use)' : row.use_of_funds,
+                                                            requested_amount: row.requested_amount,
+                                                            approved_funding: row.funding_sequence?.name || row.funding_type,
+                                                            funding_type: row.funding_type
+                                                        }}
+                                                        className="btn btn-success btn-sm text-nowrap"
+                                                        title="Process Funding Application"
+                                                    >
+                                                        Process Funding Application <i className="ri-arrow-right-line align-bottom ms-1"></i>
+                                                    </Link>
+                                                )}
                                             </div>
-                                        )} style={{ width: '120px' }}></Column>
+                                        )} style={{ minWidth: '150px' }}></Column>
                                     </DataTable>
                                 </div>
                             </div>
