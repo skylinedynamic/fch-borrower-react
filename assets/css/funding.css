@@ -73,6 +73,11 @@
     opacity: 0.6;
 }
 
+.funding-card.funding-card-locked {
+    cursor: pointer;
+    opacity: 0.6;
+}
+
 /* Top Section */
 .funding-card-top {
     display: flex;

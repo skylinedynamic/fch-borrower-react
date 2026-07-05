@@ -257,8 +257,10 @@ const FundingCard: React.FC<FundingCardProps> = ({
 
     // Pending = already applied, awaiting review
     const isPending = latest_review_status === FUNDING_REVIEW_STATUS.PENDING;
-
-    const isDisabled = isPending || hasMissing;
+    
+    // For pending, it's fully disabled. For locked (missing), it's visually locked but clickable.
+    const isFullyDisabled = isPending && !hasMissing;
+    const isLocked = hasMissing;
 
     // Pill label & color (matching mockup yellow/brown for missing)
     const sec = getCSSVar('--secondary-color', '#1cbfca');
@@ -268,18 +270,26 @@ const FundingCard: React.FC<FundingCardProps> = ({
 
     // Ensure action_url is a valid path or external URL, otherwise fallback to default
     const isValidUrl = action_url && (action_url.startsWith('/') || action_url.startsWith('http'));
-    const destination = isValidUrl ? action_url : `/funding/${id}`;
+    // If locked (missing factors), force them to the local details page to view the reason.
+    // If fully disabled (pending), the click handler will block it anyway.
+    const destination = isLocked ? `/funding/${id}` : (isValidUrl ? action_url : `/funding/${id}`);
 
     return (
         <div style={{ position: 'relative', width: '100%' }}>
             <div
                 id={`funding-card-${id}`}
                 ref={cardRef}
-                className={`funding-card ${isDisabled ? 'funding-card-grayed' : ''}`}
-                onMouseEnter={() => isDisabled && setTooltipVisible(true)}
+                className={`funding-card ${isFullyDisabled ? 'funding-card-disabled' : ''} ${isLocked ? 'funding-card-locked' : ''}`}
+                onMouseEnter={() => (isFullyDisabled || isLocked) && setTooltipVisible(true)}
                 onMouseLeave={() => setTooltipVisible(false)}
                 onClick={(e) => {
-                    if (isDisabled) {
+                    // Pending cards are fully disabled, cannot click
+                    if (isFullyDisabled) {
+                        e.preventDefault();
+                        return;
+                    }
+                    // Locked cards allow clicking to view the details page
+                    if (isLocked && destination.startsWith('http')) {
                         e.preventDefault();
                         return;
                     }
@@ -305,7 +315,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
                 {/* ── Top Section: Icon & Text ───────────────────────────────── */}
                 <div className="funding-card-top">
                     <div
-                        className={`funding-card-icon-wrapper ${isDisabled ? 'disabled' : ''}`}
+                        className={`funding-card-icon-wrapper ${(isFullyDisabled || isLocked) ? 'disabled' : ''}`}
                         style={{ background: colors.bg }}
                     >
                         <i className={iconClass} style={{ color: colors.text }} />
