@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
-import { useCapitalAccessStrategyRoadmap, useCapitalAccessStrategies } from '../../modules/capital-access/queries';
+import { useCapitalAccessStrategyRoadmap, useStartCapitalAccessPlay } from '../../modules/capital-access/queries';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
 import type { RoadmapCard } from '../../modules/capital-access/types';
 import { ACCESS_TIME, CAPITAL_ACCESS_STATUS } from '../../config/capitalAccessStatusOptions';
@@ -181,29 +181,26 @@ function getUnlockTimeRemaining(card: RoadmapCard, playStartDate: string | null 
 
 export default function PlayRoadmap() {
   const { id } = useParams<{ id: string }>();
-  const { data: play, isLoading: isPlayLoading, isError } = useCapitalAccessStrategyRoadmap(id);
-  const { data: strategies, isLoading: isStrategiesLoading } = useCapitalAccessStrategies();
+  const { data: play, isLoading, isError } = useCapitalAccessStrategyRoadmap(id);
 
+  const startPlayMutation = useStartCapitalAccessPlay(id);
+
+  const isDelayActive = play?.reason_code === 'NEXT_PLAY_DELAY_ACTIVE';
+
+  // Separate per-minute clock for card access schedule checks
   const [currentTime, setCurrentTime] = useState(new Date());
-
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 10000);
+    const timer = setInterval(() => setCurrentTime(new Date()), 60_000);
     return () => clearInterval(timer);
   }, []);
 
-  const isLoading = isPlayLoading || isStrategiesLoading;
+  // Also redirect if delay is active and play not yet completed (safety net for direct URL navigation)
+  if (!isLoading && play && isDelayActive && !play.isCompleted) return <Navigate to="/capital-access/strategy" />;
 
-  const recommendedPlay = strategies?.find(p => p.isRecommended) || strategies?.[0];
-  const isCompleted = strategies?.some(p => String(p.id) === String(id) && p.isCompleted);
-  const isAccessible = recommendedPlay ? (String(recommendedPlay.id) === String(id) || isCompleted) : true;
-
-  if (!isLoading && (isError || !play || !isAccessible)) return <Navigate to="/capital-access/strategy" />;
-
+  if (!isLoading && (isError || !play || !play.isAccessible)) return <Navigate to="/capital-access/strategy" />;
 
   // Strategy-level lock
-  if (!isLoading && play && play.approval_status === false) {
+  if (!isLoading && play && play.approval_status === false && !isDelayActive) {
     return (
       <div className="page-content capital-access-page">
         <div className="container-fluid">
@@ -276,6 +273,8 @@ export default function PlayRoadmap() {
             </div>
           </div>
 
+
+
           {isLoading || !play ? (
             <CapitalAccessLoader type="roadmap" />
           ) : (
@@ -314,10 +313,12 @@ export default function PlayRoadmap() {
                     const isTimeLocked = !timeCheck.active;
                     const remainingTimeText = getUnlockTimeRemaining(card, play.first_submitted_at, currentTime);
 
-                    const isLocked = (card.probability_status === false || hasUnsubmittedPrevious || isTimeLocked) && !card.application_status;
+                    const isLocked = isDelayActive || ((card.probability_status === false || hasUnsubmittedPrevious || isTimeLocked) && !card.application_status);
 
                     let lockReason = '';
-                    if (card.probability_status === false) {
+                    if (isDelayActive) {
+                      lockReason = 'Play cooling period active';
+                    } else if (card.probability_status === false) {
                       lockReason = getLockReason(card);
                     } else if (hasUnsubmittedPrevious) {
                       lockReason = 'Complete the previous step to unlock this card';
@@ -442,7 +443,13 @@ export default function PlayRoadmap() {
                                       target={card.reference_url ? "_blank" : undefined}
                                       rel="noopener noreferrer"
                                       className={`ca-btn ca-btn-sm ca-btn-primary ${!card.reference_url ? 'disabled' : ''}`}
-                                      onClick={!card.reference_url ? (e) => e.preventDefault() : undefined}
+                                      onClick={(e) => {
+                                        if (!card.reference_url) {
+                                          e.preventDefault();
+                                          return;
+                                        }
+                                        startPlayMutation.mutate();
+                                      }}
                                     >
                                       Apply <i className="ri-external-link-line"></i>
                                     </a>
@@ -460,7 +467,7 @@ export default function PlayRoadmap() {
                 <hr className="ca-divider mt-4 mb-3" />
 
                 <div className="d-flex align-items-center justify-content-end gap-3 w-100">
-                  {isCompleted ? (
+                  {play.isCompleted ? (
                     <Link to="/capital-access/strategy" className="ca-btn ca-btn-outline" style={{ minWidth: '180px' }}>
                       <i className="ri-arrow-left-line"></i> Back to Strategy List
                     </Link>

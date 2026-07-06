@@ -1,20 +1,11 @@
 import React from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
-import { useCapitalAccessStrategyChecklist, useCapitalAccessStrategies } from '../../modules/capital-access/queries';
+import { useCapitalAccessStrategyChecklist } from '../../modules/capital-access/queries';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
-
 
 export default function PreFlightChecklist() {
   const { id } = useParams<{ id: string }>();
-  const { data: play, isLoading: isPlayLoading, isError } = useCapitalAccessStrategyChecklist(id);
-  const { data: strategies, isLoading: isStrategiesLoading } = useCapitalAccessStrategies();
-
-  const isLoading = isPlayLoading || isStrategiesLoading;
-
-  const recommendedPlay = strategies?.find(p => p.isRecommended) || strategies?.[0];
-  const isCompleted = strategies?.some(p => String(p.id) === String(id) && p.isCompleted);
-  const isAccessible = recommendedPlay ? (String(recommendedPlay.id) === String(id) || isCompleted) : true;
-
+  const { data: play, isLoading, isError } = useCapitalAccessStrategyChecklist(id);
 
   if (isLoading) {
     return (
@@ -28,7 +19,9 @@ export default function PreFlightChecklist() {
     );
   }
 
-  if (isError || !play || !isAccessible) {
+  const isDelayLocked = play?.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' && !play?.isCompleted;
+
+  if (isError || !play || !play.isAccessible || isDelayLocked) {
     return <Navigate to="/capital-access/strategy" />;
   }
 
@@ -61,26 +54,39 @@ export default function PreFlightChecklist() {
           {play.approval_status === false ? (
 
             /* ── Ineligible / Locked State ── */
-            <div className="ca-hero-card-premium border-danger-subtle">
+             <div className={`ca-hero-card-premium ${play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'border-warning-subtle' : 'border-danger-subtle'}`}>
               <div className="ca-hero-header-premium ca-hero-header-no-border">
                 <div className="d-flex align-items-center gap-3 w-100">
                   <div className="avatar-sm flex-shrink-0">
-                    <span className="avatar-title bg-danger-subtle text-danger rounded-circle fs-20">
-                      <i className="ri-lock-line"></i>
+                    <span className={`avatar-title rounded-circle fs-20 ${play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger'}`}>
+                      <i className={play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'ri-time-line' : 'ri-lock-line'}></i>
                     </span>
                   </div>
                   <div>
-                    <h5 className="fw-bold mb-1 fs-17 text-dark">Play Locked</h5>
-                    <p className="text-muted fs-13 mb-0">You are not eligible for the {play.name} strategy.</p>
+                    <h5 className="fw-bold mb-1 fs-17 text-dark">{play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'Play Cooling Active' : 'Play Locked'}</h5>
+                    <p className="text-muted fs-13 mb-0">
+                      {play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE'
+                        ? 'This recommended play is cooling down after completing a previous play.'
+                        : `You are not eligible for the ${play.name} strategy.`}
+                    </p>
                   </div>
                 </div>
               </div>
 
               <div className="ca-card-body ca-card-body-locked">
-                <div className="ca-checklist-locked-notice mb-4">
+                <div className="ca-checklist-locked-notice mb-4" style={{
+                  background: play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'rgba(243, 156, 18, 0.05)' : 'rgba(250, 95, 95, 0.05)',
+                  border: play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? '1px solid rgba(243, 156, 18, 0.15)' : '1px solid rgba(250, 95, 95, 0.15)',
+                  padding: '12px 16px',
+                  borderRadius: '6px'
+                }}>
                   <p className="text-muted fs-13 mb-0">
-                    <i className="ri-shield-cross-line text-danger me-2"></i>
-                    Our scoring system indicates that your business profile does not currently satisfy the minimum qualifications required to initiate this play. Please build your readiness metrics or consult your Account Manager to unlock other eligible funding strategies.
+                    <i className={play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'ri-time-line text-warning me-2' : 'ri-shield-cross-line text-danger me-2'}></i>
+                    {play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? (
+                      'Next Play Delay Cooling Period Active. You cannot apply for any card in this play until the cooling period ends.'
+                    ) : (
+                      'Our scoring system indicates that your business profile does not currently satisfy the minimum qualifications required to initiate this play. Please build your readiness metrics or consult your Account Manager to unlock other eligible funding strategies.'
+                    )}
                   </p>
                 </div>
 
@@ -121,7 +127,6 @@ export default function PreFlightChecklist() {
               </div>
 
               <div className="ca-card-body p-4">
-
                 <div className="d-flex align-items-center justify-content-between mb-3">
                   <span className="ca-section-label mb-0">Required Items</span>
                   <span className="text-muted fs-12 fw-medium">{completedCount} / {totalCount} complete</span>

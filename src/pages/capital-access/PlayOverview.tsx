@@ -1,21 +1,11 @@
 import React from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
-import { useCapitalAccessStrategyOverview, useCapitalAccessStrategies } from '../../modules/capital-access/queries';
+import { useCapitalAccessStrategyOverview } from '../../modules/capital-access/queries';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
-
-
 
 export default function PlayOverview() {
   const { id } = useParams<{ id: string }>();
-  const { data: play, isLoading: isPlayLoading, isError } = useCapitalAccessStrategyOverview(id);
-  const { data: strategies, isLoading: isStrategiesLoading } = useCapitalAccessStrategies();
-
-  const isLoading = isPlayLoading || isStrategiesLoading;
-
-  const recommendedPlay = strategies?.find(p => p.isRecommended) || strategies?.[0];
-  const isCompleted = strategies?.some(p => String(p.id) === String(id) && p.isCompleted);
-  const isAccessible = recommendedPlay ? (String(recommendedPlay.id) === String(id) || isCompleted) : true;
-
+  const { data: play, isLoading, isError } = useCapitalAccessStrategyOverview(id);
 
   if (isLoading) {
     return (
@@ -29,7 +19,11 @@ export default function PlayOverview() {
     );
   }
 
-  if (isError || !play || !isAccessible) {
+  // Hard block: if the recommended play is under cooling delay, redirect back.
+  // We use play.reason_code (from the per-page API) so it is always fresh.
+  const isDelayLocked = play?.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' && !play?.isCompleted;
+
+  if (isError || !play || !play.isAccessible || isDelayLocked) {
     return <Navigate to="/capital-access/strategy" />;
   }
 
@@ -59,26 +53,37 @@ export default function PlayOverview() {
 
           {play.approval_status === false ? (
 
-            <div className="ca-hero-card-premium border-danger-subtle">
+            <div className={`ca-hero-card-premium ${play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'border-warning-subtle' : 'border-danger-subtle'}`}>
               <div className="ca-hero-header-premium" style={{ borderBottom: 'none' }}>
                 <div className="d-flex align-items-center gap-3 w-100">
                   <div className="avatar-sm flex-shrink-0">
-                    <span className="avatar-title bg-danger-subtle text-danger rounded-circle fs-20">
-                      <i className="ri-error-warning-line"></i>
+                    <span className={`avatar-title rounded-circle fs-20 ${play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger'}`}>
+                      <i className={play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'ri-time-line' : 'ri-error-warning-line'}></i>
                     </span>
                   </div>
                   <div>
-                    <h5 className="fw-bold mb-1 fs-17 text-dark">Play Locked</h5>
-                    <p className="text-muted fs-13 mb-0">You are not eligible for the {play.name} strategy.</p>
+                    <h5 className="fw-bold mb-1 fs-17 text-dark">{play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'Play Cooling Active' : 'Play Locked'}</h5>
+                    <p className="text-muted fs-13 mb-0">
+                      {play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE'
+                        ? 'This recommended play is cooling down after completing a previous play.'
+                        : `You are not eligible for the ${play.name} strategy.`}
+                    </p>
                   </div>
                 </div>
               </div>
 
               <div className="ca-card-body" style={{ padding: '0 28px 28px 28px' }}>
-                <div className="p-3 rounded-3 mb-4" style={{ background: 'rgba(250, 95, 95, 0.05)', border: '1px solid rgba(250, 95, 95, 0.15)' }}>
+                <div className="p-3 rounded-3 mb-4" style={{
+                  background: play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'rgba(243, 156, 18, 0.05)' : 'rgba(250, 95, 95, 0.05)',
+                  border: play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? '1px solid rgba(243, 156, 18, 0.15)' : '1px solid rgba(250, 95, 95, 0.15)'
+                }}>
                   <p className="text-muted fs-13 mb-0 leading-relaxed">
-                    <i className="ri-information-fill text-danger me-1"></i>
-                    Our scoring system indicates that your business profile does not currently satisfy the minimum qualifications required to initiate this play. Please build your readiness metrics or consult your Account Manager to unlock other eligible funding strategies.
+                    <i className={play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'ri-time-line text-warning me-1' : 'ri-information-fill text-danger me-1'}></i>
+                    {play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? (
+                      'Next Play Delay Cooling Period Active. You cannot apply for any card in this play until the cooling period ends.'
+                    ) : (
+                      'Our scoring system indicates that your business profile does not currently satisfy the minimum qualifications required to initiate this play. Please build your readiness metrics or consult your Account Manager to unlock other eligible funding strategies.'
+                    )}
                   </p>
                 </div>
 
@@ -113,7 +118,6 @@ export default function PlayOverview() {
               </div>
 
               <div className="ca-card-body" style={{ padding: '28px' }}>
-
                 {/* Key Metrics */}
                 <div className="row g-3 mb-4">
                   <div className="col-md-4">

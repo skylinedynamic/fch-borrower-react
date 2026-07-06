@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
-import { useCapitalAccessStepDetail, useSubmitCapitalAccessStep, useCapitalAccessStrategies } from '../../modules/capital-access/queries';
+import { useCapitalAccessStepDetail, useSubmitCapitalAccessStep } from '../../modules/capital-access/queries';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
 import type { CapitalAccessStepDetail } from '../../modules/capital-access/types';
 import { toast } from 'react-toastify';
@@ -9,14 +9,7 @@ import { CAPITAL_ACCESS_STATUS, type CapitalAccessStatus } from '../../config/ca
 export default function StepDetail() {
   const { id: strategyId, stepId: sequenceId } = useParams<{ id: string; stepId: string }>();
 
-  const { data: step, isLoading: isStepLoading, isError } = useCapitalAccessStepDetail(strategyId, sequenceId);
-  const { data: strategies, isLoading: isStrategiesLoading } = useCapitalAccessStrategies();
-
-  const isLoading = isStepLoading || isStrategiesLoading;
-
-  const recommendedPlay = strategies?.find(p => p.isRecommended) || strategies?.[0];
-  const isCompleted = strategies?.some(p => String(p.id) === String(strategyId) && p.isCompleted);
-  const isAccessible = recommendedPlay ? (String(recommendedPlay.id) === String(strategyId) || isCompleted) : true;
+  const { data: step, isLoading, isError } = useCapitalAccessStepDetail(strategyId, sequenceId);
 
 
   const [creditLimit, setCreditLimit] = useState('');
@@ -58,7 +51,10 @@ export default function StepDetail() {
     return '';
   };
 
-  if (!isLoading && (isError || !step || !isAccessible)) {
+  // Block access to card steps during Next Play Delay period
+  const isDelayLocked = step?.play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' && !step?.play.isCompleted;
+
+  if (!isLoading && (isError || !step || !step.play.isAccessible || isDelayLocked)) {
     return <Navigate to="/capital-access/strategy" />;
   }
 
