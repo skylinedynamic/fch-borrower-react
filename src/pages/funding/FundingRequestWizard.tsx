@@ -26,6 +26,7 @@ const FundingRequestWizard = () => {
     const [submitting, setSubmitting] = useState(false);
     const [fundingDetail, setFundingDetail] = useState<any>(null);
     const [submitDate, setSubmitDate] = useState('');
+    const isRedirecting = React.useRef(false);
 
     const branding = useBrandingStore((state: any) => state.branding);
     const [dynamicReviewerName, setDynamicReviewerName] = useState('');
@@ -65,29 +66,60 @@ const FundingRequestWizard = () => {
     };
 
     useEffect(() => {
-        if (id) {
-            fetchFundingDetail(id)
-                .then(res => {
-                    if (res.status) {
-                        if (res.data.latest_review_status === FUNDING_REVIEW_STATUS.PENDING) {
-                            toast.warning('Already applied. Please wait for approval or rejection.');
-                            navigate('/funding');
-                            return;
-                        }
-                        setFundingDetail(res.data);
-                        setMissingDocs(res.data.missing_documents || []);
+        if (id && !isRedirecting.current) {
+            Promise.all([
+                fetchFundingDetail(id),
+                fetchReadinessFactors(id as string).catch(() => ({ status: false, data: [] }))
+            ]).then(([res, readinessRes]) => {
+                if (res.status) {
+                    const engineStatus = res.data.engine_status;
+                    const isHidden = engineStatus === 'Hidden';
 
-                        setFormData(prev => {
-                            const newAmount = prev.requested_amount || res.data.latest_requested_amount || '';
-                            const newPurpose = (prev.use_of_funds && prev.use_of_funds !== 'Working Capital') ? prev.use_of_funds : (res.data.latest_use_of_funds || prev.use_of_funds);
-                            return { requested_amount: newAmount, use_of_funds: newPurpose };
+                    let hasMissingFactors = false;
+                    if (readinessRes?.status && Array.isArray(readinessRes.data)) {
+                        hasMissingFactors = readinessRes.data.some((f: any) => {
+                            const s = (f.status || '').toLowerCase();
+                            return s === 'missing' || s === 'restricted' || s === 'weak';
                         });
-                    } else {
-                        toast.error(res.message || 'Failed to load funding details');
+                    } else if (res.data.readiness_factors) {
+                        hasMissingFactors = res.data.readiness_factors.some((f: any) => {
+                            const s = (f.status || '').toLowerCase();
+                            return s === 'missing' || s === 'restricted' || s === 'weak';
+                        });
                     }
-                })
-                .catch(() => toast.error('Failed to load funding details'))
-                .finally(() => setLoading(false));
+
+                    if (res.data.latest_review_status === FUNDING_REVIEW_STATUS.PENDING) {
+                        if (!isRedirecting.current) {
+                            isRedirecting.current = true;
+                            toast.warning('Already applied. Please wait for approval or rejection.');
+                            navigate(`/funding/${id}`, { replace: true });
+                        }
+                        return;
+                    }
+
+                    if (isHidden || hasMissingFactors) {
+                        if (!isRedirecting.current) {
+                            isRedirecting.current = true;
+                            toast.warning('You are not currently eligible for this funding option.');
+                            navigate(`/funding/${id}`, { replace: true });
+                        }
+                        return;
+                    }
+
+                    setFundingDetail(res.data);
+                    setMissingDocs(res.data.missing_documents || []);
+
+                    setFormData(prev => {
+                        const newAmount = prev.requested_amount || res.data.latest_requested_amount || '';
+                        const newPurpose = (prev.use_of_funds && prev.use_of_funds !== 'Working Capital') ? prev.use_of_funds : (res.data.latest_use_of_funds || prev.use_of_funds);
+                        return { requested_amount: newAmount, use_of_funds: newPurpose };
+                    });
+                } else {
+                    toast.error(res.message || 'Failed to load funding details');
+                }
+            })
+            .catch(() => toast.error('Failed to load funding details'))
+            .finally(() => setLoading(false));
         }
     }, [id]);
 
@@ -126,6 +158,27 @@ const FundingRequestWizard = () => {
                 const amount = Number(formData.requested_amount);
                 if (amount < 0) {
                     newErrors.requested_amount = 'Requested amount cannot be negative';
+                } else if (fundingDetail?.amount_range) {
+                    const rangeStr = fundingDetail.amount_range;
+                    const parts = rangeStr.split('-').map((p: string) => p.replace(/[^0-9.KMkm]/g, ''));
+                    if (parts.length === 2) {
+                        const parseVal = (val: string) => {
+                            const p = val.trim().toUpperCase();
+                            let num = parseFloat(p);
+                            if (p.includes('K')) num *= 1000;
+                            if (p.includes('M')) num *= 1000000;
+                            return num;
+                        };
+                        let min = parseVal(parts[0]);
+                        let max = parseVal(parts[1]);
+                        if (!isNaN(min) && !isNaN(max)) {
+                            const trueMin = Math.min(min, max);
+                            const trueMax = Math.max(min, max);
+                            if (amount < trueMin || amount > trueMax) {
+                                newErrors.requested_amount = `Requested amount must be between $${trueMin.toLocaleString()} and $${trueMax.toLocaleString()}`;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -348,7 +401,7 @@ const FundingRequestWizard = () => {
                                                         return (
                                                             <div className="d-flex align-items-start gap-2 mt-2 p-3" style={{ backgroundColor: '#fffbeb', borderLeft: '4px solid #f59e0b', borderRadius: '4px', color: '#b45309' }}>
                                                                 <i className="ri-error-warning-line fs-16 mt-1"></i>
-                                                                <span className="fs-13"><strong>Please note:</strong> Your requested amount falls outside the recommended range of {rangeStr}.</span>
+                                                                <span className="fs-13"><strong>Please note:</strong> Your requested amount falls outside the required range of {rangeStr}.</span>
                                                             </div>
                                                         );
                                                     }
