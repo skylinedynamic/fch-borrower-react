@@ -33,6 +33,8 @@ const ReadinessBadge: React.FC<{ status: string }> = ({ status }) => {
         fair:       { icon: 'ri-error-warning-fill',   bg: '#fef3c7', color: '#92400e' },
         missing:    { icon: 'ri-information-fill',     bg: '#fff3cd', color: '#92400e' },
         weak:       { icon: 'ri-close-circle-fill',    bg: '#fee2e2', color: '#991b1b' },
+        restricted: { icon: 'ri-close-circle-fill',    bg: '#fee2e2', color: '#ef4444' },
+        eligible:   { icon: 'ri-checkbox-circle-fill', bg: '#e8f9f0', color: '#10b981' },
     };
     const style = cfg[s] || { icon: 'ri-question-line', bg: '#f0f3f7', color: '#4b5563' };
     return (
@@ -111,6 +113,75 @@ const FundingDetailLoader = () => (
         </div>
     </div>
 );
+
+// ─── Readiness Item Renderer ──────────────────────────────────────────────────
+const ReadinessItem: React.FC<{ factor: any, isLast: boolean }> = ({ factor, isLast }) => {
+    const s = (factor.status || '').toLowerCase();
+    let leftIcon = 'ri-question-line';
+    let leftIconColor = '#9ca3af'; // gray
+    
+    if (s === 'good' || s === 'eligible') {
+        leftIcon = 'ri-checkbox-circle-fill';
+        leftIconColor = '#10b981'; // green
+    } else if (s === 'strong') {
+        leftIcon = 'ri-star-fill';
+        leftIconColor = '#3b82f6'; // blue
+    } else if (s === 'missing' || s === 'restricted') {
+        leftIcon = 'ri-close-circle-fill';
+        leftIconColor = '#ef4444'; // red
+    }
+
+    let subtitle = '';
+    if (factor.label === 'Restricted State') {
+        subtitle = `Your business is located in ${factor.borrower_value}, which is a restricted state for this funding program.`;
+    } else if (factor.label === 'State Eligibility') {
+        if (s === 'missing' || s === 'restricted') {
+             subtitle = `Your business is located in ${factor.borrower_value}. This program only allows specific states.`;
+        } else {
+             subtitle = `Your business location is eligible for this funding program.`;
+        }
+    } else if (factor.label === 'Restricted Industry') {
+        subtitle = `Your business is in the ${factor.borrower_value} industry, which is restricted.`;
+    } else if (factor.label === 'Industry Eligibility') {
+        if (s === 'missing' || s === 'restricted') {
+             subtitle = `Your industry (${factor.borrower_value}) is not supported.`;
+        } else {
+             subtitle = `Your industry is eligible for this funding program.`;
+        }
+    }
+
+    let badgeText = factor.status;
+    if ((factor.label === 'Restricted State' || factor.label === 'Restricted Industry') && s === 'missing') {
+        badgeText = 'Restricted';
+    } else if ((factor.label === 'State Eligibility' || factor.label === 'Industry Eligibility') && (s === 'good' || s === 'strong')) {
+        badgeText = 'Eligible';
+    }
+
+    return (
+        <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between', 
+            gap: 12,
+            paddingBottom: isLast ? 0 : 16,
+            marginBottom: isLast ? 0 : 16,
+            borderBottom: isLast ? 'none' : '1px solid #f3f4f6'
+        }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: subtitle ? 'flex-start' : 'center' }}>
+                <i className={leftIcon} style={{ fontSize: 20, color: leftIconColor, marginTop: subtitle ? -2 : 0 }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <span style={{ fontSize: 14, color: '#111827', fontWeight: 600 }}>{factor.label}</span>
+                    {subtitle && (
+                        <span style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.4 }}>{subtitle}</span>
+                    )}
+                </div>
+            </div>
+            <div style={{ flexShrink: 0 }}>
+                <ReadinessBadge status={badgeText} />
+            </div>
+        </div>
+    );
+};
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const FundingDetail = () => {
@@ -192,10 +263,9 @@ const FundingDetail = () => {
     const colors = getFundingColorStyles(icon_color);
     const iconClass = resolveIcon(icon);
     
-    // Force active state as per user request
-    const isGreyedOut = false;
-    const finalEngineStatus = 'Active';
-    const displayLabel = 'Likely Eligible';
+    const isGreyedOut = engine_status === 'Greyed Out' || engine_status === 'Hidden';
+    const finalEngineStatus = engine_status || 'Active';
+    const displayLabel = engine_status_label || 'Likely Eligible';
 
     // Meta row items
     const metaItems = [
@@ -351,27 +421,50 @@ const FundingDetail = () => {
                                     <h6 style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d', marginBottom: 16 }}>
                                         Readiness Factors
                                     </h6>
-                                    {dynamicReadiness.length > 0 ? (
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                            {dynamicReadiness.map((f: any, i: number) => (
-                                                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                                                    <span style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>{f.label}</span>
-                                                    <ReadinessBadge status={f.status} />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : readiness_factors.length > 0 ? (
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                            {readiness_factors.map((f: any, i: number) => (
-                                                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                                                    <span style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>{f.label}</span>
-                                                    <ReadinessBadge status={f.status} />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p style={{ fontSize: 13, color: '#9ca3af', margin: 0 }}>No readiness factors available.</p>
-                                    )}
+                                    {(() => {
+                                        const activeFactors = dynamicReadiness.length > 0 ? dynamicReadiness : readiness_factors;
+                                        
+                                        if (activeFactors.length === 0) {
+                                            return <p style={{ fontSize: 13, color: '#9ca3af', margin: 0 }}>No readiness factors available.</p>;
+                                        }
+
+                                        const restrictedFactors = activeFactors.filter((f: any) => {
+                                            const s = (f.status || '').toLowerCase();
+                                            return (f.label === 'Restricted State' || f.label === 'Restricted Industry' || f.label === 'State Eligibility' || f.label === 'Industry Eligibility') && (s === 'missing' || s === 'restricted');
+                                        });
+
+                                        return (
+                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                {activeFactors.map((f: any, i: number) => (
+                                                    <ReadinessItem key={i} factor={f} isLast={i === activeFactors.length - 1} />
+                                                ))}
+
+                                                {restrictedFactors.length > 0 && (
+                                                    <div style={{ 
+                                                        marginTop: 16, 
+                                                        background: '#fef2f2', 
+                                                        border: '1px solid #fee2e2', 
+                                                        borderRadius: 8, 
+                                                        padding: '16px 20px',
+                                                        display: 'flex',
+                                                        gap: 16,
+                                                        alignItems: 'center'
+                                                    }}>
+                                                        <i className="ri-prohibited-line" style={{ fontSize: 32, color: '#ef4444', opacity: 0.8 }} />
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                            <span style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>
+                                                                {restrictedFactors[0].label}: Restricted
+                                                            </span>
+                                                            <span style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.5 }}>
+                                                                Your business is located in {restrictedFactors[0].borrower_value}.<br/>
+                                                                {restrictedFactors[0].borrower_value} is a restricted {restrictedFactors[0].label.includes('Industry') ? 'industry' : 'state'} for this funding program.
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                         </div>
@@ -386,7 +479,6 @@ const FundingDetail = () => {
 
                     </div>
 
-                    {/* ── Sticky Footer CTA ─────────────────────────────────────── */}
                     <div style={{
                         borderTop: '1px solid #e8ecf0',
                         background: '#fff',
@@ -406,25 +498,27 @@ const FundingDetail = () => {
                             <p style={{ margin: 0, fontSize: 12, color: '#6b7280', marginTop: 3 }}>
                                 {isPending
                                     ? 'You have already applied for this funding option. Please wait for approval or rejection.'
-                                    : hasMissingFactors 
-                                        ? 'Please address missing readiness factors before starting your review.'
-                                        : 'Start your funding request by providing a few details and uploading missing documents.'}
+                                    : finalEngineStatus === 'Hidden'
+                                        ? 'This funding option is currently not available for your profile.'
+                                        : hasMissingFactors 
+                                            ? 'Please address missing readiness factors before starting your review.'
+                                            : 'Start your funding request by providing a few details and uploading missing documents.'}
                             </p>
                         </div>
                         <span id="btn-start-funding-request-wrapper" style={{ display: 'inline-block' }}>
                             <Link
-                                to={(hasMissingFactors || isPending) ? '#' : `/funding/${id}/review`}
-                                className={`funding-detail-btn-review ${(hasMissingFactors || isPending) ? 'disabled' : ''}`}
-                                style={(hasMissingFactors || isPending) ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
-                                onClick={(e) => { if (hasMissingFactors || isPending) e.preventDefault(); }}
+                                to={(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') ? '#' : `/funding/${id}/review`}
+                                className={`funding-detail-btn-review ${(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') ? 'disabled' : ''}`}
+                                style={(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                                onClick={(e) => { if (hasMissingFactors || isPending || finalEngineStatus === 'Hidden') e.preventDefault(); }}
                             >
                                 Start Funding Request
                                 <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />
                             </Link>
                         </span>
-                        {isPending && (
+                        {(isPending || finalEngineStatus === 'Hidden') && (
                             <UncontrolledTooltip placement="top" target="btn-start-funding-request-wrapper">
-                                Already applied. Please wait for approval or rejection.
+                                {isPending ? 'Already applied. Please wait for approval or rejection.' : 'Not eligible for this funding option.'}
                             </UncontrolledTooltip>
                         )}
                     </div>
