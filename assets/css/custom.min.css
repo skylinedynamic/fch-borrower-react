@@ -4000,8 +4000,8 @@ span.flatpickr-weekday {
 #profileCompleteModal .pcm-icon-circle {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, var(--secondary-color) 0%, #f4d47e 100%);
-  box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3);
+  background: linear-gradient(135deg, var(--vz-warning, #f7b84b) 0%, #f4d47e 100%);
+  box-shadow: 0 8px 16px rgba(247, 184, 75, 0.3);
 }
 
 #profileCompleteModal .pcm-icon-circle i {
@@ -4261,8 +4261,8 @@ span.flatpickr-weekday {
 #profileCompleteModal .pcm-icon-circle {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, var(--secondary-color) 0%, #f4d47e 100%);
-  box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3);
+  background: linear-gradient(135deg, var(--vz-warning, #f7b84b) 0%, #f4d47e 100%);
+  box-shadow: 0 8px 16px rgba(247, 184, 75, 0.3);
 }
 
 #profileCompleteModal .pcm-icon-circle i {

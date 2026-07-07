@@ -196,7 +196,7 @@ export default function Dashboard() {
 
                 {/* --- Header Section --- */}
                 {showAlert && (
-                    <div className="row mb-4">
+                    <div className="row mt-4">
                         <div className="col-12">
                             <div className="card bg-danger-subtle border-0 shadow-sm border-start border-danger border-3">
                                 <div className="card-body p-4">
@@ -288,7 +288,7 @@ export default function Dashboard() {
                                         </div>
                                         <div className="flex-grow-1 ms-4">
                                             <p className="text-muted mb-2 fs-13">
-                                                {hasFico 
+                                                {hasFico
                                                     ? `Your current credit score is ${displayFico}. Keep building your credit profile to unlock better financing options.`
                                                     : "You haven't started credit scoring yet. Build your credit profile to unlock better financing options."
                                                 }
