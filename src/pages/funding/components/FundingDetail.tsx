@@ -28,13 +28,13 @@ const resolveIcon = (icon: any): string => {
 const ReadinessBadge: React.FC<{ status: string }> = ({ status }) => {
     const s = (status || '').toLowerCase();
     const cfg: Record<string, { icon: string; bg: string; color: string }> = {
-        good:       { icon: 'ri-checkbox-circle-fill', bg: '#e8f9f0', color: '#1a7a4a' },
-        strong:     { icon: 'ri-checkbox-circle-fill', bg: '#dbeafe', color: '#1d4ed8' },
-        fair:       { icon: 'ri-error-warning-fill',   bg: '#fef3c7', color: '#92400e' },
-        missing:    { icon: 'ri-information-fill',     bg: '#fff3cd', color: '#92400e' },
-        weak:       { icon: 'ri-close-circle-fill',    bg: '#fee2e2', color: '#991b1b' },
-        restricted: { icon: 'ri-close-circle-fill',    bg: '#fee2e2', color: '#ef4444' },
-        eligible:   { icon: 'ri-checkbox-circle-fill', bg: '#e8f9f0', color: '#10b981' },
+        good: { icon: 'ri-checkbox-circle-fill', bg: '#e8f9f0', color: '#1a7a4a' },
+        strong: { icon: 'ri-checkbox-circle-fill', bg: '#dbeafe', color: '#1d4ed8' },
+        fair: { icon: 'ri-error-warning-fill', bg: '#fef3c7', color: '#92400e' },
+        missing: { icon: 'ri-information-fill', bg: '#fff3cd', color: '#92400e' },
+        weak: { icon: 'ri-close-circle-fill', bg: '#fee2e2', color: '#991b1b' },
+        restricted: { icon: 'ri-close-circle-fill', bg: '#fee2e2', color: '#ef4444' },
+        eligible: { icon: 'ri-checkbox-circle-fill', bg: '#e8f9f0', color: '#10b981' },
     };
     const style = cfg[s] || { icon: 'ri-question-line', bg: '#f0f3f7', color: '#4b5563' };
     return (
@@ -119,7 +119,7 @@ const ReadinessItem: React.FC<{ factor: any, isLast: boolean }> = ({ factor, isL
     const s = (factor.status || '').toLowerCase();
     let leftIcon = 'ri-question-line';
     let leftIconColor = '#9ca3af'; // gray
-    
+
     if (s === 'good' || s === 'eligible') {
         leftIcon = 'ri-checkbox-circle-fill';
         leftIconColor = '#10b981'; // green
@@ -136,17 +136,17 @@ const ReadinessItem: React.FC<{ factor: any, isLast: boolean }> = ({ factor, isL
         subtitle = `Your business is located in ${factor.borrower_value}, which is a restricted state for this funding program.`;
     } else if (factor.label === 'State Eligibility') {
         if (s === 'missing' || s === 'restricted') {
-             subtitle = `Your business is located in ${factor.borrower_value}. This program only allows specific states.`;
+            subtitle = `Your business is located in ${factor.borrower_value}. This program only allows specific states.`;
         } else {
-             subtitle = `Your business location is eligible for this funding program.`;
+            subtitle = `Your business location is eligible for this funding program.`;
         }
     } else if (factor.label === 'Restricted Industry') {
         subtitle = `Your business is in the ${factor.borrower_value} industry, which is restricted.`;
     } else if (factor.label === 'Industry Eligibility') {
         if (s === 'missing' || s === 'restricted') {
-             subtitle = `Your industry (${factor.borrower_value}) is not supported.`;
+            subtitle = `Your industry (${factor.borrower_value}) is not supported.`;
         } else {
-             subtitle = `Your industry is eligible for this funding program.`;
+            subtitle = `Your industry is eligible for this funding program.`;
         }
     }
 
@@ -158,10 +158,10 @@ const ReadinessItem: React.FC<{ factor: any, isLast: boolean }> = ({ factor, isL
     }
 
     return (
-        <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between', 
+        <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
             gap: 12,
             paddingBottom: isLast ? 0 : 16,
             marginBottom: isLast ? 0 : 16,
@@ -204,21 +204,21 @@ const FundingDetail = () => {
             if (readinessRes?.status && Array.isArray(readinessRes.data)) {
                 const readinessData = readinessRes.data;
                 setDynamicReadiness(readinessData);
-                
+
                 // Dynamically generate "Why You May Qualify" sentences from Good/Strong readiness factors
                 const generatedReasons: any[] = [];
                 readinessData.forEach((r: any) => {
                     if (r.status === 'Good' || r.status === 'Strong') {
                         const l = r.label || '';
                         let text = QUALIFY_REASONS_MAP[l] || `${l} meets requirements`;
-                        
+
                         generatedReasons.push({ label: text, status: r.status });
                     }
                 });
                 setDynamicQualifyReasons(generatedReasons);
             }
         }).catch(() => toast.error('Failed to load funding details'))
-        .finally(() => setLoading(false));
+            .finally(() => setLoading(false));
     }, [id]);
 
     if (loading) return <FundingDetailLoader />;
@@ -262,7 +262,7 @@ const FundingDetail = () => {
 
     const colors = getFundingColorStyles(icon_color);
     const iconClass = resolveIcon(icon);
-    
+
     const isGreyedOut = engine_status === 'Greyed Out' || engine_status === 'Hidden';
     const finalEngineStatus = engine_status || 'Active';
     const displayLabel = engine_status_label || 'Likely Eligible';
@@ -270,9 +270,9 @@ const FundingDetail = () => {
     // Meta row items
     const metaItems = [
         { label: 'Recommended Range', value: amount_range || '—' },
-        { label: 'Term',              value: terms || '—' },
-        { label: 'Speed to Funds',    value: speed_to_funds ? `${speed_to_funds} Days` : '—' },
-        { label: 'Uses',              value: Array.isArray(uses) && uses.length > 0 ? uses.join(', ') : '—' },
+        { label: 'Term', value: terms || '—' },
+        { label: 'Speed to Funds', value: speed_to_funds ? `${speed_to_funds} Days` : '—' },
+        { label: 'Uses', value: Array.isArray(uses) && uses.length > 0 ? uses.join(', ') : '—' },
     ];
 
     const ctaSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -394,22 +394,22 @@ const FundingDetail = () => {
                                             .filter((f: any) => f.missing_docs && f.missing_docs.length > 0)
                                             .flatMap((f: any) => f.missing_docs);
                                         const currentMissingDocs = extractedDocs.length > 0 ? Array.from(new Set(extractedDocs)) : missing_documents;
-                                        
+
                                         return currentMissingDocs.length > 0 && (
                                             <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #f0f3f7' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                                                <i className="ri-error-warning-fill" style={{ color: '#dc2626', fontSize: 16 }} />
-                                                <span style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d' }}>Missing Documents</span>
+                                                    <i className="ri-error-warning-fill" style={{ color: '#dc2626', fontSize: 16 }} />
+                                                    <span style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d' }}>Missing Documents</span>
+                                                </div>
+                                                <ul style={{ margin: 0, padding: '0 0 0 4px', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                                    {currentMissingDocs.map((doc: string, i: number) => (
+                                                        <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#4b5563' }}>
+                                                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#9ca3af', flexShrink: 0, display: 'inline-block' }} />
+                                                            {doc}
+                                                        </li>
+                                                    ))}
+                                                </ul>
                                             </div>
-                                            <ul style={{ margin: 0, padding: '0 0 0 4px', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                                {currentMissingDocs.map((doc: string, i: number) => (
-                                                    <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#4b5563' }}>
-                                                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#9ca3af', flexShrink: 0, display: 'inline-block' }} />
-                                                        {doc}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
                                         );
                                     })()}
                                 </div>
@@ -423,7 +423,7 @@ const FundingDetail = () => {
                                     </h6>
                                     {(() => {
                                         const activeFactors = dynamicReadiness.length > 0 ? dynamicReadiness : readiness_factors;
-                                        
+
                                         if (activeFactors.length === 0) {
                                             return <p style={{ fontSize: 13, color: '#9ca3af', margin: 0 }}>No readiness factors available.</p>;
                                         }
@@ -438,30 +438,6 @@ const FundingDetail = () => {
                                                 {activeFactors.map((f: any, i: number) => (
                                                     <ReadinessItem key={i} factor={f} isLast={i === activeFactors.length - 1} />
                                                 ))}
-
-                                                {restrictedFactors.length > 0 && (
-                                                    <div style={{ 
-                                                        marginTop: 16, 
-                                                        background: '#fef2f2', 
-                                                        border: '1px solid #fee2e2', 
-                                                        borderRadius: 8, 
-                                                        padding: '16px 20px',
-                                                        display: 'flex',
-                                                        gap: 16,
-                                                        alignItems: 'center'
-                                                    }}>
-                                                        <i className="ri-prohibited-line" style={{ fontSize: 32, color: '#ef4444', opacity: 0.8 }} />
-                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                            <span style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>
-                                                                {restrictedFactors[0].label}: Restricted
-                                                            </span>
-                                                            <span style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.5 }}>
-                                                                Your business is located in {restrictedFactors[0].borrower_value}.<br/>
-                                                                {restrictedFactors[0].borrower_value} is a restricted {restrictedFactors[0].label.includes('Industry') ? 'industry' : 'state'} for this funding program.
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                )}
                                             </div>
                                         );
                                     })()}
@@ -500,7 +476,7 @@ const FundingDetail = () => {
                                     ? 'You have already applied for this funding option. Please wait for approval or rejection.'
                                     : finalEngineStatus === 'Hidden'
                                         ? 'This funding option is currently not available for your profile.'
-                                        : hasMissingFactors 
+                                        : hasMissingFactors
                                             ? 'Please address missing readiness factors before starting your review.'
                                             : 'Start your funding request by providing a few details and uploading missing documents.'}
                             </p>
