@@ -35,7 +35,7 @@ const FundingRequestWizard = () => {
     const { state, search } = useLocation();
     const searchParams = new URLSearchParams(search);
     const initialAmount = state?.amount || searchParams.get('amount') || '';
-    const initialPurpose = state?.purpose || searchParams.get('purpose') || 'Working Capital';
+    const initialPurpose = state?.purpose || searchParams.get('purpose') || '';
 
     const [formData, setFormData] = useState({
         requested_amount: initialAmount,
@@ -55,6 +55,22 @@ const FundingRequestWizard = () => {
 
     const businessDetails = businessRes?.data || businessRes || {};
     const financialInfo = financialRes?.data || financialRes || {};
+
+    const parsedUses = React.useMemo(() => {
+        if (!fundingDetail?.uses) return [];
+        try {
+            const usesArray = typeof fundingDetail.uses === 'string' ? JSON.parse(fundingDetail.uses) : fundingDetail.uses;
+            if (Array.isArray(usesArray)) {
+                return usesArray.map((u: any) => {
+                    const label = typeof u === 'object' ? (u.name || u.label) : u;
+                    return { label, value: label };
+                }).filter((item: any) => item.label);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+        return [];
+    }, [fundingDetail?.uses]);
 
     const fetchFactors = (fundingId: string) => {
         fetchFundingDetail(fundingId).then(res => {
@@ -110,8 +126,29 @@ const FundingRequestWizard = () => {
                     setMissingDocs(res.data.missing_documents || []);
 
                     setFormData(prev => {
+                        let parsedUsesArray: any[] = [];
+                        try {
+                            parsedUsesArray = typeof res.data.uses === 'string' ? JSON.parse(res.data.uses) : res.data.uses;
+                        } catch(e){}
+                        let defaultUse = '';
+                        if (Array.isArray(parsedUsesArray) && parsedUsesArray.length > 0) {
+                            const firstObj = parsedUsesArray[0];
+                            defaultUse = typeof firstObj === 'object' ? (firstObj.name || firstObj.label) : firstObj;
+                        }
+
                         const newAmount = prev.requested_amount || res.data.latest_requested_amount || '';
-                        const newPurpose = (prev.use_of_funds && prev.use_of_funds !== 'Working Capital') ? prev.use_of_funds : (res.data.latest_use_of_funds || prev.use_of_funds);
+                        let newPurpose = prev.use_of_funds;
+                        const purposeExistsInArray = parsedUsesArray.some(u => {
+                            const val = typeof u === 'object' ? (u.name || u.label) : u;
+                            return val === newPurpose;
+                        });
+                        
+                        if (!newPurpose || !purposeExistsInArray) {
+                             newPurpose = res.data.latest_use_of_funds || defaultUse;
+                        }
+                        if (parsedUsesArray.length === 1 && defaultUse) {
+                            newPurpose = defaultUse;
+                        }
                         return { requested_amount: newAmount, use_of_funds: newPurpose };
                     });
                 } else {
@@ -361,7 +398,7 @@ const FundingRequestWizard = () => {
                                                     <i className="ri-bank-card-line" style={{ fontSize: '28px', color: '#2563eb' }}></i>
                                                 </div>
                                                 <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Use of Funds</p>
-                                                <h6 className="fw-bold m-0 fs-14" style={{ color: '#0f172a' }}>Working Capital</h6>
+                                                <h6 className="fw-bold m-0 fs-14" style={{ color: '#0f172a' }}>{formData.use_of_funds || 'Not Specified'}</h6>
                                             </div>
                                         </div>
                                     </div>
@@ -414,14 +451,15 @@ const FundingRequestWizard = () => {
                                             <div style={{ border: '1px solid #e2e8f0', borderRadius: '0.375rem', backgroundColor: '#fff', overflow: 'hidden' }}>
                                                 <Dropdown
                                                     value={formData.use_of_funds}
-                                                    options={[
+                                                    options={parsedUses.length > 0 ? parsedUses : [
                                                         { label: 'Working Capital', value: 'Working Capital' },
                                                         { label: 'Equipment', value: 'Equipment' },
                                                         { label: 'Expansion', value: 'Expansion' },
                                                         { label: 'Other', value: 'Other' }
                                                     ]}
+                                                    disabled={parsedUses.length === 1}
                                                     onChange={(e) => setFormData({ ...formData, use_of_funds: e.value })}
-                                                    className="w-100 shadow-none border-0 bg-transparent"
+                                                    className={`w-100 shadow-none border-0 ${parsedUses.length === 1 ? 'bg-light opacity-75' : 'bg-transparent'}`}
                                                     style={{ height: '38px', backgroundColor: 'transparent' }}
                                                     panelStyle={{ backgroundColor: '#fff' }}
                                                 />
