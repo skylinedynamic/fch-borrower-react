@@ -5,7 +5,8 @@ import { TableRowsLoader } from '../../../components/Loader/TableRowsLoader'
 import FundingApplicationDetailsModal from './FundingApplicationDetailsModal'
 
 export default function FundingApplications() {
-  const { data, isLoading } = useFundingApplications()
+  const [page, setPage] = useState(1)
+  const { data, isLoading } = useFundingApplications(page)
   const [selectedApplication, setSelectedApplication] = useState<FundingApplication | null>(null)
   const [detailsModalOpen, setDetailsModalOpen] = useState(false)
 
@@ -26,7 +27,7 @@ export default function FundingApplications() {
     <>
       <div className="card section-card app-card mt-3">
         <div className="card-header d-flex align-items-center gap-2">
-          <i className="ri-bank-card-line text-warning"></i>
+          <i className="ri-bank-line fs-20 align-middle text-warning"></i>
           <span className="card-title fw-semibold">Funding Applications</span>
         </div>
         <div className="card-body">
@@ -80,6 +81,59 @@ export default function FundingApplications() {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Section */}
+          {!isLoading && data?.meta && data.meta.last_page > 1 && (
+            <div className="d-flex justify-content-end">
+              <nav aria-label="Funding applications pagination">
+                <ul className="pagination pagination-sm gap-1 mb-0">
+                  <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
+                    <button
+                      className="page-link border-0 shadow-sm d-flex align-items-center justify-content-center sk-w-28 sk-h-28 sk-rounded-6"
+                      onClick={() => setPage(Math.max(1, page - 1))}
+                      disabled={page === 1}
+                    >
+                      <i className="ri-arrow-left-s-line fs-16"></i>
+                    </button>
+                  </li>
+
+                  {Array.from({ length: data.meta.last_page }, (_, i) => i + 1)
+                    .filter(p => {
+                      const lastPage = data.meta?.last_page || 1;
+                      return p === 1 || p === lastPage || (p >= page - 1 && p <= page + 1);
+                    })
+                    .map((p, i, arr) => (
+                      <React.Fragment key={p}>
+                        {i > 0 && arr[i - 1] !== p - 1 && (
+                          <li className="page-item disabled">
+                            <span className="page-link border-0 bg-transparent px-2 align-self-center">...</span>
+                          </li>
+                        )}
+                        <li className={`page-item ${page === p ? 'active' : ''}`}>
+                          <button
+                            className={`page-link border-0 shadow-sm d-flex align-items-center justify-content-center fw-bold sk-w-28 sk-h-28 sk-rounded-6 ${page === p ? 'bg-primary text-white' : 'bg-white text-dark'}`}
+                            onClick={() => setPage(p)}
+                          >
+                            {p}
+                          </button>
+                        </li>
+                      </React.Fragment>
+                    ))
+                  }
+
+                  <li className={`page-item ${page === data.meta.last_page ? 'disabled' : ''}`}>
+                    <button
+                      className="page-link border-0 shadow-sm d-flex align-items-center justify-content-center sk-w-28 sk-h-28 sk-rounded-6"
+                      onClick={() => setPage(Math.min(data.meta?.last_page || 1, page + 1))}
+                      disabled={page === data.meta.last_page}
+                    >
+                      <i className="ri-arrow-right-s-line fs-16"></i>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          )}
         </div>
       </div>
 

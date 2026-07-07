@@ -21,7 +21,9 @@ export const fetchPreQualificationDetail = async (id: number | string): Promise<
   return data
 }
 
-export const fetchFundingApplications = async (): Promise<FundingApplicationResponse> => {
-  const { data } = await apiClient.get<FundingApplicationResponse>(`${BASE_URL}/funding-application`)
+export const fetchFundingApplications = async (page: number = 1): Promise<FundingApplicationResponse> => {
+  const { data } = await apiClient.get<FundingApplicationResponse>(`${BASE_URL}/funding-application`, {
+    params: { page }
+  })
   return data
 }

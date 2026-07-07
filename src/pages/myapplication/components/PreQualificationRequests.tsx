@@ -1,14 +1,17 @@
 import React, { useState } from 'react'
 import { TableRowsLoader } from '../../../components/Loader/TableRowsLoader'
-import type { PreQualificationRequest } from '../../../modules/my-application/types'
+import type { PreQualificationRequest, Meta } from '../../../modules/my-application/types'
 import PreQualificationDetailsModal from './PreQualificationDetailsModal'
 
 interface PreQualificationRequestsProps {
   loading: boolean
   data: PreQualificationRequest[]
+  meta?: Meta
+  page: number
+  onPageChange: (page: number) => void
 }
 
-export default function PreQualificationRequests({ loading, data }: PreQualificationRequestsProps) {
+export default function PreQualificationRequests({ loading, data, meta, page, onPageChange }: PreQualificationRequestsProps) {
   const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null)
   const [detailsModalOpen, setDetailsModalOpen] = useState(false)
 
@@ -31,7 +34,7 @@ export default function PreQualificationRequests({ loading, data }: PreQualifica
     <>
       <div className="card section-card app-card mb-0">
         <div className="card-header d-flex align-items-center gap-2">
-          <i className="ri-flag-2-line text-warning"></i>
+          <i className="ri-file-list-3-line fs-20 align-middle text-warning"></i>
           <span className="card-title fw-semibold">Prequalification Requests</span>
         </div>
         <div className="card-body">
@@ -84,6 +87,59 @@ export default function PreQualificationRequests({ loading, data }: PreQualifica
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Section */}
+          {!loading && meta && meta.last_page > 1 && (
+            <div className="d-flex justify-content-end">
+              <nav aria-label="Prequalification pagination">
+                <ul className="pagination pagination-sm gap-1 mb-0">
+                  <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
+                    <button
+                      className="page-link border-0 shadow-sm d-flex align-items-center justify-content-center sk-w-28 sk-h-28 sk-rounded-6"
+                      onClick={() => onPageChange(Math.max(1, page - 1))}
+                      disabled={page === 1}
+                    >
+                      <i className="ri-arrow-left-s-line fs-16"></i>
+                    </button>
+                  </li>
+
+                  {Array.from({ length: meta.last_page }, (_, i) => i + 1)
+                    .filter(p => {
+                      const lastPage = meta.last_page || 1;
+                      return p === 1 || p === lastPage || (p >= page - 1 && p <= page + 1);
+                    })
+                    .map((p, i, arr) => (
+                      <React.Fragment key={p}>
+                        {i > 0 && arr[i - 1] !== p - 1 && (
+                          <li className="page-item disabled">
+                            <span className="page-link border-0 bg-transparent px-2 align-self-center">...</span>
+                          </li>
+                        )}
+                        <li className={`page-item ${page === p ? 'active' : ''}`}>
+                          <button
+                            className={`page-link border-0 shadow-sm d-flex align-items-center justify-content-center fw-bold sk-w-28 sk-h-28 sk-rounded-6 ${page === p ? 'bg-primary text-white' : 'bg-white text-dark'}`}
+                            onClick={() => onPageChange(p)}
+                          >
+                            {p}
+                          </button>
+                        </li>
+                      </React.Fragment>
+                    ))
+                  }
+
+                  <li className={`page-item ${page === meta.last_page ? 'disabled' : ''}`}>
+                    <button
+                      className="page-link border-0 shadow-sm d-flex align-items-center justify-content-center sk-w-28 sk-h-28 sk-rounded-6"
+                      onClick={() => onPageChange(Math.min(meta.last_page || 1, page + 1))}
+                      disabled={page === meta.last_page}
+                    >
+                      <i className="ri-arrow-right-s-line fs-16"></i>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          )}
         </div>
       </div>
 

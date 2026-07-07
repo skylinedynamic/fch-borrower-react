@@ -146,4 +146,5 @@ export interface FundingApplicationResponse {
   status: boolean
   message: string
   data: FundingApplication[]
+  meta: Meta
 }

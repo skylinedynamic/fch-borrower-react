@@ -24,10 +24,10 @@ export const usePreQualificationDetail = (id: number | string) => {
   })
 }
 
-export const useFundingApplications = () => {
+export const useFundingApplications = (page: number = 1) => {
   return useQuery({
-    queryKey: ['funding-applications'],
-    queryFn: fetchFundingApplications,
+    queryKey: ['funding-applications', page],
+    queryFn: () => fetchFundingApplications(page),
     staleTime: 0,
   })
 }
