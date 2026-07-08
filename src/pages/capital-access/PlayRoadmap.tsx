@@ -8,8 +8,22 @@ import { ACCESS_TIME, CAPITAL_ACCESS_STATUS } from '../../config/capitalAccessSt
 // ── Access time label helper ────────────────────────────────────────────────
 function accessScheduleLabel(card: RoadmapCard): string {
   if (card.access_time === ACCESS_TIME.DAY && card.access_day) {
-    const sub = card.access_day_time ? ` (${card.access_day_time})` : '';
-    return `Day ${card.access_day}${sub}`;
+    const detail = card.access_day_time_detail;
+    if (detail && detail.start != null && detail.end != null) {
+      const timeStr = `${formatDecimalHour(detail.start)} – ${formatDecimalHour(detail.end)}`;
+      const label = detail.label ?? card.access_day_time ?? '';
+      return `Day ${card.access_day} (${label}: ${timeStr})`;
+    } else if (card.access_day_time) {
+      return `Day ${card.access_day} (${card.access_day_time})`;
+    }
+    return `Day ${card.access_day}`;
+  }
+
+  const detail = card.access_time_detail;
+  if (detail && detail.start != null && detail.end != null) {
+    const timeStr = `${formatDecimalHour(detail.start)} – ${formatDecimalHour(detail.end)}`;
+    const label = detail.label ?? card.access_time ?? '';
+    return `${label} (${timeStr})`;
   }
   return card.access_time ?? '';
 }
@@ -29,10 +43,10 @@ function getLockReason(card: RoadmapCard): string {
 function formatDecimalHour(decimalHour: number): string {
   const wholeHours = Math.floor(decimalHour);
   const minutes = Math.round((decimalHour - wholeHours) * 60);
-  
+
   let displayHour = wholeHours;
   let ampm = 'AM';
-  
+
   if (wholeHours === 0) {
     displayHour = 12;
     ampm = 'AM';
@@ -43,7 +57,7 @@ function formatDecimalHour(decimalHour: number): string {
     displayHour = wholeHours - 12;
     ampm = 'PM';
   }
-  
+
   const minutesStr = minutes > 0 ? `:${minutes.toString().padStart(2, '0')}` : '';
   return `${displayHour}${minutesStr} ${ampm}`;
 }
@@ -148,7 +162,7 @@ function getUnlockTimeRemaining(card: RoadmapCard, playStartDate: string | null 
 
   // Target date construction (midnight of target day)
   const targetDate = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate() + targetDay);
-  
+
   const startWholeHours = Math.floor(startHour);
   const startMinutes = Math.round((startHour - startWholeHours) * 60);
   targetDate.setHours(startWholeHours, startMinutes, 0, 0);
@@ -169,7 +183,7 @@ function getUnlockTimeRemaining(card: RoadmapCard, playStartDate: string | null 
   if (remainingMs > 0 && remainingMs < 24 * 60 * 60 * 1000) {
     const hours = Math.floor(remainingMs / (1000 * 60 * 60));
     const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
-    
+
     if (hours > 0) {
       return `Unlocks in ${hours}h ${minutes}m`;
     }
@@ -197,7 +211,7 @@ export default function PlayRoadmap() {
   // Also redirect if delay is active and play not yet completed (safety net for direct URL navigation)
   if (!isLoading && play && isDelayActive && !play.isCompleted) return <Navigate to="/capital-access/strategy" />;
 
-  if (!isLoading && (isError || !play || !play.isAccessible)) return <Navigate to="/capital-access/strategy" />;
+  if (!isLoading && (isError || !play || !play.isAccessible)) return <Navigate to={`/capital-access/${id}/pre-flight`} />;
 
   // Strategy-level lock
   if (!isLoading && play && play.approval_status === false && !isDelayActive) {
@@ -358,9 +372,9 @@ export default function PlayRoadmap() {
                                       {accessScheduleLabel(card)}
                                     </span>
                                     <span className="text-muted fs-12">Est. {card.exposure}</span>
-                                    {card.hard_pull === 'Yes' && (
+                                    {/* {card.hard_pull === 'Yes' && (
                                       <span className="ca-badge ca-badge-warning">Hard Pull</span>
-                                    )}
+                                    )} */}
                                   </div>
                                   <div className="mt-2 text-danger small d-flex align-items-center gap-1 fw-medium">
                                     <i className="ri-error-warning-line"></i>
@@ -396,9 +410,9 @@ export default function PlayRoadmap() {
                                       {accessScheduleLabel(card)}
                                     </span>
                                     <span className="text-muted fs-12">Est. {card.exposure}</span>
-                                    {card.hard_pull === 'Yes' && (
+                                    {/* {card.hard_pull === 'Yes' && (
                                       <span className="ca-badge ca-badge-warning">Hard Pull</span>
-                                    )}
+                                    )} */}
                                   </div>
                                 </div>
                               </div>
@@ -428,12 +442,11 @@ export default function PlayRoadmap() {
                                         result: null,
                                       },
                                     }}
-                                    className={`ca-btn ca-btn-sm ${
-                                      card.application_status === CAPITAL_ACCESS_STATUS.APPROVED ? 'ca-btn-success' :
+                                    className={`ca-btn ca-btn-sm ${card.application_status === CAPITAL_ACCESS_STATUS.APPROVED ? 'ca-btn-success' :
                                       card.application_status === CAPITAL_ACCESS_STATUS.PENDING ? 'ca-btn-warning' :
-                                      card.application_status === CAPITAL_ACCESS_STATUS.DECLINED ? 'ca-btn-danger' :
-                                      'ca-btn-outline'
-                                    }`}
+                                        card.application_status === CAPITAL_ACCESS_STATUS.DECLINED ? 'ca-btn-danger' :
+                                          'ca-btn-outline'
+                                      }`}
                                   >
                                     {card.application_status || 'Manage Status'} <i className="ri-arrow-right-line"></i>
                                   </Link>

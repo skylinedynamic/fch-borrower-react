@@ -64,7 +64,11 @@ export default function FundingReadinessScoreCard({
           {factors.map((factor, idx) => (
             <div key={idx} className="ca-factor-row d-flex align-items-center justify-content-between py-1">
               <span className="ca-factor-label fw-medium text-muted small">{factor.label}</span>
-              <span className="ca-factor-value fw-semibold small">{factor.value}</span>
+              <span className="ca-factor-value fw-semibold small">
+                {factor.status != null && factor.status !== factor.value
+                  ? `${factor.status} (${factor.value})`
+                  : factor.value}
+              </span>
             </div>
           ))}
         </div>

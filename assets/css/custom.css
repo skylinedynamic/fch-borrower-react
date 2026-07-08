@@ -1595,6 +1595,97 @@ File: Custom Css File
     transform: translateY(-1px);
 }
 
+/* Minimum width utility for action buttons */
+.ca-btn-min-w {
+    min-width: 180px;
+}
+
+/* Disabled button state */
+.ca-btn:disabled,
+.ca-btn-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+    box-shadow: none;
+    transform: none !important;
+}
+
+/* ─── Checklist locked notice ──────────────────────────────────────────── */
+.ca-checklist-locked-notice {
+    padding: 12px 16px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+}
+
+.ca-checklist-locked-notice.is-warning {
+    background: rgba(243, 156, 18, 0.05);
+    border-color: rgba(243, 156, 18, 0.15);
+}
+
+.ca-checklist-locked-notice.is-danger {
+    background: rgba(250, 95, 95, 0.05);
+    border-color: rgba(250, 95, 95, 0.15);
+}
+
+/* ─── Checklist Callouts ─────────────────────────────────── */
+.ca-checklist-callout-success,
+.ca-checklist-callout-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+}
+
+.ca-checklist-callout-success {
+    background: rgba(10, 179, 156, 0.05);
+    border-color: rgba(10, 179, 156, 0.18);
+}
+
+.ca-checklist-callout-warning {
+    background: rgba(243, 156, 18, 0.05);
+    border-color: rgba(243, 156, 18, 0.18);
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ca-callout-icon {
+    font-size: 20px;
+    color: var(--ca-success);
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.ca-callout-text {
+    font-size: 13px;
+    color: #4b5563;
+    margin: 0;
+    line-height: 1.55;
+    font-weight: 500;
+}
+
+.ca-callout-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #d97706;
+}
+
+.ca-callout-header i {
+    font-size: 15px;
+}
+
+.ca-callout-body {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.55;
+    font-weight: 500;
+}
+
 /* ─── Badges ─────────────────────────────────────────────── */
 .ca-badge {
     display: inline-flex;
@@ -1742,31 +1833,301 @@ File: Custom Css File
     box-shadow: var(--ca-shadow-sm);
 }
 
-/* ─── Dashboard Entry Widget ─────────────────────────────── */
+/* Dashboard Entry Widget - Premium Design */
 .ca-dashboard-widget {
     background: var(--ca-card-bg);
     border: 1px solid var(--ca-border);
-    border-radius: var(--ca-radius);
+    border-radius: 4px;
     overflow: hidden;
     position: relative;
-    box-shadow: var(--ca-shadow-sm);
-    transition: box-shadow 0.22s, transform 0.22s;
+    box-shadow: 0 2px 10px rgba(64, 81, 137, 0.05);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
 .ca-dashboard-widget:hover {
-    box-shadow: var(--ca-shadow-md);
-    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(64, 81, 137, 0.1);
+    transform: translateY(-1.5px);
 }
 
-.ca-dashboard-widget::before {
+.ca-dashboard-description {
+    color: #878a99;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* Left metrics panel */
+.ca-dw-metrics {
+    padding: 28px 32px;
+}
+
+.ca-dw-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.ca-dw-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: var(--ca-status-bg, rgba(64, 81, 137, 0.08));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ca-status-color, var(--ca-primary));
+    font-size: 17px;
+    flex-shrink: 0;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.ca-dw-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #9ca3af;
+    display: block;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
+.ca-dw-subtitle {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1f36;
+    margin: 0;
+    line-height: 1.2;
+}
+
+/* Score gauge ring */
+.ca-dw-gauge-wrap {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 18px;
+}
+
+.ca-dw-gauge {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    flex-shrink: 0;
+}
+
+.ca-dw-gauge svg {
+    width: 100px;
+    height: 100px;
+    transform: rotate(-90deg);
+}
+
+.ca-dw-gauge circle.track {
+    fill: none;
+    stroke: #eef0f6;
+    stroke-width: 8;
+}
+
+.ca-dw-gauge circle.fill {
+    fill: none;
+    stroke: var(--ca-status-color, var(--ca-primary));
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease;
+}
+
+.ca-dw-gauge-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    line-height: 1;
+}
+
+.ca-dw-score-num {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--ca-status-color, var(--ca-primary));
+    letter-spacing: -0.5px;
+    display: block;
+    transition: color 0.3s ease;
+}
+
+.ca-dw-score-label {
+    font-size: 8px;
+    font-weight: 700;
+    color: #b0b7c3;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-top: 2px;
+}
+
+.ca-dw-score-info {
+    flex: 1;
+}
+
+.ca-dw-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--ca-status-bg, rgba(64, 81, 137, 0.08));
+    color: var(--ca-status-color, var(--ca-primary));
+    border: 1px solid var(--ca-status-border, rgba(64, 81, 137, 0.16));
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+}
+
+.ca-dw-status-badge i {
+    font-size: 12px;
+}
+
+.ca-dw-score-desc {
+    font-size: 12px;
+    color: #9ca3af;
+    margin: 0;
+    line-height: 1.5;
+}
+.ca-dw-access-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #f8f9fc;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+}
+
+.ca-dw-access-badge strong {
+    font-weight: 800;
+    color: var(--ca-status-color, var(--ca-primary));
+}
+
+/* Right CTA Panel */
+.ca-dw-cta {
+    background: linear-gradient(150deg, var(--ca-status-color, #405189) 0%, var(--ca-status-color-dark, #2d3a6b) 100%);
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+}
+
+.ca-dw-cta::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--ca-primary), rgba(64, 81, 137, 0.4));
+    top: -40px;
+    right: -40px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    pointer-events: none;
 }
+
+.ca-dw-cta::after {
+    content: '';
+    position: absolute;
+    bottom: -30px;
+    left: -30px;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+    pointer-events: none;
+}
+
+.ca-dw-cta-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 9.5px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.92);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+    width: fit-content;
+}
+
+.ca-dw-cta-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 8px;
+    line-height: 1.25;
+    letter-spacing: -0.2px;
+}
+
+.ca-dw-cta-desc {
+    font-size: 11.5px;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.ca-dw-cta-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #ffffff;
+    color: var(--ca-status-color, #405189);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    text-decoration: none;
+    margin-top: 16px;
+    width: 100%;
+    letter-spacing: 0.01em;
+    position: relative;
+    z-index: 1;
+}
+
+.ca-dw-cta-btn:hover {
+    background: #f0f4ff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ca-dw-cta-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+@media (max-width: 767.98px) {
+    .ca-dw-metrics {
+        padding: 24px 24px;
+    }
+
+    .ca-dw-cta {
+        min-height: auto;
+        padding: 24px 24px;
+    }
+
+    .ca-dw-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
 
 /* ─── Divider ────────────────────────────────────────────── */
 .ca-divider {
@@ -2881,7 +3242,7 @@ File: Custom Css File
     padding: 18px 24px;
     border: 1px solid #f1f5f9;
     border-left: 4px solid rgba(64, 81, 137, 0.15);
-    border-radius: 8px;
+    border-radius: 4px;
     background: #ffffff;
     text-decoration: none;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -3465,4 +3826,88 @@ File: Custom Css File
     text-transform: uppercase;
     letter-spacing: 0.1em;
     white-space: nowrap;
-}
+}
+
+/* ── Card image thumbnail in StepDetail header ──────────── */
+.ca-card-img-thumb {
+    width: 64px;
+    height: 40px;
+    object-fit: contain;
+}
+
+/* ── Approval-odds colour helpers ────────────────────────── */
+.ca-odds-high { color: var(--vz-success); }
+.ca-odds-mid  { color: #f59e0b; }
+.ca-odds-low  { color: var(--vz-danger); }
+
+/* ── Outcome icon circle (40×40) ─────────────────────────── */
+.ca-outcome-icon-circle {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+}
+
+/* ── Compact label helpers ───────────────────────────────── */
+.ca-label-success {
+    color: var(--ca-success);
+    letter-spacing: 0.08em;
+}
+
+.ca-label-muted {
+    letter-spacing: 0.08em;
+}
+
+/* ── Status selector card ────────────────────────────────── */
+.ca-status-selector-card {
+    cursor: pointer;
+    border: 2px solid var(--ca-border, #e3e6eb);
+    border-radius: 4px;
+    padding: 16px 18px;
+    background: #ffffff;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.ca-status-selector-card:hover {
+    border-color: #c9cfd8;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+}
+
+.ca-status-selector-card:focus-visible {
+    outline: 2px solid var(--ca-primary);
+    outline-offset: 2px;
+}
+
+.ca-status-selector-card.selected-approved {
+    border-color: var(--vz-success);
+    background: rgba(10, 179, 156, 0.06);
+}
+
+.ca-status-selector-card.selected-pending {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.06);
+}
+
+.ca-status-selector-card.selected-declined {
+    border-color: var(--vz-danger);
+    background: rgba(240, 101, 72, 0.06);
+}
+
+/* ── Form input / addon muted background ─────────────────── */
+.ca-input-addon {
+    background: #f9fafb;
+    border-right: none;
+    color: #6b7280;
+}
+
+.ca-input-muted {
+    background: #f9fafb;
+}
+
+/* ── Notes textarea ──────────────────────────────────────── */
+.ca-textarea {
+    background: #f9fafb;
+    border-radius: 8px;
+    resize: vertical;
+}

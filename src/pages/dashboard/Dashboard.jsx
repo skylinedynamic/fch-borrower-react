@@ -11,6 +11,7 @@ import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils';
 import { INVOICE_STATUS_TYPES } from '../../config/invoiceStatusOptions';
 import { PARTNER_TYPES } from '../../config/partnerTypeOptions';
 import { useDashboard } from '../../modules/dashboard';
+import { useCapitalAccessOverview } from '../../modules/capital-access/queries';
 import DashboardLoader from '../../components/Loader/DashboardLoader';
 
 
@@ -26,6 +27,22 @@ export default function Dashboard() {
 
     // Fetch dashboard data
     const { data: dashboardData, isLoading, error } = useDashboard();
+
+    // Fetch capital access overview data
+    const { data: overview } = useCapitalAccessOverview();
+    const score = overview?.readiness_score ?? 0;
+    const status = overview?.readiness_status ?? 'N/A';
+    const statusColor = overview?.readiness_status_color;
+    const totalAccess = overview?.estimated_total_access ?? '$0';
+    const currentPlay = overview?.current_play;
+
+    const widgetStyle = {
+        '--ca-status-color': 'var(--ca-primary)',
+        '--ca-status-bg': 'var(--ca-primary-light)',
+        '--ca-status-border': 'rgba(64, 81, 137, 0.2)',
+        '--ca-status-color-light': 'var(--ca-primary)',
+        '--ca-status-color-dark': '#2d3a6b'
+    };
 
     // Process KPI data from API
     const kpiData = dashboardData ? [
@@ -270,58 +287,91 @@ export default function Dashboard() {
                     <div className="col-xl-9">
 
                         {/* Capital Access Entry Widget */}
-                        <div className="ca-dashboard-widget mb-4">
-                            <div className="card-body p-4">
-                                <div className="row align-items-center g-4">
-                                    <div className="col-md-5">
-                                        <div className="d-flex align-items-center gap-2 mb-3">
-                                            <div className="avatar-xs flex-shrink-0">
-                                                <span className="avatar-title bg-primary-subtle text-primary rounded-circle fs-16">
-                                                    <i className="ri-pulse-line"></i>
-                                                </span>
+                        <div className="row mb-3">
+                            <div className="col-12">
+                                <div className="ca-dashboard-widget" style={widgetStyle}>
+                                    <div className="row g-0">
+                                        {/* Left side: Metrics */}
+                                        <div className="col-md-8 ca-dw-metrics">
+                                            {/* Header */}
+                                            <div className="ca-dw-header">
+                                                <div className="ca-dw-icon">
+                                                    <i className="ri-funds-line"></i>
+                                                </div>
+                                                <div>
+                                                    <span className="ca-dw-label">Capital Access</span>
+                                                    <p className="ca-dw-subtitle">Funding Readiness Overview</p>
+                                                </div>
                                             </div>
-                                            <span className="ca-metric-label mb-0 fs-11">Funding Readiness</span>
-                                        </div>
-                                        <div className="d-flex align-items-end mb-3">
-                                            <h1 className="fw-bold mb-0 lh-1" style={{ fontSize: '52px', letterSpacing: '-2px', color: 'var(--vz-primary)' }}>82</h1>
-                                            <div className="ms-3 mb-1">
-                                                <span className="ca-badge ca-badge-success"><i className="ri-checkbox-circle-fill"></i> Fundable</span>
+
+                                            {/* Score Gauge + Status */}
+                                            <div className="ca-dw-gauge-wrap">
+                                                <div className="ca-dw-gauge">
+                                                    <svg viewBox="0 0 100 100">
+                                                        <circle className="track" cx="50" cy="50" r="44" />
+                                                        <circle
+                                                            className="fill"
+                                                            cx="50" cy="50" r="44"
+                                                            strokeDasharray={`${2 * Math.PI * 44}`}
+                                                            strokeDashoffset={`${2 * Math.PI * 44 * (1 - score / 100)}`}
+                                                        />
+                                                    </svg>
+                                                    <div className="ca-dw-gauge-center">
+                                                        <span className="ca-dw-score-num">{score}</span>
+                                                        <span className="ca-dw-score-label">Score</span>
+                                                    </div>
+                                                </div>
+                                                <div className="ca-dw-score-info">
+                                                    <div className="d-flex align-items-center gap-2 flex-wrap mb-1">
+                                                        <div className="ca-dw-status-badge mb-0">
+                                                            <i className="ri-checkbox-circle-fill"></i>
+                                                            {status}
+                                                        </div>
+                                                        <div className="ca-dw-access-badge mb-0">
+                                                            <span>Est. Access:</span>
+                                                            <strong>{totalAccess}</strong>
+                                                        </div>
+                                                    </div>
+                                                    <p className="ca-dw-score-desc">Readiness index out of 100 based on your credit profile and business factors.</p>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="ca-progress mt-2">
-                                            <div className="ca-progress-bar" style={{ width: '82%' }}></div>
-                                        </div>
-                                        <div className="d-flex justify-content-between mt-1">
-                                            <span className="text-muted fs-11">Score 300</span>
-                                            <span className="text-muted fs-11">850</span>
-                                        </div>
-                                    </div>
 
-                                    <div className="col-md-4">
-                                        <div className="ca-metric text-center">
-                                            <span className="ca-metric-label">Est. Total Capital Access</span>
-                                            <p className="ca-metric-value primary mb-1" style={{ fontSize: '22px' }}>$150,000+</p>
-                                            <p className="text-muted fs-12 mb-0">Across all eligible plays</p>
+                                        {/* Right side: CTA Panel */}
+                                        <div className="col-md-4 ca-dw-cta">
+                                            <div>
+                                                <div className="ca-dw-cta-tag">
+                                                    <i className="ri-sparkling-line"></i>
+                                                    {currentPlay ? 'Active Strategy' : 'Get Started'}
+                                                </div>
+                                                <h3 className="ca-dw-cta-title">
+                                                    {currentPlay
+                                                        ? 'Continue your funding journey'
+                                                        : 'Start your capital access strategy'
+                                                    }
+                                                </h3>
+                                                <p className="ca-dw-cta-desc">
+                                                    {currentPlay
+                                                        ? 'Pick up where you left off and keep building your business credit profile.'
+                                                        : 'Choose a play strategy tailored to your business funding goals and credit profile.'
+                                                    }
+                                                </p>
+                                            </div>
+                                            <button
+                                                className="ca-dw-cta-btn"
+                                                onClick={() => navigate('/capital-access')}
+                                            >
+                                                {currentPlay ? 'Resume Strategy' : 'Choose Strategy'}
+                                                <i className="ri-arrow-right-line"></i>
+                                            </button>
                                         </div>
-                                    </div>
-
-                                    <div className="col-md-3">
-                                        <p className="text-muted fs-12 mb-3">Ready to start building business credit through strategic card placement.</p>
-                                        <Button
-                                            label="Choose Strategy"
-                                            icon="ri-arrow-right-line"
-                                            iconPos="right"
-                                            className="ca-btn ca-btn-primary w-100 justify-content-center"
-                                            style={{ border: 'none' }}
-                                            onClick={() => navigate('/capital-access')}
-                                        />
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Credit & Tier Section */}
-                        <div className="row mb-4">
+                        <div className="row mb-3">
                             <div className="col-md-6">
                                 <div className="card dashboard-card border-0 shadow-sm h-100">
                                     <div className="card-header bg-transparent border-0 pb-0">
@@ -374,63 +424,71 @@ export default function Dashboard() {
                         </div>
 
                         {/* Pre-Qualification Applications */}
-                        <div className="card dashboard-card border-0 shadow-sm mb-3">
-                            <div className="card-header bg-transparent border-0 d-flex align-items-center justify-content-between py-3 px-4">
-                                <h5 className="card-title mb-0 flex-grow-1"><i className="ri-shield-check-line me-2 text-primary"></i>Pre-Qualification Applications</h5>
-                                <Button label="View All" icon="ri-arrow-right-line" iconPos="right" className="p-button-text p-button-sm fs-12 text-primary fw-bold" onClick={() => navigate('/my-applications')} />
-                            </div>
-                            <div className="card-body p-0">
-                                {preQualData.length > 0 ? (
-                                    <DataTable value={preQualData} className="p-datatable-sm smart-table" responsiveLayout="scroll">
-                                        <Column field="funding_type" header="Funding Type" body={(rowData) => <span className="text-dark fs-13">{rowData.funding_type}</span>} className="ps-4 py-3"></Column>
-                                        <Column field="date" header="Date" body={dateBodyTemplate} className="py-3"></Column>
-                                        <Column field="industry_type" header="Industry" body={(rowData) => <span className="text-dark fs-13">{rowData.industry_type}</span>} className="py-3"></Column>
-                                        <Column field="business_structure" header="Business Structure" body={(rowData) => <span className="text-dark fs-13">{rowData.business_structure}</span>} className="py-3"></Column>
-                                        <Column field="funding_requested_amount" header="Funding Requested Amount" body={preQualAmountTemplate} className="py-3"></Column>
-                                        <Column field="status" header="Status" body={statusBodyTemplate} className="py-3"></Column>
-                                    </DataTable>
-                                ) : (
-                                    <div className="text-center py-4">
-                                        <div className="avatar-lg mx-auto mb-3">
-                                            <div className="avatar-title bg-light text-muted rounded-circle">
-                                                <i className="ri-shield-check-line fs-1"></i>
-                                            </div>
-                                        </div>
-                                        <h6 className="fs-14 fw-semibold text-dark mb-2">No Pre-Qualification Applications</h6>
-                                        <p className="text-muted fs-12 mb-0">No applications available at this time.</p>
+                        <div className="row mb-3">
+                            <div className="col-12">
+                                <div className="card dashboard-card border-0 shadow-sm mb-0">
+                                    <div className="card-header bg-transparent border-0 d-flex align-items-center justify-content-between py-3 px-4">
+                                        <h5 className="card-title mb-0 flex-grow-1"><i className="ri-shield-check-line me-2 text-primary"></i>Pre-Qualification Applications</h5>
+                                        <Button label="View All" icon="ri-arrow-right-line" iconPos="right" className="p-button-text p-button-sm fs-12 text-primary fw-bold" onClick={() => navigate('/my-applications')} />
                                     </div>
-                                )}
+                                    <div className="card-body p-0">
+                                        {preQualData.length > 0 ? (
+                                            <DataTable value={preQualData} className="p-datatable-sm smart-table" responsiveLayout="scroll">
+                                                <Column field="funding_type" header="Funding Type" body={(rowData) => <span className="text-dark fs-13">{rowData.funding_type}</span>} className="ps-4 py-3"></Column>
+                                                <Column field="date" header="Date" body={dateBodyTemplate} className="py-3"></Column>
+                                                <Column field="industry_type" header="Industry" body={(rowData) => <span className="text-dark fs-13">{rowData.industry_type}</span>} className="py-3"></Column>
+                                                <Column field="business_structure" header="Business Structure" body={(rowData) => <span className="text-dark fs-13">{rowData.business_structure}</span>} className="py-3"></Column>
+                                                <Column field="funding_requested_amount" header="Funding Requested Amount" body={preQualAmountTemplate} className="py-3"></Column>
+                                                <Column field="status" header="Status" body={statusBodyTemplate} className="py-3"></Column>
+                                            </DataTable>
+                                        ) : (
+                                            <div className="text-center py-4">
+                                                <div className="avatar-lg mx-auto mb-3">
+                                                    <div className="avatar-title bg-light text-muted rounded-circle">
+                                                        <i className="ri-shield-check-line fs-1"></i>
+                                                    </div>
+                                                </div>
+                                                <h6 className="fs-14 fw-semibold text-dark mb-2">No Pre-Qualification Applications</h6>
+                                                <p className="text-muted fs-12 mb-0">No applications available at this time.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         {/* Recent Funding Applications */}
-                        <div className="card dashboard-card border-0 shadow-sm mb-3">
-                            <div className="card-header bg-transparent border-0 d-flex align-items-center justify-content-between py-3 px-4">
-                                <h5 className="card-title mb-0 flex-grow-1"><i className="ri-exchange-dollar-line me-2 text-primary"></i>Recent Funding Applications</h5>
-                                <Button label="View All" icon="ri-arrow-right-line" iconPos="right" className="p-button-text p-button-sm fs-12 text-primary fw-bold" onClick={() => navigate('/my-applications')} />
-                            </div>
-                            <div className="card-body p-0">
-                                {fundingApps.length > 0 ? (
-                                    <DataTable value={fundingApps} className="p-datatable-sm smart-table" responsiveLayout="scroll">
-                                        <Column field="funding_type" header="Funding Type" body={(rowData) => <span className="text-dark fs-13">{rowData.funding_type}</span>} className="ps-4 py-3"></Column>
-                                        <Column field="date" header="Date" body={dateBodyTemplate} className="py-3"></Column>
-                                        <Column field="entity_type" header="Entity Type" body={(rowData) => <span className="text-dark fs-13">{rowData.entity_type}</span>} className="py-3"></Column>
-                                        <Column field="industry_type" header="Industry" body={(rowData) => <span className="text-dark fs-13">{rowData.industry_type}</span>} className="py-3"></Column>
-                                        <Column field="requested_amount" header="Requested Amount" body={requestedAmountTemplate} className="py-3"></Column>
-                                        <Column field="funded_amount" header="Funded Amount" body={fundedAmountTemplate} className="py-3"></Column>
-                                        <Column field="status" header="Status" body={statusBodyTemplate} className="py-3"></Column>
-                                    </DataTable>
-                                ) : (
-                                    <div className="text-center py-4">
-                                        <div className="avatar-lg mx-auto mb-3">
-                                            <div className="avatar-title bg-light text-muted rounded-circle">
-                                                <i className="ri-exchange-dollar-line fs-1"></i>
-                                            </div>
-                                        </div>
-                                        <h6 className="fs-14 fw-semibold text-dark mb-2">No Funding Applications</h6>
-                                        <p className="text-muted fs-12 mb-0">No recent funding applications available.</p>
+                        <div className="row mb-3">
+                            <div className="col-12">
+                                <div className="card dashboard-card border-0 shadow-sm mb-0">
+                                    <div className="card-header bg-transparent border-0 d-flex align-items-center justify-content-between py-3 px-4">
+                                        <h5 className="card-title mb-0 flex-grow-1"><i className="ri-exchange-dollar-line me-2 text-primary"></i>Recent Funding Applications</h5>
+                                        <Button label="View All" icon="ri-arrow-right-line" iconPos="right" className="p-button-text p-button-sm fs-12 text-primary fw-bold" onClick={() => navigate('/my-applications')} />
                                     </div>
-                                )}
+                                    <div className="card-body p-0">
+                                        {fundingApps.length > 0 ? (
+                                            <DataTable value={fundingApps} className="p-datatable-sm smart-table" responsiveLayout="scroll">
+                                                <Column field="funding_type" header="Funding Type" body={(rowData) => <span className="text-dark fs-13">{rowData.funding_type}</span>} className="ps-4 py-3"></Column>
+                                                <Column field="date" header="Date" body={dateBodyTemplate} className="py-3"></Column>
+                                                <Column field="entity_type" header="Entity Type" body={(rowData) => <span className="text-dark fs-13">{rowData.entity_type}</span>} className="py-3"></Column>
+                                                <Column field="industry_type" header="Industry" body={(rowData) => <span className="text-dark fs-13">{rowData.industry_type}</span>} className="py-3"></Column>
+                                                <Column field="requested_amount" header="Requested Amount" body={requestedAmountTemplate} className="py-3"></Column>
+                                                <Column field="funded_amount" header="Funded Amount" body={fundedAmountTemplate} className="py-3"></Column>
+                                                <Column field="status" header="Status" body={statusBodyTemplate} className="py-3"></Column>
+                                            </DataTable>
+                                        ) : (
+                                            <div className="text-center py-4">
+                                                <div className="avatar-lg mx-auto mb-3">
+                                                    <div className="avatar-title bg-light text-muted rounded-circle">
+                                                        <i className="ri-exchange-dollar-line fs-1"></i>
+                                                    </div>
+                                                </div>
+                                                <h6 className="fs-14 fw-semibold text-dark mb-2">No Funding Applications</h6>
+                                                <p className="text-muted fs-12 mb-0">No recent funding applications available.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

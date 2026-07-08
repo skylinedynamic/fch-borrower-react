@@ -12,6 +12,22 @@ export default function PreFlightChecklist() {
       <div className="page-content capital-access-page">
         <div className="container-fluid">
           <div className="ca-page-wrap text-start">
+            {/* ── Page Header (Skeleton) ── */}
+            <div className="row pb-1 mb-3">
+              <div className="col-12">
+                <div className="d-flex align-items-center gap-3 py-2 w-100">
+                  <Link to="/capital-access/strategy" className="ca-back-btn" title="Back to Overview">
+                    <i className="ri-arrow-left-line fs-16"></i>
+                  </Link>
+                  <div>
+                    <h4 className="fs-22 mb-1 fw-bold text-dark">Pre-Flight Checklist</h4>
+                    <p className="ca-page-subtitle mb-0">
+                      Confirm all requirements are completed before starting this play.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
             <CapitalAccessLoader type="checklist" />
           </div>
         </div>
@@ -54,7 +70,7 @@ export default function PreFlightChecklist() {
           {play.approval_status === false ? (
 
             /* ── Ineligible / Locked State ── */
-             <div className={`ca-hero-card-premium ${play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'border-warning-subtle' : 'border-danger-subtle'}`}>
+            <div className={`ca-hero-card-premium ${play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'border-warning-subtle' : 'border-danger-subtle'}`}>
               <div className="ca-hero-header-premium ca-hero-header-no-border">
                 <div className="d-flex align-items-center gap-3 w-100">
                   <div className="avatar-sm flex-shrink-0">
@@ -74,12 +90,7 @@ export default function PreFlightChecklist() {
               </div>
 
               <div className="ca-card-body ca-card-body-locked">
-                <div className="ca-checklist-locked-notice mb-4" style={{
-                  background: play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'rgba(243, 156, 18, 0.05)' : 'rgba(250, 95, 95, 0.05)',
-                  border: play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? '1px solid rgba(243, 156, 18, 0.15)' : '1px solid rgba(250, 95, 95, 0.15)',
-                  padding: '12px 16px',
-                  borderRadius: '6px'
-                }}>
+                <div className={`ca-checklist-locked-notice mb-4 ${play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'is-warning' : 'is-danger'}`}>
                   <p className="text-muted fs-13 mb-0">
                     <i className={play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'ri-time-line text-warning me-2' : 'ri-shield-cross-line text-danger me-2'}></i>
                     {play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? (
@@ -91,7 +102,7 @@ export default function PreFlightChecklist() {
                 </div>
 
                 <div className="d-flex align-items-center justify-content-end w-100">
-                  <Link to="/capital-access/strategy" className="ca-btn ca-btn-outline" style={{ minWidth: '180px' }}>
+                  <Link to="/capital-access/strategy" className="ca-btn ca-btn-outline ca-btn-min-w">
                     <i className="ri-arrow-left-line"></i> Back to Strategies
                   </Link>
                 </div>
@@ -121,7 +132,7 @@ export default function PreFlightChecklist() {
                   </span>
                 ) : (
                   <span className="ca-checklist-badge-pending">
-                    <i className="ri-alarm-warning-fill"></i> Checks Pending
+                    <i className="ri-alarm-warning-fill"></i> Requirements Missing
                   </span>
                 )}
               </div>
@@ -149,7 +160,7 @@ export default function PreFlightChecklist() {
                         </span>
                       ) : (
                         <span className="ca-badge-pending">
-                          <i className="ri-time-line"></i> Pending
+                          <i className="ri-time-line"></i> Missing
                         </span>
                       )}
                     </div>
@@ -179,15 +190,15 @@ export default function PreFlightChecklist() {
                 <hr className="ca-divider my-4" />
 
                 <div className="d-flex align-items-center justify-content-end gap-3 w-100">
-                  <Link to={`/capital-access/${play.id}/overview`} className="ca-btn ca-btn-outline" style={{ minWidth: '180px' }}>
+                    <Link to={`/capital-access/${play.id}/overview`} className="ca-btn ca-btn-outline ca-btn-min-w">
                     <i className="ri-arrow-left-line"></i> Back
                   </Link>
                   {allComplete ? (
-                    <Link to={`/capital-access/${play.id}/roadmap`} className="ca-btn ca-btn-primary" style={{ minWidth: '180px' }}>
+                    <Link to={`/capital-access/${play.id}/roadmap`} className="ca-btn ca-btn-primary ca-btn-min-w">
                       View Roadmap <i className="ri-map-2-line"></i>
                     </Link>
                   ) : (
-                    <button disabled className="ca-btn ca-btn-primary ca-btn-disabled" style={{ minWidth: '180px' }}>
+                    <button disabled className="ca-btn ca-btn-primary ca-btn-disabled ca-btn-min-w">
                       View Roadmap <i className="ri-map-2-line"></i>
                     </button>
                   )}

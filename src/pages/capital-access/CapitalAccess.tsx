@@ -69,6 +69,8 @@ export default function CapitalAccess() {
                     totalAccess={totalAccess}
                     exposureBreakdown={overview?.exposure_breakdown}
                     statusColor={statusColor}
+                    reasonCode={overview?.reason_code}
+                    unlockAt={overview?.unlock_at}
                   />
                 </div>
 
@@ -91,7 +93,7 @@ export default function CapitalAccess() {
                     </div>
                   </div>
                 ) : (
-                  <RecommendedNextStep />
+                  <RecommendedNextStep disabled={!!overview?.reason_code && overview.reason_code !== 'NO_ACTIVE_PLAY_CHOSEN'} />
                 )}
               </>
             )}

@@ -12,6 +12,20 @@ export default function PlayOverview() {
       <div className="page-content capital-access-page">
         <div className="container-fluid">
           <div className="ca-page-wrap text-start">
+            {/* ── Page Header (Skeleton) ── */}
+            <div className="row pb-1 mb-3">
+              <div className="col-12">
+                <div className="d-flex align-items-center gap-3 py-2 w-100">
+                  <div className="ca-back-btn" style={{ cursor: 'default', opacity: 0.5 }}>
+                    <i className="ri-arrow-left-line fs-16"></i>
+                  </div>
+                  <div className="w-100">
+                    <div className="skeleton-line mb-2" style={{ width: '200px', height: '24px', borderRadius: '4px' }} />
+                    <div className="skeleton-line" style={{ width: '380px', height: '14px', borderRadius: '3px' }} />
+                  </div>
+                </div>
+              </div>
+            </div>
             <CapitalAccessLoader type="overview" />
           </div>
         </div>

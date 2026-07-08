@@ -81,7 +81,9 @@ export const fetchCapitalAccessOverview = async (): Promise<CapitalAccessOvervie
 }
 
 export const fetchCapitalAccessStrategyRoadmap = async (id: string | number): Promise<CapitalAccessStrategyRoadmap> => {
-  const { data } = await apiClient.get<StrategyDetailResponse>(`/borrower/capital-access/strategies/${id}/roadmap`)
+  const { data } = await apiClient.get<StrategyDetailResponse>(`/borrower/capital-access/strategies/${id}/roadmap`, {
+    headers: { 'X-Skip-Toast': 'true' }
+  })
   const raw = data.data
   return {
     id: raw.id,

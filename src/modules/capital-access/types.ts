@@ -157,6 +157,7 @@ export interface FactorDetail {
   value: string | number;
   weighted_score: number;
   raw_score: number;
+  status?: string | null;
 }
 
 export interface ExposureBreakdownItem {
