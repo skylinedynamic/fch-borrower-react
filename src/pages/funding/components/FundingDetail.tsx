@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { fetchFundingDetail, fetchReadinessFactors } from '../../../modules/funding/services';
-import { FUNDING_ICON_MAP, QUALIFY_REASONS_MAP, FUNDING_REVIEW_STATUS } from '../../../config/funding';
+import { FUNDING_ICON_MAP, QUALIFY_REASONS_MAP, FUNDING_REVIEW_STATUS, ENGINE_STATUS_LABELS, MATCH_LEVEL_LABELS, ENGINE_STATUS_VALUES, READINESS_FACTOR_LABELS, FACTOR_STATUS_VALUES, BADGE_LABELS, FACTOR_ICON_STYLES, META_ITEM_LABELS, READINESS_BADGE_STYLES } from '../../../config/funding';
 import { getFundingColorStyles } from '../../../config/fundingColor';
 import { toast } from 'react-toastify';
 import { UncontrolledTooltip } from 'reactstrap';
@@ -27,14 +27,7 @@ const resolveIcon = (icon: any): string => {
 // ─── Readiness Badge ──────────────────────────────────────────────────────────
 const ReadinessBadge: React.FC<{ status: string }> = ({ status }) => {
     const s = (status || '').toLowerCase();
-    const cfg: Record<string, { icon: string; bg: string; color: string }> = {
-        good:       { icon: 'ri-checkbox-circle-fill', bg: '#e8f9f0', color: '#1a7a4a' },
-        strong:     { icon: 'ri-checkbox-circle-fill', bg: '#dbeafe', color: '#1d4ed8' },
-        fair:       { icon: 'ri-error-warning-fill',   bg: '#fef3c7', color: '#92400e' },
-        missing:    { icon: 'ri-information-fill',     bg: '#fff3cd', color: '#92400e' },
-        weak:       { icon: 'ri-close-circle-fill',    bg: '#fee2e2', color: '#991b1b' },
-    };
-    const style = cfg[s] || { icon: 'ri-question-line', bg: '#f0f3f7', color: '#4b5563' };
+    const style = READINESS_BADGE_STYLES[s] || { icon: 'ri-question-line', bg: '#f0f3f7', color: '#4b5563' };
     return (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, background: style.bg, color: style.color, padding: '3px 10px 3px 7px', borderRadius: 20 }}>
             <i className={style.icon} style={{ fontSize: 13 }} />
@@ -112,6 +105,69 @@ const FundingDetailLoader = () => (
     </div>
 );
 
+// ─── Readiness Item Renderer ──────────────────────────────────────────────────
+const ReadinessItem: React.FC<{ factor: any, isLast: boolean }> = ({ factor, isLast }) => {
+    const s = (factor.status || '').toLowerCase();
+    let leftIcon = 'ri-question-line';
+    let leftIconColor = '#9ca3af'; // gray
+
+    if (FACTOR_ICON_STYLES[s]) {
+        leftIcon = FACTOR_ICON_STYLES[s].icon;
+        leftIconColor = FACTOR_ICON_STYLES[s].color;
+    }
+
+    let subtitle = '';
+    if (factor.label === READINESS_FACTOR_LABELS.RESTRICTED_STATE) {
+        subtitle = `Your business is located in ${factor.borrower_value}, which is a restricted state for this funding program.`;
+    } else if (factor.label === READINESS_FACTOR_LABELS.STATE_ELIGIBILITY) {
+        if (s === FACTOR_STATUS_VALUES.MISSING || s === FACTOR_STATUS_VALUES.RESTRICTED) {
+            subtitle = `Your business is located in ${factor.borrower_value}. This program only allows specific states.`;
+        } else {
+            subtitle = `Your business location is eligible for this funding program.`;
+        }
+    } else if (factor.label === READINESS_FACTOR_LABELS.RESTRICTED_INDUSTRY) {
+        subtitle = `Your business is in the ${factor.borrower_value} industry, which is restricted.`;
+    } else if (factor.label === READINESS_FACTOR_LABELS.INDUSTRY_ELIGIBILITY) {
+        if (s === FACTOR_STATUS_VALUES.MISSING || s === FACTOR_STATUS_VALUES.RESTRICTED) {
+            subtitle = `Your industry (${factor.borrower_value}) is not supported.`;
+        } else {
+            subtitle = `Your industry is eligible for this funding program.`;
+        }
+    }
+
+    let badgeText = factor.status;
+    if ((factor.label === READINESS_FACTOR_LABELS.RESTRICTED_STATE || factor.label === READINESS_FACTOR_LABELS.RESTRICTED_INDUSTRY) && s === FACTOR_STATUS_VALUES.MISSING) {
+        badgeText = BADGE_LABELS.RESTRICTED;
+    } else if ((factor.label === READINESS_FACTOR_LABELS.STATE_ELIGIBILITY || factor.label === READINESS_FACTOR_LABELS.INDUSTRY_ELIGIBILITY) && (s === FACTOR_STATUS_VALUES.GOOD || s === FACTOR_STATUS_VALUES.STRONG)) {
+        badgeText = BADGE_LABELS.ELIGIBLE;
+    }
+
+    return (
+        <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            paddingBottom: isLast ? 0 : 16,
+            marginBottom: isLast ? 0 : 16,
+            borderBottom: isLast ? 'none' : '1px solid #f3f4f6'
+        }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: subtitle ? 'flex-start' : 'center' }}>
+                <i className={leftIcon} style={{ fontSize: 20, color: leftIconColor, marginTop: subtitle ? -2 : 0 }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <span style={{ fontSize: 14, color: '#111827', fontWeight: 600 }}>{factor.label}</span>
+                    {subtitle && (
+                        <span style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.4 }}>{subtitle}</span>
+                    )}
+                </div>
+            </div>
+            <div style={{ flexShrink: 0 }}>
+                <ReadinessBadge status={badgeText} />
+            </div>
+        </div>
+    );
+};
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 const FundingDetail = () => {
     const { id } = useParams();
@@ -133,21 +189,21 @@ const FundingDetail = () => {
             if (readinessRes?.status && Array.isArray(readinessRes.data)) {
                 const readinessData = readinessRes.data;
                 setDynamicReadiness(readinessData);
-                
+
                 // Dynamically generate "Why You May Qualify" sentences from Good/Strong readiness factors
                 const generatedReasons: any[] = [];
                 readinessData.forEach((r: any) => {
                     if (r.status === 'Good' || r.status === 'Strong') {
                         const l = r.label || '';
                         let text = QUALIFY_REASONS_MAP[l] || `${l} meets requirements`;
-                        
+
                         generatedReasons.push({ label: text, status: r.status });
                     }
                 });
                 setDynamicQualifyReasons(generatedReasons);
             }
         }).catch(() => toast.error('Failed to load funding details'))
-        .finally(() => setLoading(false));
+            .finally(() => setLoading(false));
     }, [id]);
 
     if (loading) return <FundingDetailLoader />;
@@ -181,8 +237,8 @@ const FundingDetail = () => {
         description,
         icon,
         icon_color,
-        engine_status = 'Active',
-        engine_status_label = 'Eligible Now',
+        engine_status = ENGINE_STATUS_VALUES.ACTIVE,
+        engine_status_label = ENGINE_STATUS_LABELS.ELIGIBLE_NOW,
         qualify_reasons = [],
         readiness_factors = [],
         missing_documents = [],
@@ -191,18 +247,17 @@ const FundingDetail = () => {
 
     const colors = getFundingColorStyles(icon_color);
     const iconClass = resolveIcon(icon);
-    
-    // Force active state as per user request
-    const isGreyedOut = false;
-    const finalEngineStatus = 'Active';
-    const displayLabel = 'Likely Eligible';
+
+    const isGreyedOut = engine_status === ENGINE_STATUS_VALUES.GREYED_OUT || engine_status === ENGINE_STATUS_VALUES.HIDDEN;
+    const finalEngineStatus = engine_status || ENGINE_STATUS_VALUES.ACTIVE;
+    const displayLabel = engine_status_label || ENGINE_STATUS_LABELS.LIKELY_ELIGIBLE;
 
     // Meta row items
     const metaItems = [
-        { label: 'Recommended Range', value: amount_range || '—' },
-        { label: 'Term',              value: terms || '—' },
-        { label: 'Speed to Funds',    value: speed_to_funds ? `${speed_to_funds} Days` : '—' },
-        { label: 'Uses',              value: Array.isArray(uses) && uses.length > 0 ? uses.join(', ') : '—' },
+        { label: META_ITEM_LABELS.RECOMMENDED_RANGE, value: amount_range || '—' },
+        { label: META_ITEM_LABELS.TERM, value: terms || '—' },
+        { label: META_ITEM_LABELS.SPEED_TO_FUNDS, value: speed_to_funds ? `${speed_to_funds} Days` : '—' },
+        { label: META_ITEM_LABELS.USES, value: Array.isArray(uses) && uses.length > 0 ? uses.join(', ') : '—' },
     ];
 
     const ctaSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -264,8 +319,8 @@ const FundingDetail = () => {
                                 <div className={`funding-detail-badge funding-detail-badge-${finalEngineStatus.toLowerCase().replace(' ', '-')}`}>
                                     {displayLabel}
                                 </div>
-                                {(finalEngineStatus === 'Active' || finalEngineStatus === 'Review') && (
-                                    <p className="mb-0 mt-1 text-muted" style={{ fontSize: 11, textAlign: 'right', fontWeight: 'bold' }}>High Match</p>
+                                {(finalEngineStatus === ENGINE_STATUS_VALUES.ACTIVE || finalEngineStatus === ENGINE_STATUS_VALUES.REVIEW) && (
+                                    <p className="mb-0 mt-1 text-muted" style={{ fontSize: 11, textAlign: 'right', fontWeight: 'bold' }}>{MATCH_LEVEL_LABELS.HIGH_MATCH}</p>
                                 )}
                             </div>
                         </div>
@@ -324,22 +379,22 @@ const FundingDetail = () => {
                                             .filter((f: any) => f.missing_docs && f.missing_docs.length > 0)
                                             .flatMap((f: any) => f.missing_docs);
                                         const currentMissingDocs = extractedDocs.length > 0 ? Array.from(new Set(extractedDocs)) : missing_documents;
-                                        
+
                                         return currentMissingDocs.length > 0 && (
                                             <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #f0f3f7' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                                                <i className="ri-error-warning-fill" style={{ color: '#dc2626', fontSize: 16 }} />
-                                                <span style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d' }}>Missing Documents</span>
+                                                    <i className="ri-error-warning-fill" style={{ color: '#dc2626', fontSize: 16 }} />
+                                                    <span style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d' }}>Missing Documents</span>
+                                                </div>
+                                                <ul style={{ margin: 0, padding: '0 0 0 4px', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                                    {currentMissingDocs.map((doc: string, i: number) => (
+                                                        <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#4b5563' }}>
+                                                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#9ca3af', flexShrink: 0, display: 'inline-block' }} />
+                                                            {doc}
+                                                        </li>
+                                                    ))}
+                                                </ul>
                                             </div>
-                                            <ul style={{ margin: 0, padding: '0 0 0 4px', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                                {currentMissingDocs.map((doc: string, i: number) => (
-                                                    <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#4b5563' }}>
-                                                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#9ca3af', flexShrink: 0, display: 'inline-block' }} />
-                                                        {doc}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
                                         );
                                     })()}
                                 </div>
@@ -351,27 +406,32 @@ const FundingDetail = () => {
                                     <h6 style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d', marginBottom: 16 }}>
                                         Readiness Factors
                                     </h6>
-                                    {dynamicReadiness.length > 0 ? (
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                            {dynamicReadiness.map((f: any, i: number) => (
-                                                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                                                    <span style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>{f.label}</span>
-                                                    <ReadinessBadge status={f.status} />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : readiness_factors.length > 0 ? (
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                            {readiness_factors.map((f: any, i: number) => (
-                                                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                                                    <span style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>{f.label}</span>
-                                                    <ReadinessBadge status={f.status} />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p style={{ fontSize: 13, color: '#9ca3af', margin: 0 }}>No readiness factors available.</p>
-                                    )}
+                                    {(() => {
+                                        const activeFactors = dynamicReadiness.length > 0 ? dynamicReadiness : readiness_factors;
+
+                                        if (activeFactors.length === 0) {
+                                            return <p style={{ fontSize: 13, color: '#9ca3af', margin: 0 }}>No readiness factors available.</p>;
+                                        }
+
+                                        const visibleFactors = activeFactors.filter((f: any) => {
+                                            const s = (f.status || '').toLowerCase();
+                                            const isStateOrIndustry = f.label === READINESS_FACTOR_LABELS.RESTRICTED_STATE || f.label === READINESS_FACTOR_LABELS.RESTRICTED_INDUSTRY || f.label === READINESS_FACTOR_LABELS.STATE_ELIGIBILITY || f.label === READINESS_FACTOR_LABELS.INDUSTRY_ELIGIBILITY;
+                                            
+                                            // Hide state/industry if they are Good/Strong
+                                            if (isStateOrIndustry && (s === FACTOR_STATUS_VALUES.GOOD || s === FACTOR_STATUS_VALUES.STRONG)) {
+                                                return false;
+                                            }
+                                            return true;
+                                        });
+
+                                        return (
+                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                {visibleFactors.map((f: any, i: number) => (
+                                                    <ReadinessItem key={i} factor={f} isLast={i === visibleFactors.length - 1} />
+                                                ))}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                         </div>
@@ -386,7 +446,6 @@ const FundingDetail = () => {
 
                     </div>
 
-                    {/* ── Sticky Footer CTA ─────────────────────────────────────── */}
                     <div style={{
                         borderTop: '1px solid #e8ecf0',
                         background: '#fff',
@@ -406,25 +465,27 @@ const FundingDetail = () => {
                             <p style={{ margin: 0, fontSize: 12, color: '#6b7280', marginTop: 3 }}>
                                 {isPending
                                     ? 'You have already applied for this funding option. Please wait for approval or rejection.'
-                                    : hasMissingFactors 
-                                        ? 'Please address missing readiness factors before starting your review.'
-                                        : 'Start your funding request by providing a few details and uploading missing documents.'}
+                                    : finalEngineStatus === 'Hidden'
+                                        ? 'This funding option is currently not available for your profile.'
+                                        : hasMissingFactors
+                                            ? 'Please address missing readiness factors before starting your review.'
+                                            : 'Start your funding request by providing a few details and uploading missing documents.'}
                             </p>
                         </div>
                         <span id="btn-start-funding-request-wrapper" style={{ display: 'inline-block' }}>
                             <Link
-                                to={(hasMissingFactors || isPending) ? '#' : `/funding/${id}/review`}
-                                className={`funding-detail-btn-review ${(hasMissingFactors || isPending) ? 'disabled' : ''}`}
-                                style={(hasMissingFactors || isPending) ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
-                                onClick={(e) => { if (hasMissingFactors || isPending) e.preventDefault(); }}
+                                to={(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') ? '#' : `/funding/${id}/review`}
+                                className={`funding-detail-btn-review ${(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') ? 'disabled' : ''}`}
+                                style={(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                                onClick={(e) => { if (hasMissingFactors || isPending || finalEngineStatus === 'Hidden') e.preventDefault(); }}
                             >
                                 Start Funding Request
                                 <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />
                             </Link>
                         </span>
-                        {isPending && (
+                        {(isPending || finalEngineStatus === 'Hidden') && (
                             <UncontrolledTooltip placement="top" target="btn-start-funding-request-wrapper">
-                                Already applied. Please wait for approval or rejection.
+                                {isPending ? 'Already applied. Please wait for approval or rejection.' : 'Not eligible for this funding option.'}
                             </UncontrolledTooltip>
                         )}
                     </div>

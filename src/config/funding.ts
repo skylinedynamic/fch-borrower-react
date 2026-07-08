@@ -143,3 +143,158 @@ export const QUALIFY_REASONS_MAP: Record<string, string> = {
     'Minimum Average Daily Balance': 'Average daily balance meets minimum requirements',
     'Max NSF / Negative Days': 'Banking history meets minimum NSF/negative day requirements'
 };
+
+export const ENGINE_STATUS_LABELS = {
+    ELIGIBLE_NOW: 'Eligible Now',
+    LIKELY_ELIGIBLE: 'Likely Eligible',
+    MANUAL_REVIEW: 'Manual Review Required',
+    MISSING_INFO: 'Missing Info',
+    UNDER_REVIEW: 'Under Review',
+};
+
+export const MATCH_LEVEL_LABELS = {
+    HIGH_MATCH: 'High Match',
+    MEDIUM_MATCH: 'Medium Match',
+    LOW_MATCH: 'Low Match',
+};
+
+export const ENGINE_STATUS_VALUES = {
+    ACTIVE: 'Active',
+    REVIEW: 'Review',
+    GREYED_OUT: 'Greyed Out',
+    HIDDEN: 'Hidden'
+};
+
+export const READINESS_FACTOR_LABELS = {
+    RESTRICTED_STATE: 'Restricted State',
+    STATE_ELIGIBILITY: 'State Eligibility',
+    RESTRICTED_INDUSTRY: 'Restricted Industry',
+    INDUSTRY_ELIGIBILITY: 'Industry Eligibility',
+};
+
+export const FACTOR_STATUS_VALUES = {
+    GOOD: 'good',
+    STRONG: 'strong',
+    ELIGIBLE: 'eligible',
+    MISSING: 'missing',
+    RESTRICTED: 'restricted',
+    FAIR: 'fair',
+    WEAK: 'weak',
+};
+
+export const BADGE_LABELS = {
+    RESTRICTED: 'Restricted',
+    ELIGIBLE: 'Eligible',
+};
+
+export const FACTOR_ICON_STYLES: Record<string, { icon: string, color: string }> = {
+    [FACTOR_STATUS_VALUES.GOOD]: { icon: 'ri-checkbox-circle-fill', color: '#10b981' },
+    [FACTOR_STATUS_VALUES.ELIGIBLE]: { icon: 'ri-checkbox-circle-fill', color: '#10b981' },
+    [FACTOR_STATUS_VALUES.STRONG]: { icon: 'ri-star-fill', color: '#3b82f6' },
+    [FACTOR_STATUS_VALUES.MISSING]: { icon: 'ri-close-circle-fill', color: '#ef4444' },
+    [FACTOR_STATUS_VALUES.RESTRICTED]: { icon: 'ri-close-circle-fill', color: '#ef4444' },
+};
+
+export const META_ITEM_LABELS = {
+    RECOMMENDED_RANGE: 'Recommended Range',
+    TERM: 'Term',
+    SPEED_TO_FUNDS: 'Speed to Funds',
+    USES: 'Uses',
+};
+
+export const READINESS_BADGE_STYLES: Record<string, { icon: string; bg: string; color: string }> = {
+    [FACTOR_STATUS_VALUES.GOOD]: { icon: 'ri-checkbox-circle-fill', bg: '#e8f9f0', color: '#1a7a4a' },
+    [FACTOR_STATUS_VALUES.STRONG]: { icon: 'ri-checkbox-circle-fill', bg: '#dbeafe', color: '#1d4ed8' },
+    [FACTOR_STATUS_VALUES.FAIR]: { icon: 'ri-error-warning-fill', bg: '#fef3c7', color: '#92400e' },
+    [FACTOR_STATUS_VALUES.MISSING]: { icon: 'ri-information-fill', bg: '#fff3cd', color: '#92400e' },
+    [FACTOR_STATUS_VALUES.WEAK]: { icon: 'ri-close-circle-fill', bg: '#fee2e2', color: '#991b1b' },
+    [FACTOR_STATUS_VALUES.RESTRICTED]: { icon: 'ri-close-circle-fill', bg: '#fee2e2', color: '#ef4444' },
+    [FACTOR_STATUS_VALUES.ELIGIBLE]: { icon: 'ri-checkbox-circle-fill', bg: '#e8f9f0', color: '#10b981' },
+};
+
+export const getFundingReviewProgress = (status: string) => {
+    if (status === 'SUBMITTED') return 10;
+    if (status === FUNDING_REVIEW_STATUS.PENDING) return 20;
+    if (status === FUNDING_REVIEW_STATUS.IN_PROGRESS) return 40;
+    if (status === FUNDING_REVIEW_STATUS.ACCEPTED) return 70;
+    if (status === FUNDING_REVIEW_STATUS.APPROVED) return 100;
+    if (status === FUNDING_REVIEW_STATUS.REJECTED) return 100;
+    return 0;
+};
+
+export const FUNDING_REVIEW_TIMELINE_STEPS = [
+    {
+        key: 'SUBMITTED',
+        label: 'Submitted',
+        icon: 'ri-file-list-3-line',
+    },
+    {
+        key: FUNDING_REVIEW_STATUS.PENDING,
+        label: 'Pending',
+        icon: 'ri-time-line',
+    },
+    {
+        key: FUNDING_REVIEW_STATUS.IN_PROGRESS,
+        label: 'In Progress',
+        subtext: 'Under Review',
+        icon: 'ri-user-3-fill',
+    },
+    {
+        key: FUNDING_REVIEW_STATUS.ACCEPTED,
+        label: 'Accepted',
+        icon: 'ri-checkbox-circle-line',
+    },
+    {
+        key: FUNDING_REVIEW_STATUS.APPROVED,
+        label: 'Approved',
+        icon: 'ri-user-follow-line',
+    },
+    {
+        key: FUNDING_REVIEW_STATUS.REJECTED,
+        label: 'Rejected',
+        icon: 'ri-user-unfollow-line',
+    },
+];
+
+export const FUNDING_REVIEW_GUIDELINE_CARDS = [
+    {
+        label: 'Pending',
+        desc: 'Request submitted and waiting for review.',
+        bg: '#f0fdf4',
+        border: '#bbf7d0',
+        iconBg: '#16a34a',
+        icon: 'ri-time-line'
+    },
+    {
+        label: 'In Progress',
+        desc: 'Admin/Partner can reviewing the request.',
+        bg: '#eff6ff',
+        border: '#bfdbfe',
+        iconBg: '#3b82f6',
+        icon: 'ri-shield-user-fill'
+    },
+    {
+        label: 'Accepted',
+        desc: 'Review completed successfully.',
+        bg: '#fefce8',
+        border: '#fef08a',
+        iconBg: '#eab308',
+        icon: 'ri-check-line'
+    },
+    {
+        label: 'Approved',
+        desc: 'Borrower can start funding application.',
+        bg: '#f0fdf4',
+        border: '#bbf7d0',
+        iconBg: '#16a34a',
+        icon: 'ri-check-line'
+    },
+    {
+        label: 'Rejected',
+        desc: 'Request declined. Process ends.',
+        bg: '#fef2f2',
+        border: '#fecaca',
+        iconBg: '#ef4444',
+        icon: 'ri-close-line'
+    }
+];

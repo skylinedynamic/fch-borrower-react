@@ -14,9 +14,11 @@ export default function FundingRequestList() {
     const [perPage, setPerPage] = useState(10)
     const [searchText, setSearchText] = useState('')
     const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
+    const [selectedFundingType, setSelectedFundingType] = useState<string | null>(null)
     
     const [appliedSearchText, setAppliedSearchText] = useState('')
     const [appliedStatus, setAppliedStatus] = useState<string | null>(null)
+    const [appliedFundingType, setAppliedFundingType] = useState<string | null>(null)
 
     const [sortField, setSortField] = useState<string>('id')
     const [sortOrder, setSortOrder] = useState<number>(-1)
@@ -26,6 +28,7 @@ export default function FundingRequestList() {
         per_page: perPage,
         search: appliedSearchText,
         status: appliedStatus || undefined,
+        funding_sequence_id: appliedFundingType || undefined,
         sort_field: sortField,
         sort_order: sortOrder === 1 ? 'asc' : 'desc'
     })
@@ -33,6 +36,7 @@ export default function FundingRequestList() {
     // Fix the nested data access
     const reviews = data?.data || []
     const total = data?.meta?.total || 0
+    const fundingTypes = data?.funding_types || []
 
     // Compute dummy stats from current page since there's no stats API
     const computeStats = () => {
@@ -69,14 +73,17 @@ export default function FundingRequestList() {
     const handleApplyFilters = () => {
         setAppliedSearchText(searchText)
         setAppliedStatus(selectedStatus)
+        setAppliedFundingType(selectedFundingType)
         setPage(1)
     }
 
     const handleClearFilters = () => {
         setSearchText('')
         setSelectedStatus(null)
+        setSelectedFundingType(null)
         setAppliedSearchText('')
         setAppliedStatus(null)
+        setAppliedFundingType(null)
         setPage(1)
     }
 
@@ -156,7 +163,7 @@ export default function FundingRequestList() {
                                     handleApplyFilters();
                                 }}>
                                     <div className="row g-3 mb-4">
-                                        <div className="col-xxl-6 col-sm-6">
+                                        <div className="col-xxl-4 col-sm-6">
                                             <div className="search-box">
                                                 <input
                                                     type="text"
@@ -175,7 +182,7 @@ export default function FundingRequestList() {
                                                 <i className="ri-search-line search-icon"></i>
                                             </div>
                                         </div>
-                                        <div className="col-xxl-4 col-sm-6">
+                                        <div className="col-xxl-3 col-sm-6">
                                             <Dropdown
                                                 value={selectedStatus}
                                                 options={Object.values(FUNDING_REVIEW_STATUS).map(status => ({
@@ -184,6 +191,20 @@ export default function FundingRequestList() {
                                                 }))}
                                                 onChange={(e) => setSelectedStatus(e.value)}
                                                 placeholder="All Statuses"
+                                                className="w-100 bg-light border-light"
+                                                style={{ height: '38px' }}
+                                                inputStyle={{ height: '38px' }}
+                                            />
+                                        </div>
+                                        <div className="col-xxl-3 col-sm-6">
+                                            <Dropdown
+                                                value={selectedFundingType}
+                                                options={fundingTypes.map((ft: any) => ({
+                                                    label: ft.name,
+                                                    value: ft.id
+                                                }))}
+                                                onChange={(e) => setSelectedFundingType(e.value)}
+                                                placeholder="All Funding Types"
                                                 className="w-100 bg-light border-light"
                                                 style={{ height: '38px' }}
                                                 inputStyle={{ height: '38px' }}

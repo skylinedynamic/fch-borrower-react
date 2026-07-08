@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FUNDING_ICON_MAP, FUNDING_REVIEW_STATUS } from '../../../config/funding';
+import { FUNDING_ICON_MAP, FUNDING_REVIEW_STATUS, ENGINE_STATUS_LABELS, ENGINE_STATUS_VALUES } from '../../../config/funding';
 import { getFundingColorStyles } from '../../../config/fundingColor';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -239,8 +239,8 @@ const FundingCard: React.FC<FundingCardProps> = ({
     amount_range,
     terms,
     action_url,
-    engine_status = 'Active',
-    engine_status_label = 'Eligible Now',
+    engine_status = ENGINE_STATUS_VALUES.ACTIVE,
+    engine_status_label = ENGINE_STATUS_LABELS.ELIGIBLE_NOW,
     latest_review_status,
     readiness_factors = [],
 }) => {
@@ -264,7 +264,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
 
     // Pill label & color (matching mockup yellow/brown for missing)
     const sec = getCSSVar('--secondary-color', '#1cbfca');
-    const displayLabel = hasMissing ? 'Missing Info' : isPending ? 'Under Review' : 'Likely Eligible';
+    const displayLabel = hasMissing ? ENGINE_STATUS_LABELS.MISSING_INFO : isPending ? ENGINE_STATUS_LABELS.UNDER_REVIEW : ENGINE_STATUS_LABELS.LIKELY_ELIGIBLE;
     const pillBg    = hasMissing ? '#fef3c7' : isPending ? '#f0f0ff' : `${sec}1a`;
     const pillColor = hasMissing ? '#78350f' : isPending ? '#4f52c8' : sec;
 
