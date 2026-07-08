@@ -551,10 +551,40 @@ export default function FundingRequestDetailPage() {
                                                 <Skeleton w={76} h={76} rounded />
                                             </div>
                                         </div>
-                                        <div className="p-4 pt-4">
-                                            <Skeleton w="100%" h={80} rounded />
-                                            <div className="mt-4"><Skeleton w="100%" h={60} rounded /></div>
+                                        <div className="p-4 pt-5 pb-5 overflow-hidden">
+                                            <div className="d-flex justify-content-between align-items-start position-relative px-3">
+                                                {[1, 2, 3, 4, 5].map((_, idx) => (
+                                                    <React.Fragment key={idx}>
+                                                        <div className="d-flex flex-column align-items-center position-relative" style={{ width: 100, flexShrink: 0 }}>
+                                                            <div className="mb-2"><Skeleton w={36} h={36} rounded /></div>
+                                                            <div className="mb-1"><Skeleton w={70} h={14} /></div>
+                                                            <div className="mt-1"><Skeleton w={90} h={10} /></div>
+                                                            <div className="mt-1"><Skeleton w={110} h={10} /></div>
+                                                        </div>
+                                                        {idx < 4 && (
+                                                            <div className="flex-grow-1" style={{ height: 2, marginTop: 17, backgroundColor: '#f1f5f9', marginLeft: -36, marginRight: -36 }}></div>
+                                                        )}
+                                                    </React.Fragment>
+                                                ))}
+                                            </div>
                                         </div>
+                                    </div>
+                                </div>
+
+                                {/* Decision Details Skeleton */}
+                                <div className="card border-0 shadow-sm mb-4">
+                                    <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
+                                        <div className="d-flex align-items-center gap-2">
+                                            <Skeleton w={16} h={16} rounded />
+                                            <Skeleton w={120} h={18} />
+                                        </div>
+                                    </div>
+                                    <div className="card-body px-4 pb-4 pt-3">
+                                        <div className="mb-3">
+                                            <div className="mb-2"><Skeleton w={100} h={14} /></div>
+                                            <Skeleton w={150} h={16} />
+                                        </div>
+                                        <Skeleton w="100%" h={60} rounded />
                                     </div>
                                 </div>
 
@@ -677,7 +707,7 @@ export default function FundingRequestDetailPage() {
     }
 
     const filtered = getFilteredActivities()
-    const pageTitle = review?.funding_sequence?.name || review?.funding_type || 'Funding Request Detail'
+    const pageTitle = 'Funding Request Details'
 
     // Compute dynamic tab counts
     const countFunding = activities.filter(a => String(a.log_type_raw || '').includes('funding_request') || String(a.event_label || '').toLowerCase().includes('funding')).length
@@ -728,8 +758,66 @@ export default function FundingRequestDetailPage() {
                             <ReviewProgressCard 
                                 status={review.status} 
                                 createdAt={review.created_at} 
-                                updatedAt={review.updated_at} 
+                                updatedAt={review.updated_at}
+                                rejectReason={review.reject_reason} 
                             />
+
+                            {/* Decision Details */}
+                            {(review.reviewer?.name || [FUNDING_REVIEW_STATUS.APPROVED, FUNDING_REVIEW_STATUS.REJECTED, 'Accepted'].includes(review.status)) && (
+                                <div className="card border-0 shadow-sm mb-4">
+                                    <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
+                                        <h6 className="mb-0 fw-bold fs-15">
+                                            <i className={`ri-shield-check-line me-2 ${review.status === FUNDING_REVIEW_STATUS.REJECTED ? 'text-danger' : 'text-success'}`}></i>
+                                            Decision Details
+                                        </h6>
+                                    </div>
+                                    <div className="card-body px-4 pb-4 pt-3">
+                                        <div className="row g-3">
+                                            {review.reviewer?.name && (
+                                                <div className="col-12">
+                                                    <p className="text-muted mb-1 fs-13">Reviewed By:</p>
+                                                    <p className="fw-semibold text-dark mb-0">{review.reviewer.name}</p>
+                                                </div>
+                                            )}
+                                            {review.status === FUNDING_REVIEW_STATUS.REJECTED && review.reject_reason && (
+                                                <div className="col-12">
+                                                    <div className="alert alert-danger border-0 mb-0">
+                                                        <p className="mb-0 fs-13">
+                                                            <span className="fw-bold">Reason for Rejection:</span>{' '}
+                                                            {review.reject_reason}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {(review.status === FUNDING_REVIEW_STATUS.APPROVED || review.status === 'Accepted') && (
+                                                <div className="col-12">
+                                                    <div className="alert alert-success border-0 mb-0">
+                                                        <p className="mb-0 fs-13">
+                                                            <span className="fw-bold">Approved:</span>{' '}
+                                                            Your funding request has been approved for {review.funding_type}. Please proceed with the final funding application.
+                                                        </p>
+                                                        <div className="mt-3">
+                                                            <Link 
+                                                                to="/fund-application" 
+                                                                state={{
+                                                                    purpose: review.use_of_funds === 'Working Capital' ? 'Working Capital (General Use)' : review.use_of_funds,
+                                                                    requested_amount: review.requested_amount,
+                                                                    approved_funding: review.funding_sequence?.name || review.funding_type,
+                                                                    funding_type: review.funding_type
+                                                                }}
+                                                                className="btn btn-success btn-sm fw-medium px-4 d-inline-flex align-items-center"
+                                                            >
+                                                                Process Funding Application
+                                                                <i className="ri-arrow-right-line ms-2"></i>
+                                                            </Link>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Summary Card */}
                             <div className="card border-0 shadow-sm mb-4">
@@ -877,62 +965,6 @@ export default function FundingRequestDetailPage() {
                                 </div>
                             </div>
 
-                            {/* Decision Details */}
-                            {(review.reviewer?.name || [FUNDING_REVIEW_STATUS.APPROVED, FUNDING_REVIEW_STATUS.REJECTED, 'Accepted'].includes(review.status)) && (
-                                <div className="card border-0 shadow-sm mb-4">
-                                    <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
-                                        <h6 className="mb-0 fw-bold fs-15">
-                                            <i className="ri-shield-check-line me-2 text-success"></i>
-                                            Decision Details
-                                        </h6>
-                                    </div>
-                                    <div className="card-body px-4 pb-4 pt-3">
-                                        <div className="row g-3">
-                                            {review.reviewer?.name && (
-                                                <div className="col-12">
-                                                    <p className="text-muted mb-1 fs-13">Reviewed By:</p>
-                                                    <p className="fw-semibold text-dark mb-0">{review.reviewer.name}</p>
-                                                </div>
-                                            )}
-                                            {review.status === FUNDING_REVIEW_STATUS.REJECTED && review.reject_reason && (
-                                                <div className="col-12">
-                                                    <div className="alert alert-danger border-0 mb-0">
-                                                        <p className="mb-0 fs-13">
-                                                            <span className="fw-bold">Reason for Rejection:</span>{' '}
-                                                            {review.reject_reason}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            )}
-                                            {(review.status === FUNDING_REVIEW_STATUS.APPROVED || review.status === 'Accepted') && (
-                                                <div className="col-12">
-                                                    <div className="alert alert-success border-0 mb-0">
-                                                        <p className="mb-0 fs-13">
-                                                            <span className="fw-bold">Approved:</span>{' '}
-                                                            Your funding request has been approved for {review.funding_type}. Please proceed with the final funding application.
-                                                        </p>
-                                                        <div className="mt-3">
-                                                            <Link 
-                                                                to="/fund-application" 
-                                                                state={{
-                                                                    purpose: review.use_of_funds === 'Working Capital' ? 'Working Capital (General Use)' : review.use_of_funds,
-                                                                    requested_amount: review.requested_amount,
-                                                                    approved_funding: review.funding_sequence?.name || review.funding_type,
-                                                                    funding_type: review.funding_type
-                                                                }}
-                                                                className="btn btn-success btn-sm fw-medium px-4 d-inline-flex align-items-center"
-                                                            >
-                                                                Process Funding Application
-                                                                <i className="ri-arrow-right-line ms-2"></i>
-                                                            </Link>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
                         </div>
 
                         {/* ── Right Column: Activity Log Timeline Sidebar ── */}

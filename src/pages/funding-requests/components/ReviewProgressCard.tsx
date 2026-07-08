@@ -10,12 +10,14 @@ interface ReviewProgressCardProps {
     status: string;
     createdAt?: string;
     updatedAt?: string;
+    rejectReason?: string;
 }
 
 export default function ReviewProgressCard({
     status,
     createdAt,
     updatedAt,
+    rejectReason,
 }: ReviewProgressCardProps) {
 
     const progressPercentage = getFundingReviewProgress(status);
@@ -170,43 +172,6 @@ export default function ReviewProgressCard({
                                 </React.Fragment>
                             );
                         })}
-                    </div>
-                </div>
-
-                <hr className="my-0 border-light" />
-
-                {/* Status Guideline */}
-                <div className="p-4 pt-3">
-                    <div className="d-flex align-items-center mb-3">
-                        <i className="ri-information-line fs-5 me-2" style={{ color: '#0f172a' }}></i>
-                        <h6 className="mb-0 fw-bold" style={{ color: '#0f172a' }}>
-                            Status Guideline
-                        </h6>
-                    </div>
-
-                    <div className="d-flex align-items-stretch gap-2 w-100">
-                        {guidelineCards.map((item, idx) => (
-                            <React.Fragment key={item.label}>
-                                <div className="d-flex align-items-center p-2 px-xl-3 rounded-3" style={{
-                                    backgroundColor: item.bg,
-                                    border: `1px solid ${item.border}`,
-                                    flex: 1
-                                }}>
-                                    <div className="d-flex align-items-center justify-content-center rounded-circle text-white me-3" style={{ width: 24, height: 24, background: item.iconBg, flexShrink: 0 }}>
-                                        {item.icon ? <i className={item.icon} style={{ fontSize: '12px' }}></i> : null}
-                                    </div>
-                                    <div>
-                                        <h6 className="mb-1 fw-bold text-dark fs-13">{item.label}</h6>
-                                        <p className="mb-0 text-muted" style={{ fontSize: '11px', lineHeight: '1.4' }}>{item.desc}</p>
-                                    </div>
-                                </div>
-                                {idx < guidelineCards.length - 1 && (
-                                    <div className="d-flex align-items-center">
-                                        <i className="ri-arrow-right-s-line text-muted fs-4"></i>
-                                    </div>
-                                )}
-                            </React.Fragment>
-                        ))}
                     </div>
                 </div>
 
