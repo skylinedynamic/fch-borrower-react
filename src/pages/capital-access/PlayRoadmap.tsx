@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
-import { useCapitalAccessStrategyRoadmap, useCapitalAccessStrategies } from '../../modules/capital-access/queries';
+import { useCapitalAccessStrategyRoadmap, useStartCapitalAccessPlay } from '../../modules/capital-access/queries';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
 import type { RoadmapCard } from '../../modules/capital-access/types';
 import { ACCESS_TIME, CAPITAL_ACCESS_STATUS } from '../../config/capitalAccessStatusOptions';
@@ -8,8 +8,22 @@ import { ACCESS_TIME, CAPITAL_ACCESS_STATUS } from '../../config/capitalAccessSt
 // ── Access time label helper ────────────────────────────────────────────────
 function accessScheduleLabel(card: RoadmapCard): string {
   if (card.access_time === ACCESS_TIME.DAY && card.access_day) {
-    const sub = card.access_day_time ? ` (${card.access_day_time})` : '';
-    return `Day ${card.access_day}${sub}`;
+    const detail = card.access_day_time_detail;
+    if (detail && detail.start != null && detail.end != null) {
+      const timeStr = `${formatDecimalHour(detail.start)} – ${formatDecimalHour(detail.end)}`;
+      const label = detail.label ?? card.access_day_time ?? '';
+      return `Day ${card.access_day} (${label}: ${timeStr})`;
+    } else if (card.access_day_time) {
+      return `Day ${card.access_day} (${card.access_day_time})`;
+    }
+    return `Day ${card.access_day}`;
+  }
+
+  const detail = card.access_time_detail;
+  if (detail && detail.start != null && detail.end != null) {
+    const timeStr = `${formatDecimalHour(detail.start)} – ${formatDecimalHour(detail.end)}`;
+    const label = detail.label ?? card.access_time ?? '';
+    return `${label} (${timeStr})`;
   }
   return card.access_time ?? '';
 }
@@ -29,10 +43,10 @@ function getLockReason(card: RoadmapCard): string {
 function formatDecimalHour(decimalHour: number): string {
   const wholeHours = Math.floor(decimalHour);
   const minutes = Math.round((decimalHour - wholeHours) * 60);
-  
+
   let displayHour = wholeHours;
   let ampm = 'AM';
-  
+
   if (wholeHours === 0) {
     displayHour = 12;
     ampm = 'AM';
@@ -43,7 +57,7 @@ function formatDecimalHour(decimalHour: number): string {
     displayHour = wholeHours - 12;
     ampm = 'PM';
   }
-  
+
   const minutesStr = minutes > 0 ? `:${minutes.toString().padStart(2, '0')}` : '';
   return `${displayHour}${minutesStr} ${ampm}`;
 }
@@ -148,7 +162,7 @@ function getUnlockTimeRemaining(card: RoadmapCard, playStartDate: string | null 
 
   // Target date construction (midnight of target day)
   const targetDate = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate() + targetDay);
-  
+
   const startWholeHours = Math.floor(startHour);
   const startMinutes = Math.round((startHour - startWholeHours) * 60);
   targetDate.setHours(startWholeHours, startMinutes, 0, 0);
@@ -169,7 +183,7 @@ function getUnlockTimeRemaining(card: RoadmapCard, playStartDate: string | null 
   if (remainingMs > 0 && remainingMs < 24 * 60 * 60 * 1000) {
     const hours = Math.floor(remainingMs / (1000 * 60 * 60));
     const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
-    
+
     if (hours > 0) {
       return `Unlocks in ${hours}h ${minutes}m`;
     }
@@ -181,29 +195,26 @@ function getUnlockTimeRemaining(card: RoadmapCard, playStartDate: string | null 
 
 export default function PlayRoadmap() {
   const { id } = useParams<{ id: string }>();
-  const { data: play, isLoading: isPlayLoading, isError } = useCapitalAccessStrategyRoadmap(id);
-  const { data: strategies, isLoading: isStrategiesLoading } = useCapitalAccessStrategies();
+  const { data: play, isLoading, isError } = useCapitalAccessStrategyRoadmap(id);
 
+  const startPlayMutation = useStartCapitalAccessPlay(id);
+
+  const isDelayActive = play?.reason_code === 'NEXT_PLAY_DELAY_ACTIVE';
+
+  // Separate per-minute clock for card access schedule checks
   const [currentTime, setCurrentTime] = useState(new Date());
-
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 10000);
+    const timer = setInterval(() => setCurrentTime(new Date()), 60_000);
     return () => clearInterval(timer);
   }, []);
 
-  const isLoading = isPlayLoading || isStrategiesLoading;
+  // Also redirect if delay is active and play not yet completed (safety net for direct URL navigation)
+  if (!isLoading && play && isDelayActive && !play.isCompleted) return <Navigate to="/capital-access/strategy" />;
 
-  const recommendedPlay = strategies?.find(p => p.isRecommended) || strategies?.[0];
-  const isCompleted = strategies?.some(p => String(p.id) === String(id) && p.isCompleted);
-  const isAccessible = recommendedPlay ? (String(recommendedPlay.id) === String(id) || isCompleted) : true;
-
-  if (!isLoading && (isError || !play || !isAccessible)) return <Navigate to="/capital-access/strategy" />;
-
+  if (!isLoading && (isError || !play || !play.isAccessible)) return <Navigate to={`/capital-access/${id}/pre-flight`} />;
 
   // Strategy-level lock
-  if (!isLoading && play && play.approval_status === false) {
+  if (!isLoading && play && play.approval_status === false && !isDelayActive) {
     return (
       <div className="page-content capital-access-page">
         <div className="container-fluid">
@@ -276,6 +287,8 @@ export default function PlayRoadmap() {
             </div>
           </div>
 
+
+
           {isLoading || !play ? (
             <CapitalAccessLoader type="roadmap" />
           ) : (
@@ -314,10 +327,12 @@ export default function PlayRoadmap() {
                     const isTimeLocked = !timeCheck.active;
                     const remainingTimeText = getUnlockTimeRemaining(card, play.first_submitted_at, currentTime);
 
-                    const isLocked = (card.probability_status === false || hasUnsubmittedPrevious || isTimeLocked) && !card.application_status;
+                    const isLocked = isDelayActive || ((card.probability_status === false || hasUnsubmittedPrevious || isTimeLocked) && !card.application_status);
 
                     let lockReason = '';
-                    if (card.probability_status === false) {
+                    if (isDelayActive) {
+                      lockReason = 'Play cooling period active';
+                    } else if (card.probability_status === false) {
                       lockReason = getLockReason(card);
                     } else if (hasUnsubmittedPrevious) {
                       lockReason = 'Complete the previous step to unlock this card';
@@ -357,9 +372,9 @@ export default function PlayRoadmap() {
                                       {accessScheduleLabel(card)}
                                     </span>
                                     <span className="text-muted fs-12">Est. {card.exposure}</span>
-                                    {card.hard_pull === 'Yes' && (
+                                    {/* {card.hard_pull === 'Yes' && (
                                       <span className="ca-badge ca-badge-warning">Hard Pull</span>
-                                    )}
+                                    )} */}
                                   </div>
                                   <div className="mt-2 text-danger small d-flex align-items-center gap-1 fw-medium">
                                     <i className="ri-error-warning-line"></i>
@@ -395,9 +410,9 @@ export default function PlayRoadmap() {
                                       {accessScheduleLabel(card)}
                                     </span>
                                     <span className="text-muted fs-12">Est. {card.exposure}</span>
-                                    {card.hard_pull === 'Yes' && (
+                                    {/* {card.hard_pull === 'Yes' && (
                                       <span className="ca-badge ca-badge-warning">Hard Pull</span>
-                                    )}
+                                    )} */}
                                   </div>
                                 </div>
                               </div>
@@ -427,12 +442,11 @@ export default function PlayRoadmap() {
                                         result: null,
                                       },
                                     }}
-                                    className={`ca-btn ca-btn-sm ${
-                                      card.application_status === CAPITAL_ACCESS_STATUS.APPROVED ? 'ca-btn-success' :
+                                    className={`ca-btn ca-btn-sm ${card.application_status === CAPITAL_ACCESS_STATUS.APPROVED ? 'ca-btn-success' :
                                       card.application_status === CAPITAL_ACCESS_STATUS.PENDING ? 'ca-btn-warning' :
-                                      card.application_status === CAPITAL_ACCESS_STATUS.DECLINED ? 'ca-btn-danger' :
-                                      'ca-btn-outline'
-                                    }`}
+                                        card.application_status === CAPITAL_ACCESS_STATUS.DECLINED ? 'ca-btn-danger' :
+                                          'ca-btn-outline'
+                                      }`}
                                   >
                                     {card.application_status || 'Manage Status'} <i className="ri-arrow-right-line"></i>
                                   </Link>
@@ -442,7 +456,13 @@ export default function PlayRoadmap() {
                                       target={card.reference_url ? "_blank" : undefined}
                                       rel="noopener noreferrer"
                                       className={`ca-btn ca-btn-sm ca-btn-primary ${!card.reference_url ? 'disabled' : ''}`}
-                                      onClick={!card.reference_url ? (e) => e.preventDefault() : undefined}
+                                      onClick={(e) => {
+                                        if (!card.reference_url) {
+                                          e.preventDefault();
+                                          return;
+                                        }
+                                        startPlayMutation.mutate();
+                                      }}
                                     >
                                       Apply <i className="ri-external-link-line"></i>
                                     </a>
@@ -460,7 +480,7 @@ export default function PlayRoadmap() {
                 <hr className="ca-divider mt-4 mb-3" />
 
                 <div className="d-flex align-items-center justify-content-end gap-3 w-100">
-                  {isCompleted ? (
+                  {play.isCompleted ? (
                     <Link to="/capital-access/strategy" className="ca-btn ca-btn-outline" style={{ minWidth: '180px' }}>
                       <i className="ri-arrow-left-line"></i> Back to Strategy List
                     </Link>

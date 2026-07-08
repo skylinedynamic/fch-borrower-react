@@ -43,8 +43,12 @@ export interface RoadmapCard {
 export interface CapitalAccessStrategyRoadmap {
   id: number;
   name: string;
+  isRecommended?: boolean;
+  isCompleted?: boolean;
+  isAccessible?: boolean;
   approval_status?: boolean;    // false = whole strategy locked
   reason_code?: string | null;
+  unlock_at?: string | null;
   target_exposure: string;
   est_timeline: string;
   first_submitted_at?: string | null;
@@ -72,6 +76,11 @@ export interface CapitalAccessStepDetail {
     id: number;
     name: string;
     target_exposure: string;
+    isRecommended?: boolean;
+    isCompleted?: boolean;
+    isAccessible?: boolean;
+    reason_code?: string | null;
+    unlock_at?: string | null;
   };
   application?: {
     id: number;
@@ -96,6 +105,9 @@ export interface CapitalAccessStrategy {
   benefits: string[];
   checklist: Array<{ id: string; label: string; complete: boolean }>;
   roadmap: RoadmapStep[];
+  approval_status?: boolean;
+  reason_code?: string | null;
+  unlock_at?: string | null;
 }
 
 
@@ -104,19 +116,26 @@ export interface CapitalAccessStrategyOverview {
   name: string;
   description: string;
   isRecommended: boolean;
+  isCompleted?: boolean;
+  isAccessible?: boolean;
   target_exposure: string;
   est_timeline: string;
   approval_probability: string;
   approval_status: boolean;
   reason_code: string | null;
+  unlock_at?: string | null;
   benefits: string[];
 }
 
 export interface CapitalAccessStrategyChecklist {
   id: number;
   name: string;
+  isRecommended?: boolean;
+  isCompleted?: boolean;
+  isAccessible?: boolean;
   approval_status: boolean;
   reason_code: string | null;
+  unlock_at?: string | null;
   checklist: Array<{ id: string; label: string; complete: boolean }>;
 }
 
@@ -138,6 +157,7 @@ export interface FactorDetail {
   value: string | number;
   weighted_score: number;
   raw_score: number;
+  status?: string | null;
 }
 
 export interface ExposureBreakdownItem {
@@ -153,6 +173,8 @@ export interface CapitalAccessOverview {
   estimated_total_access: string;
   exposure_breakdown?: ExposureBreakdownItem[];
   current_play?: { id: number; name: string; } | null;
+  reason_code?: string | null;
+  unlock_at?: string | null;
 }
 
 export interface OverviewResponse {

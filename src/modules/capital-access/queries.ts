@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '../../lib/query/queryKeys'
-import { fetchCapitalAccessStrategies, fetchCapitalAccessStrategyDetail, fetchCapitalAccessOverview, fetchCapitalAccessStrategyOverview, fetchCapitalAccessStrategyChecklist, fetchCapitalAccessStrategyRoadmap, fetchCapitalAccessStepDetail, submitCapitalAccessStepDetail } from './services'
+import { fetchCapitalAccessStrategies, fetchCapitalAccessStrategyDetail, fetchCapitalAccessOverview, fetchCapitalAccessStrategyOverview, fetchCapitalAccessStrategyChecklist, fetchCapitalAccessStrategyRoadmap, fetchCapitalAccessStepDetail, submitCapitalAccessStepDetail, startCapitalAccessPlay } from './services'
 
 export const useCapitalAccessOverview = () => {
   return useQuery({
@@ -75,6 +75,18 @@ export const useSubmitCapitalAccessStep = (
       // Refresh strategies list so isCompleted updates (drives StrategySelection & StepDetail access logic)
       queryClient.invalidateQueries({ queryKey: queryKeys.capitalAccess.strategies() })
       // Refresh overview so current_play & dashboard status update
+      queryClient.invalidateQueries({ queryKey: queryKeys.capitalAccess.overview() })
+    },
+  })
+}
+
+export const useStartCapitalAccessPlay = (strategyId: string | number | undefined) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => startCapitalAccessPlay(strategyId || 0),
+    onSuccess: () => {
+      // Invalidate queries so selecting strategy updates the dashboard & general status
+      queryClient.invalidateQueries({ queryKey: queryKeys.capitalAccess.strategies() })
       queryClient.invalidateQueries({ queryKey: queryKeys.capitalAccess.overview() })
     },
   })

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
-import { useCapitalAccessStepDetail, useSubmitCapitalAccessStep, useCapitalAccessStrategies } from '../../modules/capital-access/queries';
+import { useCapitalAccessStepDetail, useSubmitCapitalAccessStep } from '../../modules/capital-access/queries';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
 import type { CapitalAccessStepDetail } from '../../modules/capital-access/types';
 import { toast } from 'react-toastify';
@@ -9,14 +9,7 @@ import { CAPITAL_ACCESS_STATUS, type CapitalAccessStatus } from '../../config/ca
 export default function StepDetail() {
   const { id: strategyId, stepId: sequenceId } = useParams<{ id: string; stepId: string }>();
 
-  const { data: step, isLoading: isStepLoading, isError } = useCapitalAccessStepDetail(strategyId, sequenceId);
-  const { data: strategies, isLoading: isStrategiesLoading } = useCapitalAccessStrategies();
-
-  const isLoading = isStepLoading || isStrategiesLoading;
-
-  const recommendedPlay = strategies?.find(p => p.isRecommended) || strategies?.[0];
-  const isCompleted = strategies?.some(p => String(p.id) === String(strategyId) && p.isCompleted);
-  const isAccessible = recommendedPlay ? (String(recommendedPlay.id) === String(strategyId) || isCompleted) : true;
+  const { data: step, isLoading, isError } = useCapitalAccessStepDetail(strategyId, sequenceId);
 
 
   const [creditLimit, setCreditLimit] = useState('');
@@ -58,7 +51,10 @@ export default function StepDetail() {
     return '';
   };
 
-  if (!isLoading && (isError || !step || !isAccessible)) {
+  // Block access to card steps during Next Play Delay period
+  const isDelayLocked = step?.play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' && !step?.play.isCompleted;
+
+  if (!isLoading && (isError || !step || !step.play.isAccessible || isDelayLocked)) {
     return <Navigate to="/capital-access/strategy" />;
   }
 
@@ -180,8 +176,7 @@ export default function StepDetail() {
                     <img
                       src={step.full_image_url}
                       alt={step.card_name}
-                      className="rounded border bg-white flex-shrink-0"
-                      style={{ width: 64, height: 40, objectFit: 'contain' }}
+                      className="rounded border bg-white flex-shrink-0 ca-card-img-thumb"
                     />
                   ) : (
                     <div className="avatar-sm flex-shrink-0">
@@ -226,7 +221,12 @@ export default function StepDetail() {
                           <i className="ri-percent-line"></i>
                         </div>
                         <span className="ca-metric-label-premium d-block">Approval Odds</span>
-                        <p className="ca-metric-value-premium mb-0 fs-24" style={{ color: oddsColor }}>
+                        <p className={`ca-metric-value-premium mb-0 fs-24 ${
+                          oddsNum === null ? ''
+                          : oddsNum >= 70 ? 'ca-odds-high'
+                          : oddsNum >= 45 ? 'ca-odds-mid'
+                          : 'ca-odds-low'
+                        }`}>
                           {step.approval_odds}
                         </p>
                       </div>
@@ -293,13 +293,8 @@ export default function StepDetail() {
                 </div>
 
                 {/* ── Section Divider ── */}
-                <div className="d-flex align-items-center gap-3 my-4">
-                  <div style={{ flex: 1, height: 1, background: 'var(--ca-border, #e3e6eb)' }}></div>
-                  <span className="text-muted fs-11 fw-bold text-uppercase letter-spacing-1"
-                    style={{ letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
-                    Application Outcome
-                  </span>
-                  <div style={{ flex: 1, height: 1, background: 'var(--ca-border, #e3e6eb)' }}></div>
+                <div className="ca-section-divider">
+                  <span>Application Outcome</span>
                 </div>
 
                 {/* ══════════════════════════════════
@@ -311,8 +306,7 @@ export default function StepDetail() {
                     <div className="ca-outcome-header">
                       <div className="d-flex align-items-center gap-3">
                         <div
-                          className="d-flex align-items-center justify-content-center rounded-circle bg-success text-white flex-shrink-0"
-                          style={{ width: 40, height: 40 }}
+                          className="d-flex align-items-center justify-content-center rounded-circle bg-success text-white ca-outcome-icon-circle"
                         >
                           <i className="ri-checkbox-circle-line fs-20"></i>
                         </div>
@@ -336,8 +330,7 @@ export default function StepDetail() {
                         <div className="col-md-5">
                           <div className="ca-limit-display-card h-100">
                             <span
-                              className="d-block fs-11 fw-bold text-uppercase mb-1"
-                              style={{ color: 'var(--ca-success)', letterSpacing: '0.08em' }}
+                              className="d-block fs-11 fw-bold text-uppercase mb-1 ca-label-success"
                             >
                               Approved Credit Limit
                             </span>
@@ -354,8 +347,7 @@ export default function StepDetail() {
 
                         {/* Notes */}
                         <div className="col-md-7">
-                          <span className="d-block fs-11 fw-bold text-uppercase text-muted mb-2"
-                            style={{ letterSpacing: '0.08em' }}>
+                          <span className="d-block fs-11 fw-bold text-uppercase text-muted mb-2 ca-label-muted">
                             Submitted Notes
                           </span>
                           {step.application!.notes ? (
@@ -375,12 +367,7 @@ export default function StepDetail() {
                       <div className="d-flex justify-content-end mt-4 pt-3 border-top">
                         <Link
                           to={`/capital-access/${step.play.id}/roadmap`}
-                          className="ca-btn ca-btn-primary"
-                          style={{
-                            minWidth: 180,
-                            background: 'var(--primary-color, #405189)',
-                            borderColor: 'var(--primary-color, #405189)',
-                          }}
+                          className="ca-btn ca-btn-primary ca-btn-min-w"
                         >
                           <i className="ri-arrow-left-line me-1"></i> Back to Roadmap
                         </Link>
@@ -433,21 +420,15 @@ export default function StepDetail() {
                                         if (st !== CAPITAL_ACCESS_STATUS.APPROVED) setValidationError('');
                                       }
                                     }}
-                                    style={{
-                                      cursor: 'pointer',
-                                      border: isSelected
-                                        ? `2px solid ${st === CAPITAL_ACCESS_STATUS.APPROVED ? 'var(--vz-success)' : st === CAPITAL_ACCESS_STATUS.PENDING ? '#f59e0b' : 'var(--vz-danger)'}`
-                                        : '2px solid var(--ca-border, #e3e6eb)',
-                                      borderRadius: 10,
-                                      padding: '16px 18px',
-                                      background: isSelected
-                                        ? st === CAPITAL_ACCESS_STATUS.APPROVED ? 'rgba(10,179,156,0.06)'
-                                          : st === CAPITAL_ACCESS_STATUS.PENDING ? 'rgba(245,158,11,0.06)'
-                                          : 'rgba(240,101,72,0.06)'
-                                        : '#ffffff',
-                                      transition: 'all 0.2s ease',
-                                      userSelect: 'none',
-                                    }}
+                                    className={`ca-status-selector-card ${
+                                      isSelected
+                                        ? st === CAPITAL_ACCESS_STATUS.APPROVED
+                                          ? 'selected-approved'
+                                          : st === CAPITAL_ACCESS_STATUS.PENDING
+                                          ? 'selected-pending'
+                                          : 'selected-declined'
+                                        : ''
+                                    }`}
                                   >
                                     <div className="d-flex align-items-center gap-2 mb-1">
                                       <i className={`${isSelected ? cfg.icon : cfg.outlineIcon} fs-22 ${cfg.textColor}`}></i>
@@ -469,15 +450,13 @@ export default function StepDetail() {
                             </label>
                             <div className="input-group input-group-lg shadow-sm">
                               <span
-                                className="input-group-text fw-bold fs-16"
-                                style={{ background: '#f9fafb', borderRight: 'none', color: '#6b7280' }}
+                                className="input-group-text fw-bold fs-16 ca-input-addon"
                               >
                                 $
                               </span>
                               <input
                                 type="number"
-                                className={`form-control border-start-0 fs-15 ps-1 ${validationError ? 'is-invalid' : ''}`}
-                                style={{ background: '#f9fafb' }}
+                                className={`form-control border-start-0 fs-15 ps-1 ca-input-muted ${validationError ? 'is-invalid' : ''}`}
                                 placeholder={`e.g. ${step.est_limit_min ? step.est_limit_min.toLocaleString() : '5000'}`}
                                 value={creditLimit}
                                 min={step.est_limit_min ?? 0}
@@ -513,9 +492,8 @@ export default function StepDetail() {
                             <span className="text-muted fw-normal fs-12">(optional)</span>
                           </label>
                           <textarea
-                            className="form-control fs-14"
+                            className="form-control fs-14 ca-textarea"
                             rows={4}
-                            style={{ background: '#f9fafb', borderRadius: 8, resize: 'vertical' }}
                             placeholder="Any additional details about your application experience…"
                             value={notes}
                             onChange={e => setNotes(e.target.value)}
@@ -526,19 +504,13 @@ export default function StepDetail() {
                         <div className="d-flex justify-content-end gap-3 pt-3 border-top">
                           <Link
                             to={`/capital-access/${step.play.id}/roadmap`}
-                            className="ca-btn ca-btn-outline"
-                            style={{ minWidth: 180 }}
+                            className="ca-btn ca-btn-outline ca-btn-min-w"
                           >
                             <i className="ri-arrow-left-line me-1"></i> Back
                           </Link>
                           <button
                             type="submit"
-                            className="ca-btn ca-btn-primary"
-                            style={{
-                              minWidth: 180,
-                              background: 'var(--primary-color, #405189)',
-                              borderColor: 'var(--primary-color, #405189)',
-                            }}
+                            className="ca-btn ca-btn-primary ca-btn-min-w"
                             disabled={submitMutation.isPending}
                           >
                             {submitMutation.isPending ? (

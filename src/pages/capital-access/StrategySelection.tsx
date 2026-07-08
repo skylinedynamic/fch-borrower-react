@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useCapitalAccessStrategies } from '../../modules/capital-access/queries';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
 import CommonErrorPage from '../../components/Common/CommonErrorPage';
+import { useDelayCountdown } from '../../modules/capital-access/useDelayCountdown';
 
 export default function StrategySelection() {
   const { data, isLoading, isError } = useCapitalAccessStrategies();
@@ -29,6 +30,9 @@ export default function StrategySelection() {
   const otherPlays = recommendedPlay
     ? activePlays.filter(p => String(p.id) !== String(recommendedPlay.id))
     : activePlays;
+
+  const delayTime = useDelayCountdown(recommendedPlay?.unlock_at);
+  const isDelayActive = recommendedPlay?.reason_code === 'NEXT_PLAY_DELAY_ACTIVE';
 
   return (
     <div className="page-content capital-access-page">
@@ -71,12 +75,15 @@ export default function StrategySelection() {
               {/* ── Section 1: Recommended Play (Active) ── */}
               {recommendedPlay && (
                 <div className="mb-4">
-                  <div className="ca-hero-card-premium">
-                    <div className="ca-hero-header-premium">
+                  <div className={`ca-hero-card-premium${isDelayActive ? ' border-warning-subtle' : ''}`}>
+                    <div
+                      className="ca-hero-header-premium"
+                      style={isDelayActive ? { background: 'rgba(243,156,18,0.04)' } : undefined}
+                    >
                       <div className="d-flex align-items-center gap-3 flex-grow-1">
                         <div className="avatar-sm flex-shrink-0">
-                          <span className="avatar-title bg-primary-subtle text-primary rounded-circle fs-20">
-                            <i className="ri-rocket-2-line"></i>
+                          <span className={`avatar-title rounded-circle fs-20 ${isDelayActive ? 'bg-warning-subtle text-warning' : 'bg-primary-subtle text-primary'}`}>
+                            <i className={isDelayActive ? 'ri-time-line' : 'ri-rocket-2-line'}></i>
                           </span>
                         </div>
                         <div>
@@ -84,12 +91,20 @@ export default function StrategySelection() {
                           <p className="text-muted fs-13 mb-0">{recommendedPlay.description}</p>
                         </div>
                       </div>
-                      <span className="ca-badge-recommended flex-shrink-0">
+                      <span className={`flex-shrink-0 ${isDelayActive ? 'badge bg-warning-subtle text-warning border border-warning-subtle fs-12 px-3 py-2' : 'ca-badge-recommended'}`}>
                         <i className="ri-star-fill"></i> Recommended For You
                       </span>
                     </div>
 
                     <div className="ca-card-body" style={{ padding: '28px' }}>
+                      {isDelayActive && (
+                        <div className="alert alert-warning border-warning-subtle d-flex align-items-center gap-2 p-2 px-3 mb-4 rounded-3 shadow-sm animate__animated animate__fadeIn">
+                          <i className="ri-time-line text-warning fs-18"></i>
+                          <span className="fs-13 text-warning-emphasis fw-medium">
+                            Next Play Delay: Recommended play starts in <strong className="text-danger">{delayTime?.text || 'soon'}</strong> ({delayTime?.days || 0} days remaining).
+                          </span>
+                        </div>
+                      )}
                       <div className="row g-3 mb-4">
                         <div className="col-sm-4">
                           <div className="ca-metric-card-premium">
@@ -120,9 +135,20 @@ export default function StrategySelection() {
                       </div>
 
                       <div className="d-flex justify-content-end pt-2">
-                        <Link to={`/capital-access/${recommendedPlay.id}/overview`} className="ca-btn ca-btn-primary" style={{ minWidth: '180px' }}>
-                          View Strategy <i className="ri-arrow-right-line ms-1"></i>
-                        </Link>
+                        {isDelayActive ? (
+                          <button
+                            className="ca-btn ca-btn-outline"
+                            style={{ minWidth: '180px', cursor: 'not-allowed', opacity: 0.6 }}
+                            disabled
+                          >
+                            <i className="ri-lock-2-line me-1"></i>
+                            Locked — {delayTime?.text ?? 'soon'}
+                          </button>
+                        ) : (
+                          <Link to={`/capital-access/${recommendedPlay.id}/overview`} className="ca-btn ca-btn-primary" style={{ minWidth: '180px' }}>
+                            View Strategy <i className="ri-arrow-right-line ms-1"></i>
+                          </Link>
+                        )}
                       </div>
                     </div>
                   </div>
