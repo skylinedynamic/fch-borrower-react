@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { fetchFundingDetail, fetchReadinessFactors } from '../../../modules/funding/services';
-import { FUNDING_ICON_MAP, QUALIFY_REASONS_MAP, FUNDING_REVIEW_STATUS } from '../../../config/funding';
+import { FUNDING_ICON_MAP, QUALIFY_REASONS_MAP, FUNDING_REVIEW_STATUS, ENGINE_STATUS_LABELS, MATCH_LEVEL_LABELS, ENGINE_STATUS_VALUES, READINESS_FACTOR_LABELS, FACTOR_STATUS_VALUES, BADGE_LABELS, FACTOR_ICON_STYLES, META_ITEM_LABELS, READINESS_BADGE_STYLES } from '../../../config/funding';
 import { getFundingColorStyles } from '../../../config/fundingColor';
 import { toast } from 'react-toastify';
 import { UncontrolledTooltip } from 'reactstrap';
@@ -27,16 +27,7 @@ const resolveIcon = (icon: any): string => {
 // ─── Readiness Badge ──────────────────────────────────────────────────────────
 const ReadinessBadge: React.FC<{ status: string }> = ({ status }) => {
     const s = (status || '').toLowerCase();
-    const cfg: Record<string, { icon: string; bg: string; color: string }> = {
-        good: { icon: 'ri-checkbox-circle-fill', bg: '#e8f9f0', color: '#1a7a4a' },
-        strong: { icon: 'ri-checkbox-circle-fill', bg: '#dbeafe', color: '#1d4ed8' },
-        fair: { icon: 'ri-error-warning-fill', bg: '#fef3c7', color: '#92400e' },
-        missing: { icon: 'ri-information-fill', bg: '#fff3cd', color: '#92400e' },
-        weak: { icon: 'ri-close-circle-fill', bg: '#fee2e2', color: '#991b1b' },
-        restricted: { icon: 'ri-close-circle-fill', bg: '#fee2e2', color: '#ef4444' },
-        eligible: { icon: 'ri-checkbox-circle-fill', bg: '#e8f9f0', color: '#10b981' },
-    };
-    const style = cfg[s] || { icon: 'ri-question-line', bg: '#f0f3f7', color: '#4b5563' };
+    const style = READINESS_BADGE_STYLES[s] || { icon: 'ri-question-line', bg: '#f0f3f7', color: '#4b5563' };
     return (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, background: style.bg, color: style.color, padding: '3px 10px 3px 7px', borderRadius: 20 }}>
             <i className={style.icon} style={{ fontSize: 13 }} />
@@ -120,30 +111,24 @@ const ReadinessItem: React.FC<{ factor: any, isLast: boolean }> = ({ factor, isL
     let leftIcon = 'ri-question-line';
     let leftIconColor = '#9ca3af'; // gray
 
-    if (s === 'good' || s === 'eligible') {
-        leftIcon = 'ri-checkbox-circle-fill';
-        leftIconColor = '#10b981'; // green
-    } else if (s === 'strong') {
-        leftIcon = 'ri-star-fill';
-        leftIconColor = '#3b82f6'; // blue
-    } else if (s === 'missing' || s === 'restricted') {
-        leftIcon = 'ri-close-circle-fill';
-        leftIconColor = '#ef4444'; // red
+    if (FACTOR_ICON_STYLES[s]) {
+        leftIcon = FACTOR_ICON_STYLES[s].icon;
+        leftIconColor = FACTOR_ICON_STYLES[s].color;
     }
 
     let subtitle = '';
-    if (factor.label === 'Restricted State') {
+    if (factor.label === READINESS_FACTOR_LABELS.RESTRICTED_STATE) {
         subtitle = `Your business is located in ${factor.borrower_value}, which is a restricted state for this funding program.`;
-    } else if (factor.label === 'State Eligibility') {
-        if (s === 'missing' || s === 'restricted') {
+    } else if (factor.label === READINESS_FACTOR_LABELS.STATE_ELIGIBILITY) {
+        if (s === FACTOR_STATUS_VALUES.MISSING || s === FACTOR_STATUS_VALUES.RESTRICTED) {
             subtitle = `Your business is located in ${factor.borrower_value}. This program only allows specific states.`;
         } else {
             subtitle = `Your business location is eligible for this funding program.`;
         }
-    } else if (factor.label === 'Restricted Industry') {
+    } else if (factor.label === READINESS_FACTOR_LABELS.RESTRICTED_INDUSTRY) {
         subtitle = `Your business is in the ${factor.borrower_value} industry, which is restricted.`;
-    } else if (factor.label === 'Industry Eligibility') {
-        if (s === 'missing' || s === 'restricted') {
+    } else if (factor.label === READINESS_FACTOR_LABELS.INDUSTRY_ELIGIBILITY) {
+        if (s === FACTOR_STATUS_VALUES.MISSING || s === FACTOR_STATUS_VALUES.RESTRICTED) {
             subtitle = `Your industry (${factor.borrower_value}) is not supported.`;
         } else {
             subtitle = `Your industry is eligible for this funding program.`;
@@ -151,10 +136,10 @@ const ReadinessItem: React.FC<{ factor: any, isLast: boolean }> = ({ factor, isL
     }
 
     let badgeText = factor.status;
-    if ((factor.label === 'Restricted State' || factor.label === 'Restricted Industry') && s === 'missing') {
-        badgeText = 'Restricted';
-    } else if ((factor.label === 'State Eligibility' || factor.label === 'Industry Eligibility') && (s === 'good' || s === 'strong')) {
-        badgeText = 'Eligible';
+    if ((factor.label === READINESS_FACTOR_LABELS.RESTRICTED_STATE || factor.label === READINESS_FACTOR_LABELS.RESTRICTED_INDUSTRY) && s === FACTOR_STATUS_VALUES.MISSING) {
+        badgeText = BADGE_LABELS.RESTRICTED;
+    } else if ((factor.label === READINESS_FACTOR_LABELS.STATE_ELIGIBILITY || factor.label === READINESS_FACTOR_LABELS.INDUSTRY_ELIGIBILITY) && (s === FACTOR_STATUS_VALUES.GOOD || s === FACTOR_STATUS_VALUES.STRONG)) {
+        badgeText = BADGE_LABELS.ELIGIBLE;
     }
 
     return (
@@ -252,8 +237,8 @@ const FundingDetail = () => {
         description,
         icon,
         icon_color,
-        engine_status = 'Active',
-        engine_status_label = 'Eligible Now',
+        engine_status = ENGINE_STATUS_VALUES.ACTIVE,
+        engine_status_label = ENGINE_STATUS_LABELS.ELIGIBLE_NOW,
         qualify_reasons = [],
         readiness_factors = [],
         missing_documents = [],
@@ -263,16 +248,16 @@ const FundingDetail = () => {
     const colors = getFundingColorStyles(icon_color);
     const iconClass = resolveIcon(icon);
 
-    const isGreyedOut = engine_status === 'Greyed Out' || engine_status === 'Hidden';
-    const finalEngineStatus = engine_status || 'Active';
-    const displayLabel = engine_status_label || 'Likely Eligible';
+    const isGreyedOut = engine_status === ENGINE_STATUS_VALUES.GREYED_OUT || engine_status === ENGINE_STATUS_VALUES.HIDDEN;
+    const finalEngineStatus = engine_status || ENGINE_STATUS_VALUES.ACTIVE;
+    const displayLabel = engine_status_label || ENGINE_STATUS_LABELS.LIKELY_ELIGIBLE;
 
     // Meta row items
     const metaItems = [
-        { label: 'Recommended Range', value: amount_range || '—' },
-        { label: 'Term', value: terms || '—' },
-        { label: 'Speed to Funds', value: speed_to_funds ? `${speed_to_funds} Days` : '—' },
-        { label: 'Uses', value: Array.isArray(uses) && uses.length > 0 ? uses.join(', ') : '—' },
+        { label: META_ITEM_LABELS.RECOMMENDED_RANGE, value: amount_range || '—' },
+        { label: META_ITEM_LABELS.TERM, value: terms || '—' },
+        { label: META_ITEM_LABELS.SPEED_TO_FUNDS, value: speed_to_funds ? `${speed_to_funds} Days` : '—' },
+        { label: META_ITEM_LABELS.USES, value: Array.isArray(uses) && uses.length > 0 ? uses.join(', ') : '—' },
     ];
 
     const ctaSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -334,8 +319,8 @@ const FundingDetail = () => {
                                 <div className={`funding-detail-badge funding-detail-badge-${finalEngineStatus.toLowerCase().replace(' ', '-')}`}>
                                     {displayLabel}
                                 </div>
-                                {(finalEngineStatus === 'Active' || finalEngineStatus === 'Review') && (
-                                    <p className="mb-0 mt-1 text-muted" style={{ fontSize: 11, textAlign: 'right', fontWeight: 'bold' }}>High Match</p>
+                                {(finalEngineStatus === ENGINE_STATUS_VALUES.ACTIVE || finalEngineStatus === ENGINE_STATUS_VALUES.REVIEW) && (
+                                    <p className="mb-0 mt-1 text-muted" style={{ fontSize: 11, textAlign: 'right', fontWeight: 'bold' }}>{MATCH_LEVEL_LABELS.HIGH_MATCH}</p>
                                 )}
                             </div>
                         </div>
@@ -430,7 +415,7 @@ const FundingDetail = () => {
 
                                         const restrictedFactors = activeFactors.filter((f: any) => {
                                             const s = (f.status || '').toLowerCase();
-                                            return (f.label === 'Restricted State' || f.label === 'Restricted Industry' || f.label === 'State Eligibility' || f.label === 'Industry Eligibility') && (s === 'missing' || s === 'restricted');
+                                            return (f.label === READINESS_FACTOR_LABELS.RESTRICTED_STATE || f.label === READINESS_FACTOR_LABELS.RESTRICTED_INDUSTRY || f.label === READINESS_FACTOR_LABELS.STATE_ELIGIBILITY || f.label === READINESS_FACTOR_LABELS.INDUSTRY_ELIGIBILITY) && (s === FACTOR_STATUS_VALUES.MISSING || s === FACTOR_STATUS_VALUES.RESTRICTED);
                                         });
 
                                         return (

@@ -62,9 +62,13 @@ const FundingRequestWizard = () => {
             const usesArray = typeof fundingDetail.uses === 'string' ? JSON.parse(fundingDetail.uses) : fundingDetail.uses;
             if (Array.isArray(usesArray)) {
                 return usesArray.map((u: any) => {
-                    const label = typeof u === 'object' ? (u.name || u.label) : u;
-                    return { label, value: label };
-                }).filter((item: any) => item.label);
+                    if (typeof u === 'object' && u !== null) {
+                        const val = u.value || u.name || u.label;
+                        const lbl = u.label || u.name || u.value;
+                        return { value: String(val), label: String(lbl) };
+                    }
+                    return { value: String(u), label: String(u) };
+                }).filter((item: any) => item.label && item.value);
             }
         } catch (e) {
             console.error(e);
@@ -133,23 +137,28 @@ const FundingRequestWizard = () => {
                         let defaultUse = '';
                         if (Array.isArray(parsedUsesArray) && parsedUsesArray.length > 0) {
                             const firstObj = parsedUsesArray[0];
-                            defaultUse = typeof firstObj === 'object' ? (firstObj.name || firstObj.label) : firstObj;
+                            defaultUse = typeof firstObj === 'object' ? (firstObj.value || firstObj.name || firstObj.label) : String(firstObj);
                         }
 
                         const newAmount = prev.requested_amount || res.data.latest_requested_amount || '';
                         let newPurpose = prev.use_of_funds;
-                        const purposeExistsInArray = parsedUsesArray.some(u => {
-                            const val = typeof u === 'object' ? (u.name || u.label) : u;
+                        const purposeExistsInArray = Array.isArray(parsedUsesArray) && parsedUsesArray.some(u => {
+                            const val = typeof u === 'object' ? (u.value || u.name || u.label) : String(u);
                             return val === newPurpose;
                         });
                         
                         if (!newPurpose || !purposeExistsInArray) {
-                             newPurpose = res.data.latest_use_of_funds || defaultUse;
+                            const latestExists = Array.isArray(parsedUsesArray) && parsedUsesArray.some(u => {
+                                const val = typeof u === 'object' ? (u.value || u.name || u.label) : String(u);
+                                return val === res.data.latest_use_of_funds;
+                            });
+                            newPurpose = latestExists ? res.data.latest_use_of_funds : defaultUse;
                         }
-                        if (parsedUsesArray.length === 1 && defaultUse) {
+                        
+                        if (Array.isArray(parsedUsesArray) && parsedUsesArray.length === 1 && defaultUse) {
                             newPurpose = defaultUse;
                         }
-                        return { requested_amount: newAmount, use_of_funds: newPurpose };
+                        return { ...prev, requested_amount: newAmount, use_of_funds: newPurpose };
                     });
                 } else {
                     toast.error(res.message || 'Failed to load funding details');
