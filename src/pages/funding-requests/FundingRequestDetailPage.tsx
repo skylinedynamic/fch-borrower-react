@@ -7,6 +7,8 @@ import { downloadBlob, downloadFileFromUrl, handleFileDownload } from '../../uti
 import { getFileConfig, getDocumentStatusBadgeClass } from '../../config/fileTypeConfig'
 import { FUNDING_REVIEW_STATUS, FUNDING_REVIEW_STATUS_COLORS } from '../../config/funding'
 import { toast } from 'react-toastify'
+import FileUploadModal from '../../components/Common/Modal/FileUploadModal'
+import ReviewProgressCard from './components/ReviewProgressCard'
 import '../../components/Common/StatisticsCardSkeleton.css'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -532,6 +534,30 @@ export default function FundingRequestDetailPage() {
                         <div className="row g-4 mt-1">
                             {/* Left Column */}
                             <div className="col-lg-8">
+                                {/* Review Progress Card Skeleton */}
+                                <div className="card border-0 shadow-sm mb-4">
+                                    <div className="card-body p-0">
+                                        <div className="p-4 d-flex justify-content-between align-items-center border-bottom border-light">
+                                            <div className="d-flex align-items-center">
+                                                <div className="me-3">
+                                                    <Skeleton w={48} h={48} rounded />
+                                                </div>
+                                                <div>
+                                                    <div className="mb-2"><Skeleton w={150} h={18} /></div>
+                                                    <div><Skeleton w={220} h={14} /></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <Skeleton w={76} h={76} rounded />
+                                            </div>
+                                        </div>
+                                        <div className="p-4 pt-4">
+                                            <Skeleton w="100%" h={80} rounded />
+                                            <div className="mt-4"><Skeleton w="100%" h={60} rounded /></div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 {/* Summary Card Skeleton */}
                                 <div className="card border-0 shadow-sm mb-4">
                                     <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
@@ -699,6 +725,12 @@ export default function FundingRequestDetailPage() {
 
                         {/* ── Left Column: Details Cards (Summary, Documents, Decision) ── */}
                         <div className="col-lg-8">
+                            <ReviewProgressCard 
+                                status={review.status} 
+                                createdAt={review.created_at} 
+                                updatedAt={review.updated_at} 
+                            />
+
                             {/* Summary Card */}
                             <div className="card border-0 shadow-sm mb-4">
                                 <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
