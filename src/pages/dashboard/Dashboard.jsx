@@ -222,7 +222,7 @@ export default function Dashboard() {
 
                 {/* --- Header Section --- */}
                 {showAlert && (
-                    <div className="row mb-4">
+                    <div className="row mt-4">
                         <div className="col-12">
                             <div className="card bg-danger-subtle border-0 shadow-sm border-start border-danger border-3">
                                 <div className="card-body p-4">

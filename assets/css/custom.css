@@ -1008,7 +1008,7 @@ File: Custom Css File
     padding: 0 10px 14px;
     z-index: 10;
     /* Match the sidebar background so it covers scrolled content */
-    background: var(--vz-sidebar-bg, #1a1d21);
+    background: transparent;
 }
 
 .trial-panel-inner {
@@ -1074,9 +1074,9 @@ File: Custom Css File
 }
 
 .trial-expires {
-    font-size: 10.5px;
+    font-size: 10px;
     font-weight: 400;
-    color: #94a3b8;
+    color: #fca5a5;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1137,7 +1137,7 @@ File: Custom Css File
 /* Light sidebar — override background */
 [data-sidebar="light"] .sidebar-trial-panel,
 .light-sidebar .sidebar-trial-panel {
-    background: var(--vz-sidebar-bg, #f3f6f9);
+    background: transparent;
 }
 
 
