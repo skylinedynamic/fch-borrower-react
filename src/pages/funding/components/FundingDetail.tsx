@@ -413,15 +413,21 @@ const FundingDetail = () => {
                                             return <p style={{ fontSize: 13, color: '#9ca3af', margin: 0 }}>No readiness factors available.</p>;
                                         }
 
-                                        const restrictedFactors = activeFactors.filter((f: any) => {
+                                        const visibleFactors = activeFactors.filter((f: any) => {
                                             const s = (f.status || '').toLowerCase();
-                                            return (f.label === READINESS_FACTOR_LABELS.RESTRICTED_STATE || f.label === READINESS_FACTOR_LABELS.RESTRICTED_INDUSTRY || f.label === READINESS_FACTOR_LABELS.STATE_ELIGIBILITY || f.label === READINESS_FACTOR_LABELS.INDUSTRY_ELIGIBILITY) && (s === FACTOR_STATUS_VALUES.MISSING || s === FACTOR_STATUS_VALUES.RESTRICTED);
+                                            const isStateOrIndustry = f.label === READINESS_FACTOR_LABELS.RESTRICTED_STATE || f.label === READINESS_FACTOR_LABELS.RESTRICTED_INDUSTRY || f.label === READINESS_FACTOR_LABELS.STATE_ELIGIBILITY || f.label === READINESS_FACTOR_LABELS.INDUSTRY_ELIGIBILITY;
+                                            
+                                            // Hide state/industry if they are Good/Strong
+                                            if (isStateOrIndustry && (s === FACTOR_STATUS_VALUES.GOOD || s === FACTOR_STATUS_VALUES.STRONG)) {
+                                                return false;
+                                            }
+                                            return true;
                                         });
 
                                         return (
                                             <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                {activeFactors.map((f: any, i: number) => (
-                                                    <ReadinessItem key={i} factor={f} isLast={i === activeFactors.length - 1} />
+                                                {visibleFactors.map((f: any, i: number) => (
+                                                    <ReadinessItem key={i} factor={f} isLast={i === visibleFactors.length - 1} />
                                                 ))}
                                             </div>
                                         );
