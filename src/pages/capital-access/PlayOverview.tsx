@@ -16,12 +16,12 @@ export default function PlayOverview() {
             <div className="row pb-1 mb-3">
               <div className="col-12">
                 <div className="d-flex align-items-center gap-3 py-2 w-100">
-                  <div className="ca-back-btn" style={{ cursor: 'default', opacity: 0.5 }}>
+                  <div className="ca-back-btn disabled">
                     <i className="ri-arrow-left-line fs-16"></i>
                   </div>
                   <div className="w-100">
-                    <div className="skeleton-line mb-2" style={{ width: '200px', height: '24px', borderRadius: '4px' }} />
-                    <div className="skeleton-line" style={{ width: '380px', height: '14px', borderRadius: '3px' }} />
+                    <div className="skeleton-line mb-2 ca-skeleton-title" />
+                    <div className="skeleton-line ca-skeleton-subtitle" />
                   </div>
                 </div>
               </div>
@@ -68,7 +68,7 @@ export default function PlayOverview() {
           {play.approval_status === false ? (
 
             <div className={`ca-hero-card-premium ${play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'border-warning-subtle' : 'border-danger-subtle'}`}>
-              <div className="ca-hero-header-premium" style={{ borderBottom: 'none' }}>
+              <div className="ca-hero-header-premium ca-hero-header-no-border">
                 <div className="d-flex align-items-center gap-3 w-100">
                   <div className="avatar-sm flex-shrink-0">
                     <span className={`avatar-title rounded-circle fs-20 ${play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger'}`}>
@@ -86,11 +86,8 @@ export default function PlayOverview() {
                 </div>
               </div>
 
-              <div className="ca-card-body" style={{ padding: '0 28px 28px 28px' }}>
-                <div className="p-3 rounded-3 mb-4" style={{
-                  background: play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'rgba(243, 156, 18, 0.05)' : 'rgba(250, 95, 95, 0.05)',
-                  border: play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? '1px solid rgba(243, 156, 18, 0.15)' : '1px solid rgba(250, 95, 95, 0.15)'
-                }}>
+              <div className="ca-card-body ca-card-body-locked">
+                <div className={`ca-checklist-locked-notice mb-4 ${play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'is-warning' : 'is-danger'}`}>
                   <p className="text-muted fs-13 mb-0 leading-relaxed">
                     <i className={play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? 'ri-time-line text-warning me-1' : 'ri-information-fill text-danger me-1'}></i>
                     {play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' ? (
@@ -131,13 +128,13 @@ export default function PlayOverview() {
                 )}
               </div>
 
-              <div className="ca-card-body" style={{ padding: '28px' }}>
+              <div className="ca-card-body ca-card-body-padding">
                 {/* Key Metrics */}
                 <div className="row g-3 mb-4">
                   <div className="col-md-4">
                     <div className="ca-metric-card-premium">
                       <span className="ca-metric-label-premium">
-                        <i className="ri-money-dollar-circle-line fs-14" style={{ color: '#60a5fa' }}></i> Target Exposure
+                        <i className="ri-money-dollar-circle-line fs-14 text-exposure"></i> Target Exposure
                       </span>
                       <p className="ca-metric-value-premium primary">
                         {play?.target_exposure}
@@ -147,7 +144,7 @@ export default function PlayOverview() {
                   <div className="col-md-4">
                     <div className="ca-metric-card-premium">
                       <span className="ca-metric-label-premium">
-                        <i className="ri-percent-line fs-14" style={{ color: '#34d399' }}></i> Approval Probability
+                        <i className="ri-percent-line fs-14 text-probability"></i> Approval Probability
                       </span>
                       <p className="ca-metric-value-premium success">{play?.approval_probability}</p>
                     </div>
@@ -155,7 +152,7 @@ export default function PlayOverview() {
                   <div className="col-md-4">
                     <div className="ca-metric-card-premium">
                       <span className="ca-metric-label-premium">
-                        <i className="ri-calendar-line fs-14" style={{ color: '#38bdf8' }}></i> Est. Timeline
+                        <i className="ri-calendar-line fs-14 text-timeline"></i> Est. Timeline
                       </span>
                       <p className="ca-metric-value-premium timeline">{play?.est_timeline}</p>
                     </div>
@@ -165,12 +162,12 @@ export default function PlayOverview() {
                 {/* Benefits */}
                 {play?.benefits && play.benefits.length > 0 && (
                   <div className="mb-4">
-                    <span className="ca-section-label mb-3 d-block" style={{ fontWeight: 700, fontSize: '11px', color: '#94a3b8' }}>What You'll Get</span>
+                    <span className="ca-section-label mb-3 d-block">What You'll Get</span>
                     <div className="row g-2">
                       {play.benefits.map((benefit: string, idx: number) => (
                         <div key={idx} className="col-12 mt-0">
-                          <div className="d-flex align-items-start gap-2 p-2 rounded-3" style={{ background: 'var(--vz-secondary-bg)' }}>
-                            <i className="ri-check-line fs-16 flex-shrink-0" style={{ color: 'var(--vz-success)' }}></i>
+                          <div className="d-flex align-items-start gap-2 p-2 rounded-3 ca-benefit-item">
+                            <i className="ri-check-line fs-16 flex-shrink-0 ca-benefit-icon"></i>
                             <span className="text-muted fs-13">{benefit}</span>
                           </div>
                         </div>
@@ -182,10 +179,10 @@ export default function PlayOverview() {
                 <hr className="ca-divider my-4" />
 
                 <div className="d-flex align-items-center justify-content-end gap-3 w-100">
-                  <Link to="/capital-access/strategy" className="ca-btn ca-btn-outline" style={{ minWidth: '180px' }}>
+                  <Link to="/capital-access/strategy" className="ca-btn ca-btn-outline ca-btn-min-w">
                     <i className="ri-arrow-left-line"></i> Back
                   </Link>
-                  <Link to={`/capital-access/${play?.id}/pre-flight`} className="ca-btn ca-btn-primary" style={{ minWidth: '180px' }}>
+                  <Link to={`/capital-access/${play?.id}/pre-flight`} className="ca-btn ca-btn-primary ca-btn-min-w">
                     Start This Play <i className="ri-arrow-right-line"></i>
                   </Link>
                 </div>

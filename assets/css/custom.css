@@ -1,4 +1,4 @@
-:root {
+﻿:root {
     --primary-color: var(--primary-color);
     --secondary-color: var(--secondary-color);
 }
@@ -1613,7 +1613,7 @@ File: Custom Css File
 /* ─── Checklist locked notice ──────────────────────────────────────────── */
 .ca-checklist-locked-notice {
     padding: 12px 16px;
-    border-radius: 6px;
+    border-radius: 4px;
     border: 1px solid transparent;
 }
 
@@ -1992,6 +1992,7 @@ File: Custom Css File
     margin: 0;
     line-height: 1.5;
 }
+
 .ca-dw-access-badge {
     display: inline-flex;
     align-items: center;
@@ -3643,7 +3644,7 @@ File: Custom Css File
 /* Form Controls Beautification */
 .ca-form-card .form-control {
     border: 1px solid #d1d5db;
-    border-radius: 8px;
+    border-radius: 4px;
     padding: 12px 16px;
     font-size: 14px;
     transition: all 0.2s ease;
@@ -3836,9 +3837,17 @@ File: Custom Css File
 }
 
 /* ── Approval-odds colour helpers ────────────────────────── */
-.ca-odds-high { color: var(--vz-success); }
-.ca-odds-mid  { color: #f59e0b; }
-.ca-odds-low  { color: var(--vz-danger); }
+.ca-odds-high {
+    color: var(--vz-success);
+}
+
+.ca-odds-mid {
+    color: #f59e0b;
+}
+
+.ca-odds-low {
+    color: var(--vz-danger);
+}
 
 /* ── Outcome icon circle (40×40) ─────────────────────────── */
 .ca-outcome-icon-circle {
@@ -3905,9 +3914,310 @@ File: Custom Css File
     background: #f9fafb;
 }
 
-/* ── Notes textarea ──────────────────────────────────────── */
 .ca-textarea {
     background: #f9fafb;
-    border-radius: 8px;
+    border-radius: 4px;
     resize: vertical;
+}
+
+/* ─── Capital Access Design Upgrades / Cleanup ──────────── */
+.ca-back-btn.disabled,
+.ca-back-btn.disabled:hover {
+    pointer-events: none;
+    cursor: default;
+    opacity: 0.5;
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: var(--ca-border, #e3e6eb) !important;
+    background: var(--ca-card-bg, #ffffff) !important;
+    color: #6b7280 !important;
+}
+
+.ca-skeleton-title {
+    width: 200px;
+    height: 24px;
+    border-radius: 4px;
+}
+
+.ca-skeleton-subtitle {
+    width: 380px;
+    height: 14px;
+    border-radius: 3px;
+}
+
+.ca-hero-header-no-border {
+    border-bottom: none !important;
+}
+
+.ca-card-body-locked {
+    padding: 0 28px 28px 28px !important;
+}
+
+.ca-card-body-padding {
+    padding: 28px !important;
+}
+
+
+
+.text-exposure {
+    color: #60a5fa !important;
+}
+
+.text-probability {
+    color: #34d399 !important;
+}
+
+.text-timeline {
+    color: #38bdf8 !important;
+}
+
+.ca-section-label {
+    font-weight: 700;
+    font-size: 11px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ca-benefit-item {
+    background: var(--vz-secondary-bg);
+}
+
+.ca-benefit-icon {
+    color: var(--vz-success);
+}
+
+.ca-btn-min-w {
+    min-width: 180px !important;
+}
+
+.ca-metric-card-premium.disabled,
+.ca-metric-card-premium.disabled:hover {
+    transform: none !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02) !important;
+    border-color: rgba(227, 230, 235, 0.8) !important;
+    background: #ffffff !important;
+    cursor: default !important;
+}
+
+.ca-metric-card-premium.disabled::before,
+.ca-metric-card-premium.disabled:hover::before {
+    background: transparent !important;
+}
+
+/* ─── Capital Access Skeleton Loader Styles ─────────────── */
+.ca-sk-metric {
+    padding: 16px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    height: 100%;
+}
+
+.ca-sk-card {
+    background: var(--vz-card-bg, #fff);
+    border: 1px solid var(--vz-border-color, #e9ebec);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: var(--vz-card-box-shadow);
+}
+
+.ca-mb-20 {
+    margin-bottom: 20px !important;
+}
+
+.ca-mb-0 {
+    margin-bottom: 0px !important;
+}
+
+.ca-sk-card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--vz-border-color, #e9ebec);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.ca-sk-card-body.ca-p-20 {
+    padding: 20px !important;
+}
+
+.ca-sk-card-body.ca-p-16 {
+    padding: 16px !important;
+}
+
+.ca-sk-flex-end-pt8 {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 8px;
+}
+
+.ca-sk-list-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ca-sk-list-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    border: 1px solid var(--vz-border-color, #e9ebec);
+    border-left: 3px solid transparent;
+    border-radius: 4px;
+    background: var(--vz-card-bg, #fff);
+    box-shadow: var(--vz-card-box-shadow);
+    gap: 16px;
+}
+
+.ca-sk-row-content {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    min-width: 0;
+}
+
+.ca-sk-flex-minw0 {
+    flex: 1;
+    min-width: 0;
+}
+
+.ca-sk-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.ca-sk-no-bg-pad {
+    background: none !important;
+    padding: 0 !important;
+}
+
+.ca-sk-progress-bar {
+    width: 60% !important;
+    background: none !important;
+    height: 100% !important;
+    border-radius: 3px !important;
+}
+
+.ca-sk-footer-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 16px;
+}
+
+.ca-m-0 {
+    margin: 0px !important;
+}
+
+.ca-sk-next-step-btn {
+    width: 180px;
+    height: 41px;
+    border-radius: var(--ca-radius, 4px);
+    flex-shrink: 0;
+}
+
+.ca-sk-flex-between-mb8 {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.ca-sk-checklist-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border: 1px solid var(--vz-border-color, #e9ebec);
+    border-left: 3px solid transparent;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    gap: 12px;
+}
+
+.ca-sk-checklist-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.ca-sk-checklist-footer {
+    margin-top: 24px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.ca-sk-roadmap-header-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.ca-sk-stepper-wrap {
+    padding-left: 54px;
+    position: relative;
+}
+
+.ca-sk-stepper-line {
+    position: absolute;
+    left: 27px;
+    top: 24px;
+    bottom: 24px;
+    width: 2px;
+    background: var(--vz-border-color, #ced4da);
+    border-radius: 2px;
+}
+
+.ca-sk-step-row {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+    zIndex: 1;
+}
+
+.ca-sk-step-dot-wrap {
+    position: absolute;
+    left: -45px;
+    top: 6px;
+}
+
+.ca-sk-step-card {
+    flex: 1;
+    padding: 14px 16px;
+    border: 1px solid var(--vz-border-color, #e9ebec);
+    border-left: 3px solid transparent;
+    border-radius: 4px;
+    background: var(--vz-card-bg, #fff);
+    box-shadow: var(--vz-card-box-shadow);
+}
+
+.ca-sk-benefit-row {
+    padding: 12px;
+    border-radius: 4px;
+    background: var(--vz-secondary-bg);
+    display: flex;
+    gap: 10px;
+}
+
+.ca-sk-overview-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 3px;
+    width: 100%;
+}
+
+.ca-sk-vertical-bar {
+    width: 24px !important;
+    border-radius: 4px 4px 0 0 !important;
+    border: none !important;
+    margin: 0px !important;
 }

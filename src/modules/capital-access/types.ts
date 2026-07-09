@@ -1,20 +1,3 @@
-export interface RoadmapStep {
-  id: number;
-  day: number;
-  issuer: string;
-  card_name: string;
-  exposure: string;
-  status: 'Completed' | 'Active' | 'Locked';
-  why: string;
-  approval_odds: string;
-  hard_pull: string;
-  requirements: string[];
-  result: {
-    status: 'Approved' | 'Pending' | 'Declined';
-    limit: number;
-    notes?: string;
-  } | null;
-}
 
 export interface RoadmapCard {
   id: number;                   // sequence id
@@ -104,7 +87,7 @@ export interface CapitalAccessStrategy {
   approval_probability: string; // e.g. "95%"
   benefits: string[];
   checklist: Array<{ id: string; label: string; complete: boolean }>;
-  roadmap: RoadmapStep[];
+  roadmap: RoadmapCard[];
   approval_status?: boolean;
   reason_code?: string | null;
   unlock_at?: string | null;
