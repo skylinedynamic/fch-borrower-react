@@ -789,7 +789,7 @@ export default function FundingRequestDetailPage() {
                                                     </div>
                                                 </div>
                                             )}
-                                            {(review.status === FUNDING_REVIEW_STATUS.APPROVED || review.status === 'Accepted') && (
+                                            {review.status === FUNDING_REVIEW_STATUS.APPROVED && (
                                                 <div className="col-12">
                                                     <div className="alert alert-success border-0 mb-0">
                                                         <p className="mb-0 fs-13">

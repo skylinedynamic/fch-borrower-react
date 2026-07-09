@@ -259,7 +259,7 @@ export default function FundingRequestList() {
                                                 <button className="btn btn-sm btn-primary text-nowrap" onClick={() => handleView(row)}>
                                                     <i className="ri-eye-line align-bottom me-1"></i> Details
                                                 </button>
-                                                {(row.status === FUNDING_REVIEW_STATUS.APPROVED || row.status === FUNDING_REVIEW_STATUS.ACCEPTED) && (
+                                                {row.status === FUNDING_REVIEW_STATUS.APPROVED && (
                                                         <Link 
                                                         to="/fund-application" 
                                                         state={{
