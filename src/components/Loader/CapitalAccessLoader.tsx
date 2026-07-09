@@ -8,7 +8,7 @@ interface CapitalAccessLoaderProps {
 const SkLine = ({
   w = '100%',
   h = 16,
-  radius = 6,
+  radius = 4,
   mb = 0,
   mx = '',
 }: {
@@ -46,7 +46,7 @@ const SkCircle = ({ size = 48 }: { size?: number }) => (
 const SkRect = ({
   w = '100%',
   h = 48,
-  radius = 8,
+  radius = 4,
   mb = 0,
 }: {
   w?: string | number
@@ -67,15 +67,7 @@ const SkRect = ({
 
 /* ─── Metric block (label + big value) ─────────────────────── */
 const SkMetric = () => (
-  <div
-    style={{
-      padding: '16px',
-      borderRadius: '8px',
-      background: 'rgba(0,0,0,0.03)',
-      border: '1px solid rgba(0,0,0,0.07)',
-      height: '100%',
-    }}
-  >
+  <div className="ca-sk-metric">
     <SkLine w="55%" h={11} mb={10} />
     <SkLine w="70%" h={32} />
   </div>
@@ -89,30 +81,13 @@ const SkCard = ({
   children: React.ReactNode
   mb?: number
 }) => (
-  <div
-    style={{
-      background: 'var(--vz-card-bg, #fff)',
-      border: '1px solid var(--vz-border-color, #e9ebec)',
-      borderRadius: '6px',
-      overflow: 'hidden',
-      boxShadow: 'var(--vz-card-box-shadow)',
-      marginBottom: mb,
-    }}
-  >
+  <div className={`ca-sk-card ca-mb-${mb}`}>
     {children}
   </div>
 )
 
 const SkCardHeader = ({ children }: { children: React.ReactNode }) => (
-  <div
-    style={{
-      padding: '16px 20px',
-      borderBottom: '1px solid var(--vz-border-color, #e9ebec)',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 14,
-    }}
-  >
+  <div className="ca-sk-card-header">
     {children}
   </div>
 )
@@ -123,7 +98,7 @@ const SkCardBody = ({
 }: {
   children: React.ReactNode
   pad?: number
-}) => <div style={{ padding: pad }}>{children}</div>
+}) => <div className={`ca-sk-card-body ca-p-${pad}`}>{children}</div>
 
 /* ═══════════════════════════════════════════════════════════
    LIST  (strategy selection page)
@@ -136,7 +111,7 @@ function ListLoader() {
         <SkCard mb={0}>
           <SkCardHeader>
             <SkCircle size={52} />
-            <div style={{ flex: 1 }}>
+            <div className="flex-grow-1">
               <SkLine w="45%" h={20} mb={8} />
               <SkLine w="70%" h={14} />
             </div>
@@ -150,7 +125,7 @@ function ListLoader() {
                 </div>
               ))}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 8 }}>
+            <div className="ca-sk-flex-end-pt8">
               <SkRect w={140} h={40} radius={6} />
             </div>
           </SkCardBody>
@@ -158,31 +133,17 @@ function ListLoader() {
       </div>
 
       {/* Other strategies list */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="ca-sk-list-wrapper">
         {[1, 2, 3, 4].map((n) => (
-          <div
-            key={n}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '16px 18px',
-              border: '1px solid var(--vz-border-color, #e9ebec)',
-              borderLeft: '3px solid transparent',
-              borderRadius: '6px',
-              background: 'var(--vz-card-bg, #fff)',
-              boxShadow: 'var(--vz-card-box-shadow)',
-              gap: 16,
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1, minWidth: 0 }}>
+          <div key={n} className="ca-sk-list-row">
+            <div className="ca-sk-row-content">
               <SkCircle size={40} />
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="ca-sk-flex-minw0">
                 <SkLine w="50%" h={14} mb={6} />
                 <SkLine w="70%" h={12} />
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+            <div className="ca-sk-row-actions">
               <SkRect w={90} h={36} radius={6} />
               <SkRect w={90} h={36} radius={6} />
               <SkCircle size={20} />
@@ -212,7 +173,7 @@ function DetailLoader() {
                   <span className="ca-score-value">
                     <SkLine w={50} h={34} />
                   </span>
-                  <span className="ca-score-status" style={{ background: 'none', padding: 0 }}>
+                  <span className="ca-score-status ca-sk-no-bg-pad">
                     <SkLine w={65} h={22} radius={12} />
                   </span>
                 </div>
@@ -225,15 +186,7 @@ function DetailLoader() {
             <div className="ca-slider-wrapper">
               <div className="ca-custom-progress-container">
                 <div className="progress ca-custom-progress">
-                  <div
-                    className="progress-bar skeleton-line"
-                    style={{
-                      width: '60%',
-                      background: 'none',
-                      height: '100%',
-                      borderRadius: '3px'
-                    }}
-                  ></div>
+                  <div className="progress-bar skeleton-line ca-sk-progress-bar"></div>
                 </div>
               </div>
             </div>
@@ -274,19 +227,15 @@ function DetailLoader() {
               {[1, 2, 3, 4, 5].map((_, index) => (
                 <div
                   key={index}
-                  className="skeleton-line"
+                  className="skeleton-line ca-sk-vertical-bar"
                   style={{
-                    height: `${25 + (index % 3) * 20}%`,
-                    width: '24px',
-                    borderRadius: '4px 4px 0 0',
-                    border: 'none',
-                    margin: 0
+                    height: `${25 + (index % 3) * 20}%`
                   }}
                 />
               ))}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 16 }}>
+            <div className="ca-sk-footer-wrap">
               <SkCircle size={6} />
               <SkLine w={120} h={12} />
             </div>
@@ -300,12 +249,12 @@ function DetailLoader() {
           <h6 className="ca-next-step-label">
             <SkLine w={180} h={14} mb={8} />
           </h6>
-          <p className="ca-next-step-desc" style={{ margin: 0 }}>
+          <p className="ca-next-step-desc ca-m-0">
             <SkLine w="100%" h={12} mb={4} />
             <SkLine w="65%" h={12} />
           </p>
         </div>
-        <div className="skeleton-line" style={{ width: '180px', height: '41px', borderRadius: 'var(--ca-radius, 4px)', flexShrink: 0 }} />
+        <div className="skeleton-line ca-sk-next-step-btn" />
       </div>
     </>
   )
@@ -317,20 +266,14 @@ function ChecklistLoader() {
     <SkCard>
       <SkCardHeader>
         <SkCircle size={52} />
-        <div style={{ flex: 1 }}>
+        <div className="flex-grow-1">
           <SkLine w="45%" h={20} mb={8} />
           <SkLine w="70%" h={14} />
         </div>
       </SkCardHeader>
       <SkCardBody>
         {/* Progress bar area */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginBottom: 8,
-          }}
-        >
+        <div className="ca-sk-flex-between-mb8">
           <SkLine w={100} h={13} />
           <SkLine w={60} h={13} />
         </div>
@@ -339,21 +282,8 @@ function ChecklistLoader() {
         {/* Checklist items */}
         <SkLine w={180} h={18} mb={14} />
         {[1, 2, 3, 4, 5].map((i) => (
-          <div
-            key={i}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '14px 16px',
-              border: '1px solid var(--vz-border-color, #e9ebec)',
-              borderLeft: '3px solid transparent',
-              borderRadius: '6px',
-              marginBottom: 8,
-              gap: 12,
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
+          <div key={i} className="ca-sk-checklist-row">
+            <div className="ca-sk-checklist-content">
               <SkCircle size={28} />
               <SkLine w="60%" h={15} />
             </div>
@@ -362,7 +292,7 @@ function ChecklistLoader() {
         ))}
 
         {/* Action button */}
-        <div style={{ marginTop: 24, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+        <div className="ca-sk-checklist-footer">
           <SkRect w={110} h={40} radius={6} />
           <SkRect w={140} h={40} radius={6} />
         </div>
@@ -375,23 +305,12 @@ function ChecklistLoader() {
 function RoadmapLoader() {
   return (
     <>
-      {/* Summary bar */}
-      <SkCard mb={20}>
-        <SkCardBody pad={16}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-            {[1, 2, 3].map((i) => (
-              <div key={i} style={{ flex: 1 }}>
-                <SkMetric />
-              </div>
-            ))}
-          </div>
-        </SkCardBody>
-      </SkCard>
+
 
       {/* Roadmap steps */}
       <SkCard>
         <SkCardHeader>
-          <div style={{ flex: 1 }}>
+          <div className="flex-grow-1">
             <SkLine w="40%" h={20} mb={8} />
             <SkLine w="55%" h={14} />
           </div>
@@ -399,61 +318,18 @@ function RoadmapLoader() {
         </SkCardHeader>
         <SkCardBody>
           {/* Stepper */}
-          <div style={{ paddingLeft: 54, position: 'relative' }}>
+          <div className="ca-sk-stepper-wrap">
             {/* Vertical line */}
-            <div
-              style={{
-                position: 'absolute',
-                left: 27,
-                top: 24,
-                bottom: 24,
-                width: 2,
-                background: 'var(--vz-border-color, #ced4da)',
-                borderRadius: 2,
-              }}
-            />
+            <div className="ca-sk-stepper-line" />
             {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                style={{
-                  position: 'relative',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: 16,
-                  marginBottom: 16,
-                  zIndex: 1,
-                }}
-              >
+              <div key={i} className="ca-sk-step-row">
                 {/* Dot */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: -45,
-                    top: 6,
-                  }}
-                >
+                <div className="ca-sk-step-dot-wrap">
                   <SkCircle size={36} />
                 </div>
                 {/* Step card */}
-                <div
-                  style={{
-                    flex: 1,
-                    padding: '14px 16px',
-                    border: '1px solid var(--vz-border-color, #e9ebec)',
-                    borderLeft: '3px solid transparent',
-                    borderRadius: 6,
-                    background: 'var(--vz-card-bg, #fff)',
-                    boxShadow: 'var(--vz-card-box-shadow)',
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginBottom: 8,
-                    }}
-                  >
+                <div className="ca-sk-step-card">
+                  <div className="ca-sk-flex-between-mb8">
                     <SkLine w="45%" h={18} />
                     <SkRect w={90} h={26} radius={14} />
                   </div>
@@ -469,27 +345,25 @@ function RoadmapLoader() {
   )
 }
 
-/* ═══════════════════════════════════════════════════════════
-   OVERVIEW  (play overview page)
-   ═══════════════════════════════════════════════════════════ */
+/* ─── OVERVIEW  (play overview page) ─────────────────── */
 function OverviewLoader() {
   return (
     <div className="ca-hero-card-premium">
       <div className="ca-hero-header-premium">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1 }}>
+        <div className="ca-sk-row-content">
           <SkCircle size={44} />
-          <div style={{ flex: 1 }}>
+          <div className="flex-grow-1">
             <SkLine w="40%" h={18} mb={8} />
             <SkLine w="60%" h={13} />
           </div>
         </div>
       </div>
 
-      <div className="ca-card-body" style={{ padding: '28px' }}>
+      <div className="ca-card-body ca-card-body-padding">
         <div className="row g-3 mb-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="col-md-4">
-              <div className="ca-metric-card-premium">
+              <div className="ca-metric-card-premium disabled">
                 <SkLine w="55%" h={12} mb={12} />
                 <SkLine w="70%" h={24} />
               </div>
@@ -502,7 +376,7 @@ function OverviewLoader() {
           <div className="row g-2">
             {[1, 2, 3].map((i) => (
               <div key={i} className="col-12 mt-0">
-                <div style={{ padding: '12px', borderRadius: '8px', background: 'var(--vz-secondary-bg)', display: 'flex', gap: 10 }}>
+                <div className="ca-sk-benefit-row">
                   <SkCircle size={16} />
                   <SkLine w="85%" h={12} />
                 </div>
@@ -513,7 +387,7 @@ function OverviewLoader() {
 
         <hr className="ca-divider my-4" />
 
-        <div className="d-flex align-items-center justify-content-between gap-3 w-100">
+        <div className="ca-sk-overview-footer">
           <SkRect w="50%" h={40} radius={6} />
           <SkRect w="50%" h={40} radius={6} />
         </div>

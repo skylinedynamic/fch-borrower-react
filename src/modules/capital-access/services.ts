@@ -106,7 +106,8 @@ export const fetchCapitalAccessStepDetail = async (
   sequenceId: string | number
 ): Promise<CapitalAccessStepDetail> => {
   const { data } = await apiClient.get<StrategyDetailResponse>(
-    `/borrower/capital-access/strategies/${strategyId}/step/${sequenceId}`
+    `/borrower/capital-access/strategies/${strategyId}/step/${sequenceId}`,
+    { headers: { 'X-Skip-Toast': 'true' } }
   )
   return data.data
 }

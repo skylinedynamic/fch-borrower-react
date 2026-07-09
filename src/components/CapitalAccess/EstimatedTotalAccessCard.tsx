@@ -45,7 +45,7 @@ export default function EstimatedTotalAccessCard({
           </div>
         </div>
 
-        {reasonCode && reasonCode !== 'NO_ACTIVE_PLAY_CHOSEN' && (
+        {reasonCode && reasonCode !== 'NO_ACTIVE_PLAY_CHOSEN' && reasonCode !== 'NEXT_PLAY_DELAY_ACTIVE' && (
           <div className="mt-3 p-3 rounded-3 fs-13 d-flex align-items-center gap-3 animate__animated animate__fadeIn" style={{
             background: reasonCode === 'ALL_PLAYS_COMPLETED' ? 'rgba(16, 185, 129, 0.04)' : reasonCode === 'NEXT_PLAY_DELAY_ACTIVE' ? 'rgba(243, 156, 18, 0.04)' : 'rgba(250, 95, 95, 0.04)',
             border: reasonCode === 'ALL_PLAYS_COMPLETED' ? '1px solid rgba(16, 185, 129, 0.15)' : reasonCode === 'NEXT_PLAY_DELAY_ACTIVE' ? '1px solid rgba(243, 156, 18, 0.15)' : '1px solid rgba(250, 95, 95, 0.15)',
