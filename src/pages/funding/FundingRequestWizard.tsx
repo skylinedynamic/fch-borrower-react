@@ -262,7 +262,7 @@ const FundingRequestWizard = () => {
         try {
             const response = await apiClient.post('/borrower/funding/requests', {
                 funding_sequence_id: fundingDetail.id,
-                funding_type: fundingDetail.name,
+                funding_type: fundingDetail.funding_type_name || fundingDetail.name,
                 requested_amount: formData.requested_amount,
                 use_of_funds: formData.use_of_funds,
                 documents_uploaded: requiredDocTypes.filter(t => !missingDocs.includes(t.name)).map(t => t.name),
@@ -608,7 +608,7 @@ const FundingRequestWizard = () => {
                                                 <div className="d-flex flex-column gap-3">
                                                     <div className="d-flex justify-content-between align-items-start">
                                                         <span className="text-muted fs-13" style={{ width: '45%' }}>Funding Type</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{fundingDetail.name}</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{fundingDetail.funding_type_name || fundingDetail.name}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
                                                         <span className="text-muted fs-13" style={{ width: '45%' }}>Estimated Speed to Funds</span>
