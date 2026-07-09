@@ -4,6 +4,7 @@ import { SavePersonalInfoRequest, SaveBusinessDetailsRequest, SaveFinancialInfoR
 import PersonalInfo from './components/PersonalInfo'
 import BusinessDetails from './components/BusinessDetails'
 import FinancialSupport from './components/FinancialSupport'
+import CreditProfileTab from './components/CreditProfileTab'
 
 export default function Profile() {
   const [searchParams] = useSearchParams()
@@ -53,6 +54,7 @@ export default function Profile() {
     years_in_business: '',
     monthly_revenue: '',
     annual_revenue: '',
+    bank_accounts: [],
   })
 
   useEffect(() => {
@@ -114,6 +116,18 @@ export default function Profile() {
                     Financial
                   </button>
                 </li>
+                <li>
+                  <button
+                    type="button"
+                    className={`tab-btn ${step === 3 ? 'active' : ''}`}
+                    onClick={(e) => {
+                      e.currentTarget.blur()
+                      setStep(3)
+                    }}
+                  >
+                    Credit profile
+                  </button>
+                </li>
               </ul>
             </div>
             <div className="card-body checkout-tab">
@@ -143,6 +157,10 @@ export default function Profile() {
                     onBack={() => setStep(1)}
                     saving={saving}
                   />
+                )}
+
+                {step === 3 && (
+                  <CreditProfileTab />
                 )}
               </div>
             </div>

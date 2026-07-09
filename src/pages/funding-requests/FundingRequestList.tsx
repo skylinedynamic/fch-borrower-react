@@ -14,18 +14,21 @@ export default function FundingRequestList() {
     const [perPage, setPerPage] = useState(10)
     const [searchText, setSearchText] = useState('')
     const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
+    const [selectedFundingType, setSelectedFundingType] = useState<string | null>(null)
     
     const [appliedSearchText, setAppliedSearchText] = useState('')
     const [appliedStatus, setAppliedStatus] = useState<string | null>(null)
+    const [appliedFundingType, setAppliedFundingType] = useState<string | null>(null)
 
     const [sortField, setSortField] = useState<string>('id')
     const [sortOrder, setSortOrder] = useState<number>(-1)
 
-    const { data, isLoading } = useBorrowerFundingRequests({
+    const { data, isLoading, isFetching } = useBorrowerFundingRequests({
         page,
         per_page: perPage,
         search: appliedSearchText,
         status: appliedStatus || undefined,
+        funding_sequence_id: appliedFundingType || undefined,
         sort_field: sortField,
         sort_order: sortOrder === 1 ? 'asc' : 'desc'
     })
@@ -33,15 +36,16 @@ export default function FundingRequestList() {
     // Fix the nested data access
     const reviews = data?.data || []
     const total = data?.meta?.total || 0
+    const fundingTypes = data?.funding_types || []
 
     // Compute dummy stats from current page since there's no stats API
     const computeStats = () => {
         if (!data?.data) return null;
         let approved = 0, pending = 0, rejected = 0;
         data.data.forEach((r: any) => {
-            if (r.status === 'Approved') approved++;
-            if (r.status === 'Pending') pending++;
-            if (r.status === 'Rejected') rejected++;
+            if (r.status === FUNDING_REVIEW_STATUS.APPROVED || r.status === FUNDING_REVIEW_STATUS.ACCEPTED) approved++;
+            if (r.status === FUNDING_REVIEW_STATUS.PENDING) pending++;
+            if (r.status === FUNDING_REVIEW_STATUS.REJECTED) rejected++;
         });
         return {
             total_reviews: total,
@@ -69,21 +73,24 @@ export default function FundingRequestList() {
     const handleApplyFilters = () => {
         setAppliedSearchText(searchText)
         setAppliedStatus(selectedStatus)
+        setAppliedFundingType(selectedFundingType)
         setPage(1)
     }
 
     const handleClearFilters = () => {
         setSearchText('')
         setSelectedStatus(null)
+        setSelectedFundingType(null)
         setAppliedSearchText('')
         setAppliedStatus(null)
+        setAppliedFundingType(null)
         setPage(1)
     }
 
     const statusBodyTemplate = (row: any) => {
         let bg = 'warning'
-        if (row.status === 'Approved') bg = 'success'
-        if (row.status === 'Rejected') bg = 'danger'
+        if (row.status === FUNDING_REVIEW_STATUS.APPROVED || row.status === FUNDING_REVIEW_STATUS.ACCEPTED) bg = 'success'
+        if (row.status === FUNDING_REVIEW_STATUS.REJECTED) bg = 'danger'
         return <span className={`badge bg-${bg}`}>{row.status}</span>
     }
 
@@ -156,7 +163,7 @@ export default function FundingRequestList() {
                                     handleApplyFilters();
                                 }}>
                                     <div className="row g-3 mb-4">
-                                        <div className="col-xxl-6 col-sm-6">
+                                        <div className="col-xxl-4 col-sm-6">
                                             <div className="search-box">
                                                 <input
                                                     type="text"
@@ -175,7 +182,7 @@ export default function FundingRequestList() {
                                                 <i className="ri-search-line search-icon"></i>
                                             </div>
                                         </div>
-                                        <div className="col-xxl-4 col-sm-6">
+                                        <div className="col-xxl-3 col-sm-6">
                                             <Dropdown
                                                 value={selectedStatus}
                                                 options={Object.values(FUNDING_REVIEW_STATUS).map(status => ({
@@ -184,6 +191,20 @@ export default function FundingRequestList() {
                                                 }))}
                                                 onChange={(e) => setSelectedStatus(e.value)}
                                                 placeholder="All Statuses"
+                                                className="w-100 bg-light border-light"
+                                                style={{ height: '38px' }}
+                                                inputStyle={{ height: '38px' }}
+                                            />
+                                        </div>
+                                        <div className="col-xxl-3 col-sm-6">
+                                            <Dropdown
+                                                value={selectedFundingType}
+                                                options={fundingTypes.map((ft: any) => ({
+                                                    label: ft.name,
+                                                    value: ft.id
+                                                }))}
+                                                onChange={(e) => setSelectedFundingType(e.value)}
+                                                placeholder="All Funding Types"
                                                 className="w-100 bg-light border-light"
                                                 style={{ height: '38px' }}
                                                 inputStyle={{ height: '38px' }}
@@ -216,7 +237,7 @@ export default function FundingRequestList() {
                                         onSort={onSort}
                                         sortField={sortField}
                                         sortOrder={sortOrder as any}
-                                        loading={isLoading}
+                                        loading={isLoading || isFetching}
                                         dataKey="id"
                                         emptyMessage={<div className="text-center p-3">No funding requests found.</div>}
                                     >
@@ -234,12 +255,27 @@ export default function FundingRequestList() {
                                         <Column field="status" header="Status" sortable body={statusBodyTemplate}></Column>
                                         <Column field="created_at" header="Created At" sortable body={(row) => row.created_at ? new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : 'N/A'}></Column>
                                         <Column header="Actions" body={(row: any) => (
-                                            <div className="d-flex gap-2">
-                                                <button className="btn btn-sm btn-primary" onClick={() => handleView(row)}>
+                                            <div className="d-flex gap-2 align-items-center">
+                                                <button className="btn btn-sm btn-primary text-nowrap" onClick={() => handleView(row)}>
                                                     <i className="ri-eye-line align-bottom me-1"></i> Details
                                                 </button>
+                                                {row.status === FUNDING_REVIEW_STATUS.APPROVED && (
+                                                        <Link 
+                                                        to="/fund-application" 
+                                                        state={{
+                                                            purpose: row.use_of_funds === 'Working Capital' ? 'Working Capital (General Use)' : row.use_of_funds,
+                                                            requested_amount: row.requested_amount,
+                                                            approved_funding: row.funding_sequence?.name || row.funding_type,
+                                                            funding_type: row.funding_type
+                                                        }}
+                                                        className="btn btn-success btn-sm text-nowrap"
+                                                        title="Process Funding Application"
+                                                    >
+                                                        Process Funding Application <i className="ri-arrow-right-line align-bottom ms-1"></i>
+                                                    </Link>
+                                                )}
                                             </div>
-                                        )} style={{ width: '120px' }}></Column>
+                                        )} style={{ minWidth: '150px' }}></Column>
                                     </DataTable>
                                 </div>
                             </div>

@@ -18,6 +18,11 @@ const toDate = (d?: string | null) => {
 export function isSubscriptionRestricted(subscription: UserSubscription | null | undefined): boolean {
     if (!subscription) return false;
 
+    // If client is on a free trial, do not restrict access/menus
+    if (subscription.is_free_trail) {
+        return false;
+    }
+
     // 1. Check White-Label Partner enrollment fee status
     const partnerType = String(subscription.partner_type).toLowerCase();
 
@@ -48,4 +53,13 @@ export function isSubscriptionRestricted(subscription: UserSubscription | null |
     }
 
     return false;
+}
+
+/**
+ * Returns true when the borrower is on the Limited Free Edition (free trial).
+ * While on the free trial the following modules must be locked:
+ *   Capital Access, Invoices, Payments, Resource Hub, Credit Builder
+ */
+export function isFreeTrialLocked(subscription: UserSubscription | null | undefined): boolean {
+    return !!subscription?.is_free_trail;
 }

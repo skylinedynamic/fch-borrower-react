@@ -5,8 +5,10 @@ import { getBorrowerActivityLogs, downloadActivityAttachment } from '../../modul
 import { downloadBorrowerDocument } from '../../modules/documents/services'
 import { downloadBlob, downloadFileFromUrl, handleFileDownload } from '../../utils/fileDownload'
 import { getFileConfig, getDocumentStatusBadgeClass } from '../../config/fileTypeConfig'
-import { FUNDING_REVIEW_STATUS } from '../../config/funding'
+import { FUNDING_REVIEW_STATUS, FUNDING_REVIEW_STATUS_COLORS } from '../../config/funding'
 import { toast } from 'react-toastify'
+import FileUploadModal from '../../components/Common/Modal/FileUploadModal'
+import ReviewProgressCard from './components/ReviewProgressCard'
 import '../../components/Common/StatisticsCardSkeleton.css'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -113,6 +115,92 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
 
     const toggleExpand = () => setExpanded(!expanded)
 
+    const getStatusColor = (status: string) => {
+        const s = status.toLowerCase();
+
+        const configKey = Object.keys(FUNDING_REVIEW_STATUS_COLORS).find(
+            key => key.toLowerCase() === s || s.includes(key.toLowerCase())
+        );
+        if (configKey) {
+            return FUNDING_REVIEW_STATUS_COLORS[configKey];
+        }
+
+        if (s === 'good' || s === 'strong') {
+            return '#10B981';
+        }
+        if (s.includes('fail') || s.includes('miss')) {
+            return '#EF4444';
+        }
+        return 'inherit';
+    };
+
+    const formatActivityTitle = (rawTitle: string) => {
+        if (typeof rawTitle !== 'string') return rawTitle;
+
+        // Check if there is an explicit old status and new status in changes/old_values
+        const oldStatus = activity.old_values?.status || activity.properties?.old?.status;
+        const newStatus = activity.status || activity.properties?.status;
+
+        if (rawTitle.includes('Status Changed:') || rawTitle.includes('Status Changed') || ((rawTitle === 'Funding Request Status Updated' || rawTitle === 'Funding Request Status Changed') && oldStatus && newStatus)) {
+            let prefix = 'Funding Request Status Changed:';
+            let oldFormatted = oldStatus ? (oldStatus.charAt(0).toUpperCase() + oldStatus.slice(1)) : '';
+            let newFormatted = newStatus ? (newStatus.charAt(0).toUpperCase() + newStatus.slice(1)) : '';
+
+            if (rawTitle.includes('Status Changed:') || rawTitle.includes('Status Changed')) {
+                const separator = rawTitle.includes('Status Changed:') ? 'Status Changed:' : 'Status Changed';
+                const parts = rawTitle.split(separator);
+                prefix = (parts[0] + separator).trim();
+                const statusPart = parts.slice(1).join(separator).trim();
+
+                const arrow = statusPart.includes('→') ? '→' : (statusPart.includes('->') ? '->' : null);
+                if (arrow) {
+                    const statuses = statusPart.split(arrow);
+                    oldFormatted = statuses[0].trim();
+                    newFormatted = statuses[1].trim();
+                } else {
+                    oldFormatted = '';
+                    newFormatted = statusPart;
+                }
+            }
+
+            if (oldFormatted && newFormatted) {
+                return (
+                    <span className="d-block" style={{ lineHeight: '1.4' }}>
+                        <span className="text-dark fw-bold d-block">{prefix}</span>
+                        <span className="d-inline-flex align-items-center flex-wrap gap-1 mt-1">
+                            <span style={{ color: getStatusColor(oldFormatted), fontWeight: '700' }}>{oldFormatted}</span>
+                            <span className="text-muted px-1" style={{ fontSize: '11px' }}>→</span>
+                            <span style={{ color: getStatusColor(newFormatted), fontWeight: '700' }}>{newFormatted}</span>
+                        </span>
+                    </span>
+                );
+            } else if (newFormatted) {
+                return (
+                    <span className="d-block" style={{ lineHeight: '1.4' }}>
+                        <span className="text-dark fw-bold d-block">{prefix}</span>
+                        <span style={{ color: getStatusColor(newFormatted), fontWeight: '700' }} className="d-block mt-1">{newFormatted}</span>
+                    </span>
+                );
+            }
+        }
+
+        // Support direct formats like "Funding Request InProgress to Pending Status Updated"
+        if (rawTitle.includes('InProgress to Pending')) {
+            return (
+                <span className="d-block" style={{ lineHeight: '1.4' }}>
+                    <span className="text-dark fw-bold d-block">Funding Request Status Changed:</span>
+                    <span className="d-inline-flex align-items-center flex-wrap gap-1 mt-1">
+                        <span style={{ color: getStatusColor('In Progress'), fontWeight: '700' }}>In Progress</span>
+                        <span className="text-muted px-1" style={{ fontSize: '11px' }}>→</span>
+                        <span style={{ color: getStatusColor('Pending'), fontWeight: '700' }}>Pending</span>
+                    </span>
+                </span>
+            );
+        }
+
+        return rawTitle;
+    };
+
     const handleDownload = async (activityId: number | string, file: any) => {
         try {
             const fileName = file.name || file;
@@ -141,7 +229,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
     return (
         <div className="d-flex timeline-item-row position-relative mb-2">
             {/* Left timeline dot */}
-            <div className="timeline-dot-container me-3 position-relative" style={{ zIndex: 2 }}>
+            <div className="timeline-dot-container me-3 position-relative" style={{ zIndex: 2, marginTop: '2px' }}>
                 <div className={`avatar-sm rounded-circle d-flex align-items-center justify-content-center ${bg} ${color} shadow-sm border border-white`} style={{ width: 36, height: 36 }}>
                     <i className={`${icon} fs-16`}></i>
                 </div>
@@ -153,11 +241,11 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
                     <div className="d-flex align-items-start justify-content-between gap-3">
                         <div style={{ minWidth: 0 }} onClick={toggleExpand} className="cursor-pointer flex-grow-1">
                             {/* Title */}
-                            <h6 className="mb-0 fw-bold text-dark fs-13">{title}</h6>
+                            <h6 className="mb-0 fw-bold text-dark fs-13">{formatActivityTitle(title)}</h6>
 
                             {/* Subtitle / Meta */}
-                            <p className="mb-2 text-muted fs-11 mt-1 d-flex align-items-center flex-wrap">
-                                <i className="ri-time-line align-middle me-1 fs-11 text-muted" style={{ marginRight: '2px' }}></i>
+                            <p className="mb-2 text-muted fs-11 mt-1 d-flex align-items-center gap-1">
+                                <i className="ri-time-line text-muted fs-11"></i>
                                 <span>{timestamp}</span>
                             </p>
 
@@ -194,42 +282,81 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
                             display: 'grid',
                             gridTemplateRows: expanded ? '1fr' : '0fr',
                             transition: 'grid-template-rows 0.3s ease',
+                            overflow: 'hidden',
                         }}
                     >
                         <div style={{ overflow: 'hidden', paddingLeft: '2px' }}>
                             <div className={isFirst || isApprove ? "mt-3 pt-3 border-top border-light-subtle" : "mt-2"}>
                                 {isFirst ? (
                                     /* Request details layout (Adapted for sidebar width) */
-                                    <div>
-                                        <div className="pt-3 border-top border-light-subtle mb-3">
-                                            <h6 className="fw-semibold text-dark fs-13 mb-3">Request Details</h6>
-                                            <div className="row g-3">
-                                                <div className="col-6">
-                                                    <p className="fs-11 text-muted mb-1">Amount Requested</p>
-                                                    <h6 className="mb-0 fw-semibold text-dark fs-13">
-                                                        {review.requested_amount ? `$${Number(review.requested_amount).toLocaleString()}` : 'N/A'}
+                                    <div className="pt-1">
+                                        <h6 className="activity-section-title">
+                                            Request Details
+                                        </h6>
+
+                                        <div className="activity-detail-card mb-2">
+
+                                            <div className="row g-0">
+
+                                                <div className="col-6 activity-detail-item">
+                                                    <p className="activity-detail-label">
+                                                        Amount Requested
+                                                    </p>
+
+                                                    <h6 className="activity-detail-value">
+                                                        {review.requested_amount
+                                                            ? `$${Number(review.requested_amount).toLocaleString()}`
+                                                            : 'N/A'}
                                                     </h6>
                                                 </div>
-                                                <div className="col-6">
-                                                    <p className="fs-11 text-muted mb-1">Funding Purpose</p>
-                                                    <h6 className="mb-0 fw-semibold text-dark fs-13">{review.use_of_funds || 'Working Capital'}</h6>
+
+                                                <div className="col-6 activity-detail-item">
+                                                    <p className="activity-detail-label">
+                                                        Funding Purpose
+                                                    </p>
+
+                                                    <h6 className="activity-detail-value text-truncate">
+                                                        {review.use_of_funds || 'Working Capital'}
+                                                    </h6>
                                                 </div>
+
                                             </div>
+
                                         </div>
                                     </div>
                                 ) : isApprove ? (
                                     /* Approval details layout */
-                                    <div>
-                                        <h6 className="fw-semibold text-dark fs-12 mb-2">Approval Details</h6>
-                                        <div className="row g-2 bg-light rounded-3 p-2.5 mb-2 mx-0">
-                                            <div className="col-6">
-                                                <p className="text-muted fs-10 text-uppercase mb-0.5">Approved By</p>
-                                                <h6 className="mb-0 fw-bold text-dark fs-12">{review.reviewer?.name || causedBy}</h6>
+                                    <div className="pt-1">
+                                        <h6 className="activity-section-title">
+                                            Approval Details
+                                        </h6>
+
+                                        <div className="activity-detail-card mb-2">
+
+                                            <div className="row g-0">
+
+                                                <div className="col-6 activity-detail-item">
+                                                    <p className="activity-detail-label">
+                                                        Approved By
+                                                    </p>
+
+                                                    <h6 className="activity-detail-value">
+                                                        {review.reviewer?.name || causedBy}
+                                                    </h6>
+                                                </div>
+
+                                                <div className="col-6 activity-detail-item">
+                                                    <p className="activity-detail-label">
+                                                        Funding Sequence
+                                                    </p>
+
+                                                    <h6 className="activity-detail-value text-truncate">
+                                                        {categoryName}
+                                                    </h6>
+                                                </div>
+
                                             </div>
-                                            <div className="col-6">
-                                                <p className="text-muted fs-10 text-uppercase mb-0.5">Funding sequence</p>
-                                                <h6 className="mb-0 fw-bold text-dark fs-12 text-truncate">{categoryName}</h6>
-                                            </div>
+
                                         </div>
                                     </div>
                                 ) : (
@@ -407,6 +534,60 @@ export default function FundingRequestDetailPage() {
                         <div className="row g-4 mt-1">
                             {/* Left Column */}
                             <div className="col-lg-8">
+                                {/* Review Progress Card Skeleton */}
+                                <div className="card border-0 shadow-sm mb-4">
+                                    <div className="card-body p-0">
+                                        <div className="p-4 d-flex justify-content-between align-items-center border-bottom border-light">
+                                            <div className="d-flex align-items-center">
+                                                <div className="me-3">
+                                                    <Skeleton w={48} h={48} rounded />
+                                                </div>
+                                                <div>
+                                                    <div className="mb-2"><Skeleton w={150} h={18} /></div>
+                                                    <div><Skeleton w={220} h={14} /></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <Skeleton w={76} h={76} rounded />
+                                            </div>
+                                        </div>
+                                        <div className="p-4 pt-5 pb-5 overflow-hidden">
+                                            <div className="d-flex justify-content-between align-items-start position-relative px-3">
+                                                {[1, 2, 3, 4, 5].map((_, idx) => (
+                                                    <React.Fragment key={idx}>
+                                                        <div className="d-flex flex-column align-items-center position-relative" style={{ width: 100, flexShrink: 0 }}>
+                                                            <div className="mb-2"><Skeleton w={36} h={36} rounded /></div>
+                                                            <div className="mb-1"><Skeleton w={70} h={14} /></div>
+                                                            <div className="mt-1"><Skeleton w={90} h={10} /></div>
+                                                            <div className="mt-1"><Skeleton w={110} h={10} /></div>
+                                                        </div>
+                                                        {idx < 4 && (
+                                                            <div className="flex-grow-1" style={{ height: 2, marginTop: 17, backgroundColor: '#f1f5f9', marginLeft: -36, marginRight: -36 }}></div>
+                                                        )}
+                                                    </React.Fragment>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Decision Details Skeleton */}
+                                <div className="card border-0 shadow-sm mb-4">
+                                    <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
+                                        <div className="d-flex align-items-center gap-2">
+                                            <Skeleton w={16} h={16} rounded />
+                                            <Skeleton w={120} h={18} />
+                                        </div>
+                                    </div>
+                                    <div className="card-body px-4 pb-4 pt-3">
+                                        <div className="mb-3">
+                                            <div className="mb-2"><Skeleton w={100} h={14} /></div>
+                                            <Skeleton w={150} h={16} />
+                                        </div>
+                                        <Skeleton w="100%" h={60} rounded />
+                                    </div>
+                                </div>
+
                                 {/* Summary Card Skeleton */}
                                 <div className="card border-0 shadow-sm mb-4">
                                     <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
@@ -526,7 +707,7 @@ export default function FundingRequestDetailPage() {
     }
 
     const filtered = getFilteredActivities()
-    const pageTitle = review?.funding_sequence?.name || review?.funding_type || 'Funding Request Detail'
+    const pageTitle = 'Funding Request Details'
 
     // Compute dynamic tab counts
     const countFunding = activities.filter(a => String(a.log_type_raw || '').includes('funding_request') || String(a.event_label || '').toLowerCase().includes('funding')).length
@@ -574,6 +755,70 @@ export default function FundingRequestDetailPage() {
 
                         {/* ── Left Column: Details Cards (Summary, Documents, Decision) ── */}
                         <div className="col-lg-8">
+                            <ReviewProgressCard 
+                                status={review.status} 
+                                createdAt={review.created_at} 
+                                updatedAt={review.updated_at}
+                                rejectReason={review.reject_reason} 
+                            />
+
+                            {/* Decision Details */}
+                            {(review.reviewer?.name || [FUNDING_REVIEW_STATUS.APPROVED, FUNDING_REVIEW_STATUS.REJECTED, 'Accepted'].includes(review.status)) && (
+                                <div className="card border-0 shadow-sm mb-4">
+                                    <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
+                                        <h6 className="mb-0 fw-bold fs-15">
+                                            <i className={`ri-shield-check-line me-2 ${review.status === FUNDING_REVIEW_STATUS.REJECTED ? 'text-danger' : 'text-success'}`}></i>
+                                            Decision Details
+                                        </h6>
+                                    </div>
+                                    <div className="card-body px-4 pb-4 pt-3">
+                                        <div className="row g-3">
+                                            {review.reviewer?.name && (
+                                                <div className="col-12">
+                                                    <p className="text-muted mb-1 fs-13">Reviewed By:</p>
+                                                    <p className="fw-semibold text-dark mb-0">{review.reviewer.name}</p>
+                                                </div>
+                                            )}
+                                            {review.status === FUNDING_REVIEW_STATUS.REJECTED && review.reject_reason && (
+                                                <div className="col-12">
+                                                    <div className="alert alert-danger border-0 mb-0">
+                                                        <p className="mb-0 fs-13">
+                                                            <span className="fw-bold">Reason for Rejection:</span>{' '}
+                                                            {review.reject_reason}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {review.status === FUNDING_REVIEW_STATUS.APPROVED && (
+                                                <div className="col-12">
+                                                    <div className="alert alert-success border-0 mb-0">
+                                                        <p className="mb-0 fs-13">
+                                                            <span className="fw-bold">Approved:</span>{' '}
+                                                            Your funding request has been approved for {review.funding_type}. Please proceed with the final funding application.
+                                                        </p>
+                                                        <div className="mt-3">
+                                                            <Link 
+                                                                to="/fund-application" 
+                                                                state={{
+                                                                    purpose: review.use_of_funds === 'Working Capital' ? 'Working Capital (General Use)' : review.use_of_funds,
+                                                                    requested_amount: review.requested_amount,
+                                                                    approved_funding: review.funding_sequence?.name || review.funding_type,
+                                                                    funding_type: review.funding_type
+                                                                }}
+                                                                className="btn btn-success btn-sm fw-medium px-4 d-inline-flex align-items-center"
+                                                            >
+                                                                Process Funding Application
+                                                                <i className="ri-arrow-right-line ms-2"></i>
+                                                            </Link>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Summary Card */}
                             <div className="card border-0 shadow-sm mb-4">
                                 <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
@@ -654,7 +899,7 @@ export default function FundingRequestDetailPage() {
                                                 <tbody>
                                                     {review.actual_documents.map((doc: any, idx: number) => {
                                                         const config = getFileConfig(doc.document_url || doc.file_path || doc.document_name || '')
-                                                        
+
                                                         const handleDownload = (e: React.MouseEvent) => {
                                                             e.preventDefault();
                                                             let fileName = doc.document_name || 'document';
@@ -662,7 +907,7 @@ export default function FundingRequestDetailPage() {
                                                             if (ext && !fileName.toLowerCase().endsWith(`.${ext}`)) {
                                                                 fileName += `.${ext}`;
                                                             }
-                                                            
+
                                                             if (doc.id && !String(doc.id).startsWith('missing_')) {
                                                                 handleFileDownload(
                                                                     () => downloadBorrowerDocument(doc.id),
@@ -720,47 +965,6 @@ export default function FundingRequestDetailPage() {
                                 </div>
                             </div>
 
-                            {/* Decision Details */}
-                            {(review.reviewer?.name || [FUNDING_REVIEW_STATUS.APPROVED, FUNDING_REVIEW_STATUS.REJECTED, 'Accepted'].includes(review.status)) && (
-                                <div className="card border-0 shadow-sm mb-4">
-                                    <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
-                                        <h6 className="mb-0 fw-bold fs-15">
-                                            <i className="ri-shield-check-line me-2 text-success"></i>
-                                            Decision Details
-                                        </h6>
-                                    </div>
-                                    <div className="card-body px-4 pb-4 pt-3">
-                                        <div className="row g-3">
-                                            {review.reviewer?.name && (
-                                                <div className="col-12">
-                                                    <p className="text-muted mb-1 fs-13">Reviewed By:</p>
-                                                    <p className="fw-semibold text-dark mb-0">{review.reviewer.name}</p>
-                                                </div>
-                                            )}
-                                            {review.status === FUNDING_REVIEW_STATUS.REJECTED && review.reject_reason && (
-                                                <div className="col-12">
-                                                    <div className="alert alert-danger border-0 mb-0">
-                                                        <p className="mb-0 fs-13">
-                                                            <span className="fw-bold">Reason for Rejection:</span>{' '}
-                                                            {review.reject_reason}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            )}
-                                            {(review.status === FUNDING_REVIEW_STATUS.APPROVED || review.status === 'Accepted') && (
-                                                <div className="col-12">
-                                                    <div className="alert alert-success border-0 mb-0">
-                                                        <p className="mb-0 fs-13">
-                                                            <span className="fw-bold">Approved:</span>{' '}
-                                                            Your funding request has been approved for {review.funding_type}. Please proceed with the final funding application.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
                         </div>
 
                         {/* ── Right Column: Activity Log Timeline Sidebar ── */}

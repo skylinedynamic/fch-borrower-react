@@ -10,7 +10,7 @@ import CreditGuide from '../src/pages/credit-builder/creditguide/CreditGuide.tsx
 import FundApplication from '../src/pages/fundapplication/FundApplication.tsx'
 import PreQualification from '../src/pages/prequalification/PreQualification.tsx'
 import Documents from '../src/pages/documents/Documents.tsx'
-import { ProtectedRoute, GuestRoute, HostRoute, checkSession, refreshSubscription } from './lib/auth'
+import { ProtectedRoute, GuestRoute, HostRoute, CapitalAccessGuard, CapitalAccessStrategyGuard, checkSession, refreshSubscription } from './lib/auth'
 import { useAuthStore } from './store/auth'
 import Profile from '../src/pages/profile/profile.tsx'
 import MyApplication from '../src/pages/myapplication/MyApplication.tsx'
@@ -22,12 +22,13 @@ import CreditOverview from '../src/pages/credit-builder/creditoverview/CreditOve
 import VendorApplication from '../src/pages/credit-builder/creditvendorapplication/CreditAccounts.tsx'
 import ProgressTracker from '../src/pages/credit-builder/creditprogresstracker/ProgressTracker.tsx'
 import CreditResources from '../src/pages/credit-builder/creditresources/CreditResources.tsx'
-import StrategySelection from '../src/pages/credit-builder/capital-access/StrategySelection.tsx'
-import PlayOverview from '../src/pages/credit-builder/capital-access/PlayOverview.tsx'
-import PreFlightChecklist from '../src/pages/credit-builder/capital-access/PreFlightChecklist.tsx'
-import PlayRoadmap from '../src/pages/credit-builder/capital-access/PlayRoadmap.tsx'
-import StepDetail from '../src/pages/credit-builder/capital-access/StepDetail.tsx'
-import PlayCompletion from '../src/pages/credit-builder/capital-access/PlayCompletion.tsx'
+import CapitalAccess from '../src/pages/capital-access/CapitalAccess.tsx'
+import StrategySelection from '../src/pages/capital-access/StrategySelection.tsx'
+import PlayOverview from '../src/pages/capital-access/PlayOverview.tsx'
+import PreFlightChecklist from '../src/pages/capital-access/PreFlightChecklist.tsx'
+import PlayRoadmap from '../src/pages/capital-access/PlayRoadmap.tsx'
+import StepDetail from '../src/pages/capital-access/StepDetail.tsx'
+import PlayCompletion from '../src/pages/capital-access/PlayCompletion.tsx'
 import ResourceHub from '../src/pages/resources/ResourceHub.jsx'
 import ResourceDetail from '../src/pages/resources/ResourceDetail.jsx'
 import Funding from '../src/pages/funding/Funding.tsx'
@@ -133,15 +134,22 @@ export default function App() {
               <Route index element={<CreditOverview />} />
               <Route path="overview" element={<CreditOverview />} />
               <Route path="guide" element={<CreditGuide />} />
-              <Route path="strategy" element={<StrategySelection />} />
-              <Route path="strategy/:id/overview" element={<PlayOverview />} />
-              <Route path="strategy/:id/pre-flight" element={<PreFlightChecklist />} />
-              <Route path="strategy/:id/roadmap" element={<PlayRoadmap />} />
-              <Route path="strategy/:id/step/:stepId" element={<StepDetail />} />
-              <Route path="strategy/:id/completion" element={<PlayCompletion />} />
               <Route path="credit-accounts" element={<VendorApplication />} />
               <Route path="progress-tracker" element={<ProgressTracker />} />
               <Route path="resources" element={<CreditResources />} />
+            </Route>
+
+            <Route path="capital-access" element={<CapitalAccessGuard />}>
+              <Route index element={<CapitalAccess />} />
+              <Route path="strategy" element={<StrategySelection />} />
+              {/* CapitalAccessStrategyGuard validates the :id against the user's recommended strategy */}
+              <Route path=":id" element={<CapitalAccessStrategyGuard />}>
+                <Route path="overview" element={<PlayOverview />} />
+                <Route path="pre-flight" element={<PreFlightChecklist />} />
+                <Route path="roadmap" element={<PlayRoadmap />} />
+                <Route path="step/:stepId" element={<StepDetail />} />
+                <Route path="completion" element={<PlayCompletion />} />
+              </Route>
             </Route>
 
             <Route path="documents" element={<Documents />} />
@@ -156,4 +164,5 @@ export default function App() {
       </Routes>
     </>
   )
+
 }

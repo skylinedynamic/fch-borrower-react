@@ -36,6 +36,8 @@ export default function FundingRequestStep({
   const location = useLocation()
   const urlApprovedFunding = (location.state as any)?.approved_funding
   const urlRequestedAmount = (location.state as any)?.requested_amount
+  const urlFundingType = (location.state as any)?.funding_type
+  const urlPurpose = (location.state as any)?.purpose
 
   // Fetch approved funding options
   const { data: fundingOptionsData } = useQuery({
@@ -52,6 +54,14 @@ export default function FundingRequestStep({
       }))
     )
   }, [fundingOptionsData])
+
+  const dynamicFundingTypeOptions = React.useMemo(() => {
+    const opts = [...fundingTypeOptions]
+    if (urlFundingType && !opts.find(o => o.value === urlFundingType)) {
+      opts.push({ label: urlFundingType, value: urlFundingType })
+    }
+    return opts
+  }, [urlFundingType])
 
   // Memoized save handler
   const handleSave = useCallback(async (): Promise<boolean> => {
@@ -114,7 +124,9 @@ export default function FundingRequestStep({
       setFunding({
         ...funding,
         approvedFunding: urlApprovedFunding,
-        requestedAmount: urlRequestedAmount ? formatCurrency(urlRequestedAmount) : ''
+        requestedAmount: urlRequestedAmount ? formatCurrency(urlRequestedAmount) : '',
+        fundingType: urlFundingType || funding.fundingType,
+        purpose: urlPurpose || funding.purpose,
       })
     }
   }, [isSuccess, apiData])
@@ -215,7 +227,6 @@ export default function FundingRequestStep({
           placeholder="Select approved funding"
           className={`w-100 ${hasError('approved_funding') ? 'is-invalid' : ''}`}
           searchable
-          disabled={!!urlApprovedFunding}
         />
         {hasError('approved_funding') && (
           <div className="invalid-feedback d-block">{getFieldError('approved_funding')}</div>
@@ -229,7 +240,7 @@ export default function FundingRequestStep({
         <CustomDropdown
           value={funding.fundingType}
           onChange={(value) => setFunding({ ...funding, fundingType: value })}
-          options={fundingTypeOptions}
+          options={dynamicFundingTypeOptions}
           optionLabel="label"
           optionValue="value"
           placeholder="Select preferred funding type"

@@ -105,11 +105,19 @@ export type SaveBusinessDetailsResponse = {
   errors?: ValidationErrors
 }
 
+export type BankAccount = {
+  id?: number
+  bank_name: string
+  account_open_date: string | null
+}
+
 export type FinancialInfoData = {
   currency: string
   years_in_business: string
   monthly_revenue: string
   annual_revenue: string
+  annual_personal_income: string
+  bank_accounts: BankAccount[]
 }
 
 export type FinancialInfoResponse = {
@@ -123,12 +131,14 @@ export type SaveFinancialInfoRequest = {
   years_in_business: string
   monthly_revenue: number
   annual_revenue: number
+  annual_personal_income: number
   average_monthly_deposits?: number
   monthly_deposit_count?: number
   avg_bank_balance?: number
   current_business_debt?: number
   nsf_count?: number
   negative_days?: number
+  bank_accounts: BankAccount[]
 }
 
 export type SaveFinancialInfoResponse = {
@@ -141,6 +151,8 @@ export type SaveFinancialInfoResponse = {
 export type ChangeRequestRequest = {
   field_name: string
   new_value: string
+  entity_type?: string
+  entity_id?: number
   note?: string
 }
 
@@ -148,4 +160,6 @@ export type ChangeRequestResponse = {
   status: boolean
   message: string
   data?: any
+  errors?: ValidationErrors
 }
+

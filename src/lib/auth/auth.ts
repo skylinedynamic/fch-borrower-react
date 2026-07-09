@@ -1,6 +1,6 @@
-// Auth utilities backed by Zustand store with persist
-import { getAuthState, setAuthState, clearAuthState, setUserSubscriptionState, getUserSubscriptionState, AuthUser, UserSubscription } from '../../store/auth'
+import { getAuthState, setAuthState, clearAuthState, setUserSubscriptionState, getUserSubscriptionState, setUserDataState, AuthUser, UserSubscription } from '../../store/auth'
 import { getUserDetails } from './authApi'
+import { refreshUser as refreshUserService } from '../../modules/auth-profile'
 
 const COOKIE_NAME = 'auth_session_active'
 
@@ -102,6 +102,11 @@ export async function refreshSubscription(): Promise<void> {
   if (!isAuthenticated()) return
 
   try {
+    const refreshedUser = await refreshUserService()
+    if (refreshedUser) {
+      setUserDataState(refreshedUser)
+    }
+
     const response = await getUserDetails()
     if (response?.status && response?.data?.user) {
       // Update store, keep existing token
@@ -118,7 +123,9 @@ export async function refreshSubscription(): Promise<void> {
         next_platform_fee_date: user.next_platform_fee_date,
         enrollment_completed_at: user.enrollment_completed_at,
         subscription_start_date: user.subscription_start_date,
-        subscription_end_date: user.subscription_end_date
+        subscription_end_date: user.subscription_end_date,
+        is_free_trail: user.is_free_trail,
+        free_trail_end_date: user.free_trail_end_date
       })
     }
   } catch (error) {
