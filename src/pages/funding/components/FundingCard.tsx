@@ -106,11 +106,26 @@ const formatFactorDetail = (factor: ReadinessFactor): string => {
         const fmtMonths = (months: any) => {
             const m = Number(months);
             if (isNaN(m)) return months || '0 months';
-            if (m >= 12) {
-                const yrs = (m / 12).toFixed(1).replace(/\.0$/, '');
-                return `${yrs} yr${Number(yrs) > 1 ? 's' : ''}`;
+            
+            const totalMonths = Math.floor(m);
+            const remainder = m - totalMonths;
+            const days = Math.round(remainder * 30.436875);
+            
+            let yrs = 0;
+            let mnths = totalMonths;
+            
+            if (mnths >= 12) {
+                yrs = Math.floor(mnths / 12);
+                mnths = mnths % 12;
             }
-            return `${m} month${m !== 1 ? 's' : ''}`;
+            
+            let res = [];
+            if (yrs > 0) res.push(`${yrs} yr${yrs > 1 ? 's' : ''}`);
+            if (mnths > 0) res.push(`${mnths} month${mnths > 1 ? 's' : ''}`);
+            if (days > 0) res.push(`${days} day${days > 1 ? 's' : ''}`);
+            
+            if (res.length === 0) return '0 months';
+            return res.join(' ');
         };
         return `${label}: ${fmtMonths(act)} (Required: ${fmtMonths(req)})`;
     }
@@ -157,11 +172,26 @@ const MissingTooltip: React.FC<{ factors: ReadinessFactor[]; visible: boolean }>
                             const fmtMonths = (months: any) => {
                                 const m = Number(months);
                                 if (isNaN(m)) return months || '0 months';
-                                if (m >= 12) {
-                                    const yrs = (m / 12).toFixed(1).replace(/\.0$/, '');
-                                    return `${yrs} yr${Number(yrs) > 1 ? 's' : ''}`;
+                                
+                                const totalMonths = Math.floor(m);
+                                const remainder = m - totalMonths;
+                                const days = Math.round(remainder * 30.436875);
+                                
+                                let yrs = 0;
+                                let mnths = totalMonths;
+                                
+                                if (mnths >= 12) {
+                                    yrs = Math.floor(mnths / 12);
+                                    mnths = mnths % 12;
                                 }
-                                return `${m} month${m !== 1 ? 's' : ''}`;
+                                
+                                let res = [];
+                                if (yrs > 0) res.push(`${yrs} yr${yrs > 1 ? 's' : ''}`);
+                                if (mnths > 0) res.push(`${mnths} month${mnths > 1 ? 's' : ''}`);
+                                if (days > 0) res.push(`${days} day${days > 1 ? 's' : ''}`);
+                                
+                                if (res.length === 0) return '0 months';
+                                return res.join(' ');
                             };
                             actVal = fmtMonths(act);
                             reqVal = fmtMonths(req);
