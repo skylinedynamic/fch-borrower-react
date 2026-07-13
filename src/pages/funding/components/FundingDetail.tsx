@@ -155,7 +155,7 @@ const ReadinessItem: React.FC<{ factor: any, isLast: boolean }> = ({ factor, isL
             <div style={{ display: 'flex', gap: 12, alignItems: subtitle ? 'flex-start' : 'center' }}>
                 <i className={leftIcon} style={{ fontSize: 20, color: leftIconColor, marginTop: subtitle ? -2 : 0 }} />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <span style={{ fontSize: 14, color: '#111827', fontWeight: 600 }}>{factor.label}</span>
+                    <span style={{ fontSize: 14, color: '#111827', fontWeight: 600 }}>{factor.label.toLowerCase() === 'time in business' ? 'Months' : factor.label}</span>
                     {subtitle && (
                         <span style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.4 }}>{subtitle}</span>
                     )}
@@ -378,7 +378,8 @@ const FundingDetail = () => {
                                         const extractedDocs = dynamicReadiness
                                             .filter((f: any) => f.missing_docs && f.missing_docs.length > 0)
                                             .flatMap((f: any) => f.missing_docs);
-                                        const currentMissingDocs = extractedDocs.length > 0 ? Array.from(new Set(extractedDocs)) : missing_documents;
+                                        const combinedDocs = [...extractedDocs, ...(missing_documents || [])];
+                                        const currentMissingDocs = Array.from(new Set(combinedDocs));
 
                                         return currentMissingDocs.length > 0 && (
                                             <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #f0f3f7' }}>

@@ -101,7 +101,6 @@ const formatFactorDetail = (factor: ReadinessFactor): string => {
         return `${label}: ${fmt(act)} (Required: ${fmt(req)})`;
     }
 
-    // Time in Business
     if (lowerLabel.includes('time') || lowerLabel === 'time in business') {
         const fmtMonths = (months: any) => {
             const m = Number(months);
@@ -117,7 +116,8 @@ const formatFactorDetail = (factor: ReadinessFactor): string => {
             if (d > 0) parts.push(`${d} Day${d > 1 ? 's' : ''}`);
             return parts.length > 0 ? parts.join(' ') : '0 Months';
         };
-        return `${label}: ${fmtMonths(act)} (Required: ${fmtMonths(req)})`;
+        const displayLabel = lowerLabel === 'time in business' ? 'Months' : label;
+        return `${displayLabel}: ${fmtMonths(act)} (Required: ${fmtMonths(req)})`;
     }
 
     return `${label}: ${act} (Required: ${req})`;
@@ -178,12 +178,14 @@ const MissingTooltip: React.FC<{ factors: ReadinessFactor[]; visible: boolean }>
                         }
                     }
 
+                    const displayLabel = lowerLabel === 'time in business' ? 'Months' : label;
+
                     return (
                         <li key={i} className="funding-missing-tooltip-item">
                             <div className="d-flex align-items-start gap-2">
                                 <i className="ri-close-circle-fill" style={{ color: '#EF4444', fontSize: 15, marginTop: 1 }} />
                                 <div>
-                                    <div className="tooltip-item-title">{label}: {actVal ?? 'Missing'}</div>
+                                    <div className="tooltip-item-title">{displayLabel}: {actVal ?? 'Missing'}</div>
                                     {req !== undefined && req !== null && (
                                         <div className="tooltip-item-req">Required: {reqVal}</div>
                                     )}
