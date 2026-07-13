@@ -266,7 +266,9 @@ const FundingRequestWizard = () => {
                 requested_amount: formData.requested_amount,
                 use_of_funds: formData.use_of_funds,
                 documents_uploaded: requiredDocTypes.filter(t => !missingDocs.includes(t.name)).map(t => t.name),
-                estimated_speed: fundingDetail.speed_to_funds ? `${fundingDetail.speed_to_funds} Days` : '1 - 7 Days'
+                estimated_speed: fundingDetail.speed_to_funds
+                    ? (fundingDetail.speed_to_funds.toLowerCase().includes('day') ? fundingDetail.speed_to_funds : `${fundingDetail.speed_to_funds} Days`)
+                    : '1 - 7 Days'
             });
             const reviewData = response.data.data;
             setSubmitDate(reviewData?.updated_at || reviewData?.created_at || new Date().toLocaleString());
