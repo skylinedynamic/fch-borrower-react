@@ -77,10 +77,20 @@ const FundingRequestWizard = () => {
     }, [fundingDetail?.uses]);
 
     const fetchFactors = (fundingId: string) => {
-        fetchFundingDetail(fundingId).then(res => {
+        Promise.all([
+            fetchFundingDetail(fundingId),
+            fetchReadinessFactors(fundingId).catch(() => ({ status: false, data: [] }))
+        ]).then(([res, readinessRes]) => {
             if (res.status) {
                 setFundingDetail(res.data);
-                setMissingDocs(res.data.missing_documents || []);
+                let combinedDocs = [...(res.data.missing_documents || [])];
+                if (readinessRes?.status && Array.isArray(readinessRes.data)) {
+                    const extractedDocs = readinessRes.data
+                        .filter((f: any) => f.missing_docs && f.missing_docs.length > 0)
+                        .flatMap((f: any) => f.missing_docs);
+                    combinedDocs = [...extractedDocs, ...combinedDocs];
+                }
+                setMissingDocs(Array.from(new Set(combinedDocs)));
             }
         }).catch(err => console.error(err));
     };
@@ -127,7 +137,14 @@ const FundingRequestWizard = () => {
                     }
 
                     setFundingDetail(res.data);
-                    setMissingDocs(res.data.missing_documents || []);
+                    let combinedDocs = [...(res.data.missing_documents || [])];
+                    if (readinessRes?.status && Array.isArray(readinessRes.data)) {
+                        const extractedDocs = readinessRes.data
+                            .filter((f: any) => f.missing_docs && f.missing_docs.length > 0)
+                            .flatMap((f: any) => f.missing_docs);
+                        combinedDocs = [...extractedDocs, ...combinedDocs];
+                    }
+                    setMissingDocs(Array.from(new Set(combinedDocs)));
 
                     setFormData(prev => {
                         let parsedUsesArray: any[] = [];
@@ -694,7 +711,11 @@ const FundingRequestWizard = () => {
                                                                             }}
                                                                             disabled={uploading}
                                                                         >
-                                                                            Upload
+                                                                            {uploading && currentDocType?.id === docType.id ? (
+                                                                                <><span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Uploading...</>
+                                                                            ) : (
+                                                                                'Upload'
+                                                                            )}
                                                                         </button>
                                                                     </>
                                                                 ) : (
@@ -709,7 +730,11 @@ const FundingRequestWizard = () => {
                                                                                 }}
                                                                                 disabled={uploading}
                                                                             >
-                                                                                Upload Again
+                                                                                {uploading && currentDocType?.id === docType.id ? (
+                                                                                    <><span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Uploading...</>
+                                                                                ) : (
+                                                                                    'Upload Again'
+                                                                                )}
                                                                             </button>
                                                                         )}
                                                                     </>
@@ -815,7 +840,14 @@ const FundingRequestWizard = () => {
                                     ) : (
                                         <button
                                             className="d-flex align-items-center justify-content-center gap-2 text-white fw-medium"
-                                            style={{ backgroundColor: 'var(--primary-color, #0a192f)', border: '1px solid var(--primary-color, #0a192f)', padding: '10px 24px', borderRadius: '6px' }}
+                                            style={{ 
+                                                backgroundColor: 'var(--primary-color, #0a192f)', 
+                                                border: '1px solid var(--primary-color, #0a192f)', 
+                                                padding: '10px 24px', 
+                                                borderRadius: '6px',
+                                                opacity: (submitting || (isDocsRequired && missingDocs.length > 0)) ? 0.5 : 1,
+                                                cursor: (submitting || (isDocsRequired && missingDocs.length > 0)) ? 'not-allowed' : 'pointer'
+                                            }}
                                             onClick={handleSubmit}
                                             disabled={submitting || (isDocsRequired && missingDocs.length > 0)}
                                         >
