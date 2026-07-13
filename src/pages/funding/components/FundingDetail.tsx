@@ -474,15 +474,23 @@ const FundingDetail = () => {
                             </p>
                         </div>
                         <span id="btn-start-funding-request-wrapper" style={{ display: 'inline-block' }}>
-                            <Link
-                                to={(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') ? '#' : `/funding/${id}/review`}
-                                className={`funding-detail-btn-review ${(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') ? 'disabled' : ''}`}
-                                style={(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
-                                onClick={(e) => { if (hasMissingFactors || isPending || finalEngineStatus === 'Hidden') e.preventDefault(); }}
-                            >
-                                Start Funding Request
-                                <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />
-                            </Link>
+                            {(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') ? (
+                                <span
+                                    className="funding-detail-btn-review disabled"
+                                    style={{ opacity: 0.5, cursor: 'not-allowed', display: 'inline-block' }}
+                                >
+                                    Start Funding Request
+                                    <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />
+                                </span>
+                            ) : (
+                                <Link
+                                    to={`/funding/${id}/review`}
+                                    className="funding-detail-btn-review"
+                                >
+                                    Start Funding Request
+                                    <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />
+                                </Link>
+                            )}
                         </span>
                         {(isPending || finalEngineStatus === 'Hidden') && (
                             <UncontrolledTooltip placement="top" target="btn-start-funding-request-wrapper">
