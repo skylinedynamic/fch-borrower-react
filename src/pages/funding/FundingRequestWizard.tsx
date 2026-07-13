@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Dropdown } from 'primereact/dropdown';
+import { MultiSelect } from 'primereact/multiselect';
 import { toast } from 'react-toastify';
 import { apiClient } from '../../lib/http/apiClient';
 import { fetchFundingDetail, fetchReadinessFactors } from '../../modules/funding/services';
@@ -39,7 +40,7 @@ const FundingRequestWizard = () => {
 
     const [formData, setFormData] = useState({
         requested_amount: initialAmount,
-        use_of_funds: initialPurpose,
+        use_of_funds: initialPurpose ? initialPurpose.split(',').map((s: string) => s.trim()) : [],
     });
     const [errors, setErrors] = useState<any>({});
 
@@ -158,22 +159,20 @@ const FundingRequestWizard = () => {
                         }
 
                         const newAmount = prev.requested_amount || res.data.latest_requested_amount || '';
-                        let newPurpose = prev.use_of_funds;
-                        const purposeExistsInArray = Array.isArray(parsedUsesArray) && parsedUsesArray.some(u => {
-                            const val = typeof u === 'object' ? (u.value || u.name || u.label) : String(u);
-                            return val === newPurpose;
-                        });
-
-                        if (!newPurpose || !purposeExistsInArray) {
-                            const latestExists = Array.isArray(parsedUsesArray) && parsedUsesArray.some(u => {
-                                const val = typeof u === 'object' ? (u.value || u.name || u.label) : String(u);
-                                return val === res.data.latest_use_of_funds;
-                            });
-                            newPurpose = latestExists ? res.data.latest_use_of_funds : defaultUse;
+                        let newPurpose: any = res.data.latest_use_of_funds || prev.use_of_funds;
+                        
+                        if (!newPurpose || (Array.isArray(newPurpose) && newPurpose.length === 0)) {
+                            if (Array.isArray(parsedUsesArray) && parsedUsesArray.length > 0) {
+                                newPurpose = parsedUsesArray.map(u => typeof u === 'object' ? String(u.value || u.name || u.label) : String(u));
+                            } else {
+                                newPurpose = [];
+                            }
                         }
 
-                        if (Array.isArray(parsedUsesArray) && parsedUsesArray.length === 1 && defaultUse) {
-                            newPurpose = defaultUse;
+                        if (typeof newPurpose === 'string') {
+                            newPurpose = newPurpose ? newPurpose.split(',').map(s => s.trim()) : [];
+                        } else if (!Array.isArray(newPurpose)) {
+                            newPurpose = [];
                         }
                         return { ...prev, requested_amount: newAmount, use_of_funds: newPurpose };
                     });
@@ -245,6 +244,10 @@ const FundingRequestWizard = () => {
                 }
             }
 
+            if (!formData.use_of_funds || formData.use_of_funds.length === 0) {
+                newErrors.use_of_funds = 'Use of funds is required';
+            }
+
             if (Object.keys(newErrors).length > 0) {
                 setErrors(newErrors);
                 return;
@@ -281,7 +284,7 @@ const FundingRequestWizard = () => {
                 funding_sequence_id: fundingDetail.id,
                 funding_type: fundingDetail.funding_type_name || fundingDetail.name,
                 requested_amount: formData.requested_amount,
-                use_of_funds: formData.use_of_funds,
+                use_of_funds: Array.isArray(formData.use_of_funds) ? formData.use_of_funds.join(', ') : formData.use_of_funds,
                 documents_uploaded: requiredDocTypes.filter(t => !missingDocs.includes(t.name)).map(t => t.name),
                 estimated_speed: fundingDetail.speed_to_funds
                     ? (fundingDetail.speed_to_funds.toLowerCase().includes('day') ? fundingDetail.speed_to_funds : `${fundingDetail.speed_to_funds} Days`)
@@ -406,8 +409,12 @@ const FundingRequestWizard = () => {
                                         <div className="row align-items-center">
                                             <div className="col-md-7">
                                                 <div className="mb-4">
-                                                    <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Funding Type</p>
+                                                    <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Funding Sequence</p>
                                                     <h5 className="fw-bold m-0" style={{ color: '#0f172a' }}>{fundingDetail.name}</h5>
+                                                </div>
+                                                <div className="mb-4">
+                                                    <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Funding Type</p>
+                                                    <h6 className="fw-bold m-0 fs-14" style={{ color: '#0f172a' }}>{fundingDetail.funding_type_name || 'Financing'}</h6>
                                                 </div>
                                                 <div className="mb-4">
                                                     <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Recommended Range</p>
@@ -426,7 +433,7 @@ const FundingRequestWizard = () => {
                                                     <i className="ri-bank-card-line" style={{ fontSize: '28px', color: '#2563eb' }}></i>
                                                 </div>
                                                 <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Use of Funds</p>
-                                                <h6 className="fw-bold m-0 fs-14" style={{ color: '#0f172a' }}>{formData.use_of_funds || 'Not Specified'}</h6>
+                                                <h6 className="fw-bold m-0 fs-14" style={{ color: '#0f172a' }}>{Array.isArray(formData.use_of_funds) && formData.use_of_funds.length > 0 ? formData.use_of_funds.join(', ') : 'Not Specified'}</h6>
                                             </div>
                                         </div>
                                     </div>
@@ -484,7 +491,7 @@ const FundingRequestWizard = () => {
                                         <div className="col-md-6">
                                             <label className="form-label fs-13 mb-2" style={{ color: '#64748b' }}>Use of Funds</label>
                                             <div style={{ border: '1px solid #e2e8f0', borderRadius: '0.375rem', backgroundColor: '#fff', overflow: 'hidden' }}>
-                                                <Dropdown
+                                                <MultiSelect
                                                     value={formData.use_of_funds}
                                                     options={parsedUses.length > 0 ? parsedUses : [
                                                         { label: 'Working Capital', value: 'Working Capital' },
@@ -493,12 +500,18 @@ const FundingRequestWizard = () => {
                                                         { label: 'Other', value: 'Other' }
                                                     ]}
                                                     disabled={parsedUses.length === 1}
-                                                    onChange={(e) => setFormData({ ...formData, use_of_funds: e.value })}
-                                                    className={`w-100 shadow-none border-0 ${parsedUses.length === 1 ? 'bg-light opacity-75' : 'bg-transparent'}`}
-                                                    style={{ height: '38px', backgroundColor: 'transparent' }}
+                                                    placeholder="Select Use of Funds"
+                                                    display="chip"
+                                                    onChange={(e) => {
+                                                        setFormData({ ...formData, use_of_funds: e.value });
+                                                        if (errors.use_of_funds) setErrors({ ...errors, use_of_funds: null });
+                                                    }}
+                                                    className={`w-100 shadow-none border-0 slim-multiselect ${parsedUses.length === 1 ? 'bg-light opacity-75' : 'bg-transparent'}`}
+                                                    style={{ backgroundColor: 'transparent' }}
                                                     panelStyle={{ backgroundColor: '#fff' }}
                                                 />
                                             </div>
+                                            {errors.use_of_funds && <div className="text-danger fs-12 mt-1">{errors.use_of_funds}</div>}
                                         </div>
                                     </div>
 
@@ -587,7 +600,7 @@ const FundingRequestWizard = () => {
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
                                                         <span className="text-muted fs-13" style={{ width: '45%' }}>Use of Funds</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{formData.use_of_funds}</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{Array.isArray(formData.use_of_funds) ? formData.use_of_funds.join(', ') : formData.use_of_funds}</span>
                                                     </div>
                                                 </div>
                                             </div>
