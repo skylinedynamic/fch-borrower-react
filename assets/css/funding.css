@@ -262,7 +262,7 @@
     color: #ffffff !important;
 }
 
-/* ─── Grayed Card (Missing Readiness Factors) ────────────────────────── */
+/* ─── Grayed Card (Missing Underwriting Factors) ────────────────────────── */
 .funding-card.funding-card-grayed {
     cursor: not-allowed;
     background: #f4f6f9;

@@ -133,7 +133,7 @@ const FundingRequestWizard = () => {
                         let parsedUsesArray: any[] = [];
                         try {
                             parsedUsesArray = typeof res.data.uses === 'string' ? JSON.parse(res.data.uses) : res.data.uses;
-                        } catch(e){}
+                        } catch (e) { }
                         let defaultUse = '';
                         if (Array.isArray(parsedUsesArray) && parsedUsesArray.length > 0) {
                             const firstObj = parsedUsesArray[0];
@@ -146,7 +146,7 @@ const FundingRequestWizard = () => {
                             const val = typeof u === 'object' ? (u.value || u.name || u.label) : String(u);
                             return val === newPurpose;
                         });
-                        
+
                         if (!newPurpose || !purposeExistsInArray) {
                             const latestExists = Array.isArray(parsedUsesArray) && parsedUsesArray.some(u => {
                                 const val = typeof u === 'object' ? (u.value || u.name || u.label) : String(u);
@@ -154,7 +154,7 @@ const FundingRequestWizard = () => {
                             });
                             newPurpose = latestExists ? res.data.latest_use_of_funds : defaultUse;
                         }
-                        
+
                         if (Array.isArray(parsedUsesArray) && parsedUsesArray.length === 1 && defaultUse) {
                             newPurpose = defaultUse;
                         }
@@ -164,8 +164,8 @@ const FundingRequestWizard = () => {
                     toast.error(res.message || 'Failed to load funding details');
                 }
             })
-            .catch(() => toast.error('Failed to load funding details'))
-            .finally(() => setLoading(false));
+                .catch(() => toast.error('Failed to load funding details'))
+                .finally(() => setLoading(false));
         }
     }, [id]);
 
@@ -270,7 +270,7 @@ const FundingRequestWizard = () => {
             });
             const reviewData = response.data.data;
             setSubmitDate(reviewData?.updated_at || reviewData?.created_at || new Date().toLocaleString());
-            
+
             if (reviewData?.reviewer?.name) {
                 setDynamicReviewerName(reviewData.reviewer.name);
             }
@@ -418,14 +418,21 @@ const FundingRequestWizard = () => {
                                             <div className="input-group rounded" style={{ border: '1px solid', borderColor: errors.requested_amount ? '#dc3545' : '#e2e8f0', overflow: 'hidden' }}>
                                                 <span className="input-group-text bg-white" style={{ color: '#475569', border: 'none', borderRight: '1px solid #e2e8f0', borderRadius: 0 }}>$</span>
                                                 <input
-                                                    type="number"
+                                                    type="text"
                                                     className={`form-control ps-2 shadow-none`}
                                                     style={{ backgroundColor: 'transparent', border: 'none' }}
-                                                    placeholder="200000.00"
-                                                    value={formData.requested_amount}
+                                                    placeholder="200,000"
+                                                    value={
+                                                        formData.requested_amount
+                                                            ? formData.requested_amount.toString().split('.').map((p: string, i: number) => i === 0 ? p.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : p).join('.')
+                                                            : ''
+                                                    }
                                                     onChange={(e) => {
-                                                        setFormData({ ...formData, requested_amount: e.target.value });
-                                                        if (errors.requested_amount) setErrors({ ...errors, requested_amount: null });
+                                                        const rawValue = e.target.value.replace(/,/g, '');
+                                                        if (/^\d*\.?\d*$/.test(rawValue)) {
+                                                            setFormData({ ...formData, requested_amount: rawValue });
+                                                            if (errors.requested_amount) setErrors({ ...errors, requested_amount: null });
+                                                        }
                                                     }}
                                                 />
                                             </div>

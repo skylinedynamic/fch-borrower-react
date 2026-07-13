@@ -190,7 +190,7 @@ const FundingDetail = () => {
                 const readinessData = readinessRes.data;
                 setDynamicReadiness(readinessData);
 
-                // Dynamically generate "Why You May Qualify" sentences from Good/Strong readiness factors
+                // Dynamically generate "Why You May Qualify" sentences from Good/Strong underwriting factors
                 const generatedReasons: any[] = [];
                 readinessData.forEach((r: any) => {
                     if (r.status === 'Good' || r.status === 'Strong') {
@@ -349,7 +349,7 @@ const FundingDetail = () => {
                             ))}
                         </div>
 
-                        {/* ── Two-column: Why You May Qualify + Readiness Factors ── */}
+                        {/* ── Two-column: Why You May Qualify + Underwriting Factors ── */}
                         <div className="row g-3 mb-3">
 
                             {/* Why You May Qualify */}
@@ -400,17 +400,17 @@ const FundingDetail = () => {
                                 </div>
                             </div>
 
-                            {/* Readiness Factors */}
+                            {/* Underwriting Factors */}
                             <div className="col-md-6">
                                 <div style={{ border: '1px solid #e8ecf0', borderRadius: 10, padding: '20px 22px', height: '100%' }}>
                                     <h6 style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d', marginBottom: 16 }}>
-                                        Readiness Factors
+                                        Underwriting Factors
                                     </h6>
                                     {(() => {
                                         const activeFactors = dynamicReadiness.length > 0 ? dynamicReadiness : readiness_factors;
 
                                         if (activeFactors.length === 0) {
-                                            return <p style={{ fontSize: 13, color: '#9ca3af', margin: 0 }}>No readiness factors available.</p>;
+                                            return <p style={{ fontSize: 13, color: '#9ca3af', margin: 0 }}>No underwriting factors available.</p>;
                                         }
 
                                         const visibleFactors = activeFactors.filter((f: any) => {
@@ -468,7 +468,7 @@ const FundingDetail = () => {
                                     : finalEngineStatus === 'Hidden'
                                         ? 'This funding option is currently not available for your profile.'
                                         : hasMissingFactors
-                                            ? 'Please address missing readiness factors before starting your review.'
+                                            ? 'Please address missing underwriting factors before starting your review.'
                                             : 'Start your funding request by providing a few details and uploading missing documents.'}
                             </p>
                         </div>

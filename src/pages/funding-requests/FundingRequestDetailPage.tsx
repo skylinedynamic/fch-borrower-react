@@ -304,9 +304,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
                                                     </p>
 
                                                     <h6 className="activity-detail-value">
-                                                        {review.requested_amount
-                                                            ? `$${Number(review.requested_amount).toLocaleString()}`
-                                                            : 'N/A'}
+                                                        {review.requested_amount || 'N/A'}
                                                     </h6>
                                                 </div>
 
@@ -849,7 +847,7 @@ export default function FundingRequestDetailPage() {
                                             <div className="p-3 bg-light rounded-3">
                                                 <p className="text-muted fs-11 fw-semibold text-uppercase mb-1">Requested Amount</p>
                                                 <p className="mb-0 fw-semibold text-dark fs-14">
-                                                    {review.requested_amount ? `$${Number(review.requested_amount).toLocaleString()}` : 'N/A'}
+                                                    {review.requested_amount || 'N/A'}
                                                 </p>
                                             </div>
                                         </div>
