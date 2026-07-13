@@ -490,7 +490,22 @@ const FundingRequestWizard = () => {
                                         </div>
                                         <div className="col-md-6">
                                             <label className="form-label fs-13 mb-2" style={{ color: '#64748b' }}>Use of Funds</label>
-                                            <div style={{ border: '1px solid #e2e8f0', borderRadius: '0.375rem', backgroundColor: '#fff', overflow: 'hidden' }}>
+                                            <style>{`
+                                                .slim-multiselect .p-multiselect-label {
+                                                    display: flex !important;
+                                                    flex-wrap: wrap !important;
+                                                    gap: 4px !important;
+                                                    padding: 0.25rem 0.5rem !important;
+                                                    white-space: normal !important;
+                                                }
+                                                .slim-multiselect .p-multiselect-token {
+                                                    margin: 0 !important;
+                                                    display: inline-flex !important;
+                                                    width: auto !important;
+                                                    max-width: 100%;
+                                                }
+                                            `}</style>
+                                            <div style={{ border: '1px solid #e2e8f0', borderRadius: '0.375rem', backgroundColor: '#fff' }}>
                                                 <MultiSelect
                                                     value={formData.use_of_funds}
                                                     options={parsedUses.length > 0 ? parsedUses : [
@@ -499,15 +514,17 @@ const FundingRequestWizard = () => {
                                                         { label: 'Expansion', value: 'Expansion' },
                                                         { label: 'Other', value: 'Other' }
                                                     ]}
-                                                    disabled={parsedUses.length === 1}
+                                                    disabled={parsedUses.length > 0}
                                                     placeholder="Select Use of Funds"
+                                                    optionLabel="label"
+                                                    optionValue="value"
                                                     display="chip"
                                                     onChange={(e) => {
                                                         setFormData({ ...formData, use_of_funds: e.value });
                                                         if (errors.use_of_funds) setErrors({ ...errors, use_of_funds: null });
                                                     }}
-                                                    className={`w-100 shadow-none border-0 slim-multiselect ${parsedUses.length === 1 ? 'bg-light opacity-75' : 'bg-transparent'}`}
-                                                    style={{ backgroundColor: 'transparent' }}
+                                                    className={`w-100 shadow-none border-0 slim-multiselect ${parsedUses.length > 0 ? 'bg-light opacity-75' : 'bg-transparent'}`}
+                                                    style={{ backgroundColor: 'transparent', height: 'auto', minHeight: '38px' }}
                                                     panelStyle={{ backgroundColor: '#fff' }}
                                                 />
                                             </div>
