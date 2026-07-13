@@ -105,8 +105,17 @@ const formatFactorDetail = (factor: ReadinessFactor): string => {
     if (lowerLabel.includes('time') || lowerLabel === 'time in business') {
         const fmtMonths = (months: any) => {
             const m = Number(months);
-            if (isNaN(m)) return months || '0 Months';
-            return `${Math.round(m)} Month${Math.round(m) === 1 ? '' : 's'}`;
+            if (isNaN(m) || m === 0) return months || '0 Months';
+            const totalDays = Math.round(m * 30);
+            const y = Math.floor(totalDays / 360);
+            const remY = totalDays % 360;
+            const mo = Math.floor(remY / 30);
+            const d = remY % 30;
+            const parts = [];
+            if (y > 0) parts.push(`${y} Year${y > 1 ? 's' : ''}`);
+            if (mo > 0) parts.push(`${mo} Month${mo > 1 ? 's' : ''}`);
+            if (d > 0) parts.push(`${d} Day${d > 1 ? 's' : ''}`);
+            return parts.length > 0 ? parts.join(' ') : '0 Months';
         };
         return `${label}: ${fmtMonths(act)} (Required: ${fmtMonths(req)})`;
     }
@@ -152,8 +161,17 @@ const MissingTooltip: React.FC<{ factors: ReadinessFactor[]; visible: boolean }>
                         } else if (lowerLabel.includes('time') || lowerLabel === 'time in business') {
                             const fmtMonths = (months: any) => {
                                 const m = Number(months);
-                                if (isNaN(m)) return months || '0 Months';
-                                return `${Math.round(m)} Month${Math.round(m) === 1 ? '' : 's'}`;
+                                if (isNaN(m) || m === 0) return months || '0 Months';
+                                const totalDays = Math.round(m * 30);
+                                const y = Math.floor(totalDays / 360);
+                                const remY = totalDays % 360;
+                                const mo = Math.floor(remY / 30);
+                                const d = remY % 30;
+                                const parts = [];
+                                if (y > 0) parts.push(`${y} Year${y > 1 ? 's' : ''}`);
+                                if (mo > 0) parts.push(`${mo} Month${mo > 1 ? 's' : ''}`);
+                                if (d > 0) parts.push(`${d} Day${d > 1 ? 's' : ''}`);
+                                return parts.length > 0 ? parts.join(' ') : '0 Months';
                             };
                             actVal = fmtMonths(act);
                             reqVal = fmtMonths(req);
