@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Dropdown } from 'primereact/dropdown';
+import { MultiSelect } from 'primereact/multiselect';
 import { toast } from 'react-toastify';
 import { apiClient } from '../../lib/http/apiClient';
 import { fetchFundingDetail, fetchReadinessFactors } from '../../modules/funding/services';
@@ -39,7 +40,7 @@ const FundingRequestWizard = () => {
 
     const [formData, setFormData] = useState({
         requested_amount: initialAmount,
-        use_of_funds: initialPurpose,
+        use_of_funds: initialPurpose ? initialPurpose.split(',').map((s: string) => s.trim()) : [],
     });
     const [errors, setErrors] = useState<any>({});
 
@@ -77,10 +78,20 @@ const FundingRequestWizard = () => {
     }, [fundingDetail?.uses]);
 
     const fetchFactors = (fundingId: string) => {
-        fetchFundingDetail(fundingId).then(res => {
+        Promise.all([
+            fetchFundingDetail(fundingId),
+            fetchReadinessFactors(fundingId).catch(() => ({ status: false, data: [] }))
+        ]).then(([res, readinessRes]) => {
             if (res.status) {
                 setFundingDetail(res.data);
-                setMissingDocs(res.data.missing_documents || []);
+                let combinedDocs = [...(res.data.missing_documents || [])];
+                if (readinessRes?.status && Array.isArray(readinessRes.data)) {
+                    const extractedDocs = readinessRes.data
+                        .filter((f: any) => f.missing_docs && f.missing_docs.length > 0)
+                        .flatMap((f: any) => f.missing_docs);
+                    combinedDocs = [...extractedDocs, ...combinedDocs];
+                }
+                setMissingDocs(Array.from(new Set(combinedDocs)));
             }
         }).catch(err => console.error(err));
     };
@@ -127,13 +138,20 @@ const FundingRequestWizard = () => {
                     }
 
                     setFundingDetail(res.data);
-                    setMissingDocs(res.data.missing_documents || []);
+                    let combinedDocs = [...(res.data.missing_documents || [])];
+                    if (readinessRes?.status && Array.isArray(readinessRes.data)) {
+                        const extractedDocs = readinessRes.data
+                            .filter((f: any) => f.missing_docs && f.missing_docs.length > 0)
+                            .flatMap((f: any) => f.missing_docs);
+                        combinedDocs = [...extractedDocs, ...combinedDocs];
+                    }
+                    setMissingDocs(Array.from(new Set(combinedDocs)));
 
                     setFormData(prev => {
                         let parsedUsesArray: any[] = [];
                         try {
                             parsedUsesArray = typeof res.data.uses === 'string' ? JSON.parse(res.data.uses) : res.data.uses;
-                        } catch(e){}
+                        } catch (e) { }
                         let defaultUse = '';
                         if (Array.isArray(parsedUsesArray) && parsedUsesArray.length > 0) {
                             const firstObj = parsedUsesArray[0];
@@ -141,22 +159,20 @@ const FundingRequestWizard = () => {
                         }
 
                         const newAmount = prev.requested_amount || res.data.latest_requested_amount || '';
-                        let newPurpose = prev.use_of_funds;
-                        const purposeExistsInArray = Array.isArray(parsedUsesArray) && parsedUsesArray.some(u => {
-                            const val = typeof u === 'object' ? (u.value || u.name || u.label) : String(u);
-                            return val === newPurpose;
-                        });
+                        let newPurpose: any = res.data.latest_use_of_funds || prev.use_of_funds;
                         
-                        if (!newPurpose || !purposeExistsInArray) {
-                            const latestExists = Array.isArray(parsedUsesArray) && parsedUsesArray.some(u => {
-                                const val = typeof u === 'object' ? (u.value || u.name || u.label) : String(u);
-                                return val === res.data.latest_use_of_funds;
-                            });
-                            newPurpose = latestExists ? res.data.latest_use_of_funds : defaultUse;
+                        if (!newPurpose || (Array.isArray(newPurpose) && newPurpose.length === 0)) {
+                            if (Array.isArray(parsedUsesArray) && parsedUsesArray.length > 0) {
+                                newPurpose = parsedUsesArray.map(u => typeof u === 'object' ? String(u.value || u.name || u.label) : String(u));
+                            } else {
+                                newPurpose = [];
+                            }
                         }
-                        
-                        if (Array.isArray(parsedUsesArray) && parsedUsesArray.length === 1 && defaultUse) {
-                            newPurpose = defaultUse;
+
+                        if (typeof newPurpose === 'string') {
+                            newPurpose = newPurpose ? newPurpose.split(',').map(s => s.trim()) : [];
+                        } else if (!Array.isArray(newPurpose)) {
+                            newPurpose = [];
                         }
                         return { ...prev, requested_amount: newAmount, use_of_funds: newPurpose };
                     });
@@ -164,8 +180,8 @@ const FundingRequestWizard = () => {
                     toast.error(res.message || 'Failed to load funding details');
                 }
             })
-            .catch(() => toast.error('Failed to load funding details'))
-            .finally(() => setLoading(false));
+                .catch(() => toast.error('Failed to load funding details'))
+                .finally(() => setLoading(false));
         }
     }, [id]);
 
@@ -228,6 +244,10 @@ const FundingRequestWizard = () => {
                 }
             }
 
+            if (!formData.use_of_funds || formData.use_of_funds.length === 0) {
+                newErrors.use_of_funds = 'Use of funds is required';
+            }
+
             if (Object.keys(newErrors).length > 0) {
                 setErrors(newErrors);
                 return;
@@ -264,13 +284,15 @@ const FundingRequestWizard = () => {
                 funding_sequence_id: fundingDetail.id,
                 funding_type: fundingDetail.funding_type_name || fundingDetail.name,
                 requested_amount: formData.requested_amount,
-                use_of_funds: formData.use_of_funds,
+                use_of_funds: Array.isArray(formData.use_of_funds) ? formData.use_of_funds.join(', ') : formData.use_of_funds,
                 documents_uploaded: requiredDocTypes.filter(t => !missingDocs.includes(t.name)).map(t => t.name),
-                estimated_speed: fundingDetail.speed_to_funds ? `${fundingDetail.speed_to_funds} Days` : '1 - 7 Days'
+                estimated_speed: fundingDetail.speed_to_funds
+                    ? (fundingDetail.speed_to_funds.toLowerCase().includes('day') ? fundingDetail.speed_to_funds : `${fundingDetail.speed_to_funds} Days`)
+                    : '1 - 7 Days'
             });
             const reviewData = response.data.data;
             setSubmitDate(reviewData?.updated_at || reviewData?.created_at || new Date().toLocaleString());
-            
+
             if (reviewData?.reviewer?.name) {
                 setDynamicReviewerName(reviewData.reviewer.name);
             }
@@ -387,8 +409,12 @@ const FundingRequestWizard = () => {
                                         <div className="row align-items-center">
                                             <div className="col-md-7">
                                                 <div className="mb-4">
-                                                    <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Funding Type</p>
+                                                    <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Funding Sequence</p>
                                                     <h5 className="fw-bold m-0" style={{ color: '#0f172a' }}>{fundingDetail.name}</h5>
+                                                </div>
+                                                <div className="mb-4">
+                                                    <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Funding Type</p>
+                                                    <h6 className="fw-bold m-0 fs-14" style={{ color: '#0f172a' }}>{fundingDetail.funding_type_name || 'Financing'}</h6>
                                                 </div>
                                                 <div className="mb-4">
                                                     <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Recommended Range</p>
@@ -407,7 +433,7 @@ const FundingRequestWizard = () => {
                                                     <i className="ri-bank-card-line" style={{ fontSize: '28px', color: '#2563eb' }}></i>
                                                 </div>
                                                 <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Use of Funds</p>
-                                                <h6 className="fw-bold m-0 fs-14" style={{ color: '#0f172a' }}>{formData.use_of_funds || 'Not Specified'}</h6>
+                                                <h6 className="fw-bold m-0 fs-14" style={{ color: '#0f172a' }}>{Array.isArray(formData.use_of_funds) && formData.use_of_funds.length > 0 ? formData.use_of_funds.join(', ') : 'Not Specified'}</h6>
                                             </div>
                                         </div>
                                     </div>
@@ -418,14 +444,21 @@ const FundingRequestWizard = () => {
                                             <div className="input-group rounded" style={{ border: '1px solid', borderColor: errors.requested_amount ? '#dc3545' : '#e2e8f0', overflow: 'hidden' }}>
                                                 <span className="input-group-text bg-white" style={{ color: '#475569', border: 'none', borderRight: '1px solid #e2e8f0', borderRadius: 0 }}>$</span>
                                                 <input
-                                                    type="number"
+                                                    type="text"
                                                     className={`form-control ps-2 shadow-none`}
                                                     style={{ backgroundColor: 'transparent', border: 'none' }}
-                                                    placeholder="200000.00"
-                                                    value={formData.requested_amount}
+                                                    placeholder="200,000"
+                                                    value={
+                                                        formData.requested_amount
+                                                            ? formData.requested_amount.toString().split('.').map((p: string, i: number) => i === 0 ? p.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : p).join('.')
+                                                            : ''
+                                                    }
                                                     onChange={(e) => {
-                                                        setFormData({ ...formData, requested_amount: e.target.value });
-                                                        if (errors.requested_amount) setErrors({ ...errors, requested_amount: null });
+                                                        const rawValue = e.target.value.replace(/,/g, '');
+                                                        if (/^\d*\.?\d*$/.test(rawValue)) {
+                                                            setFormData({ ...formData, requested_amount: rawValue });
+                                                            if (errors.requested_amount) setErrors({ ...errors, requested_amount: null });
+                                                        }
                                                     }}
                                                 />
                                             </div>
@@ -457,8 +490,23 @@ const FundingRequestWizard = () => {
                                         </div>
                                         <div className="col-md-6">
                                             <label className="form-label fs-13 mb-2" style={{ color: '#64748b' }}>Use of Funds</label>
-                                            <div style={{ border: '1px solid #e2e8f0', borderRadius: '0.375rem', backgroundColor: '#fff', overflow: 'hidden' }}>
-                                                <Dropdown
+                                            <style>{`
+                                                .slim-multiselect .p-multiselect-label {
+                                                    display: flex !important;
+                                                    flex-wrap: wrap !important;
+                                                    gap: 4px !important;
+                                                    padding: 0.25rem 0.5rem !important;
+                                                    white-space: normal !important;
+                                                }
+                                                .slim-multiselect .p-multiselect-token {
+                                                    margin: 0 !important;
+                                                    display: inline-flex !important;
+                                                    width: auto !important;
+                                                    max-width: 100%;
+                                                }
+                                            `}</style>
+                                            <div style={{ border: '1px solid #e2e8f0', borderRadius: '0.375rem', backgroundColor: '#fff' }}>
+                                                <MultiSelect
                                                     value={formData.use_of_funds}
                                                     options={parsedUses.length > 0 ? parsedUses : [
                                                         { label: 'Working Capital', value: 'Working Capital' },
@@ -466,13 +514,21 @@ const FundingRequestWizard = () => {
                                                         { label: 'Expansion', value: 'Expansion' },
                                                         { label: 'Other', value: 'Other' }
                                                     ]}
-                                                    disabled={parsedUses.length === 1}
-                                                    onChange={(e) => setFormData({ ...formData, use_of_funds: e.value })}
-                                                    className={`w-100 shadow-none border-0 ${parsedUses.length === 1 ? 'bg-light opacity-75' : 'bg-transparent'}`}
-                                                    style={{ height: '38px', backgroundColor: 'transparent' }}
+                                                    disabled={parsedUses.length > 0}
+                                                    placeholder="Select Use of Funds"
+                                                    optionLabel="label"
+                                                    optionValue="value"
+                                                    display="chip"
+                                                    onChange={(e) => {
+                                                        setFormData({ ...formData, use_of_funds: e.value });
+                                                        if (errors.use_of_funds) setErrors({ ...errors, use_of_funds: null });
+                                                    }}
+                                                    className={`w-100 shadow-none border-0 slim-multiselect ${parsedUses.length > 0 ? 'bg-light opacity-75' : 'bg-transparent'}`}
+                                                    style={{ backgroundColor: 'transparent', height: 'auto', minHeight: '38px' }}
                                                     panelStyle={{ backgroundColor: '#fff' }}
                                                 />
                                             </div>
+                                            {errors.use_of_funds && <div className="text-danger fs-12 mt-1">{errors.use_of_funds}</div>}
                                         </div>
                                     </div>
 
@@ -522,7 +578,7 @@ const FundingRequestWizard = () => {
                                                         <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.tax_id || '12-3456789'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Time in Business</span>
+                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Months</span>
                                                         <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.time_in_business || '2 - 5 Years'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
@@ -552,7 +608,7 @@ const FundingRequestWizard = () => {
                                                         <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>${financialInfo?.average_monthly_revenue?.toLocaleString() || '45,000'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Time in Business</span>
+                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Months</span>
                                                         <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.time_in_business || '2 - 5 Years'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
@@ -561,7 +617,7 @@ const FundingRequestWizard = () => {
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
                                                         <span className="text-muted fs-13" style={{ width: '45%' }}>Use of Funds</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{formData.use_of_funds}</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{Array.isArray(formData.use_of_funds) ? formData.use_of_funds.join(', ') : formData.use_of_funds}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -685,7 +741,11 @@ const FundingRequestWizard = () => {
                                                                             }}
                                                                             disabled={uploading}
                                                                         >
-                                                                            Upload
+                                                                            {uploading && currentDocType?.id === docType.id ? (
+                                                                                <><span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Uploading...</>
+                                                                            ) : (
+                                                                                'Upload'
+                                                                            )}
                                                                         </button>
                                                                     </>
                                                                 ) : (
@@ -700,7 +760,11 @@ const FundingRequestWizard = () => {
                                                                                 }}
                                                                                 disabled={uploading}
                                                                             >
-                                                                                Upload Again
+                                                                                {uploading && currentDocType?.id === docType.id ? (
+                                                                                    <><span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Uploading...</>
+                                                                                ) : (
+                                                                                    'Upload Again'
+                                                                                )}
                                                                             </button>
                                                                         )}
                                                                     </>
@@ -806,7 +870,14 @@ const FundingRequestWizard = () => {
                                     ) : (
                                         <button
                                             className="d-flex align-items-center justify-content-center gap-2 text-white fw-medium"
-                                            style={{ backgroundColor: 'var(--primary-color, #0a192f)', border: '1px solid var(--primary-color, #0a192f)', padding: '10px 24px', borderRadius: '6px' }}
+                                            style={{ 
+                                                backgroundColor: 'var(--primary-color, #0a192f)', 
+                                                border: '1px solid var(--primary-color, #0a192f)', 
+                                                padding: '10px 24px', 
+                                                borderRadius: '6px',
+                                                opacity: (submitting || (isDocsRequired && missingDocs.length > 0)) ? 0.5 : 1,
+                                                cursor: (submitting || (isDocsRequired && missingDocs.length > 0)) ? 'not-allowed' : 'pointer'
+                                            }}
                                             onClick={handleSubmit}
                                             disabled={submitting || (isDocsRequired && missingDocs.length > 0)}
                                         >

@@ -101,18 +101,23 @@ const formatFactorDetail = (factor: ReadinessFactor): string => {
         return `${label}: ${fmt(act)} (Required: ${fmt(req)})`;
     }
 
-    // Time in Business
     if (lowerLabel.includes('time') || lowerLabel === 'time in business') {
         const fmtMonths = (months: any) => {
             const m = Number(months);
-            if (isNaN(m)) return months || '0 months';
-            if (m >= 12) {
-                const yrs = (m / 12).toFixed(1).replace(/\.0$/, '');
-                return `${yrs} yr${Number(yrs) > 1 ? 's' : ''}`;
-            }
-            return `${m} month${m !== 1 ? 's' : ''}`;
+            if (isNaN(m) || m === 0) return months || '0 Months';
+            const totalDays = Math.round(m * 30);
+            const y = Math.floor(totalDays / 360);
+            const remY = totalDays % 360;
+            const mo = Math.floor(remY / 30);
+            const d = remY % 30;
+            const parts = [];
+            if (y > 0) parts.push(`${y} Year${y > 1 ? 's' : ''}`);
+            if (mo > 0) parts.push(`${mo} Month${mo > 1 ? 's' : ''}`);
+            if (d > 0) parts.push(`${d} Day${d > 1 ? 's' : ''}`);
+            return parts.length > 0 ? parts.join(' ') : '0 Months';
         };
-        return `${label}: ${fmtMonths(act)} (Required: ${fmtMonths(req)})`;
+        const displayLabel = lowerLabel === 'time in business' ? 'Months' : label;
+        return `${displayLabel}: ${fmtMonths(act)} (Required: ${fmtMonths(req)})`;
     }
 
     return `${label}: ${act} (Required: ${req})`;
@@ -156,24 +161,31 @@ const MissingTooltip: React.FC<{ factors: ReadinessFactor[]; visible: boolean }>
                         } else if (lowerLabel.includes('time') || lowerLabel === 'time in business') {
                             const fmtMonths = (months: any) => {
                                 const m = Number(months);
-                                if (isNaN(m)) return months || '0 months';
-                                if (m >= 12) {
-                                    const yrs = (m / 12).toFixed(1).replace(/\.0$/, '');
-                                    return `${yrs} yr${Number(yrs) > 1 ? 's' : ''}`;
-                                }
-                                return `${m} month${m !== 1 ? 's' : ''}`;
+                                if (isNaN(m) || m === 0) return months || '0 Months';
+                                const totalDays = Math.round(m * 30);
+                                const y = Math.floor(totalDays / 360);
+                                const remY = totalDays % 360;
+                                const mo = Math.floor(remY / 30);
+                                const d = remY % 30;
+                                const parts = [];
+                                if (y > 0) parts.push(`${y} Year${y > 1 ? 's' : ''}`);
+                                if (mo > 0) parts.push(`${mo} Month${mo > 1 ? 's' : ''}`);
+                                if (d > 0) parts.push(`${d} Day${d > 1 ? 's' : ''}`);
+                                return parts.length > 0 ? parts.join(' ') : '0 Months';
                             };
                             actVal = fmtMonths(act);
                             reqVal = fmtMonths(req);
                         }
                     }
 
+                    const displayLabel = lowerLabel === 'time in business' ? 'Months' : label;
+
                     return (
                         <li key={i} className="funding-missing-tooltip-item">
                             <div className="d-flex align-items-start gap-2">
                                 <i className="ri-close-circle-fill" style={{ color: '#EF4444', fontSize: 15, marginTop: 1 }} />
                                 <div>
-                                    <div className="tooltip-item-title">{label}: {actVal ?? 'Missing'}</div>
+                                    <div className="tooltip-item-title">{displayLabel}: {actVal ?? 'Missing'}</div>
                                     {req !== undefined && req !== null && (
                                         <div className="tooltip-item-req">Required: {reqVal}</div>
                                     )}
@@ -229,6 +241,30 @@ const PendingTooltip: React.FC<{ visible: boolean }> = ({ visible }) => {
     );
 };
 
+// ─── Engine Locked Tooltip ───────────────────────────────────────────────────────
+const EngineLockedTooltip: React.FC<{ visible: boolean }> = ({ visible }) => {
+    if (!visible) return null;
+    return (
+        <div className="funding-missing-tooltip">
+            <div className="funding-missing-tooltip-header">
+                <i className="ri-lock-fill" style={{ color: '#6B7280', fontSize: 18 }} />
+                <span>Locked</span>
+            </div>
+            
+            <p className="funding-missing-tooltip-desc">
+                This funding option is currently locked because no underwriting logic is configured.
+            </p>
+            
+            <div className="funding-missing-tooltip-divider" />
+            
+            <div className="funding-missing-tooltip-footer-info">
+                <i className="ri-information-fill" style={{ color: '#3B82F6', fontSize: 16, marginTop: 1 }} />
+                <span>Please wait until requirements are set up.</span>
+            </div>
+        </div>
+    );
+};
+
 // ─── Component ────────────────────────────────────────────────────────────────
 const FundingCard: React.FC<FundingCardProps> = ({
     id,
@@ -251,28 +287,31 @@ const FundingCard: React.FC<FundingCardProps> = ({
     const iconClass = resolveIcon(icon);
     const colors = resolveColor(icon_color);
 
-    // Detect missing readiness factors
+    // Detect missing underwriting factors
     const missingFactors = readiness_factors.filter(f => f.status?.toLowerCase() === 'missing');
     const hasMissing = missingFactors.length > 0;
 
     // Pending = already applied, awaiting review
     const isPending = latest_review_status === FUNDING_REVIEW_STATUS.PENDING;
     
-    // For pending, it's fully disabled. For locked (missing), it's visually locked but clickable.
-    const isFullyDisabled = isPending && !hasMissing;
-    const isLocked = hasMissing;
+    // Engine locked = no lender visibilities configured
+    const isEngineLocked = engine_status === ENGINE_STATUS_VALUES.LOCKED;
+
+    // For pending, it's fully disabled. For engine locked, it's also fully disabled.
+    const isFullyDisabled = (isPending && !hasMissing) || isEngineLocked;
+    const isLocked = hasMissing || isEngineLocked;
 
     // Pill label & color (matching mockup yellow/brown for missing)
     const sec = getCSSVar('--secondary-color', '#1cbfca');
-    const displayLabel = hasMissing ? ENGINE_STATUS_LABELS.MISSING_INFO : isPending ? ENGINE_STATUS_LABELS.UNDER_REVIEW : ENGINE_STATUS_LABELS.LIKELY_ELIGIBLE;
-    const pillBg    = hasMissing ? '#fef3c7' : isPending ? '#f0f0ff' : `${sec}1a`;
-    const pillColor = hasMissing ? '#78350f' : isPending ? '#4f52c8' : sec;
+    const displayLabel = isEngineLocked ? ENGINE_STATUS_LABELS.LOCKED : (hasMissing ? ENGINE_STATUS_LABELS.MISSING_INFO : isPending ? ENGINE_STATUS_LABELS.UNDER_REVIEW : ENGINE_STATUS_LABELS.LIKELY_ELIGIBLE);
+    const pillBg    = isEngineLocked ? '#f3f4f6' : hasMissing ? '#fef3c7' : isPending ? '#f0f0ff' : `${sec}1a`;
+    const pillColor = isEngineLocked ? '#4b5563' : hasMissing ? '#78350f' : isPending ? '#4f52c8' : sec;
 
     // Ensure action_url is a valid path or external URL, otherwise fallback to default
     const isValidUrl = action_url && (action_url.startsWith('/') || action_url.startsWith('http'));
     // If locked (missing factors), force them to the local details page to view the reason.
-    // If fully disabled (pending), the click handler will block it anyway.
-    const destination = isLocked ? `/funding/${id}` : (isValidUrl ? action_url : `/funding/${id}`);
+    // If fully disabled (pending or engine locked), the click handler will block it anyway.
+    const destination = hasMissing && !isEngineLocked ? `/funding/${id}` : (isValidUrl ? action_url : `/funding/${id}`);
 
     return (
         <div style={{ position: 'relative', width: '100%' }}>
@@ -283,7 +322,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
                 onMouseEnter={() => (isFullyDisabled || isLocked) && setTooltipVisible(true)}
                 onMouseLeave={() => setTooltipVisible(false)}
                 onClick={(e) => {
-                    // Pending cards are fully disabled, cannot click
+                    // Pending/Engine Locked cards are fully disabled, cannot click
                     if (isFullyDisabled) {
                         e.preventDefault();
                         return;
@@ -301,12 +340,12 @@ const FundingCard: React.FC<FundingCardProps> = ({
                 }}
             >
                 {/* ── Lock / Clock Badge (Top-Right as per Mockup) ──────────── */}
-                {hasMissing && (
+                {(hasMissing || isEngineLocked) && (
                     <div className="funding-card-missing-badge" style={{ position: 'absolute', top: '14px', right: '14px', left: 'auto' }}>
                         <i className="ri-lock-line" />
                     </div>
                 )}
-                {isPending && !hasMissing && (
+                {isPending && !hasMissing && !isEngineLocked && (
                     <div className="funding-card-missing-badge funding-card-pending-badge" style={{ position: 'absolute', top: '14px', right: '14px', left: 'auto' }}>
                         <i className="ri-time-line" />
                     </div>
@@ -356,10 +395,13 @@ const FundingCard: React.FC<FundingCardProps> = ({
             </div>
 
             {/* ── Missing Tooltip ───────────────────────────────────────────── */}
-            <MissingTooltip factors={missingFactors} visible={tooltipVisible && hasMissing} />
+            <MissingTooltip factors={missingFactors} visible={tooltipVisible && hasMissing && !isEngineLocked} />
 
             {/* ── Pending Tooltip ───────────────────────────────────────────── */}
-            <PendingTooltip visible={tooltipVisible && isPending && !hasMissing} />
+            <PendingTooltip visible={tooltipVisible && isPending && !hasMissing && !isEngineLocked} />
+
+            {/* ── Engine Locked Tooltip ─────────────────────────────────────── */}
+            <EngineLockedTooltip visible={tooltipVisible && isEngineLocked} />
         </div>
     );
 };

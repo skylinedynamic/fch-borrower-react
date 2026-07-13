@@ -150,6 +150,7 @@ export const ENGINE_STATUS_LABELS = {
     MANUAL_REVIEW: 'Manual Review Required',
     MISSING_INFO: 'Missing Info',
     UNDER_REVIEW: 'Under Review',
+    LOCKED: 'Locked',
 };
 
 export const MATCH_LEVEL_LABELS = {
@@ -162,7 +163,8 @@ export const ENGINE_STATUS_VALUES = {
     ACTIVE: 'Active',
     REVIEW: 'Review',
     GREYED_OUT: 'Greyed Out',
-    HIDDEN: 'Hidden'
+    HIDDEN: 'Hidden',
+    LOCKED: 'Locked'
 };
 
 export const READINESS_FACTOR_LABELS = {

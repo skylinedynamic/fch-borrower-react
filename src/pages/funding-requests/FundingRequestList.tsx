@@ -240,18 +240,13 @@ export default function FundingRequestList() {
                                         loading={isLoading || isFetching}
                                         dataKey="id"
                                         emptyMessage={<div className="text-center p-3">No funding requests found.</div>}
+                                        onRowClick={(e) => handleView(e.data)}
+                                        rowClassName={() => 'cursor-pointer'}
                                     >
                                         <Column field="funding_type" header="Funding Type" sortable body={(row) => row.funding_type || 'N/A'}></Column>
                                         <Column field="use_of_funds" header="Uses" sortable body={(row) => row.use_of_funds || 'N/A'}></Column>
-                                        <Column field="requested_amount" header="Requested Amount" sortable body={(row) => row.requested_amount ? `$${Number(row.requested_amount).toLocaleString()}` : 'N/A'}></Column>
-                                        <Column field="amount_range" header="Estimated Amount" sortable body={(row) => {
-                                            if (!row.funding_sequence?.amount_range) return 'N/A';
-                                            return row.funding_sequence.amount_range.split('-').map((num: string) => {
-                                                const cleanStr = num.replace(/[$,]/g, '').trim();
-                                                const parsed = Number(cleanStr);
-                                                return isNaN(parsed) ? num.trim() : '$' + parsed.toLocaleString();
-                                            }).join(' - ');
-                                        }}></Column>
+                                        <Column field="requested_amount" header="Requested Amount" sortable body={(row) => row.requested_amount || 'N/A'}></Column>
+                                        <Column field="amount_range" header="Estimated Amount" sortable body={(row) => row.funding_sequence?.amount_range || 'N/A'}></Column>
                                         <Column field="status" header="Status" sortable body={statusBodyTemplate}></Column>
                                         <Column field="created_at" header="Created At" sortable body={(row) => row.created_at ? new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : 'N/A'}></Column>
                                         <Column header="Actions" body={(row: any) => (
