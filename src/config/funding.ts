@@ -55,7 +55,8 @@ export const FUNDING_REVIEW_STATUS = {
     IN_PROGRESS: 'In Progress',
     APPROVED: 'Approved',
     ACCEPTED: 'Accepted',
-    REJECTED: 'Rejected'
+    REJECTED: 'Rejected',
+    CANCELED: 'Canceled'
 };
 
 export const FUNDING_REVIEW_STATUS_COLORS: Record<string, string> = {
@@ -64,6 +65,7 @@ export const FUNDING_REVIEW_STATUS_COLORS: Record<string, string> = {
     [FUNDING_REVIEW_STATUS.ACCEPTED]: '#06B6D4',   // Teal/Cyan
     [FUNDING_REVIEW_STATUS.APPROVED]: '#10B981',   // Green
     [FUNDING_REVIEW_STATUS.REJECTED]: '#EF4444',   // Red
+    [FUNDING_REVIEW_STATUS.CANCELED]: '#6B7280',   // Gray
 };
 
 export const FUNDING_APPLICATION_STATUS = {
@@ -221,6 +223,7 @@ export const getFundingReviewProgress = (status: string) => {
     if (status === FUNDING_REVIEW_STATUS.IN_PROGRESS) return 70;
     if (status === FUNDING_REVIEW_STATUS.APPROVED) return 100;
     if (status === FUNDING_REVIEW_STATUS.REJECTED) return 100;
+    if (status === FUNDING_REVIEW_STATUS.CANCELED) return 100;
     return 0;
 };
 
@@ -255,6 +258,11 @@ export const FUNDING_REVIEW_TIMELINE_STEPS = [
         key: FUNDING_REVIEW_STATUS.REJECTED,
         label: 'Rejected',
         icon: 'ri-user-unfollow-line',
+    },
+    {
+        key: FUNDING_REVIEW_STATUS.CANCELED,
+        label: 'Canceled',
+        icon: 'ri-stop-circle-line',
     },
 ];
 
@@ -298,5 +306,13 @@ export const FUNDING_REVIEW_GUIDELINE_CARDS = [
         border: '#fecaca',
         iconBg: '#ef4444',
         icon: 'ri-close-line'
+    },
+    {
+        label: 'Canceled',
+        desc: 'Request has been canceled.',
+        bg: '#fef2f2',
+        border: '#fecaca',
+        iconBg: '#ef4444',
+        icon: 'ri-stop-circle-line'
     }
 ];

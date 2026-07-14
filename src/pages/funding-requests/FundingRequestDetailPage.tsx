@@ -72,12 +72,16 @@ const getActivityIcon = (logTypeRaw: string, isSuccess = false) => {
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 const StatusBadge = ({ status }: { status: string }) => {
-    if (status === FUNDING_REVIEW_STATUS.APPROVED || status === 'Accepted')
+    if (status === FUNDING_REVIEW_STATUS.APPROVED)
         return <span className="badge bg-success-subtle text-success fs-12">{status}</span>
+    if (status === FUNDING_REVIEW_STATUS.ACCEPTED)
+        return <span className="badge bg-info-subtle text-info fs-12">{status}</span>
     if (status === FUNDING_REVIEW_STATUS.REJECTED)
         return <span className="badge bg-danger-subtle text-danger fs-12">Rejected</span>
-    if (status === 'In Progress')
-        return <span className="badge bg-info-subtle text-info fs-12">In Progress</span>
+    if (status === FUNDING_REVIEW_STATUS.CANCELED)
+        return <span className="badge bg-secondary-subtle text-secondary fs-12">Canceled</span>
+    if (status === FUNDING_REVIEW_STATUS.IN_PROGRESS)
+        return <span className="badge bg-primary-subtle text-primary fs-12">In Progress</span>
     return <span className="badge bg-warning-subtle text-warning fs-12">Pending</span>
 }
 

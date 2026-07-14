@@ -89,8 +89,11 @@ export default function FundingRequestList() {
 
     const statusBodyTemplate = (row: any) => {
         let bg = 'warning'
-        if (row.status === FUNDING_REVIEW_STATUS.APPROVED || row.status === FUNDING_REVIEW_STATUS.ACCEPTED) bg = 'success'
+        if (row.status === FUNDING_REVIEW_STATUS.APPROVED) bg = 'success'
+        if (row.status === FUNDING_REVIEW_STATUS.ACCEPTED) bg = 'info'
         if (row.status === FUNDING_REVIEW_STATUS.REJECTED) bg = 'danger'
+        if (row.status === FUNDING_REVIEW_STATUS.CANCELED) bg = 'secondary'
+        if (row.status === FUNDING_REVIEW_STATUS.IN_PROGRESS) bg = 'primary'
         return <span className={`badge bg-${bg}`}>{row.status}</span>
     }
 
