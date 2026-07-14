@@ -217,8 +217,8 @@ export const READINESS_BADGE_STYLES: Record<string, { icon: string; bg: string; 
 export const getFundingReviewProgress = (status: string) => {
     if (status === 'SUBMITTED') return 10;
     if (status === FUNDING_REVIEW_STATUS.PENDING) return 20;
-    if (status === FUNDING_REVIEW_STATUS.IN_PROGRESS) return 40;
-    if (status === FUNDING_REVIEW_STATUS.ACCEPTED) return 70;
+    if (status === FUNDING_REVIEW_STATUS.ACCEPTED) return 40;
+    if (status === FUNDING_REVIEW_STATUS.IN_PROGRESS) return 70;
     if (status === FUNDING_REVIEW_STATUS.APPROVED) return 100;
     if (status === FUNDING_REVIEW_STATUS.REJECTED) return 100;
     return 0;
@@ -236,15 +236,15 @@ export const FUNDING_REVIEW_TIMELINE_STEPS = [
         icon: 'ri-time-line',
     },
     {
+        key: FUNDING_REVIEW_STATUS.ACCEPTED,
+        label: 'Accepted',
+        icon: 'ri-checkbox-circle-line',
+    },
+    {
         key: FUNDING_REVIEW_STATUS.IN_PROGRESS,
         label: 'In Progress',
         subtext: 'Under Review',
         icon: 'ri-user-3-fill',
-    },
-    {
-        key: FUNDING_REVIEW_STATUS.ACCEPTED,
-        label: 'Accepted',
-        icon: 'ri-checkbox-circle-line',
     },
     {
         key: FUNDING_REVIEW_STATUS.APPROVED,
@@ -268,20 +268,20 @@ export const FUNDING_REVIEW_GUIDELINE_CARDS = [
         icon: 'ri-time-line'
     },
     {
-        label: 'In Progress',
-        desc: 'Admin/Partner can reviewing the request.',
-        bg: '#eff6ff',
-        border: '#bfdbfe',
-        iconBg: '#3b82f6',
-        icon: 'ri-shield-user-fill'
-    },
-    {
         label: 'Accepted',
         desc: 'Review completed successfully.',
         bg: '#fefce8',
         border: '#fef08a',
         iconBg: '#eab308',
         icon: 'ri-check-line'
+    },
+    {
+        label: 'In Progress',
+        desc: 'Admin/Partner can reviewing the request.',
+        bg: '#eff6ff',
+        border: '#bfdbfe',
+        iconBg: '#3b82f6',
+        icon: 'ri-shield-user-fill'
     },
     {
         label: 'Approved',
