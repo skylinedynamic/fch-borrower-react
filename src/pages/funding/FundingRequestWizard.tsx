@@ -578,7 +578,7 @@ const FundingRequestWizard = () => {
                                                         <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.tax_id || '12-3456789'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Months</span>
+                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Time in Business</span>
                                                         <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.time_in_business || '2 - 5 Years'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
@@ -608,7 +608,7 @@ const FundingRequestWizard = () => {
                                                         <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>${financialInfo?.average_monthly_revenue?.toLocaleString() || '45,000'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Months</span>
+                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Time in Business</span>
                                                         <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.time_in_business || '2 - 5 Years'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">

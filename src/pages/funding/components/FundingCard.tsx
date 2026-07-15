@@ -116,7 +116,7 @@ const formatFactorDetail = (factor: ReadinessFactor): string => {
             if (d > 0) parts.push(`${d} Day${d > 1 ? 's' : ''}`);
             return parts.length > 0 ? parts.join(' ') : '0 Months';
         };
-        const displayLabel = lowerLabel === 'time in business' ? 'Months' : label;
+        const displayLabel = label;
         return `${displayLabel}: ${fmtMonths(act)} (Required: ${fmtMonths(req)})`;
     }
 
@@ -178,7 +178,7 @@ const MissingTooltip: React.FC<{ factors: ReadinessFactor[]; visible: boolean }>
                         }
                     }
 
-                    const displayLabel = lowerLabel === 'time in business' ? 'Months' : label;
+                    const displayLabel = label;
 
                     return (
                         <li key={i} className="funding-missing-tooltip-item">

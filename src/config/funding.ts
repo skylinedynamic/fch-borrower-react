@@ -214,6 +214,7 @@ export const READINESS_BADGE_STYLES: Record<string, { icon: string; bg: string; 
     [FACTOR_STATUS_VALUES.WEAK]: { icon: 'ri-close-circle-fill', bg: '#fee2e2', color: '#991b1b' },
     [FACTOR_STATUS_VALUES.RESTRICTED]: { icon: 'ri-close-circle-fill', bg: '#fee2e2', color: '#ef4444' },
     [FACTOR_STATUS_VALUES.ELIGIBLE]: { icon: 'ri-checkbox-circle-fill', bg: '#e8f9f0', color: '#10b981' },
+    'failed': { icon: 'ri-close-circle-fill', bg: '#fee2e2', color: '#ef4444' },
 };
 
 export const getFundingReviewProgress = (status: string) => {
