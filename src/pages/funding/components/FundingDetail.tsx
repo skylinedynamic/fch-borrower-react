@@ -263,7 +263,8 @@ const FundingDetail = () => {
 
     const ctaSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
-    const hasMissingFactors = dynamicReadiness.some((r: any) => {
+    const activeFactors = dynamicReadiness.length > 0 ? dynamicReadiness : readiness_factors;
+    const hasMissingFactors = activeFactors.some((r: any) => {
         const s = r.status?.toLowerCase();
         return s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED || s === FACTOR_STATUS_VALUES.WEAK;
     });
@@ -412,8 +413,6 @@ const FundingDetail = () => {
                                         Underwriting Factors
                                     </h6>
                                     {(() => {
-                                        const activeFactors = dynamicReadiness.length > 0 ? dynamicReadiness : readiness_factors;
-
                                         if (activeFactors.length === 0) {
                                             return <p style={{ fontSize: 13, color: '#9ca3af', margin: 0 }}>No underwriting factors available.</p>;
                                         }
