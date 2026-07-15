@@ -54,9 +54,12 @@ apiClient.interceptors.response.use(
       }
     } else if (status === 403) {
       // Forbidden: keep auth, show informative toast, do not redirect
-      const serverMessage = (error.response?.data as any)?.message
-      const message = serverMessage || 'You do not have permission to perform this action.'
-      toast.error(message, { toastId: 'forbidden-error' })
+      const skipToast = error.config?.headers?.['X-Skip-Toast'] === 'true' || error.config?.headers?.['x-skip-toast'] === 'true'
+      if (!skipToast) {
+        const serverMessage = (error.response?.data as any)?.message
+        const message = serverMessage || 'You do not have permission to perform this action.'
+        toast.error(message, { toastId: 'forbidden-error' })
+      }
     }
     return Promise.reject(error)
   }

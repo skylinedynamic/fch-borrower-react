@@ -13,19 +13,25 @@ const AgreementSignModal = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const iframeRef = useRef(null)
-  const { user, setCredentials } = useAuthStore()
+  const { user, setCredentials, userSubscription } = useAuthStore()
   const { branding } = useBrandingStore()
   const siteName = branding?.is_white_label ? (branding?.meta_title || branding?.site_name || 'Four Corner Funding') : 'Four Corner Funding'
   
+  const isFreeTrial = !!user?.is_free_trail || !!userSubscription?.is_free_trail
+
   const { data: checkData, isLoading: loadingCheck } = useCheckAgreementSign()
   const submitSignature = useSubmitAgreementSign()
 
   useEffect(() => {
+    if (isFreeTrial) {
+      setVisible(false)
+      return
+    }
     if (checkData?.status && checkData.data?.needs_sign && checkData.data?.template && !user?.is_agreement_signed) {
       setTemplate(checkData.data.template)
       setVisible(true)
     }
-  }, [checkData, user])
+  }, [checkData, user, isFreeTrial])
 
 
   const handleSign = async () => {

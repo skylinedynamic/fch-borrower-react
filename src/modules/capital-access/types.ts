@@ -1,20 +1,3 @@
-export interface RoadmapStep {
-  id: number;
-  day: number;
-  issuer: string;
-  card_name: string;
-  exposure: string;
-  status: 'Completed' | 'Active' | 'Locked';
-  why: string;
-  approval_odds: string;
-  hard_pull: string;
-  requirements: string[];
-  result: {
-    status: 'Approved' | 'Pending' | 'Declined';
-    limit: number;
-    notes?: string;
-  } | null;
-}
 
 export interface RoadmapCard {
   id: number;                   // sequence id
@@ -43,8 +26,12 @@ export interface RoadmapCard {
 export interface CapitalAccessStrategyRoadmap {
   id: number;
   name: string;
+  isRecommended?: boolean;
+  isCompleted?: boolean;
+  isAccessible?: boolean;
   approval_status?: boolean;    // false = whole strategy locked
   reason_code?: string | null;
+  unlock_at?: string | null;
   target_exposure: string;
   est_timeline: string;
   first_submitted_at?: string | null;
@@ -72,6 +59,11 @@ export interface CapitalAccessStepDetail {
     id: number;
     name: string;
     target_exposure: string;
+    isRecommended?: boolean;
+    isCompleted?: boolean;
+    isAccessible?: boolean;
+    reason_code?: string | null;
+    unlock_at?: string | null;
   };
   application?: {
     id: number;
@@ -95,7 +87,10 @@ export interface CapitalAccessStrategy {
   approval_probability: string; // e.g. "95%"
   benefits: string[];
   checklist: Array<{ id: string; label: string; complete: boolean }>;
-  roadmap: RoadmapStep[];
+  roadmap: RoadmapCard[];
+  approval_status?: boolean;
+  reason_code?: string | null;
+  unlock_at?: string | null;
 }
 
 
@@ -104,19 +99,26 @@ export interface CapitalAccessStrategyOverview {
   name: string;
   description: string;
   isRecommended: boolean;
+  isCompleted?: boolean;
+  isAccessible?: boolean;
   target_exposure: string;
   est_timeline: string;
   approval_probability: string;
   approval_status: boolean;
   reason_code: string | null;
+  unlock_at?: string | null;
   benefits: string[];
 }
 
 export interface CapitalAccessStrategyChecklist {
   id: number;
   name: string;
+  isRecommended?: boolean;
+  isCompleted?: boolean;
+  isAccessible?: boolean;
   approval_status: boolean;
   reason_code: string | null;
+  unlock_at?: string | null;
   checklist: Array<{ id: string; label: string; complete: boolean }>;
 }
 
@@ -138,6 +140,7 @@ export interface FactorDetail {
   value: string | number;
   weighted_score: number;
   raw_score: number;
+  status?: string | null;
 }
 
 export interface ExposureBreakdownItem {
@@ -153,6 +156,8 @@ export interface CapitalAccessOverview {
   estimated_total_access: string;
   exposure_breakdown?: ExposureBreakdownItem[];
   current_play?: { id: number; name: string; } | null;
+  reason_code?: string | null;
+  unlock_at?: string | null;
 }
 
 export interface OverviewResponse {

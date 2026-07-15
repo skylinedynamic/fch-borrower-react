@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { useAuthStore } from '../../store/auth/authStore'
 import { useCapitalAccessOverview } from '../../modules/capital-access/queries'
 
-import CapitalAccessLocked from '../../components/CapitalAccess/CapitalAccessLocked'
 import CommonErrorPage from '../../components/Common/CommonErrorPage'
 import CapitalAccessPageHeader from '../../components/CapitalAccess/CapitalAccessPageHeader'
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader'
@@ -69,6 +68,8 @@ export default function CapitalAccess() {
                     totalAccess={totalAccess}
                     exposureBreakdown={overview?.exposure_breakdown}
                     statusColor={statusColor}
+                    reasonCode={overview?.reason_code}
+                    unlockAt={overview?.unlock_at}
                   />
                 </div>
 
@@ -91,7 +92,7 @@ export default function CapitalAccess() {
                     </div>
                   </div>
                 ) : (
-                  <RecommendedNextStep />
+                  <RecommendedNextStep disabled={overview?.reason_code === 'NO_ACTIVE_PLAYS' || overview?.reason_code === 'ALL_PLAYS_COMPLETED'} />
                 )}
               </>
             )}

@@ -29,11 +29,14 @@ const mapStrategyOverview = (data: any): CapitalAccessStrategyOverview => {
     name: data.name,
     description: data.description,
     isRecommended: !!data.isRecommended,
+    isCompleted: !!data.isCompleted,
+    isAccessible: !!data.isAccessible,
     target_exposure: data.target_exposure,
     est_timeline: data.est_timeline,
     approval_probability: data.approval_probability,
     approval_status: !!data.approval_status,
     reason_code: data.reason_code || null,
+    unlock_at: data.unlock_at || null,
     benefits: data.benefits || [],
   }
 }
@@ -42,8 +45,12 @@ const mapStrategyChecklist = (data: any): CapitalAccessStrategyChecklist => {
   return {
     id: data.id,
     name: data.name,
+    isRecommended: !!data.isRecommended,
+    isCompleted: !!data.isCompleted,
+    isAccessible: !!data.isAccessible,
     approval_status: !!data.approval_status,
     reason_code: data.reason_code || null,
+    unlock_at: data.unlock_at || null,
     checklist: mapChecklist(data.checklist),
   }
 }
@@ -74,13 +81,19 @@ export const fetchCapitalAccessOverview = async (): Promise<CapitalAccessOvervie
 }
 
 export const fetchCapitalAccessStrategyRoadmap = async (id: string | number): Promise<CapitalAccessStrategyRoadmap> => {
-  const { data } = await apiClient.get<StrategyDetailResponse>(`/borrower/capital-access/strategies/${id}/roadmap`)
+  const { data } = await apiClient.get<StrategyDetailResponse>(`/borrower/capital-access/strategies/${id}/roadmap`, {
+    headers: { 'X-Skip-Toast': 'true' }
+  })
   const raw = data.data
   return {
     id: raw.id,
     name: raw.name,
+    isRecommended: !!raw.isRecommended,
+    isCompleted: !!raw.isCompleted,
+    isAccessible: !!raw.isAccessible,
     approval_status: raw.approval_status,
     reason_code: raw.reason_code ?? null,
+    unlock_at: raw.unlock_at ?? null,
     target_exposure: raw.target_exposure ?? '',
     est_timeline: raw.est_timeline ?? '',
     first_submitted_at: raw.first_submitted_at ?? null,
@@ -93,7 +106,8 @@ export const fetchCapitalAccessStepDetail = async (
   sequenceId: string | number
 ): Promise<CapitalAccessStepDetail> => {
   const { data } = await apiClient.get<StrategyDetailResponse>(
-    `/borrower/capital-access/strategies/${strategyId}/step/${sequenceId}`
+    `/borrower/capital-access/strategies/${strategyId}/step/${sequenceId}`,
+    { headers: { 'X-Skip-Toast': 'true' } }
   )
   return data.data
 }
@@ -107,6 +121,11 @@ export const submitCapitalAccessStepDetail = async (
     `/borrower/capital-access/strategies/${strategyId}/step/${sequenceId}/submit`,
     payload
   )
+  return data.data
+}
+
+export const startCapitalAccessPlay = async (id: string | number): Promise<any> => {
+  const { data } = await apiClient.post(`/borrower/capital-access/strategies/${id}/start`)
   return data.data
 }
 

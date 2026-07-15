@@ -23,17 +23,6 @@ export default function Sidebar() {
   const isFreeTrial = !!userSubscription?.is_free_trail;
   // Modules locked exclusively during the Limited Free Edition (free trial)
   const isFreeTierModule = isFreeTrialLocked(userSubscription);
-  const trialEndDate = userSubscription?.free_trail_end_date;
-
-  const formatTrialDate = (dateStr) => {
-    if (!dateStr) return '';
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    } catch {
-      return dateStr;
-    }
-  };
 
   // Resolved logos for different sidebar states
   const primaryLogo = branding?.primary_logo_full_url
@@ -255,10 +244,8 @@ export default function Sidebar() {
               <i className="ri-vip-crown-2-fill"></i>
             </div>
             <div className="trial-text-wrap">
-              <span className="trial-label">Free Edition</span>
-              {trialEndDate && (
-                <span className="trial-expires">Expires {formatTrialDate(trialEndDate)}</span>
-              )}
+              <span className="trial-label">Limited Access</span>
+              <span className="trial-expires">Trial Period Lifetime</span>
             </div>
             <span className="trial-badge">FREE</span>
           </div>

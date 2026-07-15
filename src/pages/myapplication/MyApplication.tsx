@@ -7,7 +7,7 @@ import RightSideSection from './components/RightSideSection'
 
 export default function MyApplication() {
   const [prequalPage, setPrequalPage] = useState(1)
-  const { data: prequalData, isLoading: prequalLoading } = usePreQualificationRequests(prequalPage, 5)
+  const { data: prequalData, isLoading: prequalLoading } = usePreQualificationRequests(prequalPage)
 
   const [loading, setLoading] = useState(true)
   useEffect(() => {
@@ -28,10 +28,11 @@ export default function MyApplication() {
 
         <div className="row g-4">
           <div className="col-xl-8 col-xxl-9 order-1">
-            <PreQualificationRequests 
-              loading={prequalLoading} 
-              data={prequalData?.data || []} 
+            <PreQualificationRequests
+              loading={prequalLoading}
+              data={prequalData?.data || []}
               meta={prequalData?.meta}
+              page={prequalPage}
               onPageChange={setPrequalPage}
             />
             <FundingApplications />

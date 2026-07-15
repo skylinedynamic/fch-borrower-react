@@ -4,10 +4,9 @@ import type { PreQualificationResponse, AdvisorResponse, PreQualificationDetailR
 const BASE_URL = '/borrower/myapplication'
 const preQualificationBaseUrl = '/borrower'
 
-export const fetchPreQualificationRequests = async (page: number = 1, perPage: number = 5): Promise<PreQualificationResponse> => {
-  const { data } = await apiClient.post<PreQualificationResponse>(`${BASE_URL}/pre-qualification`, { 
-    page, 
-    per_page: perPage 
+export const fetchPreQualificationRequests = async (page: number = 1): Promise<PreQualificationResponse> => {
+  const { data } = await apiClient.post<PreQualificationResponse>(`${BASE_URL}/pre-qualification`, {
+    page
   })
   return data
 }
@@ -22,10 +21,9 @@ export const fetchPreQualificationDetail = async (id: number | string): Promise<
   return data
 }
 
-export const fetchFundingApplications = async (page: number = 1, perPage: number = 5): Promise<FundingApplicationResponse> => {
-  const { data } = await apiClient.post<FundingApplicationResponse>(`${BASE_URL}/funding-application`, { 
-    page, 
-    per_page: perPage 
+export const fetchFundingApplications = async (page: number = 1): Promise<FundingApplicationResponse> => {
+  const { data } = await apiClient.post<FundingApplicationResponse>(`${BASE_URL}/funding-application`, {
+    page
   })
   return data
 }
