@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FUNDING_ICON_MAP, FUNDING_REVIEW_STATUS, ENGINE_STATUS_LABELS, ENGINE_STATUS_VALUES } from '../../../config/funding';
+import { FUNDING_ICON_MAP, FUNDING_REVIEW_STATUS, ENGINE_STATUS_LABELS, ENGINE_STATUS_VALUES, FACTOR_STATUS_VALUES } from '../../../config/funding';
 import { getFundingColorStyles } from '../../../config/fundingColor';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -288,7 +288,10 @@ const FundingCard: React.FC<FundingCardProps> = ({
     const colors = resolveColor(icon_color);
 
     // Detect missing underwriting factors
-    const missingFactors = readiness_factors.filter(f => f.status?.toLowerCase() === 'missing');
+    const missingFactors = readiness_factors.filter(f => {
+        const s = f.status?.toLowerCase();
+        return s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED || s === FACTOR_STATUS_VALUES.WEAK;
+    });
     const hasMissing = missingFactors.length > 0;
 
     // Pending = already applied, awaiting review

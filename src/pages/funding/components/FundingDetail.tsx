@@ -263,7 +263,10 @@ const FundingDetail = () => {
 
     const ctaSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
-    const hasMissingFactors = dynamicReadiness.some((r: any) => r.status === 'Missing');
+    const hasMissingFactors = dynamicReadiness.some((r: any) => {
+        const s = r.status?.toLowerCase();
+        return s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED || s === FACTOR_STATUS_VALUES.WEAK;
+    });
     const isPending = latest_review_status === FUNDING_REVIEW_STATUS.PENDING;
 
     return (
