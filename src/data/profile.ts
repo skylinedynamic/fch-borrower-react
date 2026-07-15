@@ -131,6 +131,7 @@ export const industryTypes: OptionType[] = [
   { label: 'Veterinarian', value: 'Veterinarian' },
   { label: 'Wholesale', value: 'Wholesale' },
   { label: 'Winery', value: 'Winery' },
+  { label: 'Others', value: 'Others' },
 ]
 
 

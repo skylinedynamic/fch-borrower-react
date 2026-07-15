@@ -118,11 +118,6 @@ File: Custom Css File
     color: var(--vz-body-color);
 }
 
-#roles-permissions-page .bullet-list li::before {
-    content: '•';
-    color: var(--bs-primary);
-}
-
 #roles-permissions-page .card-actions {
     display: flex;
     gap: 12px;
