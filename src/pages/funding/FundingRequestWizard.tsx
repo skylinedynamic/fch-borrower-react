@@ -14,7 +14,7 @@ import { getUser } from '../../lib/auth/auth';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../lib/query';
 import { useBusinessDetails, useFinancialInfo } from '../../modules/profile/queries';
-import { FUNDING_WIZARD_STEPS, FUNDING_REVIEW_STATUS } from '../../config/funding';
+import { FUNDING_WIZARD_STEPS, FUNDING_REVIEW_STATUS, FACTOR_STATUS_VALUES } from '../../config/funding';
 import { useBrandingStore } from '../../store/brandingStore';
 const steps = FUNDING_WIZARD_STEPS;
 
@@ -110,12 +110,12 @@ const FundingRequestWizard = () => {
                     if (readinessRes?.status && Array.isArray(readinessRes.data)) {
                         hasMissingFactors = readinessRes.data.some((f: any) => {
                             const s = (f.status || '').toLowerCase();
-                            return s === 'missing' || s === 'restricted' || s === 'weak';
+                            return s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED || s === FACTOR_STATUS_VALUES.WEAK;
                         });
                     } else if (res.data.readiness_factors) {
                         hasMissingFactors = res.data.readiness_factors.some((f: any) => {
                             const s = (f.status || '').toLowerCase();
-                            return s === 'missing' || s === 'restricted' || s === 'weak';
+                            return s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED || s === FACTOR_STATUS_VALUES.WEAK;
                         });
                     }
 

@@ -120,7 +120,7 @@ const ReadinessItem: React.FC<{ factor: any, isLast: boolean }> = ({ factor, isL
     if (factor.label === READINESS_FACTOR_LABELS.RESTRICTED_STATE) {
         subtitle = `Your business is located in ${factor.borrower_value}, which is a restricted state for this funding program.`;
     } else if (factor.label === READINESS_FACTOR_LABELS.STATE_ELIGIBILITY) {
-        if (s === FACTOR_STATUS_VALUES.MISSING || s === FACTOR_STATUS_VALUES.RESTRICTED) {
+        if (s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED) {
             subtitle = `Your business is located in ${factor.borrower_value}. This program only allows specific states.`;
         } else {
             subtitle = `Your business location is eligible for this funding program.`;
@@ -128,7 +128,7 @@ const ReadinessItem: React.FC<{ factor: any, isLast: boolean }> = ({ factor, isL
     } else if (factor.label === READINESS_FACTOR_LABELS.RESTRICTED_INDUSTRY) {
         subtitle = `Your business is in the ${factor.borrower_value} industry, which is restricted.`;
     } else if (factor.label === READINESS_FACTOR_LABELS.INDUSTRY_ELIGIBILITY) {
-        if (s === FACTOR_STATUS_VALUES.MISSING || s === FACTOR_STATUS_VALUES.RESTRICTED) {
+        if (s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED) {
             subtitle = `Your industry (${factor.borrower_value}) is not supported.`;
         } else {
             subtitle = `Your industry is eligible for this funding program.`;
@@ -136,11 +136,8 @@ const ReadinessItem: React.FC<{ factor: any, isLast: boolean }> = ({ factor, isL
     }
 
     let badgeText = factor.status;
-    if (badgeText === 'Missing') {
-        badgeText = 'Failed';
-    }
     
-    if ((factor.label === READINESS_FACTOR_LABELS.RESTRICTED_STATE || factor.label === READINESS_FACTOR_LABELS.RESTRICTED_INDUSTRY) && s === FACTOR_STATUS_VALUES.MISSING) {
+    if ((factor.label === READINESS_FACTOR_LABELS.RESTRICTED_STATE || factor.label === READINESS_FACTOR_LABELS.RESTRICTED_INDUSTRY) && s === FACTOR_STATUS_VALUES.FAILED) {
         badgeText = BADGE_LABELS.RESTRICTED;
     } else if ((factor.label === READINESS_FACTOR_LABELS.STATE_ELIGIBILITY || factor.label === READINESS_FACTOR_LABELS.INDUSTRY_ELIGIBILITY) && (s === FACTOR_STATUS_VALUES.GOOD || s === FACTOR_STATUS_VALUES.STRONG)) {
         badgeText = BADGE_LABELS.ELIGIBLE;
