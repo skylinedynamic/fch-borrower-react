@@ -1004,16 +1004,57 @@
 .funding-wizard-btn-outline { border-radius: 4px !important; } .funding-wizard-btn-primary { border-radius: 4px !important; } .skeleton-line { border-radius: 4px !important; }
 .skeleton-step-circle { width: 32px; height: 32px; border-radius: 50% !important; }
 
-/* ── FundingDetail — Skeleton Loader ────────────────────────── */
-.fd-skel-panel { border: 1px solid #e8ecf0; border-radius: 4px; padding: 20px 22px; min-height: 220px; }
-.fd-skel-panel-sm { border: 1px solid #e8ecf0; border-radius: 4px; padding: 18px 22px; }
-.fd-skel-circle { width: 16px; height: 16px; border-radius: 50%; }
-.fd-skel-footer { border-top: 1px solid #e8ecf0; background: #fff; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; }
+/* ── FundingDetail — Skeleton Loader ────────────────────────────────────────
+   Each class maps 1-to-1 to an element in FundingDetailLoader so the skeleton
+   visually mirrors the real detail page layout.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Card wrapper */
+.fd-skel-card { border-radius: 4px; overflow: hidden; }
+
+/* Breadcrumb row */
+.fd-skel-title       { width: 220px; height: 24px; }
+.fd-skel-crumb-sm    { width: 60px;  height: 13px; }
+.fd-skel-crumb-sep   { width: 8px;   height: 13px; }
+.fd-skel-crumb-md    { width: 100px; height: 13px; }
+.fd-skel-crumb-lg    { width: 160px; height: 13px; }
+.fd-skel-back-btn    { width: 85px;  height: 32px; border-radius: 4px !important; }
+
+/* ── FundingDetail — Action Buttons ────────────────────────────── */
+.fd-action-btn { background-color: #022144 !important; border: 1px solid #022144 !important; font-size: 14px; color: #fff !important; padding: 8px 20px; border-radius: 4px; transition: all 0.2s; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; cursor: pointer; }
+.fd-action-btn:hover:not(.disabled) { background-color: #033268 !important; border-color: #033268 !important; color: #fff !important; opacity: 1; }
+
+.fd-action-btn.disabled,
+.fd-action-btn[disabled] { background-color: #94a3b8 !important; border-color: #94a3b8 !important; color: #ffffff !important; opacity: 1 !important; cursor: not-allowed !important; pointer-events: auto !important; box-shadow: none !important; transform: none !important; }
+.fd-action-btn.disabled:hover { background-color: #94a3b8 !important; border-color: #94a3b8 !important; }
+
+/* Card header — icon / title / badge */
+.fd-skel-icon-circle  { width: 56px; height: 56px; border-radius: 50% !important; }
+.fd-skel-card-title   { width: 240px; height: 20px; }
+.fd-skel-card-subtitle { width: 300px; height: 13px; }
+.fd-skel-badge        { width: 130px; height: 32px; border-radius: 20px !important; }
+.fd-skel-match-label  { width: 60px; height: 10px; }
+
+/* Meta row — 4-column grid (matches: Range / Term / Speed / Uses) */
+.fd-skel-meta-row { border: 1px solid #e8ecf0; border-radius: 4px; overflow: hidden; }
+.fd-skel-meta-col-border { border-right: 1px solid #e8ecf0; }
+.fd-skel-meta-label { width: 70%;  height: 10px; }
+.fd-skel-meta-value { width: 55%;  height: 16px; margin-top: 6px; }
+
+/* Two-column panels (Why You May Qualify + Underwriting Factors) */
+.fd-skel-panel         { border: 1px solid #e8ecf0; border-radius: 4px; padding: 20px 22px; min-height: 220px; }
+.fd-skel-panel-sm      { border: 1px solid #e8ecf0; border-radius: 4px; padding: 18px 22px; }
+.fd-skel-panel-heading { width: 150px; height: 14px; }
+.fd-skel-circle        { width: 16px;  height: 16px; border-radius: 50% !important; }
+.fd-skel-factor-badge  { width: 60px;  height: 22px; border-radius: 12px !important; }
+
+/* Footer — sticky CTA row */
+.fd-skel-footer      { border-top: 1px solid #e8ecf0; background: #fff; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; }
+.fd-skel-footer-title { width: 90px;  height: 14px; }
+.fd-skel-footer-desc  { width: 340px; height: 12px; }
+.fd-skel-cta-btn      { width: 180px; height: 42px; border-radius: 6px !important; }
 
 /* ── FundingDetail — CTA Footer ─────────────────────────────── */
-.fd-cta-btn-disabled { height: 42px; opacity: 0.65; cursor: not-allowed; }
-.fd-cta-btn { height: 42px; }
-.fd-cta-arrow { font-size: 15px; }
 .fd-factors-col { display: flex; flex-direction: column; }
 
 /* ── FundingCard ─────────────────────────────────────────────── */

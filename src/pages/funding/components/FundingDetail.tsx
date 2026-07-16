@@ -41,85 +41,98 @@ const ReadinessBadge: React.FC<{ status: string }> = ({ status }) => {
 const FundingDetailLoader = () => (
     <div className="page-content">
         <div className="container-fluid">
+
+            {/* ── Breadcrumb skeleton ───────────────────────── */}
             <div className="row page-subheader-sticky bg-body">
                 <div className="col-12 py-2">
-                    <div className="d-flex align-items-center justify-content-between flex-row">
+                    <div className="d-flex align-items-center justify-content-between">
                         <div className="flex-grow-1">
-                            <div className="skeleton-line mb-2" style={{ width: 200, height: 24, borderRadius: 4 }} />
+                            <div className="skeleton-line mb-2 fd-skel-title" />
                             <div className="d-flex align-items-center gap-2">
-                                <div className="skeleton-line m-0" style={{ width: 60, height: 13, borderRadius: 4 }} />
-                                <div className="skeleton-line m-0" style={{ width: 8, height: 13, borderRadius: 4 }} />
-                                <div className="skeleton-line m-0" style={{ width: 100, height: 13, borderRadius: 4 }} />
-                                <div className="skeleton-line m-0" style={{ width: 8, height: 13, borderRadius: 4 }} />
-                                <div className="skeleton-line m-0" style={{ width: 140, height: 13, borderRadius: 4 }} />
+                                <div className="skeleton-line m-0 fd-skel-crumb-sm" />
+                                <div className="skeleton-line m-0 fd-skel-crumb-sep" />
+                                <div className="skeleton-line m-0 fd-skel-crumb-md" />
+                                <div className="skeleton-line m-0 fd-skel-crumb-sep" />
+                                <div className="skeleton-line m-0 fd-skel-crumb-lg" />
                             </div>
                         </div>
-                        <div className="mt-0">
-                            <div className="skeleton-line m-0" style={{ width: 75, height: 36, borderRadius: 4 }} />
-                        </div>
+                        <div className="skeleton-line m-0 fd-skel-back-btn" />
                     </div>
                 </div>
             </div>
-            <div className="card border-0 shadow-sm" style={{ borderRadius: 4, overflow: 'hidden' }}>
+
+            {/* ── Main card ─────────────────────────────────── */}
+            <div className="card border-0 shadow-sm fd-skel-card">
                 <div className="card-body p-4">
+
+                    {/* Icon + Title + Badge */}
                     <div className="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
                         <div className="d-flex align-items-center gap-3">
-                            <div className="skeleton-line flex-shrink-0" style={{ width: 56, height: 56, borderRadius: '50%' }} />
+                            <div className="skeleton-line flex-shrink-0 fd-skel-icon-circle" />
                             <div>
-                                <div className="skeleton-line mb-2" style={{ width: 220, height: 20, borderRadius: 4 }} />
-                                <div className="skeleton-line" style={{ width: 280, height: 13, borderRadius: 4 }} />
+                                <div className="skeleton-line mb-2 fd-skel-card-title" />
+                                <div className="skeleton-line fd-skel-card-subtitle" />
                             </div>
                         </div>
                         <div className="text-end flex-shrink-0">
-                            <div className="skeleton-line" style={{ width: 110, height: 32, borderRadius: 20 }} />
-                            <div className="skeleton-line ms-auto mt-2" style={{ width: 60, height: 10, borderRadius: 4 }} />
+                            <div className="skeleton-line fd-skel-badge" />
+                            <div className="skeleton-line ms-auto mt-2 fd-skel-match-label" />
                         </div>
                     </div>
-                    <div className="row g-0 mb-4" style={{ border: '1px solid #e8ecf0', borderRadius: 4, overflow: 'hidden' }}>
+
+                    {/* Meta row — 4 cols matching: Range / Term / Speed / Uses */}
+                    <div className="fd-skel-meta-row row g-0 mb-4">
                         {[0, 1, 2, 3].map(i => (
-                            <div key={i} className={`col-md-3 col-6 p-3`} style={{ borderRight: i < 3 ? '1px solid #e8ecf0' : 'none' }}>
-                                <div className="skeleton-line mb-2" style={{ width: '60%', height: 10, borderRadius: 4 }} />
-                                <div className="fd-skel-panel">
-                                    <div className="skeleton-line mb-4" style={{ width: 140, height: 14, borderRadius: 4 }} />
-                                    {[90, 80, 85, 70].map((w, j) => (
-                                        <div key={j} className="d-flex align-items-center gap-2 mb-3">
-                                            <div className="skeleton-line flex-shrink-0 fd-skel-circle" />
-                                            <div className="skeleton-line" style={{ width: `${w}%`, height: 12, borderRadius: 4 }} />
-                                        </div>
-                                    ))}
-                                </div>
+                            <div key={i} className={`col-md-3 col-6 p-3${i < 3 ? ' fd-skel-meta-col-border' : ''}`}>
+                                <div className="skeleton-line mb-2 fd-skel-meta-label" />
+                                <div className="skeleton-line fd-skel-meta-value" />
                             </div>
                         ))}
                     </div>
+
+                    {/* Two-column: Why You May Qualify + Underwriting Factors */}
                     <div className="row g-3 mb-3">
-                        {[0, 1].map(i => (
-                            <div key={i} className="col-md-6">
-                                <div className="fd-skel-panel">
-                                    <div className="skeleton-line mb-4" style={{ width: 140, height: 14, borderRadius: 4 }} />
-                                    {[90, 80, 85, 70].map((w, j) => (
-                                        <div key={j} className="d-flex align-items-center gap-2 mb-3">
-                                            <div className="skeleton-line flex-shrink-0 fd-skel-circle" />
-                                            <div className="skeleton-line" style={{ width: `${w}%`, height: 12, borderRadius: 4 }} />
-                                        </div>
-                                    ))}
-                                </div>
+                        {/* Left — Why You May Qualify */}
+                        <div className="col-md-6">
+                            <div className="fd-skel-panel">
+                                <div className="skeleton-line mb-4 fd-skel-panel-heading" />
+                                {[90, 75, 85, 65].map((w, j) => (
+                                    <div key={j} className="d-flex align-items-center gap-2 mb-3">
+                                        <div className="skeleton-line flex-shrink-0 fd-skel-circle" />
+                                        <div className="skeleton-line" style={{ width: `${w}%`, height: 12 }} />
+                                    </div>
+                                ))}
                             </div>
-                        ))}
+                        </div>
+                        {/* Right — Underwriting Factors */}
+                        <div className="col-md-6">
+                            <div className="fd-skel-panel">
+                                <div className="skeleton-line mb-4 fd-skel-panel-heading" />
+                                {[80, 70, 90, 75, 60, 85].map((w, j) => (
+                                    <div key={j} className="d-flex align-items-center justify-content-between gap-2 mb-3">
+                                        <div className="d-flex align-items-center gap-2 flex-grow-1">
+                                            <div className="skeleton-line flex-shrink-0 fd-skel-circle" />
+                                            <div className="skeleton-line" style={{ width: `${w}%`, height: 12 }} />
+                                        </div>
+                                        <div className="skeleton-line flex-shrink-0 fd-skel-factor-badge" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
-                    <div className="fd-skel-panel-sm">
-                        <div className="skeleton-line mb-3" style={{ width: 100, height: 14, borderRadius: 4 }} />
-                        <div className="skeleton-line mb-2" style={{ width: '100%', height: 12, borderRadius: 4 }} />
-                        <div className="skeleton-line" style={{ width: '80%', height: 12, borderRadius: 4 }} />
-                    </div>
+
                 </div>
+
+                {/* Footer — Next Step + CTA button */}
                 <div className="fd-skel-footer">
                     <div>
-                        <div className="skeleton-line mb-2" style={{ width: 80, height: 14, borderRadius: 4 }} />
-                        <div className="skeleton-line" style={{ width: 320, height: 12, borderRadius: 4 }} />
+                        <div className="skeleton-line mb-2 fd-skel-footer-title" />
+                        <div className="skeleton-line fd-skel-footer-desc" />
                     </div>
-                    <div className="skeleton-line" style={{ width: 170, height: 42, borderRadius: 8 }} />
+                    <div className="skeleton-line fd-skel-cta-btn" />
                 </div>
             </div>
+
         </div>
     </div>
 );
@@ -290,7 +303,7 @@ const FundingDetail = () => {
                     <div className="col-12">
                         <div className="d-flex align-items-center justify-content-between flex-row py-2">
                             <div className="flex-grow-1">
-                                <h4 className="fs-20 mb-1">{name}</h4>
+                                <h4 className="fs-18 mb-1">{name}</h4>
                                 <nav aria-label="breadcrumb">
                                     <ol className="breadcrumb m-0">
                                         <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>
@@ -299,9 +312,9 @@ const FundingDetail = () => {
                                     </ol>
                                 </nav>
                             </div>
-                            <div className="mt-0">
-                                <Link to="/funding" className="btn btn-light px-4 rounded shadow-none text-dark fw-medium text-nowrap">
-                                    <i className="ri-arrow-left-line me-1 align-bottom"></i> Back
+                            <div className="mt-0 d-flex align-items-center">
+                                <Link to="/funding" className="fd-action-btn" style={{ fontSize: '13px', padding: '6px 16px' }}>
+                                    <i className="ri-arrow-left-line" style={{ marginTop: '1px' }}></i> Back
                                 </Link>
                             </div>
                         </div>
@@ -459,19 +472,14 @@ const FundingDetail = () => {
                         </div>
                         <span id="btn-start-funding-request-wrapper" className="funding-detail-btn-wrapper">
                             {(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') ? (
-                                <span
-                                    className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4 disabled fd-cta-btn-disabled"
-                                >
+                                <span className="fd-action-btn disabled">
                                     Start Funding Request
-                                    <i className="ri-arrow-right-line fd-cta-arrow" />
+                                    <i className="ri-arrow-right-line" style={{ marginTop: '1px' }} />
                                 </span>
                             ) : (
-                                <Link
-                                    to={`/funding/${id}/review`}
-                                    className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4 fd-cta-btn"
-                                >
+                                <Link to={`/funding/${id}/review`} className="fd-action-btn">
                                     Start Funding Request
-                                    <i className="ri-arrow-right-line fd-cta-arrow" />
+                                    <i className="ri-arrow-right-line" style={{ marginTop: '1px' }} />
                                 </Link>
                             )}
                         </span>
