@@ -29,8 +29,8 @@ const ReadinessBadge: React.FC<{ status: string }> = ({ status }) => {
     const s = (status || '').toLowerCase();
     const style = READINESS_BADGE_STYLES[s] || { icon: 'ri-question-line', bg: '#f0f3f7', color: '#4b5563' };
     return (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, background: style.bg, color: style.color, padding: '3px 10px 3px 7px', borderRadius: 20 }}>
-            <i className={style.icon} style={{ fontSize: 13 }} />
+        <span className="funding-readiness-badge" style={{ background: style.bg, color: style.color }}>
+            <i className={style.icon} />
             {status}
         </span>
     );
@@ -42,14 +42,24 @@ const FundingDetailLoader = () => (
         <div className="container-fluid">
             <div className="row page-subheader-sticky bg-body">
                 <div className="col-12 py-2">
-                    <div className="d-flex align-items-center gap-2">
-                        <div className="skeleton-line" style={{ width: 110, height: 13, borderRadius: 4 }} />
-                        <div className="skeleton-line" style={{ width: 8, height: 13, borderRadius: 4 }} />
-                        <div className="skeleton-line" style={{ width: 160, height: 13, borderRadius: 4 }} />
+                    <div className="d-flex align-items-center justify-content-between flex-row">
+                        <div className="flex-grow-1">
+                            <div className="skeleton-line mb-2" style={{ width: 200, height: 24, borderRadius: 4 }} />
+                            <div className="d-flex align-items-center gap-2">
+                                <div className="skeleton-line m-0" style={{ width: 60, height: 13, borderRadius: 4 }} />
+                                <div className="skeleton-line m-0" style={{ width: 8, height: 13, borderRadius: 4 }} />
+                                <div className="skeleton-line m-0" style={{ width: 100, height: 13, borderRadius: 4 }} />
+                                <div className="skeleton-line m-0" style={{ width: 8, height: 13, borderRadius: 4 }} />
+                                <div className="skeleton-line m-0" style={{ width: 140, height: 13, borderRadius: 4 }} />
+                            </div>
+                        </div>
+                        <div className="mt-0">
+                            <div className="skeleton-line m-0" style={{ width: 75, height: 36, borderRadius: 4 }} />
+                        </div>
                     </div>
                 </div>
             </div>
-            <div className="card border-0 shadow-sm" style={{ borderRadius: 12, overflow: 'hidden' }}>
+            <div className="card border-0 shadow-sm" style={{ borderRadius: 4, overflow: 'hidden' }}>
                 <div className="card-body p-4">
                     <div className="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
                         <div className="d-flex align-items-center gap-3">
@@ -64,7 +74,7 @@ const FundingDetailLoader = () => (
                             <div className="skeleton-line ms-auto mt-2" style={{ width: 60, height: 10, borderRadius: 4 }} />
                         </div>
                     </div>
-                    <div className="row g-0 mb-4" style={{ border: '1px solid #e8ecf0', borderRadius: 10, overflow: 'hidden' }}>
+                    <div className="row g-0 mb-4" style={{ border: '1px solid #e8ecf0', borderRadius: 4, overflow: 'hidden' }}>
                         {[0, 1, 2, 3].map(i => (
                             <div key={i} className={`col-md-3 col-6 p-3`} style={{ borderRight: i < 3 ? '1px solid #e8ecf0' : 'none' }}>
                                 <div className="skeleton-line mb-2" style={{ width: '60%', height: 10, borderRadius: 4 }} />
@@ -75,7 +85,7 @@ const FundingDetailLoader = () => (
                     <div className="row g-3 mb-3">
                         {[0, 1].map(i => (
                             <div key={i} className="col-md-6">
-                                <div style={{ border: '1px solid #e8ecf0', borderRadius: 10, padding: '20px 22px', minHeight: 220 }}>
+                                <div style={{ border: '1px solid #e8ecf0', borderRadius: 4, padding: '20px 22px', minHeight: 220 }}>
                                     <div className="skeleton-line mb-4" style={{ width: 140, height: 14, borderRadius: 4 }} />
                                     {[90, 80, 85, 70].map((w, j) => (
                                         <div key={j} className="d-flex align-items-center gap-2 mb-3">
@@ -87,7 +97,7 @@ const FundingDetailLoader = () => (
                             </div>
                         ))}
                     </div>
-                    <div style={{ border: '1px solid #e8ecf0', borderRadius: 10, padding: '18px 22px' }}>
+                    <div style={{ border: '1px solid #e8ecf0', borderRadius: 4, padding: '18px 22px' }}>
                         <div className="skeleton-line mb-3" style={{ width: 100, height: 14, borderRadius: 4 }} />
                         <div className="skeleton-line mb-2" style={{ width: '100%', height: 12, borderRadius: 4 }} />
                         <div className="skeleton-line" style={{ width: '80%', height: 12, borderRadius: 4 }} />
@@ -144,25 +154,17 @@ const ReadinessItem: React.FC<{ factor: any, isLast: boolean }> = ({ factor, isL
     }
 
     return (
-        <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-            paddingBottom: isLast ? 0 : 16,
-            marginBottom: isLast ? 0 : 16,
-            borderBottom: isLast ? 'none' : '1px solid #f3f4f6'
-        }}>
-            <div style={{ display: 'flex', gap: 12, alignItems: subtitle ? 'flex-start' : 'center' }}>
-                <i className={leftIcon} style={{ fontSize: 20, color: leftIconColor, marginTop: subtitle ? -2 : 0 }} />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <span style={{ fontSize: 14, color: '#111827', fontWeight: 600 }}>{factor.label}</span>
+        <div className="funding-readiness-item">
+            <div className={`funding-readiness-item-left ${subtitle ? 'align-start' : 'align-center'}`}>
+                <i className={`funding-readiness-item-icon ${subtitle ? 'with-subtitle' : ''} ${leftIcon}`} style={{ color: leftIconColor }} />
+                <div className="funding-readiness-item-content">
+                    <span className="funding-readiness-item-title">{factor.label}</span>
                     {subtitle && (
-                        <span style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.4 }}>{subtitle}</span>
+                        <span className="funding-readiness-item-subtitle">{subtitle}</span>
                     )}
                 </div>
             </div>
-            <div style={{ flexShrink: 0 }}>
+            <div className="funding-readiness-item-right">
                 <ReadinessBadge status={badgeText} />
             </div>
         </div>
@@ -289,7 +291,7 @@ const FundingDetail = () => {
                                 </nav>
                             </div>
                             <div className="mt-0">
-                                <Link to="/funding" className="btn btn-primary fw-medium">
+                                <Link to="/funding" className="btn btn-light px-4 rounded shadow-none text-dark fw-medium text-nowrap">
                                     <i className="ri-arrow-left-line me-1 align-bottom"></i> Back
                                 </Link>
                             </div>
@@ -298,24 +300,19 @@ const FundingDetail = () => {
                 </div>
 
                 {/* ── Main Card ──────────────────────────────────────────────── */}
-                <div className="card border-0 shadow-sm" style={{ borderRadius: 12, overflow: 'hidden', opacity: isGreyedOut ? 0.8 : 1 }}>
+                <div className={`funding-detail-card card border-0 shadow-sm ${isGreyedOut ? 'greyed-out' : ''}`}>
                     <div className="card-body p-4">
 
                         {/* ── Header: Icon + Title + Eligibility Badge ──────────── */}
                         <div className="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
                             <div className="d-flex align-items-center gap-3">
                                 {/* Icon circle */}
-                                <div style={{
-                                    width: 56, height: 56, borderRadius: '50%',
-                                    background: colors.bg,
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    flexShrink: 0,
-                                }}>
-                                    <i className={iconClass} style={{ fontSize: 28, color: colors.text }} />
+                                <div className="funding-detail-icon-circle" style={{ background: colors.bg }}>
+                                    <i className={iconClass} style={{ color: colors.text }} />
                                 </div>
                                 <div>
-                                    <h4 className="mb-1 fw-bold" style={{ fontSize: 20, color: '#0f1b2d' }}>{name}</h4>
-                                    {subtitle && <p className="text-muted mb-0" style={{ fontSize: 13 }}>{subtitle}</p>}
+                                    <h4 className="funding-detail-title mb-1 fw-bold">{name}</h4>
+                                    {subtitle && <p className="funding-detail-subtitle text-muted mb-0">{subtitle}</p>}
                                 </div>
                             </div>
 
@@ -325,31 +322,17 @@ const FundingDetail = () => {
                                     {displayLabel}
                                 </div>
                                 {(finalEngineStatus === ENGINE_STATUS_VALUES.ACTIVE || finalEngineStatus === ENGINE_STATUS_VALUES.REVIEW) && (
-                                    <p className="mb-0 mt-1 text-muted" style={{ fontSize: 11, textAlign: 'right', fontWeight: 'bold' }}>{MATCH_LEVEL_LABELS.HIGH_MATCH}</p>
+                                    <p className="funding-detail-match-label text-muted mb-0 mt-1">{MATCH_LEVEL_LABELS.HIGH_MATCH}</p>
                                 )}
                             </div>
                         </div>
 
                         {/* ── Meta Row: Range / Term / Speed / Uses ─────────────── */}
-                        <div
-                            className="row g-0 mb-4"
-                            style={{ border: '1px solid #e8ecf0', borderRadius: 10, overflow: 'hidden' }}
-                        >
+                        <div className="funding-detail-meta-row row g-0 mb-4">
                             {metaItems.map((m, i) => (
-                                <div
-                                    key={i}
-                                    className="col-md-3 col-6"
-                                    style={{
-                                        padding: '14px 18px',
-                                        borderRight: i < metaItems.length - 1 ? '1px solid #e8ecf0' : 'none',
-                                    }}
-                                >
-                                    <p style={{ margin: 0, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#9ca3af', marginBottom: 5 }}>
-                                        {m.label}
-                                    </p>
-                                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#1e293b', lineHeight: 1.4 }}>
-                                        {m.value}
-                                    </p>
+                                <div key={i} className="funding-detail-meta-col col-md-3 col-6">
+                                    <p className="funding-detail-meta-label">{m.label}</p>
+                                    <p className="funding-detail-meta-value">{m.value}</p>
                                 </div>
                             ))}
                         </div>
@@ -359,23 +342,23 @@ const FundingDetail = () => {
 
                             {/* Why You May Qualify */}
                             <div className="col-md-6">
-                                <div style={{ border: '1px solid #e8ecf0', borderRadius: 10, padding: '20px 22px', height: '100%' }}>
-                                    <h6 style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d', marginBottom: 16 }}>
+                                <div className="funding-detail-panel">
+                                    <h6 className="funding-detail-panel-title">
                                         Why You May Qualify
                                     </h6>
                                     {dynamicQualifyReasons.filter((r: any) => r.status === 'Good' || r.status === 'Strong').length > 0 ? (
-                                        <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                        <ul className="funding-detail-list">
                                             {dynamicQualifyReasons.filter((r: any) => r.status === 'Good' || r.status === 'Strong').map((r: any, i: number) => {
                                                 return (
-                                                    <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: '#374151' }}>
-                                                        <i className="ri-checkbox-circle-fill" style={{ color: '#16a34a', fontSize: 16, marginTop: 1, flexShrink: 0 }} />
+                                                    <li key={i} className="funding-detail-list-item">
+                                                        <i className="ri-checkbox-circle-fill funding-detail-list-icon success" />
                                                         {r.label}
                                                     </li>
                                                 );
                                             })}
                                         </ul>
                                     ) : (
-                                        <p style={{ fontSize: 13, color: '#9ca3af', margin: 0 }}>No eligibility reasons available.</p>
+                                        <p className="funding-detail-empty-text">No eligibility reasons available.</p>
                                     )}
 
                                     {/* Missing Documents section inside qualify panel */}
@@ -387,15 +370,15 @@ const FundingDetail = () => {
                                         const currentMissingDocs = Array.from(new Set(combinedDocs));
 
                                         return currentMissingDocs.length > 0 && (
-                                            <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #f0f3f7' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                                                    <i className="ri-error-warning-fill" style={{ color: '#dc2626', fontSize: 16 }} />
-                                                    <span style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d' }}>Missing Documents</span>
+                                            <div className="funding-detail-missing-docs">
+                                                <div className="funding-detail-missing-docs-title">
+                                                    <i className="ri-error-warning-fill funding-detail-list-icon warning" />
+                                                    <span>Missing Documents</span>
                                                 </div>
-                                                <ul style={{ margin: 0, padding: '0 0 0 4px', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                                <ul className="funding-detail-missing-docs-list">
                                                     {currentMissingDocs.map((doc: string, i: number) => (
-                                                        <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#4b5563' }}>
-                                                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#9ca3af', flexShrink: 0, display: 'inline-block' }} />
+                                                        <li key={i} className="funding-detail-missing-docs-item">
+                                                            <span className="funding-detail-missing-docs-dot" />
                                                             {doc}
                                                         </li>
                                                     ))}
@@ -408,13 +391,13 @@ const FundingDetail = () => {
 
                             {/* Underwriting Factors */}
                             <div className="col-md-6">
-                                <div style={{ border: '1px solid #e8ecf0', borderRadius: 10, padding: '20px 22px', height: '100%' }}>
-                                    <h6 style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d', marginBottom: 16 }}>
+                                <div className="funding-detail-panel">
+                                    <h6 className="funding-detail-panel-title">
                                         Underwriting Factors
                                     </h6>
                                     {(() => {
                                         if (activeFactors.length === 0) {
-                                            return <p style={{ fontSize: 13, color: '#9ca3af', margin: 0 }}>No underwriting factors available.</p>;
+                                            return <p className="funding-detail-empty-text">No underwriting factors available.</p>;
                                         }
 
                                         const visibleFactors = activeFactors.filter((f: any) => {
@@ -442,31 +425,20 @@ const FundingDetail = () => {
 
                         {/* ── Description (if present) ──────────────────────────── */}
                         {description && (
-                            <div style={{ border: '1px solid #e8ecf0', borderRadius: 10, padding: '18px 22px' }}>
-                                <h6 style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d', marginBottom: 10 }}>Description</h6>
-                                <div style={{ fontSize: 13, color: '#374151', lineHeight: 1.65 }} dangerouslySetInnerHTML={{ __html: description }} />
+                            <div className="funding-detail-panel no-full-height">
+                                <h6 className="funding-detail-panel-title desc">Description</h6>
+                                <div className="funding-detail-desc-content" dangerouslySetInnerHTML={{ __html: description }} />
                             </div>
                         )}
 
                     </div>
 
-                    <div style={{
-                        borderTop: '1px solid #e8ecf0',
-                        background: '#fff',
-                        padding: '18px 28px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        flexWrap: 'wrap',
-                        gap: 12,
-                        position: 'sticky',
-                        bottom: 0,
-                    }}>
+                    <div className="funding-detail-footer">
                         <div>
-                            <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: '#0f1b2d' }}>
+                            <p className="funding-detail-footer-title">
                                 Next Step
                             </p>
-                            <p style={{ margin: 0, fontSize: 12, color: '#6b7280', marginTop: 3 }}>
+                            <p className="funding-detail-footer-desc">
                                 {isPending
                                     ? 'You have already applied for this funding option. Please wait for approval or rejection.'
                                     : finalEngineStatus === 'Hidden'
@@ -476,11 +448,11 @@ const FundingDetail = () => {
                                             : 'Start your funding request by providing a few details and uploading missing documents.'}
                             </p>
                         </div>
-                        <span id="btn-start-funding-request-wrapper" style={{ display: 'inline-block' }}>
+                        <span id="btn-start-funding-request-wrapper" className="funding-detail-btn-wrapper">
                             {(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') ? (
                                 <span
-                                    className="funding-detail-btn-review disabled"
-                                    style={{ opacity: 0.5, cursor: 'not-allowed', display: 'inline-block' }}
+                                    className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4 disabled"
+                                    style={{ height: '42px', opacity: 0.65, cursor: 'not-allowed' }}
                                 >
                                     Start Funding Request
                                     <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />
@@ -488,7 +460,8 @@ const FundingDetail = () => {
                             ) : (
                                 <Link
                                     to={`/funding/${id}/review`}
-                                    className="funding-detail-btn-review"
+                                    className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4"
+                                    style={{ height: '42px' }}
                                 >
                                     Start Funding Request
                                     <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />

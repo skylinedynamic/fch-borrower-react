@@ -78,14 +78,16 @@ const Funding = () => {
 
     if (loading) return <FundingLoader />;
 
-    const { groups = [], stats = {} } = data || {};
+    const { groups = [], types = [], stats = {} } = data || {};
 
-    const allTypes = [{ id: 'all', name: 'All Funding Groups' }, ...groups];
+    const allTypes = [{ id: 'all', name: 'All Product Categories' }, ...types];
     const hasFilter = searchQuery.trim() !== '' || appliedType !== 'all';
 
-    const filteredGroups = groups
-        .filter((group: any) => appliedType === 'all' || group.id?.toString() === appliedType)
-        .filter((g: any) => g.sequencings && g.sequencings.length > 0);
+    const filteredGroups = groups.map((group: any) => {
+        if (appliedType === 'all') return group;
+        const filteredSequencings = group.sequencings.filter((seq: any) => seq.funding_type_id?.toString() === appliedType);
+        return { ...group, sequencings: filteredSequencings };
+    }).filter((g: any) => g.sequencings && g.sequencings.length > 0);
 
     const applyFilters = () => {
         setAppliedType(activeType);
@@ -166,8 +168,9 @@ const Funding = () => {
                                                         onChange={(val) => { setActiveType(val.toString()); }}
                                                         optionLabel="name"
                                                         optionValue="id"
-                                                        placeholder="All Funding Groups"
+                                                        placeholder="All Product Categories"
                                                         className="border-0 rounded-2 fs-13 vendor-filter-bg h-100 w-100"
+                                                        searchable={true}
                                                     />
                                                 </div>
                                             </div>

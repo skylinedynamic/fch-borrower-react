@@ -316,7 +316,7 @@ const FundingRequestWizard = () => {
     }
 
     return (
-        <div className="page-content" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
+        <div className="page-content funding-wizard-page">
             <FileManagerModal
                 isOpen={showFileManager}
                 toggle={() => setShowFileManager(!showFileManager)}
@@ -347,45 +347,28 @@ const FundingRequestWizard = () => {
                     </div>
                 </div>
 
-                <div className="mx-auto" style={{ maxWidth: '800px' }}>
+                <div className="mx-auto funding-wizard-container">
 
                     {/* Stepper Header */}
                     <div className="d-flex justify-content-center mb-5 pt-4">
-                        <div className="d-flex align-items-center position-relative w-100" style={{ maxWidth: '600px' }}>
-                            <div className="position-absolute" style={{ top: '50%', left: 0, right: 0, height: '2px', backgroundColor: '#e5e7eb', zIndex: 0, transform: 'translateY(-50%)' }}></div>
+                        <div className="d-flex align-items-center position-relative w-100 funding-wizard-stepper-container">
+                            <div className="position-absolute funding-wizard-stepper-line"></div>
                             {steps.map((step, index) => {
                                 const isActive = currentStep === step.id;
                                 const isCompleted = currentStep > step.id;
                                 return (
                                     <React.Fragment key={step.id}>
                                         {index !== 0 && (
-                                            <div style={{ flex: 1, height: '2px', backgroundColor: (currentStep > step.id || currentStep === step.id) ? 'var(--primary-color, #0a192f)' : 'transparent', zIndex: 1 }}></div>
+                                            <div className={`funding-wizard-stepper-spacer ${(currentStep > step.id || currentStep === step.id) ? 'active' : ''}`}></div>
                                         )}
-                                        <div className="d-flex flex-column align-items-center position-relative" style={{ zIndex: 2, background: '#f9fafb', padding: '0 10px' }}>
+                                        <div className="d-flex flex-column align-items-center position-relative funding-wizard-stepper-item">
                                             <div
-                                                className={`rounded-circle d-flex align-items-center justify-content-center fw-bold`}
-                                                style={{
-                                                    width: isActive ? '40px' : '32px',
-                                                    height: isActive ? '40px' : '32px',
-                                                    fontSize: isActive ? '16px' : (isCompleted ? '18px' : '14px'),
-                                                    backgroundColor: isActive ? 'var(--primary-color, #0a192f)' : '#fff',
-                                                    color: isActive ? '#fff' : (isCompleted ? 'var(--primary-color, #0a192f)' : '#6b7280'),
-                                                    border: isActive ? 'none' : (isCompleted ? '2px solid var(--primary-color, #0a192f)' : '2px solid #e5e7eb'),
-                                                    boxShadow: isActive ? '0 0 0 4px #e5e7eb' : 'none',
-                                                    transition: 'all 0.2s ease-in-out'
-                                                }}
+                                                className={`rounded-circle d-flex align-items-center justify-content-center fw-bold funding-wizard-step-circle ${isActive ? 'active' : (isCompleted ? 'completed' : '')}`}
                                             >
                                                 {isCompleted ? <i className="ri-check-line"></i> : step.id}
                                             </div>
                                             <span
-                                                className="mt-2 position-absolute"
-                                                style={{
-                                                    top: '42px',
-                                                    fontSize: '13px',
-                                                    fontWeight: isActive ? 600 : 400,
-                                                    color: (isActive || isCompleted) ? 'var(--primary-color, #0a192f)' : '#6b7280',
-                                                    whiteSpace: 'nowrap'
-                                                }}
+                                                className={`mt-2 position-absolute funding-wizard-step-label ${(isActive || isCompleted) ? 'active' : ''}`}
                                             >
                                                 {step.label}
                                             </span>
@@ -396,57 +379,56 @@ const FundingRequestWizard = () => {
                         </div>
                     </div>
 
-                    <div className="card shadow-sm border-0 mt-5" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                    <div className="card shadow-sm border-0 mt-5 rounded overflow-hidden">
                         <div className="card-body p-5">
 
                             {/* Step 1: Review Summary */}
                             {currentStep === 1 && (
                                 <div>
-                                    <h3 className="fw-bold mb-2" style={{ color: '#0f172a' }}>Funding Request Summary</h3>
-                                    <p className="mb-4 fs-14" style={{ color: '#64748b' }}>Please confirm your request details</p>
+                                    <h3 className="fw-bold mb-2 funding-wizard-text-dark">Funding Request Summary</h3>
+                                    <p className="mb-4 fs-14 funding-wizard-text-muted">Please confirm your request details</p>
 
-                                    <div className="border rounded p-4 mb-4" style={{ borderColor: '#e2e8f0', backgroundColor: '#ffffff' }}>
+                                    <div className="border rounded p-4 mb-4 funding-wizard-border-panel">
                                         <div className="row align-items-center">
                                             <div className="col-md-7">
                                                 <div className="mb-4">
-                                                    <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Funding Sequence</p>
-                                                    <h5 className="fw-bold m-0" style={{ color: '#0f172a' }}>{fundingDetail.name}</h5>
+                                                    <p className="fs-11 fw-bold text-uppercase mb-1 funding-wizard-text-light funding-wizard-letter-spacing">Funding Sequence</p>
+                                                    <h5 className="fw-bold m-0 funding-wizard-text-dark">{fundingDetail.name}</h5>
                                                 </div>
                                                 <div className="mb-4">
-                                                    <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Funding Type</p>
-                                                    <h6 className="fw-bold m-0 fs-14" style={{ color: '#0f172a' }}>{fundingDetail.funding_type_name || 'Financing'}</h6>
+                                                    <p className="fs-11 fw-bold text-uppercase mb-1 funding-wizard-text-light funding-wizard-letter-spacing">Funding Type</p>
+                                                    <h6 className="fw-bold m-0 fs-14 funding-wizard-text-dark">{fundingDetail.funding_type_name || 'Financing'}</h6>
                                                 </div>
                                                 <div className="mb-4">
-                                                    <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Recommended Range</p>
-                                                    <h6 className="fw-bold m-0 fs-14" style={{ color: '#0f172a' }}>{fundingDetail.amount_range || '$5K - $250K'}</h6>
+                                                    <p className="fs-11 fw-bold text-uppercase mb-1 funding-wizard-text-light funding-wizard-letter-spacing">Recommended Range</p>
+                                                    <h6 className="fw-bold m-0 fs-14 funding-wizard-text-dark">{fundingDetail.amount_range || '$5K - $250K'}</h6>
                                                 </div>
                                                 <div>
-                                                    <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Est. Speed to Funds</p>
-                                                    <h6 className="fw-bold m-0 fs-14 d-flex align-items-center gap-1" style={{ color: '#0f172a' }}>
+                                                    <p className="fs-11 fw-bold text-uppercase mb-1 funding-wizard-text-light funding-wizard-letter-spacing">Est. Speed to Funds</p>
+                                                    <h6 className="fw-bold m-0 fs-14 d-flex align-items-center gap-1 funding-wizard-text-dark">
                                                         {fundingDetail.speed_to_funds ? (fundingDetail.speed_to_funds.toLowerCase().includes('day') ? fundingDetail.speed_to_funds : `${fundingDetail.speed_to_funds} Days`) : '7-14 Days'}
-                                                        <i className="ri-information-line fs-14" style={{ color: '#94a3b8' }}></i>
+                                                        <i className="ri-information-line fs-14 funding-wizard-text-light"></i>
                                                     </h6>
                                                 </div>
                                             </div>
                                             <div className="col-md-5 d-flex flex-column align-items-center justify-content-center text-center">
-                                                <div className="rounded-circle d-flex align-items-center justify-content-center mb-3" style={{ width: '64px', height: '64px', backgroundColor: '#f1f5f9' }}>
-                                                    <i className="ri-bank-card-line" style={{ fontSize: '28px', color: '#2563eb' }}></i>
+                                                <div className="rounded-circle d-flex align-items-center justify-content-center mb-3 funding-wizard-icon-box">
+                                                    <i className="ri-bank-card-line funding-wizard-icon-blue"></i>
                                                 </div>
-                                                <p className="fs-11 fw-bold text-uppercase mb-1" style={{ color: '#94a3b8', letterSpacing: '0.5px' }}>Use of Funds</p>
-                                                <h6 className="fw-bold m-0 fs-14" style={{ color: '#0f172a' }}>{Array.isArray(formData.use_of_funds) && formData.use_of_funds.length > 0 ? formData.use_of_funds.join(', ') : 'Not Specified'}</h6>
+                                                <p className="fs-11 fw-bold text-uppercase mb-1 funding-wizard-text-light funding-wizard-letter-spacing">Use of Funds</p>
+                                                <h6 className="fw-bold m-0 fs-14 funding-wizard-text-dark">{Array.isArray(formData.use_of_funds) && formData.use_of_funds.length > 0 ? formData.use_of_funds.join(', ') : 'Not Specified'}</h6>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="row g-4 mb-4">
                                         <div className="col-md-6">
-                                            <label className="form-label fs-13 mb-2" style={{ color: '#64748b' }}>Requested Amount</label>
-                                            <div className="input-group rounded" style={{ border: '1px solid', borderColor: errors.requested_amount ? '#dc3545' : '#e2e8f0', overflow: 'hidden' }}>
-                                                <span className="input-group-text bg-white" style={{ color: '#475569', border: 'none', borderRight: '1px solid #e2e8f0', borderRadius: 0 }}>$</span>
+                                            <label className="form-label fs-13 mb-2 funding-wizard-text-muted">Requested Amount</label>
+                                            <div className={`input-group rounded funding-wizard-input-group ${errors.requested_amount ? 'error' : ''}`}>
+                                                <span className="input-group-text bg-white funding-wizard-input-group-text">$</span>
                                                 <input
                                                     type="text"
-                                                    className={`form-control ps-2 shadow-none`}
-                                                    style={{ backgroundColor: 'transparent', border: 'none' }}
+                                                    className={`form-control ps-2 shadow-none funding-wizard-input-field`}
                                                     placeholder="200,000"
                                                     value={
                                                         formData.requested_amount
@@ -478,7 +460,7 @@ const FundingRequestWizard = () => {
                                                     const max = parsePart(parts[1]);
                                                     if (amount < min || amount > max) {
                                                         return (
-                                                            <div className="d-flex align-items-start gap-2 mt-2 p-3" style={{ backgroundColor: '#fffbeb', borderLeft: '4px solid #f59e0b', borderRadius: '4px', color: '#b45309' }}>
+                                                            <div className="d-flex align-items-start gap-2 mt-2 p-3 funding-wizard-alert-warning">
                                                                 <i className="ri-error-warning-line fs-16 mt-1"></i>
                                                                 <span className="fs-13"><strong>Please note:</strong> Your requested amount falls outside the required range of {rangeStr}.</span>
                                                             </div>
@@ -489,52 +471,46 @@ const FundingRequestWizard = () => {
                                             })()}
                                         </div>
                                         <div className="col-md-6">
-                                            <label className="form-label fs-13 mb-2" style={{ color: '#64748b' }}>Use of Funds</label>
-                                            <style>{`
-                                                .slim-multiselect .p-multiselect-label {
-                                                    display: flex !important;
-                                                    flex-wrap: wrap !important;
-                                                    gap: 4px !important;
-                                                    padding: 0.25rem 0.5rem !important;
-                                                    white-space: normal !important;
-                                                }
-                                                .slim-multiselect .p-multiselect-token {
-                                                    margin: 0 !important;
-                                                    display: inline-flex !important;
-                                                    width: auto !important;
-                                                    max-width: 100%;
-                                                }
-                                            `}</style>
-                                            <div style={{ border: '1px solid #e2e8f0', borderRadius: '0.375rem', backgroundColor: '#fff' }}>
-                                                <MultiSelect
-                                                    value={formData.use_of_funds}
-                                                    options={parsedUses.length > 0 ? parsedUses : [
-                                                        { label: 'Working Capital', value: 'Working Capital' },
-                                                        { label: 'Equipment', value: 'Equipment' },
-                                                        { label: 'Expansion', value: 'Expansion' },
-                                                        { label: 'Other', value: 'Other' }
-                                                    ]}
-                                                    disabled={parsedUses.length > 0}
-                                                    placeholder="Select Use of Funds"
-                                                    optionLabel="label"
-                                                    optionValue="value"
-                                                    display="chip"
-                                                    onChange={(e) => {
-                                                        setFormData({ ...formData, use_of_funds: e.value });
-                                                        if (errors.use_of_funds) setErrors({ ...errors, use_of_funds: null });
-                                                    }}
-                                                    className={`w-100 shadow-none border-0 slim-multiselect ${parsedUses.length > 0 ? 'bg-light opacity-75' : 'bg-transparent'}`}
-                                                    style={{ backgroundColor: 'transparent', height: 'auto', minHeight: '38px' }}
-                                                    panelStyle={{ backgroundColor: '#fff' }}
-                                                />
-                                            </div>
+                                            <label className="form-label fs-13 mb-2 funding-wizard-text-muted">Use of Funds</label>
+                                            {parsedUses.length > 0 ? (
+                                                <div className="input-group rounded funding-wizard-input-group bg-light opacity-75">
+                                                    <input 
+                                                        type="text" 
+                                                        className="form-control border-0 bg-transparent fs-13 funding-wizard-input" 
+                                                        value={parsedUses.map(u => u.label).join(', ')} 
+                                                        disabled 
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="funding-wizard-select-container">
+                                                    <MultiSelect
+                                                        value={formData.use_of_funds}
+                                                        options={[
+                                                            { label: 'Working Capital', value: 'Working Capital' },
+                                                            { label: 'Equipment', value: 'Equipment' },
+                                                            { label: 'Expansion', value: 'Expansion' },
+                                                            { label: 'Other', value: 'Other' }
+                                                        ]}
+                                                        placeholder="Select Use of Funds"
+                                                        optionLabel="label"
+                                                        optionValue="value"
+                                                        display="chip"
+                                                        onChange={(e) => {
+                                                            setFormData({ ...formData, use_of_funds: e.value });
+                                                            if (errors.use_of_funds) setErrors({ ...errors, use_of_funds: null });
+                                                        }}
+                                                        className="w-100 shadow-none border-0 slim-multiselect funding-wizard-multiselect bg-transparent"
+                                                        panelStyle={{ backgroundColor: '#fff' }}
+                                                    />
+                                                </div>
+                                            )}
                                             {errors.use_of_funds && <div className="text-danger fs-12 mt-1">{errors.use_of_funds}</div>}
                                         </div>
                                     </div>
 
-                                    <div className="alert border-0 d-flex align-items-center gap-3 py-3" style={{ backgroundColor: '#eff6ff', borderRadius: '8px' }}>
-                                        <i className="ri-information-fill fs-18" style={{ color: '#2563eb' }}></i>
-                                        <span className="fs-13" style={{ color: '#1e3a8a' }}>This is not a credit decision. Final approval amount will be determined after underwriting.</span>
+                                    <div className="alert border-0 d-flex align-items-center gap-3 py-3 funding-wizard-alert-info">
+                                        <i className="ri-information-fill fs-18 funding-wizard-alert-info-icon"></i>
+                                        <span className="fs-13 funding-wizard-alert-info-text">This is not a credit decision. Final approval amount will be determined after underwriting.</span>
                                     </div>
                                 </div>
                             )}
@@ -545,7 +521,7 @@ const FundingRequestWizard = () => {
                                     <h4 className="fw-bold mb-2">Application Summary</h4>
                                     <p className="text-muted mb-4 fs-15">Please review your business information</p>
 
-                                    <div className="alert alert-primary bg-primary-subtle border-0 d-flex align-items-center gap-3 py-3 mb-4" style={{ borderRadius: '8px' }}>
+                                    <div className="alert alert-primary bg-primary-subtle border-0 d-flex align-items-center gap-3 py-3 mb-4 rounded">
                                         <i className="ri-information-line fs-18 text-primary"></i>
                                         <span className="fs-13 text-primary-emphasis">Please confirm that the information below is accurate. This information is sourced from your profile and cannot be edited here.</span>
                                     </div>
@@ -553,37 +529,37 @@ const FundingRequestWizard = () => {
                                     <div className="row g-4 mb-2">
                                         {/* Business Information */}
                                         <div className="col-md-6">
-                                            <div className="border rounded-3 p-4 bg-white shadow-sm h-100">
+                                            <div className="border rounded p-4 bg-white shadow-sm h-100">
                                                 <div className="d-flex align-items-center gap-3 mb-4">
-                                                    <div className="rounded-circle d-flex align-items-center justify-content-center bg-primary" style={{ width: '40px', height: '40px' }}>
+                                                    <div className="rounded-circle d-flex align-items-center justify-content-center bg-primary funding-wizard-box-icon">
                                                         <i className="ri-building-line text-white fs-20"></i>
                                                     </div>
-                                                    <h6 className="fw-bold m-0 text-uppercase" style={{ fontSize: '13px', letterSpacing: '0.5px' }}>Business Information</h6>
+                                                    <h6 className="fw-bold m-0 text-uppercase funding-wizard-letter-spacing" style={{ fontSize: '13px' }}>Business Information</h6>
                                                 </div>
                                                 <div className="d-flex flex-column gap-3">
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Legal Business Name</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.legal_business_name || 'ABC Solutions LLC'}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Legal Business Name</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.legal_business_name || 'ABC Solutions LLC'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Business Structure</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.entity_type || 'Limited Liability Company (LLC)'}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Business Structure</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.entity_type || 'Limited Liability Company (LLC)'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Industry</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.industry || 'Professional Services'}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Industry</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.industry || 'Professional Services'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>EIN / Tax ID</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.tax_id || '12-3456789'}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">EIN / Tax ID</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.tax_id || '12-3456789'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Time in Business</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.time_in_business || '2 - 5 Years'}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Time in Business</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.time_in_business || '2 - 5 Years'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Number of Employees</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.number_of_employees || '5 - 10'}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Number of Employees</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.number_of_employees || '5 - 10'}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -591,33 +567,33 @@ const FundingRequestWizard = () => {
 
                                         {/* Financial Overview */}
                                         <div className="col-md-6">
-                                            <div className="border rounded-3 p-4 bg-white shadow-sm h-100">
+                                            <div className="border rounded p-4 bg-white shadow-sm h-100">
                                                 <div className="d-flex align-items-center gap-3 mb-4">
-                                                    <div className="rounded-circle d-flex align-items-center justify-content-center bg-success" style={{ width: '40px', height: '40px' }}>
+                                                    <div className="rounded-circle d-flex align-items-center justify-content-center bg-success funding-wizard-box-icon">
                                                         <i className="ri-money-dollar-circle-line text-white fs-20"></i>
                                                     </div>
-                                                    <h6 className="fw-bold m-0 text-uppercase" style={{ fontSize: '13px', letterSpacing: '0.5px' }}>Financial Overview</h6>
+                                                    <h6 className="fw-bold m-0 text-uppercase funding-wizard-letter-spacing" style={{ fontSize: '13px' }}>Financial Overview</h6>
                                                 </div>
                                                 <div className="d-flex flex-column gap-3">
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Gross Annual Revenue</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>${financialInfo?.gross_annual_revenue?.toLocaleString() || '500,000'}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Gross Annual Revenue</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">${financialInfo?.gross_annual_revenue?.toLocaleString() || '500,000'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Average Monthly Revenue</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>${financialInfo?.average_monthly_revenue?.toLocaleString() || '45,000'}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Average Monthly Revenue</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">${financialInfo?.average_monthly_revenue?.toLocaleString() || '45,000'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Time in Business</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{businessDetails?.time_in_business || '2 - 5 Years'}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Time in Business</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.time_in_business || '2 - 5 Years'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Requested Amount</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>${Number(formData.requested_amount || 0).toLocaleString()}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Requested Amount</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">${Number(formData.requested_amount || 0).toLocaleString()}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Use of Funds</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{Array.isArray(formData.use_of_funds) ? formData.use_of_funds.join(', ') : formData.use_of_funds}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Use of Funds</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{Array.isArray(formData.use_of_funds) ? formData.use_of_funds.join(', ') : formData.use_of_funds}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -625,28 +601,28 @@ const FundingRequestWizard = () => {
 
                                         {/* Business Address */}
                                         <div className="col-md-6">
-                                            <div className="border rounded-3 p-4 bg-white shadow-sm h-100">
+                                            <div className="border rounded p-4 bg-white shadow-sm h-100">
                                                 <div className="d-flex align-items-center gap-3 mb-4">
-                                                    <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ backgroundColor: '#a855f7', width: '40px', height: '40px' }}>
-                                                        <i className="ri-map-pin-line text-white fs-20"></i>
+                                                    <div className="rounded-circle d-flex align-items-center justify-content-center bg-purple text-white funding-wizard-box-icon" style={{ backgroundColor: '#a855f7' }}>
+                                                        <i className="ri-map-pin-line fs-20"></i>
                                                     </div>
-                                                    <h6 className="fw-bold m-0 text-uppercase" style={{ fontSize: '13px', letterSpacing: '0.5px' }}>Business Address</h6>
+                                                    <h6 className="fw-bold m-0 text-uppercase funding-wizard-letter-spacing" style={{ fontSize: '13px' }}>Business Address</h6>
                                                 </div>
                                                 <div className="d-flex flex-column gap-3">
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '35%' }}>Address</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '65%' }}>
+                                                        <span className="text-muted fs-13 funding-wizard-w-35">Address</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-65">
                                                             {businessDetails?.address_line1 || '123 Business Blvd, Suite 100'}<br />
                                                             {businessDetails?.city || 'New York'}, {businessDetails?.state || 'NY'} {businessDetails?.zip_code || '10001'}
                                                         </span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start mt-2">
-                                                        <span className="text-muted fs-13" style={{ width: '35%' }}>Phone</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '65%' }}>{businessDetails?.business_phone || '(555) 123-4567'}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-35">Phone</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-65">{businessDetails?.business_phone || '(555) 123-4567'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start mt-2">
-                                                        <span className="text-muted fs-13" style={{ width: '35%' }}>Email</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '65%' }}>{businessDetails?.business_email || 'info@abcsolutions.com'}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-35">Email</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-65">{businessDetails?.business_email || 'info@abcsolutions.com'}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -654,25 +630,25 @@ const FundingRequestWizard = () => {
 
                                         {/* Funding Details */}
                                         <div className="col-md-6">
-                                            <div className="border rounded-3 p-4 bg-white shadow-sm h-100">
+                                            <div className="border rounded p-4 bg-white shadow-sm h-100">
                                                 <div className="d-flex align-items-center gap-3 mb-4">
-                                                    <div className="rounded-circle d-flex align-items-center justify-content-center bg-warning" style={{ width: '40px', height: '40px' }}>
+                                                    <div className="rounded-circle d-flex align-items-center justify-content-center bg-warning funding-wizard-box-icon">
                                                         <i className="ri-bank-card-line text-white fs-20"></i>
                                                     </div>
-                                                    <h6 className="fw-bold m-0 text-uppercase" style={{ fontSize: '13px', letterSpacing: '0.5px' }}>Funding Details</h6>
+                                                    <h6 className="fw-bold m-0 text-uppercase funding-wizard-letter-spacing" style={{ fontSize: '13px' }}>Funding Details</h6>
                                                 </div>
                                                 <div className="d-flex flex-column gap-3">
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Funding Type</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{fundingDetail.funding_type_name || fundingDetail.name}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Funding Type</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{fundingDetail.funding_type_name || fundingDetail.name}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Estimated Speed to Funds</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{fundingDetail.speed_to_funds ? `${fundingDetail.speed_to_funds} Days` : '1 - 7 Days'}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Estimated Speed to Funds</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{fundingDetail.speed_to_funds ? `${fundingDetail.speed_to_funds} Days` : '1 - 7 Days'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13" style={{ width: '45%' }}>Recommended Range</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end" style={{ width: '55%' }}>{fundingDetail.amount_range || '$10,000 - $250,000'}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Recommended Range</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{fundingDetail.amount_range || '$10,000 - $250,000'}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -687,23 +663,22 @@ const FundingRequestWizard = () => {
                                     <h4 className="fw-bold mb-2">Document Requirements</h4>
 
                                     {!isDocsRequired ? (
-                                        <div className="alert border-0 d-flex align-items-center gap-3 py-3 mb-4" style={{ borderRadius: '8px', backgroundColor: '#f1f5f9' }}>
-                                            <i className="ri-checkbox-circle-fill fs-24" style={{ color: 'var(--primary-color, #0a192f)' }}></i>
+                                        <div className="alert border-0 d-flex align-items-center gap-3 py-3 mb-4 funding-wizard-success-panel">
+                                            <i className="ri-checkbox-circle-fill fs-24 funding-wizard-primary-text"></i>
                                             <div>
-                                                <h6 className="fw-bold mb-1" style={{ color: 'var(--primary-color, #0a192f)' }}>No Documents Required</h6>
-                                                <span className="fs-13" style={{ color: '#475569' }}>You do not need to upload any specific documents for this funding option. You can proceed directly to submit.</span>
+                                                <h6 className="fw-bold mb-1 funding-wizard-primary-text">No Documents Required</h6>
+                                                <span className="fs-13 text-muted">You do not need to upload any specific documents for this funding option. You can proceed directly to submit.</span>
                                             </div>
                                         </div>
                                     ) : requiredDocTypes.length === 0 ? (
-                                        <div className="alert border-0 d-flex align-items-center gap-3 py-3 mb-4" style={{ borderRadius: '8px', backgroundColor: '#f1f5f9' }}>
-                                            <i className="ri-information-fill fs-24" style={{ color: 'var(--primary-color, #0a192f)' }}></i>
+                                        <div className="alert border-0 d-flex align-items-center gap-3 py-3 mb-4 funding-wizard-success-panel">
+                                            <i className="ri-information-fill fs-24 funding-wizard-primary-text"></i>
                                             <div className="flex-grow-1">
-                                                <h6 className="fw-bold mb-1" style={{ color: 'var(--primary-color, #0a192f)' }}>Supporting Documents Needed</h6>
-                                                <span className="fs-13" style={{ color: '#475569' }}>No specific documents are strictly required, but please upload relevant business documents (like Bank Statements) to help with underwriting.</span>
+                                                <h6 className="fw-bold mb-1 funding-wizard-primary-text">Supporting Documents Needed</h6>
+                                                <span className="fs-13 text-muted">No specific documents are strictly required, but please upload relevant business documents (like Bank Statements) to help with underwriting.</span>
                                             </div>
                                             <button
-                                                className="btn btn-sm px-3 fw-medium flex-shrink-0 text-white"
-                                                style={{ backgroundColor: 'var(--primary-color, #0a192f)', border: '1px solid var(--primary-color, #0a192f)' }}
+                                                className="btn btn-sm px-3 fw-medium flex-shrink-0 text-white funding-wizard-primary-bg"
                                                 onClick={() => {
                                                     setCurrentDocType(documentTypes?.[0] || { id: 1, name: 'Business Bank Statements' });
                                                     setShowFileManager(true);
@@ -720,12 +695,12 @@ const FundingRequestWizard = () => {
                                                 {requiredDocTypes.map(docType => {
                                                     const isMissing = missingDocs.includes(docType.name);
                                                     return (
-                                                        <div key={docType.id} className={`d-flex align-items-center justify-content-between mb-3 border rounded-3 p-3 bg-white`} style={{ borderColor: !isMissing ? 'var(--primary-color, #0a192f)' : '#dee2e6' }}>
+                                                        <div key={docType.id} className={`d-flex align-items-center justify-content-between mb-3 border rounded p-3 bg-white ${!isMissing ? 'funding-wizard-border-primary' : 'funding-wizard-border-light'}`}>
                                                             <div className="d-flex align-items-center gap-2">
                                                                 {isMissing ? (
                                                                     <i className="ri-checkbox-blank-line text-muted fs-18"></i>
                                                                 ) : (
-                                                                    <i className="ri-checkbox-fill fs-18" style={{ color: 'var(--primary-color, #0a192f)' }}></i>
+                                                                    <i className="ri-checkbox-fill fs-18 funding-wizard-primary-text"></i>
                                                                 )}
                                                                 <span className="fs-14 fw-medium text-dark">{docType.name}</span>
                                                             </div>
@@ -750,7 +725,7 @@ const FundingRequestWizard = () => {
                                                                     </>
                                                                 ) : (
                                                                     <>
-                                                                        <span className="fs-13 fw-semibold me-3" style={{ color: 'var(--primary-color, #0a192f)' }}><i className="ri-check-line align-middle me-1"></i> Uploaded</span>
+                                                                        <span className="fs-13 fw-semibold me-3 funding-wizard-primary-text"><i className="ri-check-line align-middle me-1"></i> Uploaded</span>
                                                                         {fundingDetail?.latest_review_status === 'Rejected' && (
                                                                             <button
                                                                                 className="btn btn-light border btn-sm px-3 fw-medium"
@@ -783,30 +758,30 @@ const FundingRequestWizard = () => {
                             {currentStep === 4 && (
                                 <div className="text-center pt-2 pb-4">
                                     <div className="mb-4 position-relative d-inline-block">
-                                        <div className="d-inline-flex align-items-center justify-content-center rounded-circle" style={{ width: '80px', height: '80px', backgroundColor: '#f1f5f9' }}>
-                                            <i className="ri-check-line fw-bolder" style={{ fontSize: '40px', color: 'var(--primary-color, #0a192f)' }}></i>
+                                        <div className="d-inline-flex align-items-center justify-content-center rounded-circle funding-wizard-success-circle">
+                                            <i className="ri-check-line fw-bolder funding-wizard-success-icon"></i>
                                         </div>
                                     </div>
-                                    <h3 className="fw-bold mb-3" style={{ color: '#0f172a' }}>Funding Request Submitted!</h3>
+                                    <h3 className="fw-bold mb-3 funding-wizard-text-dark">Funding Request Submitted!</h3>
                                     <p className="text-muted mb-4 fs-15 px-md-5">Your request has been received and is now under<br />{reviewerName} underwriting review.</p>
 
-                                    <div className="rounded-3 p-4 text-start mx-auto mb-4" style={{ maxWidth: '600px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                                        <h6 className="fw-bold mb-3" style={{ color: 'var(--primary-color, #0a192f)' }}>What Happens Next?</h6>
+                                    <div className="rounded p-4 text-start mx-auto mb-4 funding-wizard-panel-bg-light" style={{ maxWidth: '600px' }}>
+                                        <h6 className="fw-bold mb-3 funding-wizard-primary-text">What Happens Next?</h6>
                                         <ul className="list-unstyled m-0 d-flex flex-column gap-3">
-                                            <li className="d-flex align-items-start gap-3 fs-14" style={{ color: '#334155' }}>
-                                                <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: 'var(--primary-color, #0a192f)' }}></i>
+                                            <li className="d-flex align-items-start gap-3 fs-14 text-dark">
+                                                <i className="ri-checkbox-circle-fill fs-18 mt-1 funding-wizard-primary-text"></i>
                                                 <span className="mt-1">Our automated underwriting engine will evaluate your application using your business profile, banking activity, and financial qualification data.</span>
                                             </li>
-                                            <li className="d-flex align-items-start gap-3 fs-14" style={{ color: '#334155' }}>
-                                                <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: 'var(--primary-color, #0a192f)' }}></i>
+                                            <li className="d-flex align-items-start gap-3 fs-14 text-dark">
+                                                <i className="ri-checkbox-circle-fill fs-18 mt-1 funding-wizard-primary-text"></i>
                                                 <span className="mt-1">Any required supporting documents and banking information will be reviewed and verified during the underwriting process.</span>
                                             </li>
-                                            <li className="d-flex align-items-start gap-3 fs-14" style={{ color: '#334155' }}>
-                                                <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: 'var(--primary-color, #0a192f)' }}></i>
+                                            <li className="d-flex align-items-start gap-3 fs-14 text-dark">
+                                                <i className="ri-checkbox-circle-fill fs-18 mt-1 funding-wizard-primary-text"></i>
                                                 <span className="mt-1">If additional information or documentation is needed, our team will contact you.</span>
                                             </li>
-                                            <li className="d-flex align-items-start gap-3 fs-14" style={{ color: '#334155' }}>
-                                                <i className="ri-checkbox-circle-fill fs-18 mt-1" style={{ color: 'var(--primary-color, #0a192f)' }}></i>
+                                            <li className="d-flex align-items-start gap-3 fs-14 text-dark">
+                                                <i className="ri-checkbox-circle-fill fs-18 mt-1 funding-wizard-primary-text"></i>
                                                 <span className="mt-1">You will receive updates throughout the review process and be notified once a decision has been made.</span>
                                             </li>
                                         </ul>
@@ -814,21 +789,21 @@ const FundingRequestWizard = () => {
 
                                     <div className="d-flex align-items-center justify-content-center gap-5 border-top pt-4 mx-auto">
                                         <div className="d-flex align-items-center gap-3">
-                                            <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: '40px', height: '40px', backgroundColor: '#f1f5f9' }}>
-                                                <i className="ri-calendar-line" style={{ color: '#475569', fontSize: '18px' }}></i>
+                                            <div className="d-flex align-items-center justify-content-center rounded-circle funding-wizard-box-icon bg-light">
+                                                <i className="ri-calendar-line text-secondary fs-18"></i>
                                             </div>
                                             <div className="text-start">
-                                                <p className="fs-11 mb-0 fw-bold text-uppercase" style={{ color: '#64748b', letterSpacing: '0.5px' }}>Submitted On</p>
+                                                <p className="fs-11 mb-0 fw-bold text-uppercase funding-wizard-text-light funding-wizard-letter-spacing">Submitted On</p>
                                                 <h6 className="fw-bold mb-0 text-dark fs-14">{submitDate}</h6>
                                             </div>
                                         </div>
                                         <div style={{ width: '1px', height: '40px', backgroundColor: '#e2e8f0' }}></div>
                                         <div className="d-flex align-items-center gap-3">
-                                            <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: '40px', height: '40px', backgroundColor: '#f1f5f9' }}>
-                                                <i className="ri-shield-user-line" style={{ color: '#475569', fontSize: '18px' }}></i>
+                                            <div className="d-flex align-items-center justify-content-center rounded-circle funding-wizard-box-icon bg-light">
+                                                <i className="ri-shield-user-line text-secondary fs-18"></i>
                                             </div>
                                             <div className="text-start">
-                                                <p className="fs-11 mb-0 fw-bold text-uppercase" style={{ color: '#64748b', letterSpacing: '0.5px' }}>Reviewed By</p>
+                                                <p className="fs-11 mb-0 fw-bold text-uppercase funding-wizard-text-light funding-wizard-letter-spacing">Reviewed By</p>
                                                 <h6 className="fw-bold mb-0 text-dark fs-14">{reviewerName}</h6>
                                             </div>
                                         </div>
@@ -842,8 +817,7 @@ const FundingRequestWizard = () => {
                                 <div className="d-flex justify-content-between align-items-center mt-5 pt-3 border-top">
                                     {currentStep > 1 ? (
                                         <button
-                                            className="btn bg-white px-4 fw-medium d-flex align-items-center gap-2 shadow-none"
-                                            style={{ border: '1px solid #e2e8f0', color: '#475569', borderRadius: '6px', padding: '10px 24px' }}
+                                            className="btn btn-light border fw-medium d-flex align-items-center gap-2 shadow-none"
                                             onClick={handleBack}
                                             disabled={submitting}
                                         >
@@ -851,8 +825,7 @@ const FundingRequestWizard = () => {
                                         </button>
                                     ) : (
                                         <button
-                                            className="btn bg-white px-4 fw-medium d-flex align-items-center gap-2 shadow-none"
-                                            style={{ border: '1px solid #e2e8f0', color: '#475569', borderRadius: '6px', padding: '10px 24px' }}
+                                            className="btn btn-light border fw-medium d-flex align-items-center gap-2 shadow-none"
                                             onClick={() => navigate(-1)}
                                         >
                                             <i className="ri-arrow-left-line"></i> Cancel
@@ -861,30 +834,21 @@ const FundingRequestWizard = () => {
 
                                     {currentStep < 3 ? (
                                         <button
-                                            className="d-flex align-items-center justify-content-center gap-2 text-white"
-                                            style={{ backgroundColor: 'var(--primary-color, #0a192f)', border: '1px solid var(--primary-color, #0a192f)', padding: '10px 24px', borderRadius: '6px', fontWeight: 500 }}
+                                            className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4"
                                             onClick={handleNext}
                                         >
-                                            {currentStep === 1 ? 'Continue to Application' : 'Continue to Documents'} <i className="ri-arrow-right-line" style={{ fontSize: '18px' }}></i>
+                                            {currentStep === 1 ? 'Continue to Application' : 'Continue to Documents'} <i className="ri-arrow-right-line fs-18"></i>
                                         </button>
                                     ) : (
                                         <button
-                                            className="d-flex align-items-center justify-content-center gap-2 text-white fw-medium"
-                                            style={{ 
-                                                backgroundColor: 'var(--primary-color, #0a192f)', 
-                                                border: '1px solid var(--primary-color, #0a192f)', 
-                                                padding: '10px 24px', 
-                                                borderRadius: '6px',
-                                                opacity: (submitting || (isDocsRequired && missingDocs.length > 0)) ? 0.5 : 1,
-                                                cursor: (submitting || (isDocsRequired && missingDocs.length > 0)) ? 'not-allowed' : 'pointer'
-                                            }}
+                                            className={`btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4 ${(submitting || (isDocsRequired && missingDocs.length > 0)) ? 'disabled' : ''}`}
                                             onClick={handleSubmit}
                                             disabled={submitting || (isDocsRequired && missingDocs.length > 0)}
                                         >
                                             {submitting ? (
                                                 <><span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Submitting...</>
                                             ) : (
-                                                'Submit for Underwriting'
+                                                <>Submit for Underwriting <i className="ri-arrow-right-line fs-18"></i></>
                                             )}
                                         </button>
                                     )}
@@ -895,15 +859,13 @@ const FundingRequestWizard = () => {
                             {currentStep === 4 && (
                                 <div className="d-flex flex-column align-items-center mx-auto mt-4" style={{ maxWidth: '480px' }}>
                                     <button
-                                        className="btn w-100 mb-3 fw-bold text-white d-flex align-items-center justify-content-center gap-2"
-                                        style={{ backgroundColor: 'var(--primary-color, #0a192f)', borderColor: 'var(--primary-color, #0a192f)', padding: '12px' }}
+                                        className="btn w-100 mb-3 fw-bold text-white d-flex align-items-center justify-content-center gap-2 funding-wizard-btn-large"
                                         onClick={() => navigate('/funding-requests')}
                                     >
                                         <i className="ri-bar-chart-fill fs-16"></i> View Review Status
                                     </button>
                                     <button
-                                        className="btn btn-link text-decoration-none fw-bold d-flex align-items-center gap-2"
-                                        style={{ color: 'var(--primary-color, #0a192f)' }}
+                                        className="btn btn-link text-decoration-none fw-bold d-flex align-items-center gap-2 funding-wizard-primary-text"
                                         onClick={() => navigate('/funding')}
                                     >
                                         <i className="ri-arrow-left-line"></i> Return to Funding
