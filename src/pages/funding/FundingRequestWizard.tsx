@@ -3,16 +3,18 @@ import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Dropdown } from 'primereact/dropdown';
 import { MultiSelect } from 'primereact/multiselect';
 import { toast } from 'react-toastify';
-import { apiClient } from '../../lib/http/apiClient';
 import { fetchFundingDetail, fetchReadinessFactors } from '../../modules/funding/services';
 import WizardLoader from '../../components/Loader/WizardLoader';
-import { useDocumentTypes } from '../../modules/documents';
+import { useDocumentTypes, useBorrowerDocuments } from '../../modules/documents';
 import { FileManagerModal } from '../../components/FileManagerModal/FileManagerModal';
 import { submitFileSelection } from '../../modules/filemanager/services';
+import DeleteConfirmationModal from '../../components/GlobalModal/DeleteConfirmModal';
 import type { FileSystemItem } from '../../modules/filemanager/types';
+import { PdfIcon, FileIcon } from '../../components/FileManagerModal/Icons';
 import '../../../assets/css/funding.css';
 import { getUser } from '../../lib/auth/auth';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { apiClient } from '../../lib/http';
 import { queryKeys } from '../../lib/query';
 import { useBusinessDetails, useFinancialInfo } from '../../modules/profile/queries';
 import { FUNDING_WIZARD_STEPS, FUNDING_REVIEW_STATUS, FACTOR_STATUS_VALUES } from '../../config/funding';
@@ -49,6 +51,18 @@ const FundingRequestWizard = () => {
     const [showFileManager, setShowFileManager] = useState(false);
     const [currentDocType, setCurrentDocType] = useState<any>(null);
     const [uploading, setUploading] = useState(false);
+
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [documentToDelete, setDocumentToDelete] = useState<{ id: number; name: string } | null>(null);
+    
+    const { data: documentsData } = useBorrowerDocuments();
+    
+    const deleteFundingDocumentMutation = useMutation({
+        mutationFn: async (documentId: number) => {
+            const res = await apiClient.delete(`/borrower/funding/requests/documents/${documentId}?funding_sequence_id=${id}`);
+            return res.data;
+        }
+    });
 
     const { data: documentTypes } = useDocumentTypes();
     const queryClient = useQueryClient();
@@ -192,8 +206,9 @@ const FundingRequestWizard = () => {
             setUploading(true);
             try {
                 const filePaths = selectedFiles.map(f => f.path);
-                await submitFileSelection(filePaths, '/borrower/documents/upload', {
-                    document_type_id: currentDocType.id
+                await submitFileSelection(filePaths, '/borrower/funding/requests/documents/upload', {
+                    document_type_id: currentDocType.id,
+                    funding_sequence_id: id
                 });
 
                 await queryClient.invalidateQueries({ queryKey: queryKeys.documents.list() });
@@ -207,6 +222,28 @@ const FundingRequestWizard = () => {
                 setUploading(false);
             }
         }
+    };
+
+    const handleRemoveFile = (documentId: number, name: string) => {
+        setDocumentToDelete({ id: documentId, name });
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!documentToDelete) return;
+        deleteFundingDocumentMutation.mutate(documentToDelete.id, {
+            onSuccess: (response) => {
+                toast.success(response?.message || 'Document deleted successfully');
+                setShowDeleteModal(false);
+                setDocumentToDelete(null);
+                if (id) fetchFactors(id as string);
+                queryClient.invalidateQueries({ queryKey: queryKeys.documents.list() });
+            },
+            onError: (error: any) => {
+                console.error('Failed to delete document', error);
+                toast.error(error.response?.data?.message || 'Failed to delete document');
+            }
+        });
     };
 
     const isDocsRequired = fundingDetail?.require_documents_uploaded;
@@ -327,6 +364,13 @@ const FundingRequestWizard = () => {
                 onSelectFiles={handleFileSelection}
                 entityType="borrowers"
                 entityId={getUser()?.entity_id}
+            />
+            <DeleteConfirmationModal
+                show={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={confirmDelete}
+                loading={deleteFundingDocumentMutation.isPending}
+                text={`Are you sure you want to delete "${documentToDelete?.name}"? This action cannot be undone.`}
             />
             <div className="container-fluid">
 
@@ -697,40 +741,22 @@ const FundingRequestWizard = () => {
                                                 {requiredDocTypes.map(docType => {
                                                     const isMissing = missingDocs.includes(docType.name);
                                                     return (
-                                                        <div key={docType.id} className={`d-flex align-items-center justify-content-between mb-3 border rounded p-3 bg-white ${!isMissing ? 'funding-wizard-border-primary' : 'funding-wizard-border-light'}`}>
-                                                            <div className="d-flex align-items-center gap-2">
-                                                                {isMissing ? (
-                                                                    <i className="ri-checkbox-blank-line text-muted fs-18"></i>
-                                                                ) : (
-                                                                    <i className="ri-checkbox-fill fs-18 funding-wizard-primary-text"></i>
-                                                                )}
-                                                                <span className="fs-14 fw-medium text-dark">{docType.name}</span>
-                                                            </div>
-                                                            <div className="d-flex align-items-center gap-3">
-                                                                {isMissing ? (
-                                                                    <>
-                                                                        <span className="text-danger fs-13 fw-semibold"><i className="ri-error-warning-fill align-middle me-1"></i> Missing</span>
-                                                                        <button
-                                                                            className="btn btn-primary btn-sm px-3 fw-medium shadow-none"
-                                                                            onClick={() => {
-                                                                                setCurrentDocType(docType);
-                                                                                setShowFileManager(true);
-                                                                            }}
-                                                                            disabled={uploading}
-                                                                        >
-                                                                            {uploading && currentDocType?.id === docType.id ? (
-                                                                                <><span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Uploading...</>
-                                                                            ) : (
-                                                                                <><i className="ri-upload-cloud-2-line align-middle me-1 fs-15"></i> Upload</>
-                                                                            )}
-                                                                        </button>
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        <span className="fs-13 fw-semibold me-3 funding-wizard-primary-text"><i className="ri-check-line align-middle me-1"></i> Uploaded</span>
-                                                                        {fundingDetail?.latest_review_status === 'Rejected' && (
+                                                        <div key={docType.id} className={`mb-3 border rounded p-3 bg-white ${!isMissing ? 'funding-wizard-border-primary' : 'funding-wizard-border-light'}`}>
+                                                            <div className="d-flex align-items-center justify-content-between">
+                                                                <div className="d-flex align-items-center gap-2">
+                                                                    {isMissing ? (
+                                                                        <i className="ri-checkbox-blank-line text-muted fs-18"></i>
+                                                                    ) : (
+                                                                        <i className="ri-checkbox-fill fs-18 funding-wizard-primary-text"></i>
+                                                                    )}
+                                                                    <span className="fs-14 fw-medium text-dark">{docType.name}</span>
+                                                                </div>
+                                                                <div className="d-flex align-items-center gap-3">
+                                                                    {isMissing ? (
+                                                                        <>
+                                                                            <span className="text-danger fs-13 fw-semibold"><i className="ri-error-warning-fill align-middle me-1"></i> Missing</span>
                                                                             <button
-                                                                                className="btn btn-light border btn-sm px-3 fw-medium ms-2"
+                                                                                className="btn btn-primary btn-sm px-3 fw-medium shadow-none"
                                                                                 onClick={() => {
                                                                                     setCurrentDocType(docType);
                                                                                     setShowFileManager(true);
@@ -740,13 +766,66 @@ const FundingRequestWizard = () => {
                                                                                 {uploading && currentDocType?.id === docType.id ? (
                                                                                     <><span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Uploading...</>
                                                                                 ) : (
-                                                                                    <><i className="ri-upload-cloud-2-line align-middle me-1 fs-15"></i> Upload Again</>
+                                                                                    <><i className="ri-upload-cloud-2-line align-middle me-1 fs-15"></i> Upload</>
                                                                                 )}
                                                                             </button>
-                                                                        )}
-                                                                    </>
-                                                                )}
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <span className="fs-13 fw-semibold funding-wizard-primary-text"><i className="ri-check-line align-middle me-1"></i> Uploaded</span>
+                                                                            
+                                                                            {fundingDetail?.latest_review_status === 'Rejected' && (
+                                                                                <button
+                                                                                    className="btn btn-light border btn-sm px-3 fw-medium ms-2"
+                                                                                    onClick={() => {
+                                                                                        setCurrentDocType(docType);
+                                                                                        setShowFileManager(true);
+                                                                                    }}
+                                                                                    disabled={uploading}
+                                                                                >
+                                                                                    {uploading && currentDocType?.id === docType.id ? (
+                                                                                        <><span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Uploading...</>
+                                                                                    ) : (
+                                                                                        <><i className="ri-upload-cloud-2-line align-middle me-1 fs-15"></i> Upload Again</>
+                                                                                    )}
+                                                                                </button>
+                                                                            )}
+                                                                        </>
+                                                                    )}
+                                                                </div>
                                                             </div>
+                                                            
+                                                            {!isMissing && documentsData?.[docType.id]?.length > 0 && (
+                                                                <div className="mt-3 pt-3 border-top">
+                                                                    <div className="d-flex flex-column gap-2">
+                                                                        {documentsData[docType.id].map((doc: any) => {
+                                                                            const isPdf = doc.file_name.toLowerCase().endsWith('.pdf');
+                                                                            return (
+                                                                                <div key={doc.id} className="d-flex align-items-center justify-content-between border rounded px-2 py-2 bg-white">
+                                                                                    <div className="d-flex align-items-center gap-3 overflow-hidden">
+                                                                                        {isPdf ? (
+                                                                                            <PdfIcon style={{ width: '28px', height: '28px' }} />
+                                                                                        ) : (
+                                                                                            <FileIcon style={{ width: '28px', height: '28px' }} className="text-muted" />
+                                                                                        )}
+                                                                                        <div className="d-flex flex-column">
+                                                                                            <span className="fs-13 fw-medium text-truncate" title={doc.file_name} style={{ maxWidth: '300px' }}>{doc.file_name}</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <button 
+                                                                                        className="btn btn-sm btn-outline-danger py-1 px-2 d-flex align-items-center gap-1"
+                                                                                        onClick={() => handleRemoveFile(doc.id, doc.file_name)}
+                                                                                        title="Remove document"
+                                                                                        disabled={deleteFundingDocumentMutation.isPending}
+                                                                                    >
+                                                                                        <i className="ri-delete-bin-line fs-14"></i> <span className="fs-13">Remove</span>
+                                                                                    </button>
+                                                                                </div>
+                                                                            );
+                                                                        })}
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     );
                                                 })}

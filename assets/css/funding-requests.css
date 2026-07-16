@@ -50,3 +50,5 @@
 .fr-skel-full-40 { width: 100%; height: 40px; }
 .fr-skel-full-30 { width: 100%; height: 30px; }
 .fr-skel-200h16  { width: 200px; height: 16px; }
+  
+.activity-sidebar-sticky { top: 150px; z-index: 10; } 

@@ -15,4 +15,14 @@ export const fetchReadinessFactors = async (id: string | undefined) => {
     return response.data;
 };
 
+export const fetchFundingRequestDocuments = async (fundingApplicationId: string | number) => {
+    const response = await apiClient.get(`/borrower/funding-application/documents/${fundingApplicationId}`);
+    return response.data;
+};
+
+export const deleteFundingRequestDocument = async (documentId: number) => {
+    const response = await apiClient.delete(`/borrower/funding-application/documents/${documentId}`);
+    return response.data;
+};
+
 

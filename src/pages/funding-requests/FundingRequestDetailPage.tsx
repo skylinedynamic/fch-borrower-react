@@ -986,7 +986,7 @@ export default function FundingRequestDetailPage() {
 
                         {/* ── Right Column: Activity Log Timeline Sidebar ── */}
                         <div className="col-lg-4">
-                            <div className="card border-0 shadow-sm rounded-3">
+                            <div className="card border-0 shadow-sm rounded-3 sticky-top activity-sidebar-sticky">
                                 {/* Card Header */}
                                 <div className="card-header px-3 py-2 align-items-center justify-content-between d-flex flex-column flex-sm-row gap-2">
                                     <div className="d-flex align-items-center gap-2">
