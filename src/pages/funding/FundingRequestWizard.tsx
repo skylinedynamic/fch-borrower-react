@@ -711,7 +711,7 @@ const FundingRequestWizard = () => {
                                                                     <>
                                                                         <span className="text-danger fs-13 fw-semibold"><i className="ri-error-warning-fill align-middle me-1"></i> Missing</span>
                                                                         <button
-                                                                            className="btn btn-outline-secondary btn-sm px-3 fw-medium"
+                                                                            className="btn btn-primary btn-sm px-3 fw-medium shadow-none"
                                                                             onClick={() => {
                                                                                 setCurrentDocType(docType);
                                                                                 setShowFileManager(true);
@@ -721,7 +721,7 @@ const FundingRequestWizard = () => {
                                                                             {uploading && currentDocType?.id === docType.id ? (
                                                                                 <><span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Uploading...</>
                                                                             ) : (
-                                                                                'Upload'
+                                                                                <><i className="ri-upload-cloud-2-line align-middle me-1 fs-15"></i> Upload</>
                                                                             )}
                                                                         </button>
                                                                     </>
@@ -730,7 +730,7 @@ const FundingRequestWizard = () => {
                                                                         <span className="fs-13 fw-semibold me-3 funding-wizard-primary-text"><i className="ri-check-line align-middle me-1"></i> Uploaded</span>
                                                                         {fundingDetail?.latest_review_status === 'Rejected' && (
                                                                             <button
-                                                                                className="btn btn-light border btn-sm px-3 fw-medium"
+                                                                                className="btn btn-light border btn-sm px-3 fw-medium ms-2"
                                                                                 onClick={() => {
                                                                                     setCurrentDocType(docType);
                                                                                     setShowFileManager(true);
@@ -740,7 +740,7 @@ const FundingRequestWizard = () => {
                                                                                 {uploading && currentDocType?.id === docType.id ? (
                                                                                     <><span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Uploading...</>
                                                                                 ) : (
-                                                                                    'Upload Again'
+                                                                                    <><i className="ri-upload-cloud-2-line align-middle me-1 fs-15"></i> Upload Again</>
                                                                                 )}
                                                                             </button>
                                                                         )}
@@ -842,17 +842,20 @@ const FundingRequestWizard = () => {
                                             {currentStep === 1 ? 'Continue to Application' : 'Continue to Documents'} <i className="ri-arrow-right-line"></i>
                                         </button>
                                     ) : (
-                                        <button
-                                            className={`btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4 ${(submitting || (isDocsRequired && missingDocs.length > 0)) ? 'disabled' : ''}`}
-                                            onClick={handleSubmit}
-                                            disabled={submitting || (isDocsRequired && missingDocs.length > 0)}
-                                        >
-                                            {submitting ? (
-                                                <><span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Submitting...</>
-                                            ) : (
-                                                <>Submit for Underwriting <i className="ri-arrow-right-line"></i></>
-                                            )}
-                                        </button>
+                                        <span style={(submitting || (isDocsRequired && missingDocs.length > 0)) ? { cursor: 'not-allowed', display: 'inline-block' } : {}}>
+                                            <button
+                                                className={`btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4`}
+                                                style={(submitting || (isDocsRequired && missingDocs.length > 0)) ? { opacity: 0.5, pointerEvents: 'none' } : {}}
+                                                onClick={handleSubmit}
+                                                disabled={submitting || (isDocsRequired && missingDocs.length > 0)}
+                                            >
+                                                {submitting ? (
+                                                    <><span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Submitting...</>
+                                                ) : (
+                                                    <>Submit for Underwriting <i className="ri-arrow-right-line"></i></>
+                                                )}
+                                            </button>
+                                        </span>
                                     )}
                                 </div>
                             )}
