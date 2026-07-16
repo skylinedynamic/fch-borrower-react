@@ -353,12 +353,10 @@
 .funding-missing-tooltip {
     position: absolute;
     bottom: calc(100% + 10px);
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
+    right: 0;
+    width: 100%;
     z-index: 9999;
-    min-width: 250px;
-    max-width: 320px;
-    width: max-content;
     background: var(--primary-color);
     border-radius: 4px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
@@ -383,12 +381,12 @@
 @keyframes tooltipFadeIn {
     from {
         opacity: 0;
-        transform: translateX(-50%) translateY(4px);
+        transform: translateY(4px);
     }
 
     to {
         opacity: 1;
-        transform: translateX(-50%) translateY(0);
+        transform: translateY(0);
     }
 }
 
@@ -784,8 +782,8 @@
     padding: 0 10px;
 }
 .funding-wizard-step-circle {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     font-size: 14px;
     background-color: #fff;
     color: #6b7280;
@@ -794,21 +792,25 @@
     transition: all 0.2s ease-in-out;
 }
 .funding-wizard-step-circle.active {
-    width: 40px;
-    height: 40px;
-    font-size: 16px;
+    width: 36px;
+    height: 36px;
+    font-size: 15px;
     background-color: var(--primary-color, #0a192f);
     color: #fff;
-    border: none;
-    box-shadow: 0 0 0 4px #e5e7eb;
+    border: 2px solid var(--primary-color, #0a192f);
+    outline: 3px solid var(--primary-color, #0a192f);
+    outline-offset: 2px;
+    opacity: 0.9;
 }
 .funding-wizard-step-circle.completed {
-    font-size: 18px;
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
     color: var(--primary-color, #0a192f);
     border: 2px solid var(--primary-color, #0a192f);
 }
 .funding-wizard-step-label {
-    top: 42px;
+    top: 44px;
     font-size: 13px;
     font-weight: 400;
     color: #6b7280;
@@ -997,10 +999,22 @@
 .funding-wizard-divider-vertical { width: 1px; height: 40px; background-color: #e2e8f0; }
 
 @media (max-width: 768px) { 
-    .funding-missing-tooltip { min-width: 280px; max-width: 90vw; white-space: normal; left: 0; transform: translateX(0); } 
+    .funding-missing-tooltip { min-width: 280px; max-width: 90vw; white-space: normal; left: 0; } 
     .funding-missing-tooltip::after { left: 20px; transform: translateX(0); }
 }
 @media (max-width: 768px) { .funding-missing-tooltip { padding: 10px; } .funding-missing-tooltip-header { font-size: 13px; } .funding-missing-tooltip-item, .funding-missing-tooltip-desc { font-size: 11.5px; } .tooltip-item-req { font-size: 10px; } .tooltip-item-title { font-size: 11.5px; } .funding-missing-tooltip-footer-info { font-size: 11px; } }
+
+/* --- Funding Request Wizard Responsive --------------------------------- */
+@media (max-width: 576px) {
+    .funding-wizard-container { padding-left: 0; padding-right: 0; }
+    .funding-wizard-stepper-container { max-width: 100%; }
+    /* Step 4 success buttons: stack vertically and go full-width */
+    .fwiz-success-buttons { flex-direction: column !important; align-items: stretch !important; }
+    .fwiz-success-buttons .btn { width: 100% !important; justify-content: center !important; }
+    /* Nav buttons (Back/Cancel + Continue/Submit): also full-width stacked */
+    .fwiz-nav-buttons { flex-direction: column-reverse !important; gap: 0.5rem !important; }
+    .fwiz-nav-buttons .btn { width: 100% !important; justify-content: center !important; }
+}
 .funding-wizard-btn-outline { border-radius: 4px !important; } .funding-wizard-btn-primary { border-radius: 4px !important; } .skeleton-line { border-radius: 4px !important; }
 .skeleton-step-circle { width: 32px; height: 32px; border-radius: 50% !important; }
 
@@ -1021,12 +1035,6 @@
 .fd-skel-back-btn    { width: 85px;  height: 32px; border-radius: 4px !important; }
 
 /* ── FundingDetail — Action Buttons ────────────────────────────── */
-.fd-action-btn { background-color: #022144 !important; border: 1px solid #022144 !important; font-size: 14px; color: #fff !important; padding: 8px 20px; border-radius: 4px; transition: all 0.2s; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; cursor: pointer; }
-.fd-action-btn:hover:not(.disabled) { background-color: #033268 !important; border-color: #033268 !important; color: #fff !important; opacity: 1; }
-
-.fd-action-btn.disabled,
-.fd-action-btn[disabled] { background-color: #94a3b8 !important; border-color: #94a3b8 !important; color: #ffffff !important; opacity: 1 !important; cursor: not-allowed !important; pointer-events: auto !important; box-shadow: none !important; transform: none !important; }
-.fd-action-btn.disabled:hover { background-color: #94a3b8 !important; border-color: #94a3b8 !important; }
 
 /* Card header — icon / title / badge */
 .fd-skel-icon-circle  { width: 56px; height: 56px; border-radius: 50% !important; }

@@ -766,7 +766,7 @@ const FundingRequestWizard = () => {
                                     <h3 className="fw-bold mb-3 funding-wizard-text-dark">Funding Request Submitted!</h3>
                                     <p className="text-muted mb-4 fs-15 px-md-5">Your request has been received and is now under<br />{reviewerName} underwriting review.</p>
 
-                                    <div className="rounded p-4 text-start mx-auto mb-4 funding-wizard-panel-bg-light fwiz-review-panel">
+                                    <div className="border rounded p-4 text-start mx-auto mb-4 funding-wizard-panel-bg-light fwiz-review-panel">
                                         <h6 className="fw-bold mb-3 funding-wizard-primary-text">What Happens Next?</h6>
                                         <ul className="list-unstyled m-0 d-flex flex-column gap-3">
                                             <li className="d-flex align-items-start gap-3 fs-14 text-dark">
@@ -815,10 +815,10 @@ const FundingRequestWizard = () => {
 
                             {/* Navigation Buttons (Steps 1-3) */}
                             {currentStep < 4 && (
-                                <div className="d-flex justify-content-between align-items-center mt-5 pt-3 border-top">
+                                <div className="d-flex justify-content-between align-items-center mt-5 pt-3 border-top fwiz-nav-buttons">
                                     {currentStep > 1 ? (
                                         <button
-                                            className="btn btn-light border fw-medium d-flex align-items-center gap-2 shadow-none"
+                                            className="btn btn-light border fw-medium d-flex align-items-center gap-2 shadow-none px-4"
                                             onClick={handleBack}
                                             disabled={submitting}
                                         >
@@ -826,7 +826,7 @@ const FundingRequestWizard = () => {
                                         </button>
                                     ) : (
                                         <button
-                                            className="btn btn-light border fw-medium d-flex align-items-center gap-2 shadow-none"
+                                            className="btn btn-light border fw-medium d-flex align-items-center gap-2 shadow-none px-4"
                                             onClick={() => navigate(-1)}
                                         >
                                             <i className="ri-arrow-left-line"></i> Cancel
@@ -838,7 +838,7 @@ const FundingRequestWizard = () => {
                                             className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4"
                                             onClick={handleNext}
                                         >
-                                            {currentStep === 1 ? 'Continue to Application' : 'Continue to Documents'} <i className="ri-arrow-right-line fs-18"></i>
+                                            {currentStep === 1 ? 'Continue to Application' : 'Continue to Documents'} <i className="ri-arrow-right-line"></i>
                                         </button>
                                     ) : (
                                         <button
@@ -849,7 +849,7 @@ const FundingRequestWizard = () => {
                                             {submitting ? (
                                                 <><span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Submitting...</>
                                             ) : (
-                                                <>Submit for Underwriting <i className="ri-arrow-right-line fs-18"></i></>
+                                                <>Submit for Underwriting <i className="ri-arrow-right-line"></i></>
                                             )}
                                         </button>
                                     )}
@@ -858,18 +858,18 @@ const FundingRequestWizard = () => {
 
                             {/* Navigation Buttons (Step 4) */}
                             {currentStep === 4 && (
-                                <div className="d-flex flex-column align-items-center mx-auto mt-4 fwiz-success-wrap">
+                                <div className="d-flex flex-row align-items-center justify-content-center gap-3 mx-auto mt-4 fwiz-success-buttons">
                                     <button
-                                        className="btn w-100 mb-3 fw-bold text-white d-flex align-items-center justify-content-center gap-2 funding-wizard-btn-large"
-                                        onClick={() => navigate('/funding-requests')}
-                                    >
-                                        <i className="ri-bar-chart-fill fs-16"></i> View Review Status
-                                    </button>
-                                    <button
-                                        className="btn btn-link text-decoration-none fw-bold d-flex align-items-center gap-2 funding-wizard-primary-text"
+                                        className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4 shadow-none"
                                         onClick={() => navigate('/funding')}
                                     >
                                         <i className="ri-arrow-left-line"></i> Return to Funding
+                                    </button>
+                                    <button
+                                        className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4 shadow-none"
+                                        onClick={() => navigate('/funding-requests')}
+                                    >
+                                        <i className="ri-bar-chart-fill"></i> View Review Status
                                     </button>
                                 </div>
                             )}

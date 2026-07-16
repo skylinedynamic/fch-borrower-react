@@ -313,8 +313,8 @@ const FundingDetail = () => {
                                 </nav>
                             </div>
                             <div className="mt-0 d-flex align-items-center">
-                                <Link to="/funding" className="fd-action-btn" style={{ fontSize: '13px', padding: '6px 16px' }}>
-                                    <i className="ri-arrow-left-line" style={{ marginTop: '1px' }}></i> Back
+                                <Link to="/funding" className="btn btn-primary fw-medium d-flex align-items-center gap-2 shadow-none px-4">
+                                    <i className="ri-arrow-left-line"></i> Back
                                 </Link>
                             </div>
                         </div>
@@ -472,14 +472,14 @@ const FundingDetail = () => {
                         </div>
                         <span id="btn-start-funding-request-wrapper" className="funding-detail-btn-wrapper">
                             {(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') ? (
-                                <span className="fd-action-btn disabled">
+                                <span className="btn btn-primary disabled d-flex align-items-center justify-content-center gap-2 fw-medium px-4">
                                     Start Funding Request
-                                    <i className="ri-arrow-right-line" style={{ marginTop: '1px' }} />
+                                    <i className="ri-arrow-right-line" />
                                 </span>
                             ) : (
-                                <Link to={`/funding/${id}/review`} className="fd-action-btn">
+                                <Link to={`/funding/${id}/review`} className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4">
                                     Start Funding Request
-                                    <i className="ri-arrow-right-line" style={{ marginTop: '1px' }} />
+                                    <i className="ri-arrow-right-line" />
                                 </Link>
                             )}
                         </span>
