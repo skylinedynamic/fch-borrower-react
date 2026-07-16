@@ -40,8 +40,8 @@ const FundingRequestWizard = () => {
     const initialPurpose = state?.purpose || searchParams.get('purpose') || '';
 
     const [formData, setFormData] = useState({
-        requested_amount: initialAmount,
-        use_of_funds: initialPurpose ? initialPurpose.split(',').map((s: string) => s.trim()) : [],
+        requested_amount: initialAmount ? String(initialAmount).replace(/[^0-9.]/g, '') : '',
+        use_of_funds: initialPurpose ? (typeof initialPurpose === 'string' ? initialPurpose.split(',').map((s: string) => s.trim()) : initialPurpose) : [],
     });
     const [errors, setErrors] = useState<any>({});
 
@@ -159,7 +159,8 @@ const FundingRequestWizard = () => {
                             defaultUse = typeof firstObj === 'object' ? (firstObj.value || firstObj.name || firstObj.label) : String(firstObj);
                         }
 
-                        const newAmount = prev.requested_amount || res.data.latest_requested_amount || '';
+                        const newAmountRaw = prev.requested_amount || res.data.latest_requested_amount || '';
+                        const newAmount = newAmountRaw ? String(newAmountRaw).replace(/[^0-9.]/g, '') : '';
                         let newPurpose: any = res.data.latest_use_of_funds || prev.use_of_funds;
                         
                         if (!newPurpose || (Array.isArray(newPurpose) && newPurpose.length === 0)) {

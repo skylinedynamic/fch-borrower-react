@@ -779,13 +779,32 @@ export default function FundingRequestDetailPage() {
                                                     <p className="fw-semibold text-dark mb-0">{review.reviewer.name}</p>
                                                 </div>
                                             )}
-                                            {review.status === FUNDING_REVIEW_STATUS.REJECTED && review.reject_reason && (
+                                            {review.status === FUNDING_REVIEW_STATUS.REJECTED && (
                                                 <div className="col-12">
                                                     <div className="alert alert-danger border-0 mb-0">
                                                         <p className="mb-0 fs-13">
-                                                            <span className="fw-bold">Reason for Rejection:</span>{' '}
-                                                            {review.reject_reason}
+                                                            <span className="fw-bold">Status:</span> Your funding request was rejected.
+                                                            {review.reject_reason && (
+                                                                <>
+                                                                    <br />
+                                                                    <span className="fw-bold mt-1 d-inline-block">Reason for Rejection:</span>{' '}
+                                                                    {review.reject_reason}
+                                                                </>
+                                                            )}
                                                         </p>
+                                                        <div className="mt-3">
+                                                            <Link 
+                                                                to={`/funding/${review.funding_sequence_id || review.funding_sequence?.id}/review`}
+                                                                state={{
+                                                                    purpose: review.use_of_funds,
+                                                                    amount: review.requested_amount
+                                                                }}
+                                                                className="btn btn-danger btn-sm fw-medium px-4 d-inline-flex align-items-center"
+                                                            >
+                                                                Update Application
+                                                                <i className="ri-arrow-right-line ms-2"></i>
+                                                            </Link>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}
@@ -798,12 +817,10 @@ export default function FundingRequestDetailPage() {
                                                         </p>
                                                         <div className="mt-3">
                                                             <Link 
-                                                                to="/fund-application" 
+                                                                to={`/funding/${review.funding_sequence_id || review.funding_sequence?.id}/review`}
                                                                 state={{
-                                                                    purpose: review.use_of_funds === 'Working Capital' ? 'Working Capital (General Use)' : review.use_of_funds,
-                                                                    requested_amount: review.requested_amount,
-                                                                    approved_funding: review.funding_sequence?.name || review.funding_type,
-                                                                    funding_type: review.funding_type
+                                                                    purpose: review.use_of_funds,
+                                                                    amount: review.requested_amount
                                                                 }}
                                                                 className="btn btn-success btn-sm fw-medium px-4 d-inline-flex align-items-center"
                                                             >

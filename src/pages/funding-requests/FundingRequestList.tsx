@@ -195,9 +195,7 @@ export default function FundingRequestList() {
                                                 }))}
                                                 onChange={(e) => setSelectedStatus(e.value)}
                                                 placeholder="All Statuses"
-                                                className="w-100 bg-light border-light"
-                                                style={{ height: '38px' }}
-                                                inputStyle={{ height: '38px' }}
+                                                className="w-100 bg-light border-light fr-filter-dropdown"
                                             />
                                         </div>
                                         <div className="col-xxl-3 col-sm-6">
@@ -209,9 +207,7 @@ export default function FundingRequestList() {
                                                 }))}
                                                 onChange={(e) => setSelectedFundingType(e.value)}
                                                 placeholder="All Funding Types"
-                                                className="w-100 bg-light border-light"
-                                                style={{ height: '38px' }}
-                                                inputStyle={{ height: '38px' }}
+                                                className="w-100 bg-light border-light fr-filter-dropdown"
                                             />
                                         </div>
                                         <div className="col-xxl-2 col-sm-6 d-flex gap-2 justify-content-end">
@@ -258,23 +254,21 @@ export default function FundingRequestList() {
                                                 <button className="btn btn-sm btn-primary text-nowrap" onClick={() => handleView(row)}>
                                                     <i className="ri-eye-line align-bottom me-1"></i> Details
                                                 </button>
-                                                {row.status === FUNDING_REVIEW_STATUS.APPROVED && (
+                                                {(row.status === FUNDING_REVIEW_STATUS.APPROVED || row.status === FUNDING_REVIEW_STATUS.REJECTED) && (
                                                         <Link 
-                                                        to="/fund-application" 
+                                                        to={`/funding/${row.funding_sequence_id || row.funding_sequence?.id}/review`}
                                                         state={{
-                                                            purpose: row.use_of_funds === 'Working Capital' ? 'Working Capital (General Use)' : row.use_of_funds,
-                                                            requested_amount: row.requested_amount,
-                                                            approved_funding: row.funding_sequence?.name || row.funding_type,
-                                                            funding_type: row.funding_type
+                                                            purpose: row.use_of_funds,
+                                                            amount: row.requested_amount
                                                         }}
-                                                        className="btn btn-success btn-sm text-nowrap"
-                                                        title="Process Funding Application"
+                                                        className={`btn btn-${row.status === FUNDING_REVIEW_STATUS.REJECTED ? 'danger' : 'success'} btn-sm text-nowrap`}
+                                                        title={row.status === FUNDING_REVIEW_STATUS.REJECTED ? 'Update Application' : 'Process Funding Application'}
                                                     >
-                                                        Process Funding Application <i className="ri-arrow-right-line align-bottom ms-1"></i>
+                                                        {row.status === FUNDING_REVIEW_STATUS.REJECTED ? 'Update Application' : 'Process Funding Application'} <i className="ri-arrow-right-line align-bottom ms-1"></i>
                                                     </Link>
                                                 )}
                                             </div>
-                                        )} style={{ minWidth: '150px' }}></Column>
+                                        )} className="fr-list-actions-col"></Column>
                                     </DataTable>
                                 </div>
                             </div>
