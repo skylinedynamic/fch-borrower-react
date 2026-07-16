@@ -7,6 +7,7 @@ import FundingRequestSkeleton from './FundingRequestSkeleton'
 import { useBrandingStore } from '../../store/brandingStore'
 import { getFileConfig } from '../../config/fileTypeConfig'
 import { FUNDING_REVIEW_STATUS } from '../../config/funding'
+import '../../../assets/css/funding-requests.css'
 interface FundingRequestModalProps {
     show: boolean
     onHide: () => void
@@ -49,7 +50,8 @@ export default function FundingRequestModal({ show, onHide, review }: FundingReq
         onHide()
         navigate(`/fund-application`, {
             state: {
-                approved_funding: displayReview.funding_type || '',
+                approved_funding: displayReview.funding_type || displayReview.funding_sequence?.name || '',
+                funding_type: displayReview.funding_type || displayReview.funding_sequence?.name || '',
                 purpose: displayReview.use_of_funds || '',
                 requested_amount: displayReview.requested_amount || ''
             }
@@ -60,7 +62,7 @@ export default function FundingRequestModal({ show, onHide, review }: FundingReq
     const displayLogo = globalBranding?.primary_logo_full_url || globalBranding?.primary_logo || invoiceLogo;
 
     return (
-        <Modal isOpen={show} toggle={onHide} size="lg" centered contentClassName="border-0 shadow-lg" style={{ maxWidth: '920px' }}>
+        <Modal isOpen={show} toggle={onHide} size="lg" centered contentClassName="border-0 shadow-lg fr-modal-wide">
             <ModalBody className="p-0">
                 {fetching && !fullReview ? (
                     <FundingRequestSkeleton />
@@ -165,7 +167,7 @@ export default function FundingRequestModal({ show, onHide, review }: FundingReq
                                                                                     <i className={config.icon}></i>
                                                                                 </div>
                                                                             </div>
-                                                                            <div className="ms-1 flex-grow-1 overflow-hidden" style={{ minWidth: 0 }}>
+                                                                            <div className="ms-1 flex-grow-1 overflow-hidden fr-doc-name-cell">
                                                                                 <a
                                                                                     href={doc.document_url || doc.file_path || '#'}
                                                                                     target="_blank"

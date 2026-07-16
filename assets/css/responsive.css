@@ -1901,4 +1901,36 @@
         margin-top: 0.6rem !important;
         margin-bottom: 0.5rem !important;
     }
+
+    /* ========================================================= 
+       Funding Detail Page (Mobile)
+    ========================================================= */
+    .funding-detail-card { padding: 0 !important; }
+    .funding-detail-card .card-body { padding: 1.25rem !important; }
+
+    /* Meta Row Grid */
+    .funding-detail-meta-col { padding: 10px 12px; }
+    .funding-detail-meta-col:nth-child(2n) { border-right: none !important; }
+    .funding-detail-meta-col:nth-child(1),
+    .funding-detail-meta-col:nth-child(2) { border-bottom: 1px solid #e8ecf0; }
+
+    /* Skeleton Meta Row */
+    .fd-skel-meta-row > div:nth-child(2n) { border-right: none !important; }
+    .fd-skel-meta-row > div:nth-child(1),
+    .fd-skel-meta-row > div:nth-child(2) { border-bottom: 1px solid #e8ecf0; }
+
+    /* Footer CTA */
+    .funding-detail-footer { flex-direction: column; align-items: stretch !important; text-align: center; padding: 1.25rem !important; gap: 16px; }
+    .funding-detail-btn-wrapper, .funding-detail-btn-wrapper .btn, .fd-skel-cta-btn { width: 100% !important; }
+    .funding-detail-footer-title { margin-bottom: 6px; }
+    
+    /* Header (Title + Badge) */
+    .funding-detail-card > .card-body > .d-flex.justify-content-between { flex-direction: column; align-items: flex-start !important; }
+    .funding-detail-card > .card-body > .d-flex.justify-content-between > .text-end { text-align: left !important; width: 100%; margin-top: 10px; }
+    .funding-detail-badge { display: block; text-align: center; }
+    .funding-detail-match-label { text-align: center !important; }
+    
+    /* Skeleton Badge */
+    .fd-skel-badge { width: 100% !important; }
+    .fd-skel-match-label { margin: 8px auto 0 !important; }
 }

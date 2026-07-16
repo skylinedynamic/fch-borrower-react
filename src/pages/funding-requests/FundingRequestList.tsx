@@ -7,6 +7,7 @@ import { Dropdown } from 'primereact/dropdown'
 import StatisticsCardSkeleton from '../../components/Common/StatisticsCardSkeleton'
 import StatisticsCard from '../../components/Common/StatisticsCard'
 import { FUNDING_REVIEW_STATUS } from '../../config/funding'
+import '../../../assets/css/funding-requests.css'
 
 export default function FundingRequestList() {
     const navigate = useNavigate()
@@ -89,8 +90,11 @@ export default function FundingRequestList() {
 
     const statusBodyTemplate = (row: any) => {
         let bg = 'warning'
-        if (row.status === FUNDING_REVIEW_STATUS.APPROVED || row.status === FUNDING_REVIEW_STATUS.ACCEPTED) bg = 'success'
+        if (row.status === FUNDING_REVIEW_STATUS.APPROVED) bg = 'success'
+        if (row.status === FUNDING_REVIEW_STATUS.ACCEPTED) bg = 'info'
         if (row.status === FUNDING_REVIEW_STATUS.REJECTED) bg = 'danger'
+        if (row.status === FUNDING_REVIEW_STATUS.CANCELED) bg = 'secondary'
+        if (row.status === FUNDING_REVIEW_STATUS.IN_PROGRESS) bg = 'primary'
         return <span className={`badge bg-${bg}`}>{row.status}</span>
     }
 
@@ -191,9 +195,7 @@ export default function FundingRequestList() {
                                                 }))}
                                                 onChange={(e) => setSelectedStatus(e.value)}
                                                 placeholder="All Statuses"
-                                                className="w-100 bg-light border-light"
-                                                style={{ height: '38px' }}
-                                                inputStyle={{ height: '38px' }}
+                                                className="w-100 bg-light border-light fr-filter-dropdown"
                                             />
                                         </div>
                                         <div className="col-xxl-3 col-sm-6">
@@ -205,9 +207,7 @@ export default function FundingRequestList() {
                                                 }))}
                                                 onChange={(e) => setSelectedFundingType(e.value)}
                                                 placeholder="All Funding Types"
-                                                className="w-100 bg-light border-light"
-                                                style={{ height: '38px' }}
-                                                inputStyle={{ height: '38px' }}
+                                                className="w-100 bg-light border-light fr-filter-dropdown"
                                             />
                                         </div>
                                         <div className="col-xxl-2 col-sm-6 d-flex gap-2 justify-content-end">
@@ -254,23 +254,27 @@ export default function FundingRequestList() {
                                                 <button className="btn btn-sm btn-primary text-nowrap" onClick={() => handleView(row)}>
                                                     <i className="ri-eye-line align-bottom me-1"></i> Details
                                                 </button>
-                                                {row.status === FUNDING_REVIEW_STATUS.APPROVED && (
-                                                        <Link 
-                                                        to="/fund-application" 
-                                                        state={{
-                                                            purpose: row.use_of_funds === 'Working Capital' ? 'Working Capital (General Use)' : row.use_of_funds,
+                                                {(row.status === FUNDING_REVIEW_STATUS.APPROVED || row.status === FUNDING_REVIEW_STATUS.REJECTED) && (
+                                                    <Link 
+                                                        to={row.status === FUNDING_REVIEW_STATUS.APPROVED ? "/fund-application" : `/funding/${row.funding_sequence_id || row.funding_sequence?.id}/review`}
+                                                        state={row.status === FUNDING_REVIEW_STATUS.APPROVED ? {
+                                                            purpose: row.use_of_funds,
+                                                            amount: row.requested_amount,
                                                             requested_amount: row.requested_amount,
                                                             approved_funding: row.funding_sequence?.name || row.funding_type,
-                                                            funding_type: row.funding_type
+                                                            funding_type: row.funding_type || row.funding_sequence?.name
+                                                        } : {
+                                                            purpose: row.use_of_funds,
+                                                            amount: row.requested_amount
                                                         }}
-                                                        className="btn btn-success btn-sm text-nowrap"
-                                                        title="Process Funding Application"
+                                                        className={`btn btn-${row.status === FUNDING_REVIEW_STATUS.REJECTED ? 'danger' : 'success'} btn-sm text-nowrap`}
+                                                        title={row.status === FUNDING_REVIEW_STATUS.REJECTED ? 'Update Application' : 'Process Funding Application'}
                                                     >
-                                                        Process Funding Application <i className="ri-arrow-right-line align-bottom ms-1"></i>
+                                                        {row.status === FUNDING_REVIEW_STATUS.REJECTED ? 'Update Application' : 'Process Funding Application'} <i className="ri-arrow-right-line align-bottom ms-1"></i>
                                                     </Link>
                                                 )}
                                             </div>
-                                        )} style={{ minWidth: '150px' }}></Column>
+                                        )} className="fr-list-actions-col"></Column>
                                     </DataTable>
                                 </div>
                             </div>

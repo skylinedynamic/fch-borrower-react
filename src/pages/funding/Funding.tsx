@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../../../assets/css/funding.css';
+import '../../../assets/css/responsive.css';
 import { Link } from 'react-router-dom';
 import { fetchBorrowerFunding } from '../../modules/funding/services';
 import FundingCard from './components/FundingCard';
@@ -53,12 +54,16 @@ const Funding = () => {
     const [activeType, setActiveType] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState('');
 
-    useEffect(() => { loadData(); }, []);
+    const [appliedType, setAppliedType] = useState<string>('all');
 
-    const loadData = async () => {
+    useEffect(() => { 
+        loadData('');
+    }, []);
+
+    const loadData = async (search: string = '') => {
         setLoading(true);
         try {
-            const res = await fetchBorrowerFunding();
+            const res = await fetchBorrowerFunding({ search });
             if (res.status) {
                 setData(res.data);
             } else {
@@ -76,31 +81,26 @@ const Funding = () => {
 
     const { groups = [], types = [], stats = {} } = data || {};
 
-    const allTypes = [{ id: 'all', name: 'All Categories' }, ...types];
-    const hasFilter = searchQuery.trim() !== '' || activeType !== 'all';
+    const allTypes = [{ id: 'all', name: 'All Product Categories' }, ...types];
+    const hasFilter = searchQuery.trim() !== '' || appliedType !== 'all';
 
-    // ── Search filter: only checks fields returned by the API
-    const matchesQuery = (seq: any, q: string) => {
-        if (!q) return true;
-        const lq = q.toLowerCase();
-        const str = (v: any) => typeof v === 'string' && v.toLowerCase().includes(lq);
-        if (str(seq.name) || str(seq.subtitle) || str(seq.amount_range) || str(seq.terms) || str(seq.description)) return true;
-        if (Array.isArray(seq.uses) && seq.uses.some((u: any) => String(u).toLowerCase().includes(lq))) return true;
-        return false;
+    const filteredGroups = groups.map((group: any) => {
+        if (appliedType === 'all') return group;
+        const filteredSequencings = group.sequencings.filter((seq: any) => seq.funding_type_id?.toString() === appliedType);
+        return { ...group, sequencings: filteredSequencings };
+    }).filter((g: any) => g.sequencings && g.sequencings.length > 0);
+
+    const applyFilters = () => {
+        setAppliedType(activeType);
+        loadData(searchQuery.trim());
     };
 
-    const filteredGroups = groups
-        .map((group: any) => ({
-            ...group,
-            sequencings: group.sequencings.filter((seq: any) => {
-                const matchesTab = activeType === 'all' || seq.funding_type_id?.toString() === activeType;
-                const matchesSearch = matchesQuery(seq, searchQuery.trim());
-                return matchesTab && matchesSearch;
-            }),
-        }))
-        .filter((g: any) => g.sequencings.length > 0);
-
-    const clearAll = () => { setSearchQuery(''); setActiveType('all'); };
+    const clearAll = () => { 
+        setSearchQuery(''); 
+        setActiveType('all'); 
+        setAppliedType('all');
+        loadData(''); 
+    };
 
     return (
         <div className="page-content funding-page">
@@ -166,11 +166,12 @@ const Funding = () => {
                                                     <CustomDropdown
                                                         options={allTypes.map(t => ({ id: t.id.toString(), name: t.name }))}
                                                         value={activeType}
-                                                        onChange={(val) => { setActiveType(val.toString()); setSearchQuery(''); }}
+                                                        onChange={(val) => { setActiveType(val.toString()); }}
                                                         optionLabel="name"
                                                         optionValue="id"
-                                                        placeholder="All Categories"
+                                                        placeholder="All Product Categories"
                                                         className="border-0 rounded-2 fs-13 vendor-filter-bg h-100 w-100"
+                                                        searchable={true}
                                                     />
                                                 </div>
                                             </div>
@@ -181,6 +182,7 @@ const Funding = () => {
                                     <div className="d-flex gap-2 flex-shrink-0">
                                         <button
                                             className="btn btn-warning d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13 shadow-sm text-white"
+                                            onClick={applyFilters}
                                         >
                                             <i className="ri-equalizer-fill align-bottom"></i> Filters
                                         </button>

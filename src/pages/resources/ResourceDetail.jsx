@@ -41,10 +41,10 @@ const ResourceDetail = () => {
                                     </ol>
                                 </nav>
                             </div>
-                            <div className="mt-0">
-                                <Link to="/resources" className="btn btn-primary fw-medium">
-                                    <i className="ri-arrow-left-line me-1 align-bottom"></i> Back
-                                </Link>
+                            <div className="mt-0 d-flex align-items-center">
+                                <button onClick={() => navigate(-1)} className="btn btn-primary fw-medium d-flex align-items-center gap-2 shadow-none px-4">
+                                    <i className="ri-arrow-left-line"></i> Back
+                                </button>
                             </div>
                         </div>
                     </div>
