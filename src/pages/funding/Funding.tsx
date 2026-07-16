@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../../../assets/css/funding.css';
+import '../../../assets/css/responsive.css';
 import { Link } from 'react-router-dom';
 import { fetchBorrowerFunding } from '../../modules/funding/services';
 import FundingCard from './components/FundingCard';
