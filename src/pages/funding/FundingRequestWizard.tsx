@@ -152,6 +152,7 @@ const FundingRequestWizard = () => {
                                 state: {
                                     purpose: initialPurpose,
                                     amount: initialAmount,
+                                    requested_amount: initialAmount,
                                     approved_funding: res.data.name || res.data.funding_type,
                                     funding_type: res.data.funding_type || res.data.name
                                 }

@@ -260,6 +260,7 @@ export default function FundingRequestList() {
                                                         state={row.status === FUNDING_REVIEW_STATUS.APPROVED ? {
                                                             purpose: row.use_of_funds,
                                                             amount: row.requested_amount,
+                                                            requested_amount: row.requested_amount,
                                                             approved_funding: row.funding_sequence?.name || row.funding_type,
                                                             funding_type: row.funding_type || row.funding_sequence?.name
                                                         } : {

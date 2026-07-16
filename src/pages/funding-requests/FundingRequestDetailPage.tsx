@@ -821,6 +821,7 @@ export default function FundingRequestDetailPage() {
                                                                 state={{
                                                                     purpose: review.use_of_funds,
                                                                     amount: review.requested_amount,
+                                                                    requested_amount: review.requested_amount,
                                                                     approved_funding: review.funding_sequence?.name || review.funding_type,
                                                                     funding_type: review.funding_type || review.funding_sequence?.name
                                                                 }}
