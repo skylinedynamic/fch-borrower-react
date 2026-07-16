@@ -795,18 +795,18 @@
     width: 36px;
     height: 36px;
     font-size: 15px;
+    font-weight: 600;
     background-color: var(--primary-color, #0a192f);
     color: #fff;
     border: 2px solid var(--primary-color, #0a192f);
-    outline: 3px solid var(--primary-color, #0a192f);
-    outline-offset: 2px;
-    opacity: 0.9;
+    box-shadow: 0 4px 10px rgba(10, 25, 47, 0.15);
 }
 .funding-wizard-step-circle.completed {
     width: 36px;
     height: 36px;
     font-size: 16px;
-    color: var(--primary-color, #0a192f);
+    background-color: var(--primary-color, #0a192f);
+    color: #fff;
     border: 2px solid var(--primary-color, #0a192f);
 }
 .funding-wizard-step-label {
@@ -998,10 +998,6 @@
 .funding-wizard-max-w-480 { max-width: 480px; }
 .funding-wizard-divider-vertical { width: 1px; height: 40px; background-color: #e2e8f0; }
 
-@media (max-width: 768px) { 
-    .funding-missing-tooltip { min-width: 280px; max-width: 90vw; white-space: normal; left: 0; } 
-    .funding-missing-tooltip::after { left: 20px; transform: translateX(0); }
-}
 @media (max-width: 768px) { .funding-missing-tooltip { padding: 10px; } .funding-missing-tooltip-header { font-size: 13px; } .funding-missing-tooltip-item, .funding-missing-tooltip-desc { font-size: 11.5px; } .tooltip-item-req { font-size: 10px; } .tooltip-item-title { font-size: 11.5px; } .funding-missing-tooltip-footer-info { font-size: 11px; } }
 
 /* --- Funding Request Wizard Responsive --------------------------------- */
