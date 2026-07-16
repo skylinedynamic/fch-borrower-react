@@ -817,10 +817,12 @@ export default function FundingRequestDetailPage() {
                                                         </p>
                                                         <div className="mt-3">
                                                             <Link 
-                                                                to={`/funding/${review.funding_sequence_id || review.funding_sequence?.id}/review`}
+                                                                to="/fund-application"
                                                                 state={{
                                                                     purpose: review.use_of_funds,
-                                                                    amount: review.requested_amount
+                                                                    amount: review.requested_amount,
+                                                                    approved_funding: review.funding_sequence?.name || review.funding_type,
+                                                                    funding_type: review.funding_type || review.funding_sequence?.name
                                                                 }}
                                                                 className="btn btn-success btn-sm fw-medium px-4 d-inline-flex align-items-center"
                                                             >

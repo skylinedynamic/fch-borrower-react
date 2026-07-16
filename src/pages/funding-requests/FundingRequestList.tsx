@@ -255,9 +255,14 @@ export default function FundingRequestList() {
                                                     <i className="ri-eye-line align-bottom me-1"></i> Details
                                                 </button>
                                                 {(row.status === FUNDING_REVIEW_STATUS.APPROVED || row.status === FUNDING_REVIEW_STATUS.REJECTED) && (
-                                                        <Link 
-                                                        to={`/funding/${row.funding_sequence_id || row.funding_sequence?.id}/review`}
-                                                        state={{
+                                                    <Link 
+                                                        to={row.status === FUNDING_REVIEW_STATUS.APPROVED ? "/fund-application" : `/funding/${row.funding_sequence_id || row.funding_sequence?.id}/review`}
+                                                        state={row.status === FUNDING_REVIEW_STATUS.APPROVED ? {
+                                                            purpose: row.use_of_funds,
+                                                            amount: row.requested_amount,
+                                                            approved_funding: row.funding_sequence?.name || row.funding_type,
+                                                            funding_type: row.funding_type || row.funding_sequence?.name
+                                                        } : {
                                                             purpose: row.use_of_funds,
                                                             amount: row.requested_amount
                                                         }}

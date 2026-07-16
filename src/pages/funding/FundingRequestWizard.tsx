@@ -143,6 +143,23 @@ const FundingRequestWizard = () => {
                         return;
                     }
 
+                    if (res.data.latest_review_status === FUNDING_REVIEW_STATUS.APPROVED) {
+                        if (!isRedirecting.current) {
+                            isRedirecting.current = true;
+                            toast.success('Your funding request is already approved! Please proceed with the application.');
+                            navigate('/fund-application', { 
+                                replace: true,
+                                state: {
+                                    purpose: initialPurpose,
+                                    amount: initialAmount,
+                                    approved_funding: res.data.name || res.data.funding_type,
+                                    funding_type: res.data.funding_type || res.data.name
+                                }
+                            });
+                        }
+                        return;
+                    }
+
                     if (isHidden || hasMissingFactors) {
                         if (!isRedirecting.current) {
                             isRedirecting.current = true;

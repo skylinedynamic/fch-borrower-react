@@ -293,6 +293,7 @@ const FundingDetail = () => {
         return s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED || s === FACTOR_STATUS_VALUES.WEAK;
     });
     const isPending = latest_review_status === FUNDING_REVIEW_STATUS.PENDING;
+    const isApproved = latest_review_status === FUNDING_REVIEW_STATUS.APPROVED || latest_review_status === 'Approved';
 
     return (
         <div className="page-content">
@@ -463,19 +464,26 @@ const FundingDetail = () => {
                             <p className="funding-detail-footer-desc">
                                 {isPending
                                     ? 'You have already applied for this funding option. Please wait for approval or rejection.'
-                                    : finalEngineStatus === 'Hidden'
-                                        ? 'This funding option is currently not available for your profile.'
-                                        : hasMissingFactors
-                                            ? 'Please address missing underwriting factors before starting your review.'
-                                            : 'Start your funding request by providing a few details and uploading missing documents.'}
+                                    : isApproved
+                                        ? 'Your funding request is approved! Please proceed with the final funding application.'
+                                        : finalEngineStatus === 'Hidden'
+                                            ? 'This funding option is currently not available for your profile.'
+                                            : hasMissingFactors
+                                                ? 'Please address missing underwriting factors before starting your review.'
+                                                : 'Start your funding request by providing a few details and uploading missing documents.'}
                             </p>
                         </div>
                         <span id="btn-start-funding-request-wrapper" className="funding-detail-btn-wrapper">
-                            {(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') ? (
+                            {(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') && !isApproved ? (
                                 <span className="btn btn-primary disabled d-flex align-items-center justify-content-center gap-2 fw-medium px-4">
                                     Start Funding Request
                                     <i className="ri-arrow-right-line" />
                                 </span>
+                            ) : isApproved ? (
+                                <Link to="/fund-application" state={{ approved_funding: name, funding_type: name }} className="btn btn-success d-flex align-items-center justify-content-center gap-2 fw-medium px-4">
+                                    Process Funding Application
+                                    <i className="ri-arrow-right-line" />
+                                </Link>
                             ) : (
                                 <Link to={`/funding/${id}/review`} className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4">
                                     Start Funding Request

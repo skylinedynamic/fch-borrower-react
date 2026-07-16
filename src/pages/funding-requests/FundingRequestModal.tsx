@@ -50,7 +50,8 @@ export default function FundingRequestModal({ show, onHide, review }: FundingReq
         onHide()
         navigate(`/fund-application`, {
             state: {
-                approved_funding: displayReview.funding_type || '',
+                approved_funding: displayReview.funding_type || displayReview.funding_sequence?.name || '',
+                funding_type: displayReview.funding_type || displayReview.funding_sequence?.name || '',
                 purpose: displayReview.use_of_funds || '',
                 requested_amount: displayReview.requested_amount || ''
             }
