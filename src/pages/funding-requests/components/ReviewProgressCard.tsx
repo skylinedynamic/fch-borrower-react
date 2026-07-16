@@ -1,4 +1,5 @@
 import React from 'react';
+import '../../../../assets/css/funding-requests.css';
 import { 
     FUNDING_REVIEW_STATUS, 
     getFundingReviewProgress, 
@@ -73,27 +74,26 @@ export default function ReviewProgressCard({
                 <div className="d-flex align-items-center justify-content-between">
                     <div className="d-flex align-items-center">
                         <div
-                            className="d-flex align-items-center justify-content-center rounded-3"
-                            style={{ width: 48, height: 48, background: '#f8fafc', color: '#1e293b', marginRight: 16 }}
+                            className="d-flex align-items-center justify-content-center rounded-3 fr-progress-icon-badge"
                         >
                             <i className="ri-line-chart-line fs-4"></i>
                         </div>
                         <div>
-                            <h5 className="card-title mb-1 fs-16 fw-bold" style={{ color: '#0f172a' }}>Review Progress</h5>
+                            <h5 className="card-title mb-1 fs-16 fw-bold fr-progress-title">Review Progress</h5>
                             <p className="mb-0 text-muted fs-13">Track the progress of this funding request</p>
                         </div>
                     </div>
 
-                    <div className="d-flex align-items-center position-relative" style={{ width: 76, height: 76 }}>
-                        <svg width="76" height="76" style={{ transform: 'rotate(-90deg)' }}>
+                    <div className="d-flex align-items-center position-relative fr-progress-ring-wrap">
+                        <svg width="76" height="76" className="fr-progress-ring-svg">
                             <circle cx="38" cy="38" r="34" stroke="#f1f5f9" strokeWidth="6" fill="none" />
                             <circle cx="38" cy="38" r="34" stroke={isErrorState ? '#ef4444' : progressPercentage === 100 ? '#22c55e' : '#2563eb'} strokeWidth="6" fill="none"
                                 strokeDasharray="213" strokeDashoffset={213 - (213 * progressPercentage / 100)}
                                 strokeLinecap="round" />
                         </svg>
                         <div className="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center">
-                            <span className="fw-bolder text-dark" style={{ fontSize: '15px', lineHeight: '1' }}>{progressPercentage}%</span>
-                            <span className="fw-bold text-muted" style={{ fontSize: '10px', marginTop: '2px' }}>Complete</span>
+                            <span className="fw-bolder text-dark fr-progress-pct">{progressPercentage}%</span>
+                            <span className="fw-bold text-muted fr-progress-complete-label">Complete</span>
                         </div>
                     </div>
                 </div>
@@ -103,7 +103,7 @@ export default function ReviewProgressCard({
 
                 {/* Timeline */}
                 <div className="px-4 pb-4 overflow-x-auto">
-                    <div className="d-flex w-100 position-relative" style={{ minWidth: 500 }}>
+                    <div className="d-flex w-100 position-relative fr-timeline-track">
                         {displaySteps.map((step, idx) => {
                             const completed = idx < currentStatusIndex;
                             const current = idx === currentStatusIndex;
@@ -131,7 +131,7 @@ export default function ReviewProgressCard({
 
                             return (
                                 <React.Fragment key={step.key}>
-                                    <div className="d-flex flex-column align-items-center position-relative" style={{ width: 100, flexShrink: 0 }}>
+                                    <div className="d-flex flex-column align-items-center position-relative fr-step-col">
                                         <div
                                             className="rounded-circle d-flex align-items-center justify-content-center"
                                             style={{
@@ -155,18 +155,18 @@ export default function ReviewProgressCard({
                                         </div>
 
                                         {step.subtext && current && (
-                                            <div className="text-center mt-1" style={{ color: '#64748b', fontSize: 11 }}>
+                                            <div className="text-center mt-1 fr-step-subtext">
                                                 {step.subtext}
                                             </div>
                                         )}
 
                                         {idx === 0 && createdAt && (
-                                            <div className="text-center mt-1 fw-medium" style={{ color: '#64748b', fontSize: 11 }}>
+                                            <div className="text-center mt-1 fw-medium fr-step-subtext">
                                                 {formatDateTime(createdAt)}
                                             </div>
                                         )}
                                         {current && updatedAt && (
-                                            <div className="text-center mt-1 fw-medium" style={{ color: '#64748b', fontSize: 11 }}>
+                                            <div className="text-center mt-1 fw-medium fr-step-subtext">
                                                 {formatDateTime(updatedAt)}
                                             </div>
                                         )}
@@ -174,14 +174,9 @@ export default function ReviewProgressCard({
 
                                     {idx < displaySteps.length - 1 && (
                                         <div
-                                            className="flex-grow-1"
+                                            className="flex-grow-1 fr-step-connector"
                                             style={{
-                                                height: 2,
-                                                marginTop: 17,
                                                 backgroundColor: lineCompleted || lineActive ? getStatusColor(displaySteps[idx + 1].key) : '#e2e8f0',
-                                                zIndex: 1,
-                                                marginLeft: -36,
-                                                marginRight: -36
                                             }}
                                         />
                                     )}

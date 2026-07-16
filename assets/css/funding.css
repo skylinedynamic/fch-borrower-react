@@ -1003,3 +1003,33 @@
 @media (max-width: 768px) { .funding-missing-tooltip { padding: 10px; } .funding-missing-tooltip-header { font-size: 13px; } .funding-missing-tooltip-item, .funding-missing-tooltip-desc { font-size: 11.5px; } .tooltip-item-req { font-size: 10px; } .tooltip-item-title { font-size: 11.5px; } .funding-missing-tooltip-footer-info { font-size: 11px; } }
 .funding-wizard-btn-outline { border-radius: 4px !important; } .funding-wizard-btn-primary { border-radius: 4px !important; } .skeleton-line { border-radius: 4px !important; }
 .skeleton-step-circle { width: 32px; height: 32px; border-radius: 50% !important; }
+
+/* ── FundingDetail — Skeleton Loader ────────────────────────── */
+.fd-skel-panel { border: 1px solid #e8ecf0; border-radius: 4px; padding: 20px 22px; min-height: 220px; }
+.fd-skel-panel-sm { border: 1px solid #e8ecf0; border-radius: 4px; padding: 18px 22px; }
+.fd-skel-circle { width: 16px; height: 16px; border-radius: 50%; }
+.fd-skel-footer { border-top: 1px solid #e8ecf0; background: #fff; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; }
+
+/* ── FundingDetail — CTA Footer ─────────────────────────────── */
+.fd-cta-btn-disabled { height: 42px; opacity: 0.65; cursor: not-allowed; }
+.fd-cta-btn { height: 42px; }
+.fd-cta-arrow { font-size: 15px; }
+.fd-factors-col { display: flex; flex-direction: column; }
+
+/* ── FundingCard ─────────────────────────────────────────────── */
+.fc-card-wrap { position: relative; width: 100%; }
+.fc-badge-top-right { position: absolute; top: 14px; right: 14px; left: auto; }
+.fc-pill-wrap { align-self: flex-start; }
+.fc-icon-warning { color: #F59E0B; font-size: 18px; }
+.fc-icon-error { color: #EF4444; font-size: 15px; margin-top: 1px; }
+.fc-icon-info-sm { color: #3B82F6; font-size: 15px; margin-top: 1px; }
+.fc-icon-info-md { color: #3B82F6; font-size: 16px; margin-top: 1px; }
+.fc-icon-clock { color: #3B82F6; font-size: 18px; }
+.fc-icon-lock { color: #6B7280; font-size: 18px; }
+
+/* ── FundingRequestWizard ─────────────────────────────────────── */
+.fwiz-section-title { font-size: 13px; }
+.fwiz-icon-purple { background-color: #a855f7; }
+.fwiz-review-panel { max-width: 600px; }
+.fwiz-divider { width: 1px; height: 40px; background-color: #e2e8f0; }
+.fwiz-success-wrap { max-width: 480px; }

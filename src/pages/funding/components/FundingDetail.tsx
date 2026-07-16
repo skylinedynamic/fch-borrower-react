@@ -5,6 +5,7 @@ import { FUNDING_ICON_MAP, QUALIFY_REASONS_MAP, FUNDING_REVIEW_STATUS, ENGINE_ST
 import { getFundingColorStyles } from '../../../config/fundingColor';
 import { toast } from 'react-toastify';
 import { UncontrolledTooltip } from 'reactstrap';
+import '../../../../assets/css/funding.css';
 
 // ─── Icon resolver ────────────────────────────────────────────────────────────
 const resolveIcon = (icon: any): string => {
@@ -78,18 +79,11 @@ const FundingDetailLoader = () => (
                         {[0, 1, 2, 3].map(i => (
                             <div key={i} className={`col-md-3 col-6 p-3`} style={{ borderRight: i < 3 ? '1px solid #e8ecf0' : 'none' }}>
                                 <div className="skeleton-line mb-2" style={{ width: '60%', height: 10, borderRadius: 4 }} />
-                                <div className="skeleton-line" style={{ width: '80%', height: 14, borderRadius: 4 }} />
-                            </div>
-                        ))}
-                    </div>
-                    <div className="row g-3 mb-3">
-                        {[0, 1].map(i => (
-                            <div key={i} className="col-md-6">
-                                <div style={{ border: '1px solid #e8ecf0', borderRadius: 4, padding: '20px 22px', minHeight: 220 }}>
+                                <div className="fd-skel-panel">
                                     <div className="skeleton-line mb-4" style={{ width: 140, height: 14, borderRadius: 4 }} />
                                     {[90, 80, 85, 70].map((w, j) => (
                                         <div key={j} className="d-flex align-items-center gap-2 mb-3">
-                                            <div className="skeleton-line flex-shrink-0" style={{ width: 16, height: 16, borderRadius: '50%' }} />
+                                            <div className="skeleton-line flex-shrink-0 fd-skel-circle" />
                                             <div className="skeleton-line" style={{ width: `${w}%`, height: 12, borderRadius: 4 }} />
                                         </div>
                                     ))}
@@ -97,13 +91,28 @@ const FundingDetailLoader = () => (
                             </div>
                         ))}
                     </div>
-                    <div style={{ border: '1px solid #e8ecf0', borderRadius: 4, padding: '18px 22px' }}>
+                    <div className="row g-3 mb-3">
+                        {[0, 1].map(i => (
+                            <div key={i} className="col-md-6">
+                                <div className="fd-skel-panel">
+                                    <div className="skeleton-line mb-4" style={{ width: 140, height: 14, borderRadius: 4 }} />
+                                    {[90, 80, 85, 70].map((w, j) => (
+                                        <div key={j} className="d-flex align-items-center gap-2 mb-3">
+                                            <div className="skeleton-line flex-shrink-0 fd-skel-circle" />
+                                            <div className="skeleton-line" style={{ width: `${w}%`, height: 12, borderRadius: 4 }} />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="fd-skel-panel-sm">
                         <div className="skeleton-line mb-3" style={{ width: 100, height: 14, borderRadius: 4 }} />
                         <div className="skeleton-line mb-2" style={{ width: '100%', height: 12, borderRadius: 4 }} />
                         <div className="skeleton-line" style={{ width: '80%', height: 12, borderRadius: 4 }} />
                     </div>
                 </div>
-                <div style={{ borderTop: '1px solid #e8ecf0', background: '#fff', padding: '18px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div className="fd-skel-footer">
                     <div>
                         <div className="skeleton-line mb-2" style={{ width: 80, height: 14, borderRadius: 4 }} />
                         <div className="skeleton-line" style={{ width: 320, height: 12, borderRadius: 4 }} />
@@ -412,7 +421,7 @@ const FundingDetail = () => {
                                         });
 
                                         return (
-                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                            <div className="fd-factors-col">
                                                 {visibleFactors.map((f: any, i: number) => (
                                                     <ReadinessItem key={i} factor={f} isLast={i === visibleFactors.length - 1} />
                                                 ))}
@@ -451,20 +460,18 @@ const FundingDetail = () => {
                         <span id="btn-start-funding-request-wrapper" className="funding-detail-btn-wrapper">
                             {(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') ? (
                                 <span
-                                    className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4 disabled"
-                                    style={{ height: '42px', opacity: 0.65, cursor: 'not-allowed' }}
+                                    className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4 disabled fd-cta-btn-disabled"
                                 >
                                     Start Funding Request
-                                    <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />
+                                    <i className="ri-arrow-right-line fd-cta-arrow" />
                                 </span>
                             ) : (
                                 <Link
                                     to={`/funding/${id}/review`}
-                                    className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4"
-                                    style={{ height: '42px' }}
+                                    className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4 fd-cta-btn"
                                 >
                                     Start Funding Request
-                                    <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />
+                                    <i className="ri-arrow-right-line fd-cta-arrow" />
                                 </Link>
                             )}
                         </span>

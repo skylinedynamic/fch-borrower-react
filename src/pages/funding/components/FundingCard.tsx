@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FUNDING_ICON_MAP, FUNDING_REVIEW_STATUS, ENGINE_STATUS_LABELS, ENGINE_STATUS_VALUES, FACTOR_STATUS_VALUES } from '../../../config/funding';
 import { getFundingColorStyles } from '../../../config/fundingColor';
+import '../../../../assets/css/funding.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ReadinessFactor {
@@ -129,7 +130,7 @@ const MissingTooltip: React.FC<{ factors: ReadinessFactor[]; visible: boolean }>
     return (
         <div className="funding-missing-tooltip">
             <div className="funding-missing-tooltip-header">
-                <i className="ri-error-warning-fill" style={{ color: '#F59E0B', fontSize: 18 }} />
+                <i className="ri-error-warning-fill fc-icon-warning" />
                 <span>Missing Requirements</span>
             </div>
             
@@ -183,7 +184,7 @@ const MissingTooltip: React.FC<{ factors: ReadinessFactor[]; visible: boolean }>
                     return (
                         <li key={i} className="funding-missing-tooltip-item">
                             <div className="d-flex align-items-start gap-2">
-                                <i className="ri-close-circle-fill" style={{ color: '#EF4444', fontSize: 15, marginTop: 1 }} />
+                                <i className="ri-close-circle-fill fc-icon-error" />
                                 <div>
                                     <div className="tooltip-item-title">{displayLabel}: {(!actVal || actVal === 'Missing') ? 'Failed' : actVal}</div>
                                     {req !== undefined && req !== null && (
@@ -199,7 +200,7 @@ const MissingTooltip: React.FC<{ factors: ReadinessFactor[]; visible: boolean }>
             <div className="funding-missing-tooltip-divider" />
             
             <div className="funding-missing-tooltip-footer-info">
-                <i className="ri-information-fill" style={{ color: '#3B82F6', fontSize: 16, marginTop: 1 }} />
+                <i className="ri-information-fill fc-icon-info-md" />
                 <span>Update the missing requirement(s) above to unlock this funding option.</span>
             </div>
         </div>
@@ -212,7 +213,7 @@ const PendingTooltip: React.FC<{ visible: boolean }> = ({ visible }) => {
     return (
         <div className="funding-missing-tooltip">
             <div className="funding-missing-tooltip-header">
-                <i className="ri-time-fill" style={{ color: '#3B82F6', fontSize: 18 }} />
+                <i className="ri-time-fill fc-icon-clock" />
                 <span>Application Under Review</span>
             </div>
             
@@ -225,7 +226,7 @@ const PendingTooltip: React.FC<{ visible: boolean }> = ({ visible }) => {
             <ul className="funding-missing-tooltip-list">
                 <li className="funding-missing-tooltip-item">
                     <div className="d-flex align-items-start gap-2">
-                        <i className="ri-information-line" style={{ color: '#3B82F6', fontSize: 15, marginTop: 1 }} />
+                        <i className="ri-information-line fc-icon-info-sm" />
                         <div className="tooltip-item-title">Status: Awaiting Review</div>
                     </div>
                 </li>
@@ -234,7 +235,7 @@ const PendingTooltip: React.FC<{ visible: boolean }> = ({ visible }) => {
             <div className="funding-missing-tooltip-divider" />
             
             <div className="funding-missing-tooltip-footer-info">
-                <i className="ri-information-fill" style={{ color: '#3B82F6', fontSize: 16, marginTop: 1 }} />
+                <i className="ri-information-fill fc-icon-info-md" />
                 <span>Please wait for approval or rejection before reapplying.</span>
             </div>
         </div>
@@ -247,7 +248,7 @@ const EngineLockedTooltip: React.FC<{ visible: boolean }> = ({ visible }) => {
     return (
         <div className="funding-missing-tooltip">
             <div className="funding-missing-tooltip-header">
-                <i className="ri-lock-fill" style={{ color: '#6B7280', fontSize: 18 }} />
+                <i className="ri-lock-fill fc-icon-lock" />
                 <span>Locked</span>
             </div>
             
@@ -258,7 +259,7 @@ const EngineLockedTooltip: React.FC<{ visible: boolean }> = ({ visible }) => {
             <div className="funding-missing-tooltip-divider" />
             
             <div className="funding-missing-tooltip-footer-info">
-                <i className="ri-information-fill" style={{ color: '#3B82F6', fontSize: 16, marginTop: 1 }} />
+                <i className="ri-information-fill fc-icon-info-md" />
                 <span>Please wait until requirements are set up.</span>
             </div>
         </div>
@@ -317,7 +318,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
     const destination = hasMissing && !isEngineLocked ? `/funding/${id}` : (isValidUrl ? action_url : `/funding/${id}`);
 
     return (
-        <div style={{ position: 'relative', width: '100%' }}>
+        <div className="fc-card-wrap">
             <div
                 id={`funding-card-${id}`}
                 ref={cardRef}
@@ -344,12 +345,12 @@ const FundingCard: React.FC<FundingCardProps> = ({
             >
                 {/* ── Lock / Clock Badge (Top-Right as per Mockup) ──────────── */}
                 {(hasMissing || isEngineLocked) && (
-                    <div className="funding-card-missing-badge" style={{ position: 'absolute', top: '14px', right: '14px', left: 'auto' }}>
+                    <div className="funding-card-missing-badge fc-badge-top-right">
                         <i className="ri-lock-line" />
                     </div>
                 )}
                 {isPending && !hasMissing && !isEngineLocked && (
-                    <div className="funding-card-missing-badge funding-card-pending-badge" style={{ position: 'absolute', top: '14px', right: '14px', left: 'auto' }}>
+                    <div className="funding-card-missing-badge funding-card-pending-badge fc-badge-top-right">
                         <i className="ri-time-line" />
                     </div>
                 )}
@@ -380,7 +381,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
                         {amount_range && (
                             <span className="funding-card-amount">{amount_range}</span>
                         )}
-                        <div style={{ alignSelf: 'flex-start' }}>
+                        <div className="fc-pill-wrap">
                             <Pill
                                 label={displayLabel}
                                 bg={pillBg}

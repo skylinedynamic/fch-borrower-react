@@ -7,6 +7,7 @@ import { Dropdown } from 'primereact/dropdown'
 import StatisticsCardSkeleton from '../../components/Common/StatisticsCardSkeleton'
 import StatisticsCard from '../../components/Common/StatisticsCard'
 import { FUNDING_REVIEW_STATUS } from '../../config/funding'
+import '../../../assets/css/funding-requests.css'
 
 export default function FundingRequestList() {
     const navigate = useNavigate()

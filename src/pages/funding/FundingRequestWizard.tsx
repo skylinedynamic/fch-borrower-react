@@ -10,6 +10,7 @@ import { useDocumentTypes } from '../../modules/documents';
 import { FileManagerModal } from '../../components/FileManagerModal/FileManagerModal';
 import { submitFileSelection } from '../../modules/filemanager/services';
 import type { FileSystemItem } from '../../modules/filemanager/types';
+import '../../../assets/css/funding.css';
 import { getUser } from '../../lib/auth/auth';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../lib/query';
@@ -534,7 +535,7 @@ const FundingRequestWizard = () => {
                                                     <div className="rounded-circle d-flex align-items-center justify-content-center bg-primary funding-wizard-box-icon">
                                                         <i className="ri-building-line text-white fs-20"></i>
                                                     </div>
-                                                    <h6 className="fw-bold m-0 text-uppercase funding-wizard-letter-spacing" style={{ fontSize: '13px' }}>Business Information</h6>
+                                                    <h6 className="fw-bold m-0 text-uppercase funding-wizard-letter-spacing fwiz-section-title">Business Information</h6>
                                                 </div>
                                                 <div className="d-flex flex-column gap-3">
                                                     <div className="d-flex justify-content-between align-items-start">
@@ -572,7 +573,7 @@ const FundingRequestWizard = () => {
                                                     <div className="rounded-circle d-flex align-items-center justify-content-center bg-success funding-wizard-box-icon">
                                                         <i className="ri-money-dollar-circle-line text-white fs-20"></i>
                                                     </div>
-                                                    <h6 className="fw-bold m-0 text-uppercase funding-wizard-letter-spacing" style={{ fontSize: '13px' }}>Financial Overview</h6>
+                                                    <h6 className="fw-bold m-0 text-uppercase funding-wizard-letter-spacing fwiz-section-title">Financial Overview</h6>
                                                 </div>
                                                 <div className="d-flex flex-column gap-3">
                                                     <div className="d-flex justify-content-between align-items-start">
@@ -603,10 +604,10 @@ const FundingRequestWizard = () => {
                                         <div className="col-md-6">
                                             <div className="border rounded p-4 bg-white shadow-sm h-100">
                                                 <div className="d-flex align-items-center gap-3 mb-4">
-                                                    <div className="rounded-circle d-flex align-items-center justify-content-center bg-purple text-white funding-wizard-box-icon" style={{ backgroundColor: '#a855f7' }}>
+                                                    <div className="rounded-circle d-flex align-items-center justify-content-center funding-wizard-box-icon fwiz-icon-purple">
                                                         <i className="ri-map-pin-line fs-20"></i>
                                                     </div>
-                                                    <h6 className="fw-bold m-0 text-uppercase funding-wizard-letter-spacing" style={{ fontSize: '13px' }}>Business Address</h6>
+                                                    <h6 className="fw-bold m-0 text-uppercase funding-wizard-letter-spacing fwiz-section-title">Business Address</h6>
                                                 </div>
                                                 <div className="d-flex flex-column gap-3">
                                                     <div className="d-flex justify-content-between align-items-start">
@@ -635,7 +636,7 @@ const FundingRequestWizard = () => {
                                                     <div className="rounded-circle d-flex align-items-center justify-content-center bg-warning funding-wizard-box-icon">
                                                         <i className="ri-bank-card-line text-white fs-20"></i>
                                                     </div>
-                                                    <h6 className="fw-bold m-0 text-uppercase funding-wizard-letter-spacing" style={{ fontSize: '13px' }}>Funding Details</h6>
+                                                    <h6 className="fw-bold m-0 text-uppercase funding-wizard-letter-spacing fwiz-section-title">Funding Details</h6>
                                                 </div>
                                                 <div className="d-flex flex-column gap-3">
                                                     <div className="d-flex justify-content-between align-items-start">
@@ -765,7 +766,7 @@ const FundingRequestWizard = () => {
                                     <h3 className="fw-bold mb-3 funding-wizard-text-dark">Funding Request Submitted!</h3>
                                     <p className="text-muted mb-4 fs-15 px-md-5">Your request has been received and is now under<br />{reviewerName} underwriting review.</p>
 
-                                    <div className="rounded p-4 text-start mx-auto mb-4 funding-wizard-panel-bg-light" style={{ maxWidth: '600px' }}>
+                                    <div className="rounded p-4 text-start mx-auto mb-4 funding-wizard-panel-bg-light fwiz-review-panel">
                                         <h6 className="fw-bold mb-3 funding-wizard-primary-text">What Happens Next?</h6>
                                         <ul className="list-unstyled m-0 d-flex flex-column gap-3">
                                             <li className="d-flex align-items-start gap-3 fs-14 text-dark">
@@ -797,7 +798,7 @@ const FundingRequestWizard = () => {
                                                 <h6 className="fw-bold mb-0 text-dark fs-14">{submitDate}</h6>
                                             </div>
                                         </div>
-                                        <div style={{ width: '1px', height: '40px', backgroundColor: '#e2e8f0' }}></div>
+                                        <div className="fwiz-divider"></div>
                                         <div className="d-flex align-items-center gap-3">
                                             <div className="d-flex align-items-center justify-content-center rounded-circle funding-wizard-box-icon bg-light">
                                                 <i className="ri-shield-user-line text-secondary fs-18"></i>
@@ -857,7 +858,7 @@ const FundingRequestWizard = () => {
 
                             {/* Navigation Buttons (Step 4) */}
                             {currentStep === 4 && (
-                                <div className="d-flex flex-column align-items-center mx-auto mt-4" style={{ maxWidth: '480px' }}>
+                                <div className="d-flex flex-column align-items-center mx-auto mt-4 fwiz-success-wrap">
                                     <button
                                         className="btn w-100 mb-3 fw-bold text-white d-flex align-items-center justify-content-center gap-2 funding-wizard-btn-large"
                                         onClick={() => navigate('/funding-requests')}
