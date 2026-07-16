@@ -185,7 +185,7 @@ const MissingTooltip: React.FC<{ factors: ReadinessFactor[]; visible: boolean }>
                             <div className="d-flex align-items-start gap-2">
                                 <i className="ri-close-circle-fill" style={{ color: '#EF4444', fontSize: 15, marginTop: 1 }} />
                                 <div>
-                                    <div className="tooltip-item-title">{displayLabel}: {actVal ?? 'Missing'}</div>
+                                    <div className="tooltip-item-title">{displayLabel}: {(!actVal || actVal === 'Missing') ? 'Failed' : actVal}</div>
                                     {req !== undefined && req !== null && (
                                         <div className="tooltip-item-req">Required: {reqVal}</div>
                                     )}
@@ -307,8 +307,8 @@ const FundingCard: React.FC<FundingCardProps> = ({
     // Pill label & color (matching mockup yellow/brown for missing)
     const sec = getCSSVar('--secondary-color', '#1cbfca');
     const displayLabel = isEngineLocked ? ENGINE_STATUS_LABELS.LOCKED : (hasMissing ? ENGINE_STATUS_LABELS.MISSING_INFO : isPending ? ENGINE_STATUS_LABELS.UNDER_REVIEW : ENGINE_STATUS_LABELS.LIKELY_ELIGIBLE);
-    const pillBg    = isEngineLocked ? '#f3f4f6' : hasMissing ? '#fef3c7' : isPending ? '#f0f0ff' : `${sec}1a`;
-    const pillColor = isEngineLocked ? '#4b5563' : hasMissing ? '#78350f' : isPending ? '#4f52c8' : sec;
+    const pillBg    = isEngineLocked ? '#f3f4f6' : hasMissing ? '#fee2e2' : isPending ? '#f0f0ff' : `${sec}1a`;
+    const pillColor = isEngineLocked ? '#4b5563' : hasMissing ? '#ef4444' : isPending ? '#4f52c8' : sec;
 
     // Ensure action_url is a valid path or external URL, otherwise fallback to default
     const isValidUrl = action_url && (action_url.startsWith('/') || action_url.startsWith('http'));

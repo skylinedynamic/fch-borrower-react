@@ -53,12 +53,16 @@ const Funding = () => {
     const [activeType, setActiveType] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState('');
 
-    useEffect(() => { loadData(); }, []);
+    const [appliedType, setAppliedType] = useState<string>('all');
 
-    const loadData = async () => {
+    useEffect(() => { 
+        loadData('');
+    }, []);
+
+    const loadData = async (search: string = '') => {
         setLoading(true);
         try {
-            const res = await fetchBorrowerFunding();
+            const res = await fetchBorrowerFunding({ search });
             if (res.status) {
                 setData(res.data);
             } else {
@@ -74,33 +78,26 @@ const Funding = () => {
 
     if (loading) return <FundingLoader />;
 
-    const { groups = [], types = [], stats = {} } = data || {};
+    const { groups = [], stats = {} } = data || {};
 
-    const allTypes = [{ id: 'all', name: 'All Categories' }, ...types];
-    const hasFilter = searchQuery.trim() !== '' || activeType !== 'all';
-
-    // ── Search filter: only checks fields returned by the API
-    const matchesQuery = (seq: any, q: string) => {
-        if (!q) return true;
-        const lq = q.toLowerCase();
-        const str = (v: any) => typeof v === 'string' && v.toLowerCase().includes(lq);
-        if (str(seq.name) || str(seq.subtitle) || str(seq.amount_range) || str(seq.terms) || str(seq.description)) return true;
-        if (Array.isArray(seq.uses) && seq.uses.some((u: any) => String(u).toLowerCase().includes(lq))) return true;
-        return false;
-    };
+    const allTypes = [{ id: 'all', name: 'All Funding Groups' }, ...groups];
+    const hasFilter = searchQuery.trim() !== '' || appliedType !== 'all';
 
     const filteredGroups = groups
-        .map((group: any) => ({
-            ...group,
-            sequencings: group.sequencings.filter((seq: any) => {
-                const matchesTab = activeType === 'all' || seq.funding_type_id?.toString() === activeType;
-                const matchesSearch = matchesQuery(seq, searchQuery.trim());
-                return matchesTab && matchesSearch;
-            }),
-        }))
-        .filter((g: any) => g.sequencings.length > 0);
+        .filter((group: any) => appliedType === 'all' || group.id?.toString() === appliedType)
+        .filter((g: any) => g.sequencings && g.sequencings.length > 0);
 
-    const clearAll = () => { setSearchQuery(''); setActiveType('all'); };
+    const applyFilters = () => {
+        setAppliedType(activeType);
+        loadData(searchQuery.trim());
+    };
+
+    const clearAll = () => { 
+        setSearchQuery(''); 
+        setActiveType('all'); 
+        setAppliedType('all');
+        loadData(''); 
+    };
 
     return (
         <div className="page-content funding-page">
@@ -166,10 +163,10 @@ const Funding = () => {
                                                     <CustomDropdown
                                                         options={allTypes.map(t => ({ id: t.id.toString(), name: t.name }))}
                                                         value={activeType}
-                                                        onChange={(val) => { setActiveType(val.toString()); setSearchQuery(''); }}
+                                                        onChange={(val) => { setActiveType(val.toString()); }}
                                                         optionLabel="name"
                                                         optionValue="id"
-                                                        placeholder="All Categories"
+                                                        placeholder="All Funding Groups"
                                                         className="border-0 rounded-2 fs-13 vendor-filter-bg h-100 w-100"
                                                     />
                                                 </div>
@@ -181,6 +178,7 @@ const Funding = () => {
                                     <div className="d-flex gap-2 flex-shrink-0">
                                         <button
                                             className="btn btn-warning d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13 shadow-sm text-white"
+                                            onClick={applyFilters}
                                         >
                                             <i className="ri-equalizer-fill align-bottom"></i> Filters
                                         </button>

@@ -1,7 +1,7 @@
 import { apiClient } from '../../lib/http';
 
-export const fetchBorrowerFunding = async () => {
-    const response = await apiClient.get('/borrower/funding');
+export const fetchBorrowerFunding = async (params: any = {}) => {
+    const response = await apiClient.get('/borrower/funding', { params });
     return response.data;
 };
 

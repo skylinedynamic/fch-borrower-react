@@ -150,7 +150,7 @@ export const ENGINE_STATUS_LABELS = {
     ELIGIBLE_NOW: 'Eligible Now',
     LIKELY_ELIGIBLE: 'Likely Eligible',
     MANUAL_REVIEW: 'Manual Review Required',
-    MISSING_INFO: 'Missing Info',
+    MISSING_INFO: 'Failed',
     UNDER_REVIEW: 'Under Review',
     LOCKED: 'Locked',
 };
