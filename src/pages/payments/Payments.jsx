@@ -53,6 +53,13 @@ export default function Payments() {
 
     useEffect(() => {
         initFilters();
+
+        // Add class to body to prevent global scroll
+        document.body.classList.add('table-page-fit-active');
+
+        return () => {
+            document.body.classList.remove('table-page-fit-active');
+        };
     }, []);
 
     const loadStats = async (params = {}) => {
@@ -162,11 +169,11 @@ export default function Payments() {
     };
 
     return (
-        <div className="page-content payments-page">
+        <div className="page-content page-content-fit">
 
             <div className="container-fluid">
                 {/* Header */}
-                <div className="row pb-1 page-subheader-sticky bg-body">
+                <div className="row pb-1 mobile-sticky-header">
                     <div className="col-12">
                         <div className="d-flex align-items-center justify-content-between flex-row py-2">
                             <div className="flex-grow-1">
@@ -188,7 +195,7 @@ export default function Payments() {
                 <PaymentStats stats={stats} loading={statsLoading} />
 
                 {/* Filters and Table Section */}
-                <div className="row mt-4">
+                <div className="row row-table-fit">
                     <div className="col-lg-12">
                         <div className="card">
                             <div className="card-body list-fluid-card">

@@ -15,7 +15,9 @@ import { useAuthStore } from './store/auth'
 import Profile from '../src/pages/profile/profile.tsx'
 import MyApplication from '../src/pages/myapplication/MyApplication.tsx'
 import Invoices from '../src/pages/invoices/Invoices.jsx'
+import InvoiceDetails from '../src/pages/invoices/InvoiceDetails.jsx'
 import Payments from '../src/pages/payments/Payments.jsx'
+import PaymentDetails from '../src/pages/payments/PaymentDetails.jsx'
 import Appointments from '../src/pages/appointment/Appointments.tsx'
 import ChangePassword from '../src/pages/settings/ChangePassword.jsx'
 import CreditOverview from '../src/pages/credit-builder/creditoverview/CreditOverview.tsx'
@@ -117,7 +119,9 @@ export default function App() {
             <Route index element={<Dashboard />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="invoices" element={<Invoices />} />
+            <Route path="invoices/:id" element={<InvoiceDetails />} />
             <Route path="payments" element={<Payments />} />
+            <Route path="payments/:id" element={<PaymentDetails />} />
             <Route path="change-password" element={<ChangePassword />} />
 
             <Route path="pre-qualification" element={<PreQualification />} />

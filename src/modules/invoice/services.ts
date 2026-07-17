@@ -41,15 +41,13 @@ export const fetchUnpaidInvoices = async (): Promise<UnpaidInvoiceResponse> => {
 };
 
 export const fetchInvoiceDetails = async (id: string | number) => {
-    const { data } = await apiClient.get(`/common/invoices/${id}`);
+    const { data } = await apiClient.get(`/borrower/invoice/${id}`);
     return data;
 };
 
 export const downloadInvoice = async (id: string | number) => {
-    const response = await apiClient.get(`/common/invoices/${id}/download`, {
-        responseType: 'blob'
-    });
-    return response.data;
+    const { data } = await apiClient.get(`/borrower/invoice/${id}/download`);
+    return data;
 };
 
 export const sendInvoice = async (id: string | number) => {
