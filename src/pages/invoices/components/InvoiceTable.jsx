@@ -93,7 +93,7 @@ export default function InvoiceTable({
                 </button>
                 {isNotPaid && (
                     <button
-                        className="btn btn-primary btn-sm waves-effect waves-light fw-medium border-0"
+                        className="btn btn-primary btn-sm waves-effect waves-light fw-medium border-0 text-nowrap"
                         onClick={(e) => {
                             e.stopPropagation();
                             handlePayClick(rowData);
@@ -141,7 +141,7 @@ export default function InvoiceTable({
                 <Column field="created_at" header="Invoice Date" sortable filter showFilterMatchModes filterPlaceholder="Search by date" style={{ minWidth: '120px' }}></Column>
                 <Column field="payment_amount" header="Amount" body={amountBodyTemplate} sortable filter showFilterMatchModes filterPlaceholder="Search by amount" style={{ minWidth: '120px' }}></Column>
                 <Column field="status" header="Status" body={statusBodyTemplate} sortable filter filterElement={statusFilterElement} showFilterMatchModes={false} style={{ minWidth: '150px' }}></Column>
-                <Column header="Action" body={actionBodyTemplate} style={{ minWidth: '120px' }} alignHeader="center" align="center"></Column>
+                <Column header="Action" body={actionBodyTemplate} style={{ minWidth: '150px' }} alignHeader="center" align="center"></Column>
             </DataTable>
 
             <InvoicePaymentModal
