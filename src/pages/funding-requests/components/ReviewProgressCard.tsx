@@ -1,4 +1,5 @@
 import React from 'react';
+import '../../../../assets/css/funding-requests.css';
 import { 
     FUNDING_REVIEW_STATUS, 
     getFundingReviewProgress, 
@@ -22,13 +23,27 @@ export default function ReviewProgressCard({
 
     const progressPercentage = getFundingReviewProgress(status);
     const isRejected = status === FUNDING_REVIEW_STATUS.REJECTED;
-    const timelineSteps = FUNDING_REVIEW_TIMELINE_STEPS;
+    const isCanceled = status === FUNDING_REVIEW_STATUS.CANCELED;
+    const isErrorState = isRejected || isCanceled;
     const guidelineCards = FUNDING_REVIEW_GUIDELINE_CARDS;
+    
+    const terminalStatuses = [FUNDING_REVIEW_STATUS.APPROVED, FUNDING_REVIEW_STATUS.REJECTED, FUNDING_REVIEW_STATUS.CANCELED];
+    const isCurrentTerminal = terminalStatuses.includes(status);
+    const terminalKey = isCurrentTerminal ? status : FUNDING_REVIEW_STATUS.APPROVED;
 
-    let currentStatusIndex = timelineSteps.findIndex(
-        (x) => x.key === status
-    );
+    const displaySteps = FUNDING_REVIEW_TIMELINE_STEPS.filter(step => {
+        if (terminalStatuses.includes(step.key)) {
+            return step.key === terminalKey;
+        }
+        // If it's an error state, we don't show Accepted or In Progress
+        // because we don't know the exact history and it's confusing to see them.
+        if (isErrorState && (step.key === FUNDING_REVIEW_STATUS.ACCEPTED || step.key === FUNDING_REVIEW_STATUS.IN_PROGRESS)) {
+            return false;
+        }
+        return true;
+    });
 
+    let currentStatusIndex = displaySteps.findIndex((x) => x.key === status);
     if (currentStatusIndex === -1) {
         currentStatusIndex = 1;
     }
@@ -59,27 +74,26 @@ export default function ReviewProgressCard({
                 <div className="d-flex align-items-center justify-content-between">
                     <div className="d-flex align-items-center">
                         <div
-                            className="d-flex align-items-center justify-content-center rounded-3"
-                            style={{ width: 48, height: 48, background: '#f8fafc', color: '#1e293b', marginRight: 16 }}
+                            className="d-flex align-items-center justify-content-center rounded-3 fr-progress-icon-badge"
                         >
                             <i className="ri-line-chart-line fs-4"></i>
                         </div>
                         <div>
-                            <h5 className="card-title mb-1 fs-16 fw-bold" style={{ color: '#0f172a' }}>Review Progress</h5>
+                            <h5 className="card-title mb-1 fs-16 fw-bold fr-progress-title">Review Progress</h5>
                             <p className="mb-0 text-muted fs-13">Track the progress of this funding request</p>
                         </div>
                     </div>
 
-                    <div className="d-flex align-items-center position-relative" style={{ width: 76, height: 76 }}>
-                        <svg width="76" height="76" style={{ transform: 'rotate(-90deg)' }}>
+                    <div className="d-flex align-items-center position-relative fr-progress-ring-wrap">
+                        <svg width="76" height="76" className="fr-progress-ring-svg">
                             <circle cx="38" cy="38" r="34" stroke="#f1f5f9" strokeWidth="6" fill="none" />
-                            <circle cx="38" cy="38" r="34" stroke={isRejected ? '#ef4444' : progressPercentage === 100 ? '#22c55e' : '#2563eb'} strokeWidth="6" fill="none"
+                            <circle cx="38" cy="38" r="34" stroke={isErrorState ? '#ef4444' : progressPercentage === 100 ? '#22c55e' : '#2563eb'} strokeWidth="6" fill="none"
                                 strokeDasharray="213" strokeDashoffset={213 - (213 * progressPercentage / 100)}
                                 strokeLinecap="round" />
                         </svg>
                         <div className="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center">
-                            <span className="fw-bolder text-dark" style={{ fontSize: '15px', lineHeight: '1' }}>{progressPercentage}%</span>
-                            <span className="fw-bold text-muted" style={{ fontSize: '10px', marginTop: '2px' }}>Complete</span>
+                            <span className="fw-bolder text-dark fr-progress-pct">{progressPercentage}%</span>
+                            <span className="fw-bold text-muted fr-progress-complete-label">Complete</span>
                         </div>
                     </div>
                 </div>
@@ -89,25 +103,27 @@ export default function ReviewProgressCard({
 
                 {/* Timeline */}
                 <div className="px-4 pb-4 overflow-x-auto">
-                    <div className="d-flex w-100 position-relative" style={{ minWidth: 500 }}>
-                        {timelineSteps.map((step, idx) => {
-                            const completed = isRejected ? idx < 3 : idx < currentStatusIndex;
+                    <div className="d-flex w-100 position-relative fr-timeline-track">
+                        {displaySteps.map((step, idx) => {
+                            const completed = idx < currentStatusIndex;
                             const current = idx === currentStatusIndex;
-                            const future = isRejected ? (idx >= 3 && !current) : idx > currentStatusIndex;
+                            const future = idx > currentStatusIndex;
 
                             let iconClass = step.icon;
                             if (completed) iconClass = 'ri-check-line';
+                            if (isErrorState && current) iconClass = isCanceled ? 'ri-stop-circle-line' : 'ri-close-line';
 
-                            const lineCompleted = isRejected ? idx < 2 : idx < currentStatusIndex - 1;
-                            const lineActive = isRejected ? false : idx === currentStatusIndex - 1;
+                            const lineCompleted = idx < currentStatusIndex - 1;
+                            const lineActive = idx === currentStatusIndex - 1;
 
                             const getStatusColor = (key: string) => {
                                 if (key === 'SUBMITTED') return '#16a34a';
                                 if (key === FUNDING_REVIEW_STATUS.PENDING) return '#10b981';
                                 if (key === FUNDING_REVIEW_STATUS.IN_PROGRESS) return '#3b82f6';
-                                if (key === FUNDING_REVIEW_STATUS.ACCEPTED) return '#f59e0b';
-                                if (key === FUNDING_REVIEW_STATUS.APPROVED) return '#22c55e';
+                                if (key === FUNDING_REVIEW_STATUS.ACCEPTED) return '#06B6D4';
+                                if (key === FUNDING_REVIEW_STATUS.APPROVED) return '#10b981';
                                 if (key === FUNDING_REVIEW_STATUS.REJECTED) return '#ef4444';
+                                if (key === FUNDING_REVIEW_STATUS.CANCELED) return '#ef4444';
                                 return '#3b82f6';
                             };
 
@@ -115,7 +131,7 @@ export default function ReviewProgressCard({
 
                             return (
                                 <React.Fragment key={step.key}>
-                                    <div className="d-flex flex-column align-items-center position-relative" style={{ width: 100, flexShrink: 0 }}>
+                                    <div className="d-flex flex-column align-items-center position-relative fr-step-col">
                                         <div
                                             className="rounded-circle d-flex align-items-center justify-content-center"
                                             style={{
@@ -139,33 +155,28 @@ export default function ReviewProgressCard({
                                         </div>
 
                                         {step.subtext && current && (
-                                            <div className="text-center mt-1" style={{ color: '#64748b', fontSize: 11 }}>
+                                            <div className="text-center mt-1 fr-step-subtext">
                                                 {step.subtext}
                                             </div>
                                         )}
 
                                         {idx === 0 && createdAt && (
-                                            <div className="text-center mt-1 fw-medium" style={{ color: '#64748b', fontSize: 11 }}>
+                                            <div className="text-center mt-1 fw-medium fr-step-subtext">
                                                 {formatDateTime(createdAt)}
                                             </div>
                                         )}
                                         {current && updatedAt && (
-                                            <div className="text-center mt-1 fw-medium" style={{ color: '#64748b', fontSize: 11 }}>
+                                            <div className="text-center mt-1 fw-medium fr-step-subtext">
                                                 {formatDateTime(updatedAt)}
                                             </div>
                                         )}
                                     </div>
 
-                                    {idx < timelineSteps.length - 1 && (
+                                    {idx < displaySteps.length - 1 && (
                                         <div
-                                            className="flex-grow-1"
+                                            className="flex-grow-1 fr-step-connector"
                                             style={{
-                                                height: 2,
-                                                marginTop: 17,
-                                                backgroundColor: lineCompleted || lineActive ? getStatusColor(timelineSteps[idx + 1].key) : '#e2e8f0',
-                                                zIndex: 1,
-                                                marginLeft: -36,
-                                                marginRight: -36
+                                                backgroundColor: lineCompleted || lineActive ? getStatusColor(displaySteps[idx + 1].key) : '#e2e8f0',
                                             }}
                                         />
                                     )}

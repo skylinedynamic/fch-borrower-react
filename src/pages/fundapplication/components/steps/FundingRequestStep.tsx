@@ -192,6 +192,7 @@ export default function FundingRequestStep({
           optionValue="value"
           placeholder="Select purpose of funds"
           className={`w-100 ${hasError('purpose_of_funds') ? 'is-invalid' : ''}`}
+          searchable
         />
         {hasError('purpose_of_funds') && (
           <div className="invalid-feedback d-block">{getFieldError('purpose_of_funds')}</div>
@@ -226,7 +227,7 @@ export default function FundingRequestStep({
           optionValue="value"
           placeholder="Select approved funding"
           className={`w-100 ${hasError('approved_funding') ? 'is-invalid' : ''}`}
-          searchable
+          disabled
         />
         {hasError('approved_funding') && (
           <div className="invalid-feedback d-block">{getFieldError('approved_funding')}</div>

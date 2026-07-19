@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-toastify'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 // Components
 import BusinessInformationStep from './components/steps/BusinessInformationStep'
@@ -15,7 +15,7 @@ import CoBorrowerModal from './components/shared/CoBorrowerModal'
 
 // Hooks
 import { useCoBorrowers } from './hooks/useCoBorrowers'
-import { FUNDING_PURPOSE_OTHER } from '../../data/profile'
+import { FUNDING_PURPOSE_OTHER, purposeOfFundingOptions } from '../../data/profile'
 import { useFundingRequest, useFundingApplicationDocuments } from '../../modules/funding-application/queries'
 
 // Types & Utils
@@ -140,18 +140,48 @@ export default function FundApplication() {
   })
 
   const location = useLocation()
+  const navigate = useNavigate()
+
+  // Guard: redirect to /funding-requests if the page was accessed directly
+  // (without any router state — direct URL access always has null state)
+  useEffect(() => {
+    if (!location.state) {
+      navigate('/funding-requests', { replace: true });
+    }
+  }, [])
 
   // Initialize funding state from location.state
   useEffect(() => {
     const state = location.state as any;
     if (state && (state.purpose || state.approved_funding || state.requested_amount || state.funding_type)) {
-      setFunding(prev => ({
-        ...prev,
-        purpose: state.purpose || prev.purpose,
-        approvedFunding: state.approved_funding || prev.approvedFunding,
-        requestedAmount: state.requested_amount || prev.requestedAmount,
-        fundingType: state.funding_type || prev.fundingType,
-      }))
+      setFunding(prev => {
+        // Try to find an exact or partial match for the purpose
+        let matchedPurpose = state.purpose || prev.purpose;
+        if (state.purpose) {
+          const exactMatch = purposeOfFundingOptions.find(opt => opt.value === state.purpose);
+          if (exactMatch) {
+            matchedPurpose = exactMatch.value;
+          } else {
+            const lowerPassed = state.purpose.toLowerCase();
+            const partialMatch = purposeOfFundingOptions.find(opt => 
+              opt.value.toLowerCase().includes(lowerPassed) || lowerPassed.includes(opt.value.toLowerCase())
+            );
+            if (partialMatch) {
+              matchedPurpose = partialMatch.value;
+            } else if (state.purpose === 'Working Capital') {
+              matchedPurpose = 'Working Capital (General Use)';
+            }
+          }
+        }
+        
+        return {
+          ...prev,
+          purpose: matchedPurpose,
+          approvedFunding: state.approved_funding || prev.approvedFunding,
+          requestedAmount: state.requested_amount || prev.requestedAmount,
+          fundingType: state.funding_type || prev.fundingType,
+        };
+      })
     }
   }, [location.state])
 

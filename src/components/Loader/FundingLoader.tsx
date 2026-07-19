@@ -10,7 +10,7 @@ const SkeletonCard = () => (
             gap: 14,
             background: '#fff',
             border: '1px solid #e8ecf0',
-            borderRadius: 12,
+            borderRadius: 4,
             padding: '16px 18px',
             width: '100%',
             minHeight: 110,
@@ -19,7 +19,7 @@ const SkeletonCard = () => (
         {/* Icon placeholder */}
         <div
             className="skeleton-line flex-shrink-0"
-            style={{ width: 44, height: 44, borderRadius: 10, alignSelf: 'center' }}
+            style={{ width: 44, height: 44, borderRadius: 12, alignSelf: 'center' }}
         />
 
         {/* Text content — FIXED heights so all cards are identical */}

@@ -10,6 +10,7 @@ import { toast } from 'react-toastify'
 import FileUploadModal from '../../components/Common/Modal/FileUploadModal'
 import ReviewProgressCard from './components/ReviewProgressCard'
 import '../../components/Common/StatisticsCardSkeleton.css'
+import '../../../assets/css/funding-requests.css'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const formatDate = (d: string) =>
@@ -72,12 +73,16 @@ const getActivityIcon = (logTypeRaw: string, isSuccess = false) => {
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 const StatusBadge = ({ status }: { status: string }) => {
-    if (status === FUNDING_REVIEW_STATUS.APPROVED || status === 'Accepted')
+    if (status === FUNDING_REVIEW_STATUS.APPROVED)
         return <span className="badge bg-success-subtle text-success fs-12">{status}</span>
+    if (status === FUNDING_REVIEW_STATUS.ACCEPTED)
+        return <span className="badge bg-info-subtle text-info fs-12">{status}</span>
     if (status === FUNDING_REVIEW_STATUS.REJECTED)
         return <span className="badge bg-danger-subtle text-danger fs-12">Rejected</span>
-    if (status === 'In Progress')
-        return <span className="badge bg-info-subtle text-info fs-12">In Progress</span>
+    if (status === FUNDING_REVIEW_STATUS.CANCELED)
+        return <span className="badge bg-secondary-subtle text-secondary fs-12">Canceled</span>
+    if (status === FUNDING_REVIEW_STATUS.IN_PROGRESS)
+        return <span className="badge bg-primary-subtle text-primary fs-12">In Progress</span>
     return <span className="badge bg-warning-subtle text-warning fs-12">Pending</span>
 }
 
@@ -277,15 +282,12 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
                     </div>
 
                     {/* Smooth transition expanded content details */}
-                    <div
+                    <div className="fr-accordion-panel"
                         style={{
-                            display: 'grid',
                             gridTemplateRows: expanded ? '1fr' : '0fr',
-                            transition: 'grid-template-rows 0.3s ease',
-                            overflow: 'hidden',
                         }}
                     >
-                        <div style={{ overflow: 'hidden', paddingLeft: '2px' }}>
+                        <div className="fr-accordion-panel-inner" style={{ overflow: 'hidden', paddingLeft: '2px' }}>
                             <div className={isFirst || isApprove ? "mt-3 pt-3 border-top border-light-subtle" : "mt-2"}>
                                 {isFirst ? (
                                     /* Request details layout (Adapted for sidebar width) */
@@ -375,15 +377,15 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
                                                     const fileName = file.name || file;
                                                     return (
                                                         <div key={fIdx} className="col-auto">
-                                                            <div className="d-flex align-items-center border border-dashed p-2 rounded position-relative bg-white" style={{ minWidth: '150px' }}>
+                                                            <div className="d-flex align-items-center border border-dashed p-2 rounded position-relative bg-white fr-doc-item" style={{ minWidth: '120px' }}>
                                                                 <div className="flex-shrink-0 me-2">
                                                                     <i className="ri-image-line fs-18 text-primary"></i>
                                                                 </div>
                                                                 <div className="flex-grow-1">
-                                                                    <h6 className="mb-0 fs-12 text-truncate" style={{ maxWidth: '180px' }}>
+                                                                    <h6 className="mb-0 fs-12 text-truncate fr-doc-filename">
                                                                         <a
                                                                             href="#"
-                                                                            className="stretched-link text-body"
+                                                                            className="stretched-link text-body fr-doc-link"
                                                                             onClick={(e) => {
                                                                                 e.preventDefault();
                                                                                 handleDownload(activity.id, file);
@@ -553,14 +555,14 @@ export default function FundingRequestDetailPage() {
                                             <div className="d-flex justify-content-between align-items-start position-relative px-3">
                                                 {[1, 2, 3, 4, 5].map((_, idx) => (
                                                     <React.Fragment key={idx}>
-                                                        <div className="d-flex flex-column align-items-center position-relative" style={{ width: 100, flexShrink: 0 }}>
+                                                        <div className="d-flex flex-column align-items-center position-relative fr-detail-step-col">
                                                             <div className="mb-2"><Skeleton w={36} h={36} rounded /></div>
                                                             <div className="mb-1"><Skeleton w={70} h={14} /></div>
                                                             <div className="mt-1"><Skeleton w={90} h={10} /></div>
                                                             <div className="mt-1"><Skeleton w={110} h={10} /></div>
                                                         </div>
                                                         {idx < 4 && (
-                                                            <div className="flex-grow-1" style={{ height: 2, marginTop: 17, backgroundColor: '#f1f5f9', marginLeft: -36, marginRight: -36 }}></div>
+                                                            <div className="flex-grow-1 fr-detail-step-connector"></div>
                                                         )}
                                                     </React.Fragment>
                                                 ))}
@@ -740,7 +742,7 @@ export default function FundingRequestDetailPage() {
                                     </nav>
                                 </div>
                                 <div className="mt-0">
-                                    <Link to="/funding-requests" className="btn text-white px-3 shadow-none" style={{ backgroundColor: '#022144', borderColor: '#022144', fontSize: '14px' }}>
+                                    <Link to="/funding-requests" className="btn fr-back-btn px-3 shadow-none">
                                         &larr; Back
                                     </Link>
                                 </div>
@@ -777,13 +779,32 @@ export default function FundingRequestDetailPage() {
                                                     <p className="fw-semibold text-dark mb-0">{review.reviewer.name}</p>
                                                 </div>
                                             )}
-                                            {review.status === FUNDING_REVIEW_STATUS.REJECTED && review.reject_reason && (
+                                            {review.status === FUNDING_REVIEW_STATUS.REJECTED && (
                                                 <div className="col-12">
                                                     <div className="alert alert-danger border-0 mb-0">
                                                         <p className="mb-0 fs-13">
-                                                            <span className="fw-bold">Reason for Rejection:</span>{' '}
-                                                            {review.reject_reason}
+                                                            <span className="fw-bold">Status:</span> Your funding request was rejected.
+                                                            {review.reject_reason && (
+                                                                <>
+                                                                    <br />
+                                                                    <span className="fw-bold mt-1 d-inline-block">Reason for Rejection:</span>{' '}
+                                                                    {review.reject_reason}
+                                                                </>
+                                                            )}
                                                         </p>
+                                                        <div className="mt-3">
+                                                            <Link 
+                                                                to={`/funding/${review.funding_sequence_id || review.funding_sequence?.id}/review`}
+                                                                state={{
+                                                                    purpose: review.use_of_funds,
+                                                                    amount: review.requested_amount
+                                                                }}
+                                                                className="btn btn-danger btn-sm fw-medium px-4 d-inline-flex align-items-center"
+                                                            >
+                                                                Update Application
+                                                                <i className="ri-arrow-right-line ms-2"></i>
+                                                            </Link>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}
@@ -796,12 +817,13 @@ export default function FundingRequestDetailPage() {
                                                         </p>
                                                         <div className="mt-3">
                                                             <Link 
-                                                                to="/fund-application" 
+                                                                to="/fund-application"
                                                                 state={{
-                                                                    purpose: review.use_of_funds === 'Working Capital' ? 'Working Capital (General Use)' : review.use_of_funds,
+                                                                    purpose: review.use_of_funds,
+                                                                    amount: review.requested_amount,
                                                                     requested_amount: review.requested_amount,
                                                                     approved_funding: review.funding_sequence?.name || review.funding_type,
-                                                                    funding_type: review.funding_type
+                                                                    funding_type: review.funding_type || review.funding_sequence?.name
                                                                 }}
                                                                 className="btn btn-success btn-sm fw-medium px-4 d-inline-flex align-items-center"
                                                             >
@@ -928,7 +950,7 @@ export default function FundingRequestDetailPage() {
                                                                                 <i className={config.icon}></i>
                                                                             </div>
                                                                         </div>
-                                                                        <a href="#" onClick={handleDownload} className="text-body fw-medium text-truncate d-block" style={{ maxWidth: 260 }}>
+                                                                        <a href="#" onClick={handleDownload} className="text-body fw-medium text-truncate d-block fr-doc-link">
                                                                             {doc.document_name}
                                                                         </a>
                                                                     </div>
@@ -943,7 +965,7 @@ export default function FundingRequestDetailPage() {
                                                                 </td>
                                                                 <td className="text-end">
                                                                     <div className="d-flex gap-2 justify-content-end">
-                                                                        <button className="btn btn-sm btn-light border d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }} onClick={handleDownload} title="Download">
+                                                                        <button className="btn btn-sm btn-light border d-flex align-items-center justify-content-center fr-download-btn" onClick={handleDownload} title="Download">
                                                                             <i className="ri-download-2-line fs-14"></i>
                                                                         </button>
                                                                     </div>
@@ -967,7 +989,7 @@ export default function FundingRequestDetailPage() {
 
                         {/* ── Right Column: Activity Log Timeline Sidebar ── */}
                         <div className="col-lg-4">
-                            <div className="card border-0 shadow-sm rounded-3">
+                            <div className="card border-0 shadow-sm rounded-3 sticky-top activity-sidebar-sticky">
                                 {/* Card Header */}
                                 <div className="card-header px-3 py-2 align-items-center justify-content-between d-flex flex-column flex-sm-row gap-2">
                                     <div className="d-flex align-items-center gap-2">
@@ -977,21 +999,13 @@ export default function FundingRequestDetailPage() {
                                 </div>
 
                                 {/* Sub-header Filter Tabs */}
-                                <div className="card-body px-3 pt-3 pb-3 activity-scroll-container" style={{ maxHeight: '600px', overflowY: 'auto', overflowX: 'hidden' }}>
+                                <div className="card-body px-3 pt-3 pb-3 activity-scroll-container fr-activity-scroll" style={{ maxHeight: '600px', overflowY: 'auto', overflowX: 'hidden' }}>
 
                                     {/* Activity Logs Timeline */}
                                     <div className="timeline-container position-relative px-0" ref={activityRef}>
                                         {/* Vertical connecting line */}
                                         <div
-                                            className="timeline-vertical-line position-absolute"
-                                            style={{
-                                                left: 18,
-                                                top: 10,
-                                                bottom: 10,
-                                                width: 2,
-                                                borderLeft: '2px dashed #e9ecef',
-                                                zIndex: 1
-                                            }}
+                                            className="timeline-vertical-line position-absolute fr-timeline-vline"
                                         />
 
                                         {actLoading ? (

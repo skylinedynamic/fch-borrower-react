@@ -55,7 +55,8 @@ export const FUNDING_REVIEW_STATUS = {
     IN_PROGRESS: 'In Progress',
     APPROVED: 'Approved',
     ACCEPTED: 'Accepted',
-    REJECTED: 'Rejected'
+    REJECTED: 'Rejected',
+    CANCELED: 'Canceled'
 };
 
 export const FUNDING_REVIEW_STATUS_COLORS: Record<string, string> = {
@@ -64,6 +65,7 @@ export const FUNDING_REVIEW_STATUS_COLORS: Record<string, string> = {
     [FUNDING_REVIEW_STATUS.ACCEPTED]: '#06B6D4',   // Teal/Cyan
     [FUNDING_REVIEW_STATUS.APPROVED]: '#10B981',   // Green
     [FUNDING_REVIEW_STATUS.REJECTED]: '#EF4444',   // Red
+    [FUNDING_REVIEW_STATUS.CANCELED]: '#EF4444',   // Red
 };
 
 export const FUNDING_APPLICATION_STATUS = {
@@ -148,7 +150,7 @@ export const ENGINE_STATUS_LABELS = {
     ELIGIBLE_NOW: 'Eligible Now',
     LIKELY_ELIGIBLE: 'Likely Eligible',
     MANUAL_REVIEW: 'Manual Review Required',
-    MISSING_INFO: 'Missing Info',
+    MISSING_INFO: 'Failed',
     UNDER_REVIEW: 'Under Review',
     LOCKED: 'Locked',
 };
@@ -178,7 +180,7 @@ export const FACTOR_STATUS_VALUES = {
     GOOD: 'good',
     STRONG: 'strong',
     ELIGIBLE: 'eligible',
-    MISSING: 'missing',
+    FAILED: 'failed',
     RESTRICTED: 'restricted',
     FAIR: 'fair',
     WEAK: 'weak',
@@ -193,7 +195,7 @@ export const FACTOR_ICON_STYLES: Record<string, { icon: string, color: string }>
     [FACTOR_STATUS_VALUES.GOOD]: { icon: 'ri-checkbox-circle-fill', color: '#10b981' },
     [FACTOR_STATUS_VALUES.ELIGIBLE]: { icon: 'ri-checkbox-circle-fill', color: '#10b981' },
     [FACTOR_STATUS_VALUES.STRONG]: { icon: 'ri-star-fill', color: '#3b82f6' },
-    [FACTOR_STATUS_VALUES.MISSING]: { icon: 'ri-close-circle-fill', color: '#ef4444' },
+    [FACTOR_STATUS_VALUES.FAILED]: { icon: 'ri-close-circle-fill', color: '#ef4444' },
     [FACTOR_STATUS_VALUES.RESTRICTED]: { icon: 'ri-close-circle-fill', color: '#ef4444' },
 };
 
@@ -208,7 +210,7 @@ export const READINESS_BADGE_STYLES: Record<string, { icon: string; bg: string; 
     [FACTOR_STATUS_VALUES.GOOD]: { icon: 'ri-checkbox-circle-fill', bg: '#e8f9f0', color: '#1a7a4a' },
     [FACTOR_STATUS_VALUES.STRONG]: { icon: 'ri-checkbox-circle-fill', bg: '#dbeafe', color: '#1d4ed8' },
     [FACTOR_STATUS_VALUES.FAIR]: { icon: 'ri-error-warning-fill', bg: '#fef3c7', color: '#92400e' },
-    [FACTOR_STATUS_VALUES.MISSING]: { icon: 'ri-information-fill', bg: '#fff3cd', color: '#92400e' },
+    [FACTOR_STATUS_VALUES.FAILED]: { icon: 'ri-close-circle-fill', bg: '#fee2e2', color: '#ef4444' },
     [FACTOR_STATUS_VALUES.WEAK]: { icon: 'ri-close-circle-fill', bg: '#fee2e2', color: '#991b1b' },
     [FACTOR_STATUS_VALUES.RESTRICTED]: { icon: 'ri-close-circle-fill', bg: '#fee2e2', color: '#ef4444' },
     [FACTOR_STATUS_VALUES.ELIGIBLE]: { icon: 'ri-checkbox-circle-fill', bg: '#e8f9f0', color: '#10b981' },
@@ -217,10 +219,11 @@ export const READINESS_BADGE_STYLES: Record<string, { icon: string; bg: string; 
 export const getFundingReviewProgress = (status: string) => {
     if (status === 'SUBMITTED') return 10;
     if (status === FUNDING_REVIEW_STATUS.PENDING) return 20;
-    if (status === FUNDING_REVIEW_STATUS.IN_PROGRESS) return 40;
-    if (status === FUNDING_REVIEW_STATUS.ACCEPTED) return 70;
+    if (status === FUNDING_REVIEW_STATUS.ACCEPTED) return 40;
+    if (status === FUNDING_REVIEW_STATUS.IN_PROGRESS) return 70;
     if (status === FUNDING_REVIEW_STATUS.APPROVED) return 100;
     if (status === FUNDING_REVIEW_STATUS.REJECTED) return 100;
+    if (status === FUNDING_REVIEW_STATUS.CANCELED) return 100;
     return 0;
 };
 
@@ -236,15 +239,15 @@ export const FUNDING_REVIEW_TIMELINE_STEPS = [
         icon: 'ri-time-line',
     },
     {
+        key: FUNDING_REVIEW_STATUS.ACCEPTED,
+        label: 'Accepted',
+        icon: 'ri-checkbox-circle-line',
+    },
+    {
         key: FUNDING_REVIEW_STATUS.IN_PROGRESS,
         label: 'In Progress',
         subtext: 'Under Review',
         icon: 'ri-user-3-fill',
-    },
-    {
-        key: FUNDING_REVIEW_STATUS.ACCEPTED,
-        label: 'Accepted',
-        icon: 'ri-checkbox-circle-line',
     },
     {
         key: FUNDING_REVIEW_STATUS.APPROVED,
@@ -255,6 +258,11 @@ export const FUNDING_REVIEW_TIMELINE_STEPS = [
         key: FUNDING_REVIEW_STATUS.REJECTED,
         label: 'Rejected',
         icon: 'ri-user-unfollow-line',
+    },
+    {
+        key: FUNDING_REVIEW_STATUS.CANCELED,
+        label: 'Canceled',
+        icon: 'ri-stop-circle-line',
     },
 ];
 
@@ -268,20 +276,20 @@ export const FUNDING_REVIEW_GUIDELINE_CARDS = [
         icon: 'ri-time-line'
     },
     {
-        label: 'In Progress',
-        desc: 'Admin/Partner can reviewing the request.',
-        bg: '#eff6ff',
-        border: '#bfdbfe',
-        iconBg: '#3b82f6',
-        icon: 'ri-shield-user-fill'
-    },
-    {
         label: 'Accepted',
         desc: 'Review completed successfully.',
         bg: '#fefce8',
         border: '#fef08a',
         iconBg: '#eab308',
         icon: 'ri-check-line'
+    },
+    {
+        label: 'In Progress',
+        desc: 'Admin can reviewing the request.',
+        bg: '#eff6ff',
+        border: '#bfdbfe',
+        iconBg: '#3b82f6',
+        icon: 'ri-shield-user-fill'
     },
     {
         label: 'Approved',
@@ -298,5 +306,13 @@ export const FUNDING_REVIEW_GUIDELINE_CARDS = [
         border: '#fecaca',
         iconBg: '#ef4444',
         icon: 'ri-close-line'
+    },
+    {
+        label: 'Canceled',
+        desc: 'Request has been canceled.',
+        bg: '#fef2f2',
+        border: '#fecaca',
+        iconBg: '#ef4444',
+        icon: 'ri-stop-circle-line'
     }
 ];

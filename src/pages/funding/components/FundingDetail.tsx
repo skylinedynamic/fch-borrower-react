@@ -5,6 +5,7 @@ import { FUNDING_ICON_MAP, QUALIFY_REASONS_MAP, FUNDING_REVIEW_STATUS, ENGINE_ST
 import { getFundingColorStyles } from '../../../config/fundingColor';
 import { toast } from 'react-toastify';
 import { UncontrolledTooltip } from 'reactstrap';
+import '../../../../assets/css/funding.css';
 
 // ─── Icon resolver ────────────────────────────────────────────────────────────
 const resolveIcon = (icon: any): string => {
@@ -29,8 +30,8 @@ const ReadinessBadge: React.FC<{ status: string }> = ({ status }) => {
     const s = (status || '').toLowerCase();
     const style = READINESS_BADGE_STYLES[s] || { icon: 'ri-question-line', bg: '#f0f3f7', color: '#4b5563' };
     return (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, background: style.bg, color: style.color, padding: '3px 10px 3px 7px', borderRadius: 20 }}>
-            <i className={style.icon} style={{ fontSize: 13 }} />
+        <span className="funding-readiness-badge" style={{ background: style.bg, color: style.color }}>
+            <i className={style.icon} />
             {status}
         </span>
     );
@@ -40,67 +41,98 @@ const ReadinessBadge: React.FC<{ status: string }> = ({ status }) => {
 const FundingDetailLoader = () => (
     <div className="page-content">
         <div className="container-fluid">
+
+            {/* ── Breadcrumb skeleton ───────────────────────── */}
             <div className="row page-subheader-sticky bg-body">
                 <div className="col-12 py-2">
-                    <div className="d-flex align-items-center gap-2">
-                        <div className="skeleton-line" style={{ width: 110, height: 13, borderRadius: 4 }} />
-                        <div className="skeleton-line" style={{ width: 8, height: 13, borderRadius: 4 }} />
-                        <div className="skeleton-line" style={{ width: 160, height: 13, borderRadius: 4 }} />
+                    <div className="d-flex align-items-center justify-content-between">
+                        <div className="flex-grow-1">
+                            <div className="skeleton-line mb-2 fd-skel-title" />
+                            <div className="d-flex align-items-center gap-2">
+                                <div className="skeleton-line m-0 fd-skel-crumb-sm" />
+                                <div className="skeleton-line m-0 fd-skel-crumb-sep" />
+                                <div className="skeleton-line m-0 fd-skel-crumb-md" />
+                                <div className="skeleton-line m-0 fd-skel-crumb-sep" />
+                                <div className="skeleton-line m-0 fd-skel-crumb-lg" />
+                            </div>
+                        </div>
+                        <div className="skeleton-line m-0 fd-skel-back-btn" />
                     </div>
                 </div>
             </div>
-            <div className="card border-0 shadow-sm" style={{ borderRadius: 12, overflow: 'hidden' }}>
+
+            {/* ── Main card ─────────────────────────────────── */}
+            <div className="card border-0 shadow-sm fd-skel-card">
                 <div className="card-body p-4">
+
+                    {/* Icon + Title + Badge */}
                     <div className="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
                         <div className="d-flex align-items-center gap-3">
-                            <div className="skeleton-line flex-shrink-0" style={{ width: 56, height: 56, borderRadius: '50%' }} />
+                            <div className="skeleton-line flex-shrink-0 fd-skel-icon-circle" />
                             <div>
-                                <div className="skeleton-line mb-2" style={{ width: 220, height: 20, borderRadius: 4 }} />
-                                <div className="skeleton-line" style={{ width: 280, height: 13, borderRadius: 4 }} />
+                                <div className="skeleton-line mb-2 fd-skel-card-title" />
+                                <div className="skeleton-line fd-skel-card-subtitle" />
                             </div>
                         </div>
                         <div className="text-end flex-shrink-0">
-                            <div className="skeleton-line" style={{ width: 110, height: 32, borderRadius: 20 }} />
-                            <div className="skeleton-line ms-auto mt-2" style={{ width: 60, height: 10, borderRadius: 4 }} />
+                            <div className="skeleton-line fd-skel-badge" />
+                            <div className="skeleton-line ms-auto mt-2 fd-skel-match-label" />
                         </div>
                     </div>
-                    <div className="row g-0 mb-4" style={{ border: '1px solid #e8ecf0', borderRadius: 10, overflow: 'hidden' }}>
+
+                    {/* Meta row — 4 cols matching: Range / Term / Speed / Uses */}
+                    <div className="fd-skel-meta-row row g-0 mb-4">
                         {[0, 1, 2, 3].map(i => (
-                            <div key={i} className={`col-md-3 col-6 p-3`} style={{ borderRight: i < 3 ? '1px solid #e8ecf0' : 'none' }}>
-                                <div className="skeleton-line mb-2" style={{ width: '60%', height: 10, borderRadius: 4 }} />
-                                <div className="skeleton-line" style={{ width: '80%', height: 14, borderRadius: 4 }} />
+                            <div key={i} className={`col-md-3 col-6 p-3${i < 3 ? ' fd-skel-meta-col-border' : ''}`}>
+                                <div className="skeleton-line mb-2 fd-skel-meta-label" />
+                                <div className="skeleton-line fd-skel-meta-value" />
                             </div>
                         ))}
                     </div>
+
+                    {/* Two-column: Why You May Qualify + Underwriting Factors */}
                     <div className="row g-3 mb-3">
-                        {[0, 1].map(i => (
-                            <div key={i} className="col-md-6">
-                                <div style={{ border: '1px solid #e8ecf0', borderRadius: 10, padding: '20px 22px', minHeight: 220 }}>
-                                    <div className="skeleton-line mb-4" style={{ width: 140, height: 14, borderRadius: 4 }} />
-                                    {[90, 80, 85, 70].map((w, j) => (
-                                        <div key={j} className="d-flex align-items-center gap-2 mb-3">
-                                            <div className="skeleton-line flex-shrink-0" style={{ width: 16, height: 16, borderRadius: '50%' }} />
-                                            <div className="skeleton-line" style={{ width: `${w}%`, height: 12, borderRadius: 4 }} />
-                                        </div>
-                                    ))}
-                                </div>
+                        {/* Left — Why You May Qualify */}
+                        <div className="col-md-6">
+                            <div className="fd-skel-panel">
+                                <div className="skeleton-line mb-4 fd-skel-panel-heading" />
+                                {[90, 75, 85, 65].map((w, j) => (
+                                    <div key={j} className="d-flex align-items-center gap-2 mb-3">
+                                        <div className="skeleton-line flex-shrink-0 fd-skel-circle" />
+                                        <div className="skeleton-line" style={{ width: `${w}%`, height: 12 }} />
+                                    </div>
+                                ))}
                             </div>
-                        ))}
+                        </div>
+                        {/* Right — Underwriting Factors */}
+                        <div className="col-md-6">
+                            <div className="fd-skel-panel">
+                                <div className="skeleton-line mb-4 fd-skel-panel-heading" />
+                                {[80, 70, 90, 75, 60, 85].map((w, j) => (
+                                    <div key={j} className="d-flex align-items-center justify-content-between gap-2 mb-3">
+                                        <div className="d-flex align-items-center gap-2 flex-grow-1">
+                                            <div className="skeleton-line flex-shrink-0 fd-skel-circle" />
+                                            <div className="skeleton-line" style={{ width: `${w}%`, height: 12 }} />
+                                        </div>
+                                        <div className="skeleton-line flex-shrink-0 fd-skel-factor-badge" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
-                    <div style={{ border: '1px solid #e8ecf0', borderRadius: 10, padding: '18px 22px' }}>
-                        <div className="skeleton-line mb-3" style={{ width: 100, height: 14, borderRadius: 4 }} />
-                        <div className="skeleton-line mb-2" style={{ width: '100%', height: 12, borderRadius: 4 }} />
-                        <div className="skeleton-line" style={{ width: '80%', height: 12, borderRadius: 4 }} />
-                    </div>
+
                 </div>
-                <div style={{ borderTop: '1px solid #e8ecf0', background: '#fff', padding: '18px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+
+                {/* Footer — Next Step + CTA button */}
+                <div className="fd-skel-footer">
                     <div>
-                        <div className="skeleton-line mb-2" style={{ width: 80, height: 14, borderRadius: 4 }} />
-                        <div className="skeleton-line" style={{ width: 320, height: 12, borderRadius: 4 }} />
+                        <div className="skeleton-line mb-2 fd-skel-footer-title" />
+                        <div className="skeleton-line fd-skel-footer-desc" />
                     </div>
-                    <div className="skeleton-line" style={{ width: 170, height: 42, borderRadius: 8 }} />
+                    <div className="skeleton-line fd-skel-cta-btn" />
                 </div>
             </div>
+
         </div>
     </div>
 );
@@ -120,7 +152,7 @@ const ReadinessItem: React.FC<{ factor: any, isLast: boolean }> = ({ factor, isL
     if (factor.label === READINESS_FACTOR_LABELS.RESTRICTED_STATE) {
         subtitle = `Your business is located in ${factor.borrower_value}, which is a restricted state for this funding program.`;
     } else if (factor.label === READINESS_FACTOR_LABELS.STATE_ELIGIBILITY) {
-        if (s === FACTOR_STATUS_VALUES.MISSING || s === FACTOR_STATUS_VALUES.RESTRICTED) {
+        if (s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED) {
             subtitle = `Your business is located in ${factor.borrower_value}. This program only allows specific states.`;
         } else {
             subtitle = `Your business location is eligible for this funding program.`;
@@ -128,7 +160,7 @@ const ReadinessItem: React.FC<{ factor: any, isLast: boolean }> = ({ factor, isL
     } else if (factor.label === READINESS_FACTOR_LABELS.RESTRICTED_INDUSTRY) {
         subtitle = `Your business is in the ${factor.borrower_value} industry, which is restricted.`;
     } else if (factor.label === READINESS_FACTOR_LABELS.INDUSTRY_ELIGIBILITY) {
-        if (s === FACTOR_STATUS_VALUES.MISSING || s === FACTOR_STATUS_VALUES.RESTRICTED) {
+        if (s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED) {
             subtitle = `Your industry (${factor.borrower_value}) is not supported.`;
         } else {
             subtitle = `Your industry is eligible for this funding program.`;
@@ -136,32 +168,25 @@ const ReadinessItem: React.FC<{ factor: any, isLast: boolean }> = ({ factor, isL
     }
 
     let badgeText = factor.status;
-    if ((factor.label === READINESS_FACTOR_LABELS.RESTRICTED_STATE || factor.label === READINESS_FACTOR_LABELS.RESTRICTED_INDUSTRY) && s === FACTOR_STATUS_VALUES.MISSING) {
+    
+    if ((factor.label === READINESS_FACTOR_LABELS.RESTRICTED_STATE || factor.label === READINESS_FACTOR_LABELS.RESTRICTED_INDUSTRY) && s === FACTOR_STATUS_VALUES.FAILED) {
         badgeText = BADGE_LABELS.RESTRICTED;
     } else if ((factor.label === READINESS_FACTOR_LABELS.STATE_ELIGIBILITY || factor.label === READINESS_FACTOR_LABELS.INDUSTRY_ELIGIBILITY) && (s === FACTOR_STATUS_VALUES.GOOD || s === FACTOR_STATUS_VALUES.STRONG)) {
         badgeText = BADGE_LABELS.ELIGIBLE;
     }
 
     return (
-        <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-            paddingBottom: isLast ? 0 : 16,
-            marginBottom: isLast ? 0 : 16,
-            borderBottom: isLast ? 'none' : '1px solid #f3f4f6'
-        }}>
-            <div style={{ display: 'flex', gap: 12, alignItems: subtitle ? 'flex-start' : 'center' }}>
-                <i className={leftIcon} style={{ fontSize: 20, color: leftIconColor, marginTop: subtitle ? -2 : 0 }} />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <span style={{ fontSize: 14, color: '#111827', fontWeight: 600 }}>{factor.label.toLowerCase() === 'time in business' ? 'Months' : factor.label}</span>
+        <div className="funding-readiness-item">
+            <div className={`funding-readiness-item-left ${subtitle ? 'align-start' : 'align-center'}`}>
+                <i className={`funding-readiness-item-icon ${subtitle ? 'with-subtitle' : ''} ${leftIcon}`} style={{ color: leftIconColor }} />
+                <div className="funding-readiness-item-content">
+                    <span className="funding-readiness-item-title">{factor.label}</span>
                     {subtitle && (
-                        <span style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.4 }}>{subtitle}</span>
+                        <span className="funding-readiness-item-subtitle">{subtitle}</span>
                     )}
                 </div>
             </div>
-            <div style={{ flexShrink: 0 }}>
+            <div className="funding-readiness-item-right">
                 <ReadinessBadge status={badgeText} />
             </div>
         </div>
@@ -262,8 +287,13 @@ const FundingDetail = () => {
 
     const ctaSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
-    const hasMissingFactors = dynamicReadiness.some((r: any) => r.status === 'Missing');
+    const activeFactors = dynamicReadiness.length > 0 ? dynamicReadiness : readiness_factors;
+    const hasMissingFactors = activeFactors.some((r: any) => {
+        const s = r.status?.toLowerCase();
+        return s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED || s === FACTOR_STATUS_VALUES.WEAK;
+    });
     const isPending = latest_review_status === FUNDING_REVIEW_STATUS.PENDING;
+    const isApproved = latest_review_status === FUNDING_REVIEW_STATUS.APPROVED || latest_review_status === 'Approved';
 
     return (
         <div className="page-content">
@@ -274,7 +304,7 @@ const FundingDetail = () => {
                     <div className="col-12">
                         <div className="d-flex align-items-center justify-content-between flex-row py-2">
                             <div className="flex-grow-1">
-                                <h4 className="fs-20 mb-1">{name}</h4>
+                                <h4 className="fs-18 mb-1">{name}</h4>
                                 <nav aria-label="breadcrumb">
                                     <ol className="breadcrumb m-0">
                                         <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>
@@ -283,9 +313,9 @@ const FundingDetail = () => {
                                     </ol>
                                 </nav>
                             </div>
-                            <div className="mt-0">
-                                <Link to="/funding" className="btn btn-primary fw-medium">
-                                    <i className="ri-arrow-left-line me-1 align-bottom"></i> Back
+                            <div className="mt-0 d-flex align-items-center">
+                                <Link to="/funding" className="btn btn-primary fw-medium d-flex align-items-center gap-2 shadow-none px-4">
+                                    <i className="ri-arrow-left-line"></i> Back
                                 </Link>
                             </div>
                         </div>
@@ -293,24 +323,19 @@ const FundingDetail = () => {
                 </div>
 
                 {/* ── Main Card ──────────────────────────────────────────────── */}
-                <div className="card border-0 shadow-sm" style={{ borderRadius: 12, overflow: 'hidden', opacity: isGreyedOut ? 0.8 : 1 }}>
+                <div className={`funding-detail-card card border-0 shadow-sm ${isGreyedOut ? 'greyed-out' : ''}`}>
                     <div className="card-body p-4">
 
                         {/* ── Header: Icon + Title + Eligibility Badge ──────────── */}
                         <div className="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
                             <div className="d-flex align-items-center gap-3">
                                 {/* Icon circle */}
-                                <div style={{
-                                    width: 56, height: 56, borderRadius: '50%',
-                                    background: colors.bg,
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    flexShrink: 0,
-                                }}>
-                                    <i className={iconClass} style={{ fontSize: 28, color: colors.text }} />
+                                <div className="funding-detail-icon-circle" style={{ background: colors.bg }}>
+                                    <i className={iconClass} style={{ color: colors.text }} />
                                 </div>
                                 <div>
-                                    <h4 className="mb-1 fw-bold" style={{ fontSize: 20, color: '#0f1b2d' }}>{name}</h4>
-                                    {subtitle && <p className="text-muted mb-0" style={{ fontSize: 13 }}>{subtitle}</p>}
+                                    <h4 className="funding-detail-title mb-1 fw-bold">{name}</h4>
+                                    {subtitle && <p className="funding-detail-subtitle text-muted mb-0">{subtitle}</p>}
                                 </div>
                             </div>
 
@@ -320,31 +345,17 @@ const FundingDetail = () => {
                                     {displayLabel}
                                 </div>
                                 {(finalEngineStatus === ENGINE_STATUS_VALUES.ACTIVE || finalEngineStatus === ENGINE_STATUS_VALUES.REVIEW) && (
-                                    <p className="mb-0 mt-1 text-muted" style={{ fontSize: 11, textAlign: 'right', fontWeight: 'bold' }}>{MATCH_LEVEL_LABELS.HIGH_MATCH}</p>
+                                    <p className="funding-detail-match-label text-muted mb-0 mt-1">{MATCH_LEVEL_LABELS.HIGH_MATCH}</p>
                                 )}
                             </div>
                         </div>
 
                         {/* ── Meta Row: Range / Term / Speed / Uses ─────────────── */}
-                        <div
-                            className="row g-0 mb-4"
-                            style={{ border: '1px solid #e8ecf0', borderRadius: 10, overflow: 'hidden' }}
-                        >
+                        <div className="funding-detail-meta-row row g-0 mb-4">
                             {metaItems.map((m, i) => (
-                                <div
-                                    key={i}
-                                    className="col-md-3 col-6"
-                                    style={{
-                                        padding: '14px 18px',
-                                        borderRight: i < metaItems.length - 1 ? '1px solid #e8ecf0' : 'none',
-                                    }}
-                                >
-                                    <p style={{ margin: 0, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#9ca3af', marginBottom: 5 }}>
-                                        {m.label}
-                                    </p>
-                                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#1e293b', lineHeight: 1.4 }}>
-                                        {m.value}
-                                    </p>
+                                <div key={i} className="funding-detail-meta-col col-md-3 col-6">
+                                    <p className="funding-detail-meta-label">{m.label}</p>
+                                    <p className="funding-detail-meta-value">{m.value}</p>
                                 </div>
                             ))}
                         </div>
@@ -354,23 +365,23 @@ const FundingDetail = () => {
 
                             {/* Why You May Qualify */}
                             <div className="col-md-6">
-                                <div style={{ border: '1px solid #e8ecf0', borderRadius: 10, padding: '20px 22px', height: '100%' }}>
-                                    <h6 style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d', marginBottom: 16 }}>
+                                <div className="funding-detail-panel">
+                                    <h6 className="funding-detail-panel-title">
                                         Why You May Qualify
                                     </h6>
                                     {dynamicQualifyReasons.filter((r: any) => r.status === 'Good' || r.status === 'Strong').length > 0 ? (
-                                        <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                        <ul className="funding-detail-list">
                                             {dynamicQualifyReasons.filter((r: any) => r.status === 'Good' || r.status === 'Strong').map((r: any, i: number) => {
                                                 return (
-                                                    <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: '#374151' }}>
-                                                        <i className="ri-checkbox-circle-fill" style={{ color: '#16a34a', fontSize: 16, marginTop: 1, flexShrink: 0 }} />
+                                                    <li key={i} className="funding-detail-list-item">
+                                                        <i className="ri-checkbox-circle-fill funding-detail-list-icon success" />
                                                         {r.label}
                                                     </li>
                                                 );
                                             })}
                                         </ul>
                                     ) : (
-                                        <p style={{ fontSize: 13, color: '#9ca3af', margin: 0 }}>No eligibility reasons available.</p>
+                                        <p className="funding-detail-empty-text">No eligibility reasons available.</p>
                                     )}
 
                                     {/* Missing Documents section inside qualify panel */}
@@ -382,15 +393,15 @@ const FundingDetail = () => {
                                         const currentMissingDocs = Array.from(new Set(combinedDocs));
 
                                         return currentMissingDocs.length > 0 && (
-                                            <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #f0f3f7' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                                                    <i className="ri-error-warning-fill" style={{ color: '#dc2626', fontSize: 16 }} />
-                                                    <span style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d' }}>Missing Documents</span>
+                                            <div className="funding-detail-missing-docs">
+                                                <div className="funding-detail-missing-docs-title">
+                                                    <i className="ri-error-warning-fill funding-detail-list-icon warning" />
+                                                    <span>Missing Documents</span>
                                                 </div>
-                                                <ul style={{ margin: 0, padding: '0 0 0 4px', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                                <ul className="funding-detail-missing-docs-list">
                                                     {currentMissingDocs.map((doc: string, i: number) => (
-                                                        <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#4b5563' }}>
-                                                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#9ca3af', flexShrink: 0, display: 'inline-block' }} />
+                                                        <li key={i} className="funding-detail-missing-docs-item">
+                                                            <span className="funding-detail-missing-docs-dot" />
                                                             {doc}
                                                         </li>
                                                     ))}
@@ -403,15 +414,13 @@ const FundingDetail = () => {
 
                             {/* Underwriting Factors */}
                             <div className="col-md-6">
-                                <div style={{ border: '1px solid #e8ecf0', borderRadius: 10, padding: '20px 22px', height: '100%' }}>
-                                    <h6 style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d', marginBottom: 16 }}>
+                                <div className="funding-detail-panel">
+                                    <h6 className="funding-detail-panel-title">
                                         Underwriting Factors
                                     </h6>
                                     {(() => {
-                                        const activeFactors = dynamicReadiness.length > 0 ? dynamicReadiness : readiness_factors;
-
                                         if (activeFactors.length === 0) {
-                                            return <p style={{ fontSize: 13, color: '#9ca3af', margin: 0 }}>No underwriting factors available.</p>;
+                                            return <p className="funding-detail-empty-text">No underwriting factors available.</p>;
                                         }
 
                                         const visibleFactors = activeFactors.filter((f: any) => {
@@ -426,7 +435,7 @@ const FundingDetail = () => {
                                         });
 
                                         return (
-                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                            <div className="fd-factors-col">
                                                 {visibleFactors.map((f: any, i: number) => (
                                                     <ReadinessItem key={i} factor={f} isLast={i === visibleFactors.length - 1} />
                                                 ))}
@@ -439,56 +448,46 @@ const FundingDetail = () => {
 
                         {/* ── Description (if present) ──────────────────────────── */}
                         {description && (
-                            <div style={{ border: '1px solid #e8ecf0', borderRadius: 10, padding: '18px 22px' }}>
-                                <h6 style={{ fontWeight: 700, fontSize: 13, color: '#0f1b2d', marginBottom: 10 }}>Description</h6>
-                                <div style={{ fontSize: 13, color: '#374151', lineHeight: 1.65 }} dangerouslySetInnerHTML={{ __html: description }} />
+                            <div className="funding-detail-panel no-full-height">
+                                <h6 className="funding-detail-panel-title desc">Description</h6>
+                                <div className="funding-detail-desc-content" dangerouslySetInnerHTML={{ __html: description }} />
                             </div>
                         )}
 
                     </div>
 
-                    <div style={{
-                        borderTop: '1px solid #e8ecf0',
-                        background: '#fff',
-                        padding: '18px 28px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        flexWrap: 'wrap',
-                        gap: 12,
-                        position: 'sticky',
-                        bottom: 0,
-                    }}>
+                    <div className="funding-detail-footer">
                         <div>
-                            <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: '#0f1b2d' }}>
+                            <p className="funding-detail-footer-title">
                                 Next Step
                             </p>
-                            <p style={{ margin: 0, fontSize: 12, color: '#6b7280', marginTop: 3 }}>
+                            <p className="funding-detail-footer-desc">
                                 {isPending
                                     ? 'You have already applied for this funding option. Please wait for approval or rejection.'
-                                    : finalEngineStatus === 'Hidden'
-                                        ? 'This funding option is currently not available for your profile.'
-                                        : hasMissingFactors
-                                            ? 'Please address missing underwriting factors before starting your review.'
-                                            : 'Start your funding request by providing a few details and uploading missing documents.'}
+                                    : isApproved
+                                        ? 'Your funding request is approved! Please proceed with the final funding application.'
+                                        : finalEngineStatus === 'Hidden'
+                                            ? 'This funding option is currently not available for your profile.'
+                                            : hasMissingFactors
+                                                ? 'Please address missing underwriting factors before starting your review.'
+                                                : 'Start your funding request by providing a few details and uploading missing documents.'}
                             </p>
                         </div>
-                        <span id="btn-start-funding-request-wrapper" style={{ display: 'inline-block' }}>
-                            {(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') ? (
-                                <span
-                                    className="funding-detail-btn-review disabled"
-                                    style={{ opacity: 0.5, cursor: 'not-allowed', display: 'inline-block' }}
-                                >
+                        <span id="btn-start-funding-request-wrapper" className="funding-detail-btn-wrapper">
+                            {(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') && !isApproved ? (
+                                <span className="btn btn-primary disabled d-flex align-items-center justify-content-center gap-2 fw-medium px-4">
                                     Start Funding Request
-                                    <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />
+                                    <i className="ri-arrow-right-line" />
                                 </span>
+                            ) : isApproved ? (
+                                <Link to="/fund-application" state={{ approved_funding: name, funding_type: name }} className="btn btn-success d-flex align-items-center justify-content-center gap-2 fw-medium px-4">
+                                    Process Funding Application
+                                    <i className="ri-arrow-right-line" />
+                                </Link>
                             ) : (
-                                <Link
-                                    to={`/funding/${id}/review`}
-                                    className="funding-detail-btn-review"
-                                >
+                                <Link to={`/funding/${id}/review`} className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4">
                                     Start Funding Request
-                                    <i className="ri-arrow-right-line" style={{ fontSize: 15 }} />
+                                    <i className="ri-arrow-right-line" />
                                 </Link>
                             )}
                         </span>
