@@ -9,7 +9,7 @@ import './StatisticsCardSkeleton.css';
  * @param {Object} props - Component props
  * @param {string} props.colSize - Bootstrap column size (default: 'col-xl-3 col-md-6')
  */
-const StatisticsCardSkeleton = ({ colSize = 'col-xl-3 col-md-6' }) => {
+const StatisticsCardSkeleton = ({ colSize = 'col-12 col-md-6 col-xl-3' }) => {
     return (
         <div className={colSize}>
             <div className="card card-animate statistics-skeleton mb-0">

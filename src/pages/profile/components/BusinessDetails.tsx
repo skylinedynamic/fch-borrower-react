@@ -189,6 +189,11 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
     const apiKey = keyMap[field] || field;
     const dbValue = (apiData as any)?.[apiKey];
 
+    // Always lock business_start_date so it defaults to "no click" and requires a Change Request
+    if (field === 'business_start_date') {
+      return true;
+    }
+
     return LOCKED_BUSINESS_FIELDS.includes(field) && dbValue !== null && dbValue !== undefined && dbValue !== '';
   }
 
@@ -555,7 +560,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
           <label className="form-label">Business Start Date <span className="text-danger">*</span></label>
           <div className="position-relative">
             <Flatpickr
-              className={`form-control ${errors.business_start_date ? 'is-invalid' : ''} ${isFieldLocked('business_start_date') ? 'bg-light border-dashed' : ''}`}
+              className={`form-control ${errors.business_start_date ? 'is-invalid' : ''} ${isFieldLocked('business_start_date') ? 'bg-light border-dashed locked-field-padding' : ''}`}
               value={data.business_start_date || ''}
               onChange={(dates, dateStr) => {
                 onChange({ ...data, business_start_date: dateStr })
@@ -568,6 +573,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
                 yearRange: "1900:" + new Date().getFullYear(),
                 monthSelectorType: "dropdown",
                 clickOpens: !isFieldLocked('business_start_date'),
+                disableMobile: true,
                 plugins: [yearDropdownPlugin(1900)],
               } as any}
               placeholder="Select business start date"
@@ -730,6 +736,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
                   maxDate: "today",
                   monthSelectorType: "dropdown",
                   static: true,
+                  disableMobile: true,
                   plugins: [yearDropdownPlugin(1900)],
                 }}
                 placeholder="Select business start date"

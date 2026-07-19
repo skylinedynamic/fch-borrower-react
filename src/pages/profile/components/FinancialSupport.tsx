@@ -629,6 +629,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
                   maxDate: "today",
                   monthSelectorType: "dropdown",
                   static: true,
+                  disableMobile: true,
                   plugins: [yearDropdownPlugin(1900)],
                 }}
                 placeholder="Select account open date"
