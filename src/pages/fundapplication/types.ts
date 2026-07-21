@@ -114,7 +114,13 @@ export type DisclosureConsent = {
 }
 
 export type Attestation = {
-  certify: boolean
+  certify?: boolean // Keep for backward compatibility if needed, but not required
+  signature_name: string
+  esign_consent: boolean
+  terms_consent: boolean
+  privacy_consent: boolean
+  credit_consent: boolean
+  legal_binding_consent: boolean
 }
 
 export const docSections = [

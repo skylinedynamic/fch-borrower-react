@@ -213,7 +213,15 @@ export default function FundApplication() {
     marketingOptIn: false,
   })
 
-  const [attestation, setAttestation] = useState<Attestation>({ certify: false })
+  const [attestation, setAttestation] = useState<Attestation>({
+    certify: false,
+    signature_name: '',
+    esign_consent: false,
+    terms_consent: false,
+    privacy_consent: false,
+    credit_consent: false,
+    legal_binding_consent: false
+  })
 
   // Fetch funding request and documents (tab-wise lazy loading)
   const { data: fundingData } = useFundingRequest({ enabled: activeStep >= STEP_INDICES.FUNDING_REQUEST })
@@ -308,7 +316,15 @@ export default function FundApplication() {
         }
 
         case STEP_INDICES.ATTESTATION:
-          return Boolean(attestation.certify)
+          return Boolean(
+            attestation.signature_name &&
+            attestation.signature_name.trim().length >= 3 &&
+            attestation.esign_consent &&
+            attestation.terms_consent &&
+            attestation.privacy_consent &&
+            attestation.credit_consent &&
+            attestation.legal_binding_consent
+          )
 
         default:
           return false

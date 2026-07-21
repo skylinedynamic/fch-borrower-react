@@ -296,3 +296,42 @@ export const TERMS_OF_SERVICE_DATA = `
     </div>
 </div>
 `
+
+export const PRIVACY_POLICY_DATA = `
+<div class="legal-doc">
+    <section class="mb-4">
+        <h6 class="fw-bold mb-3">1. INTRODUCTION</h6>
+        <p>This Privacy Policy explains how Four Corner Funding ("we", "us", or "our") collects, uses, and shares your information when you use our website and services.</p>
+    </section>
+    <section class="mb-4">
+        <h6 class="fw-bold mb-3">2. INFORMATION WE COLLECT</h6>
+        <p>We may collect personal information such as your name, email address, phone number, and financial details necessary for processing your funding application.</p>
+    </section>
+    <section class="mb-4">
+        <h6 class="fw-bold mb-3">3. HOW WE USE YOUR INFORMATION</h6>
+        <p>We use the information we collect to provide, maintain, and improve our services, as well as to communicate with you regarding your application.</p>
+    </section>
+</div>
+`
+
+export const ATTESTATION_ITEMS = [
+  {
+    key: 'esign_consent',
+    label: 'I certify that typing my name above constitutes my legally binding electronic signature under the ESIGN Act and applicable state laws.',
+  },
+  {
+    key: 'terms_consent',
+    label: 'I have read and agree to the Terms & Conditions.',
+    modalTitle: 'Terms & Conditions',
+    modalContent: TERMS_OF_SERVICE_DATA,
+  },
+  {
+    key: 'credit_consent',
+    label: 'I authorize Four Corner Funding to obtain and review my business and/or personal credit information as described.',
+  },
+  {
+    key: 'legal_binding_consent',
+    label: 'I understand my electronic signature is legally binding.',
+  },
+]
+
