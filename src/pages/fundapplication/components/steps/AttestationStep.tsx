@@ -165,19 +165,23 @@ export default function AttestationStep({
                         onChange={(e) => handleChange(item.key as keyof Attestation, e.target.checked)}
                       />
                       <label htmlFor={item.key} className="form-check-label ms-2">
-                        <span className="fw-semibold">{item.label}</span> <span className="text-danger">*</span>
+                        <span className="fw-semibold">{item.label}</span>
+                        {item.modalContent && (
+                          <a
+                            href="#!"
+                            className="text-primary text-decoration-none fw-semibold ms-1"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              setModalState({ isOpen: true, title: item.modalTitle || '', content: item.modalContent || '' })
+                            }}
+                          >
+                            (Read {item.modalTitle})
+                          </a>
+                        )}
+                        <span className="text-danger ms-1">*</span>
                       </label>
                     </div>
-                    {item.modalContent && (
-                      <button
-                        type="button"
-                        className="btn btn-link text-primary p-0 border-0 shadow-none lh-1"
-                        onClick={() => setModalState({ isOpen: true, title: item.modalTitle || '', content: item.modalContent || '' })}
-                        title={`View ${item.modalTitle}`}
-                      >
-                        <i className="ri-eye-line fs-20"></i>
-                      </button>
-                    )}
                   </div>
                 );
               })}
