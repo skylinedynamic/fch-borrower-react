@@ -8,18 +8,24 @@ const WizardLoader = () => {
                 
                 {/* ── Breadcrumb Skeleton ─────────────────────────────────────────────── */}
                 <div className="row page-subheader-sticky bg-body">
-                    <div className="col-12">
-                        <div className="d-flex align-items-center justify-content-between flex-row py-2">
+                    <div className="col-12 py-2">
+                        <div className="d-flex align-items-center justify-content-between">
                             <div className="flex-grow-1">
-                                <h4 className="fs-20 mb-1">Funding Request</h4>
+                                <div className="skeleton-line mb-2 mt-0" style={{ width: 250, height: 28, borderRadius: 4 }}></div>
                                 <nav aria-label="breadcrumb">
                                     <ol className="breadcrumb m-0">
-                                        <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>
-                                        <li className="breadcrumb-item"><Link to="/funding">Funding Options</Link></li>
                                         <li className="breadcrumb-item">
-                                            <div className="skeleton-line d-inline-block m-0 align-middle skeleton-breadcrumb"></div>
+                                            <div className="skeleton-line d-inline-block m-0 align-middle" style={{ width: 80, height: 16, borderRadius: 4 }}></div>
                                         </li>
-                                        <li className="breadcrumb-item active fw-medium" aria-current="page">Funding Request</li>
+                                        <li className="breadcrumb-item">
+                                            <div className="skeleton-line d-inline-block m-0 align-middle" style={{ width: 110, height: 16, borderRadius: 4 }}></div>
+                                        </li>
+                                        <li className="breadcrumb-item">
+                                            <div className="skeleton-line d-inline-block m-0 align-middle" style={{ width: 140, height: 16, borderRadius: 4 }}></div>
+                                        </li>
+                                        <li className="breadcrumb-item active" aria-current="page">
+                                            <div className="skeleton-line d-inline-block m-0 align-middle" style={{ width: 120, height: 16, borderRadius: 4 }}></div>
+                                        </li>
                                     </ol>
                                 </nav>
                             </div>

@@ -145,20 +145,23 @@ const FundingRequestWizard = () => {
 
                     if (res.data.latest_review_status === FUNDING_REVIEW_STATUS.APPROVED) {
                         if (!isRedirecting.current) {
-                            isRedirecting.current = true;
-                            toast.success('Your funding request is already approved! Please proceed with the application.');
-                            navigate('/fund-application', { 
-                                replace: true,
-                                state: {
-                                    purpose: initialPurpose,
-                                    amount: initialAmount,
-                                    requested_amount: initialAmount,
-                                    approved_funding: res.data.name || res.data.funding_type,
-                                    funding_type: res.data.funding_type || res.data.name
-                                }
-                            });
+                            if (!res.data.has_funding_application) {
+                                isRedirecting.current = true;
+                                toast.success('Your funding request is already approved! Please proceed with the application.');
+                                navigate('/fund-application', { 
+                                    replace: true,
+                                    state: {
+                                        purpose: initialPurpose,
+                                        amount: initialAmount,
+                                        requested_amount: initialAmount,
+                                        approved_funding: res.data.name || res.data.funding_type,
+                                        funding_type: res.data.funding_type || res.data.name
+                                    }
+                                });
+                                return;
+                            }
+                            // If has_funding_application is true, we stay on the review page
                         }
-                        return;
                     }
 
                     if (isHidden || hasMissingFactors) {
@@ -395,9 +398,9 @@ const FundingRequestWizard = () => {
                 {/* ── Breadcrumb ─────────────────────────────────────────────── */}
                 <div className="row page-subheader-sticky bg-body">
                     <div className="col-12">
-                        <div className="d-flex align-items-center justify-content-between flex-row py-2">
+                        <div className="d-flex align-items-center justify-content-between py-2">
                             <div className="flex-grow-1">
-                                <h4 className="fs-20 mb-1">Funding Request</h4>
+                                <h4 className="fs-20 mb-1 mt-0">Funding Request</h4>
                                 <nav aria-label="breadcrumb">
                                     <ol className="breadcrumb m-0">
                                         <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>
@@ -406,6 +409,11 @@ const FundingRequestWizard = () => {
                                         <li className="breadcrumb-item active fw-medium" aria-current="page">Funding Request</li>
                                     </ol>
                                 </nav>
+                            </div>
+                            <div className="mt-0 d-flex align-items-center">
+                                <Link to="/funding" className="btn btn-primary fw-medium d-flex align-items-center gap-2 shadow-none px-4">
+                                    <i className="ri-arrow-left-line"></i> Back
+                                </Link>
                             </div>
                         </div>
                     </div>

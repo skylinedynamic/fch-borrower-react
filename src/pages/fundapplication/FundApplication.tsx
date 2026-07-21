@@ -497,10 +497,15 @@ export default function FundApplication() {
       <div className="container-fluid min-vh-70 pt-4">
         {/* Page Header */}
         <div className="text-center mb-4">
-          <h4 className="mb-1">Start Your Business Funding Application</h4>
+          <h4 className="mb-1">
+            {funding.approvedFunding 
+              ? `Complete Your ${funding.approvedFunding} Application` 
+              : 'Start Your Business Funding Application'}
+          </h4>
           <div className="text-muted">
-            Apply now to unlock working capital, equipment financing, SBA loans, or credit-building options tailored to
-            your goals.
+            {funding.approvedFunding
+              ? 'Please complete the final steps below to process your approved funding request and finalize your funds.'
+              : 'Apply now to unlock working capital, equipment financing, SBA loans, or credit-building options tailored to your goals.'}
           </div>
         </div>
 
