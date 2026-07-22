@@ -139,6 +139,9 @@ export default function FundApplication() {
     purposeNote: '',
   })
 
+  const [fundingSequenceId, setFundingSequenceId] = useState<number | string | null>(null)
+  const [fundingRequestId, setFundingRequestId] = useState<number | string | null>(null)
+
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -150,9 +153,18 @@ export default function FundApplication() {
     }
   }, [])
 
-  // Initialize funding state from location.state
+  // Initialize funding state from location.state & query params
   useEffect(() => {
     const state = location.state as any;
+    if (state) {
+      const searchParams = new URLSearchParams(window.location.search);
+      const seqId = state.funding_sequence_id ?? state.fundingSequenceId ?? searchParams.get('funding_sequence_id') ?? searchParams.get('fundingSequenceId');
+      const reqId = state.funding_request_id ?? state.fundingRequestId ?? searchParams.get('funding_request_id') ?? searchParams.get('fundingRequestId');
+      
+      if (seqId) setFundingSequenceId(seqId);
+      if (reqId) setFundingRequestId(reqId);
+    }
+
     if (state && (state.purpose || state.approved_funding || state.requested_amount || state.funding_type)) {
       setFunding(prev => {
         // Try to find an exact or partial match for the purpose
@@ -225,8 +237,8 @@ export default function FundApplication() {
 
   // Fetch funding request and documents (tab-wise lazy loading)
   const { data: fundingData } = useFundingRequest({ enabled: activeStep >= STEP_INDICES.FUNDING_REQUEST })
-  const fundingRequestId = fundingData?.id ?? null
-  const { data: documentsData } = useFundingApplicationDocuments(fundingRequestId, {
+  const fundingApplicationId = fundingData?.id ?? null
+  const { data: documentsData } = useFundingApplicationDocuments(fundingApplicationId, {
     enabled: activeStep >= STEP_INDICES.DOCUMENT_UPLOAD,
   })
 
@@ -420,6 +432,8 @@ export default function FundApplication() {
             onNext={() => setActiveStep(STEP_INDICES.OWNERSHIP_INFO)}
             loading={loading}
             onRegisterSave={registerSave}
+            fundingSequenceId={fundingSequenceId}
+            fundingRequestId={fundingRequestId}
           />
         )
 

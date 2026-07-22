@@ -823,7 +823,9 @@ export default function FundingRequestDetailPage() {
                                                                     amount: review.requested_amount,
                                                                     requested_amount: review.requested_amount,
                                                                     approved_funding: review.funding_sequence?.name || review.funding_type,
-                                                                    funding_type: review.funding_type || review.funding_sequence?.name
+                                                                    funding_type: review.funding_type || review.funding_sequence?.name,
+                                                                    funding_sequence_id: review.funding_sequence_id,
+                                                                    funding_request_id: review.id,
                                                                 }}
                                                                 className="btn btn-success btn-sm fw-medium px-4 d-inline-flex align-items-center"
                                                             >

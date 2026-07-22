@@ -154,7 +154,9 @@ const FundingRequestWizard = () => {
                                     amount: initialAmount,
                                     requested_amount: initialAmount,
                                     approved_funding: res.data.name || res.data.funding_type,
-                                    funding_type: res.data.funding_type || res.data.name
+                                    funding_type: res.data.funding_type || res.data.name,
+                                    funding_sequence_id: id,
+                                    funding_request_id: res.data.latest_review_id,
                                 }
                             });
                         }
