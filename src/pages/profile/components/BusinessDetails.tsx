@@ -189,11 +189,6 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
     const apiKey = keyMap[field] || field;
     const dbValue = (apiData as any)?.[apiKey];
 
-    // Always lock business_start_date so it defaults to "no click" and requires a Change Request
-    if (field === 'business_start_date') {
-      return true;
-    }
-
     return LOCKED_BUSINESS_FIELDS.includes(field) && dbValue !== null && dbValue !== undefined && dbValue !== '';
   }
 
