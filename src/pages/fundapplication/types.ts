@@ -117,10 +117,15 @@ export type Attestation = {
   certify?: boolean // Keep for backward compatibility if needed, but not required
   signature_name: string
   esign_consent: boolean
+  esign_consent_timestamp?: number
   terms_consent: boolean
+  terms_consent_timestamp?: number
   privacy_consent: boolean
+  privacy_consent_timestamp?: number
   credit_consent: boolean
+  credit_consent_timestamp?: number
   legal_binding_consent: boolean
+  legal_binding_consent_timestamp?: number
 }
 
 export const docSections = [

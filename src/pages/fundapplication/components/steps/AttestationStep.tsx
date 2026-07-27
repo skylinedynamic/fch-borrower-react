@@ -63,7 +63,16 @@ export default function AttestationStep({
   }, [isSuccess, apiData, hasPrefilled, setAttestation, attestation])
 
   const handleChange = (field: keyof Attestation, value: any) => {
-    setAttestation({ ...attestation, [field]: value })
+    if (typeof value === 'boolean' && ['esign_consent', 'terms_consent', 'privacy_consent', 'credit_consent', 'legal_binding_consent'].includes(field)) {
+      const timestampKey = `${field}_timestamp` as keyof Attestation;
+      setAttestation({ 
+        ...attestation, 
+        [field]: value,
+        [timestampKey]: value ? Date.now() : undefined
+      })
+    } else {
+      setAttestation({ ...attestation, [field]: value })
+    }
   }
 
   const handleConfirm = () => {
@@ -76,16 +85,23 @@ export default function AttestationStep({
       credit_consent: attestation.credit_consent,
       legal_binding_consent: attestation.legal_binding_consent,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      terms_version: '1.0',
+      privacy_version: '1.0',
+      credit_auth_version: '1.0',
       consents_data: JSON.stringify([
         ...ATTESTATION_ITEMS.map(item => ({
           key: item.key,
           label: item.label,
-          checked: Boolean(attestation[item.key as keyof Attestation])
+          checked: Boolean(attestation[item.key as keyof Attestation]),
+          timestamp: attestation[`${item.key}_timestamp` as keyof Attestation] || null,
+          version: '1.0'
         })),
         {
           key: 'final_certification',
           label: 'Final Certification: By typing my full legal name above and clicking "Submit Application," I certify that all information provided is true and accurate, consent to receive records electronically, authorize Four Corner Funding and its funding partners to obtain and review my business and/or personal credit information as permitted by law, and agree that my electronic signature has the same legal effect as a handwritten signature under the ESIGN Act, UETA, and other applicable law.',
-          checked: true
+          checked: true,
+          timestamp: Date.now(),
+          version: '1.0'
         }
       ]),
     }
