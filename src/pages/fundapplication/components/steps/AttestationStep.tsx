@@ -85,6 +85,7 @@ export default function AttestationStep({
       credit_consent: attestation.credit_consent,
       legal_binding_consent: attestation.legal_binding_consent,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      application_version: '1.0',
       terms_version: '1.0',
       privacy_version: '1.0',
       credit_auth_version: '1.0',
