@@ -2,6 +2,8 @@ import { apiClient } from '../../lib/http/apiClient'
 
 export const getBorrowerActivityLogs = async (params: {
     funding_request_id?: number | string;
+    funding_application_id?: number | string;
+    pre_qualification_id?: number | string;
     page?: number;
     limit?: number;
 }) => {

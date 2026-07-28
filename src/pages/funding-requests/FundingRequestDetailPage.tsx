@@ -37,23 +37,12 @@ const getActivityIcon = (logTypeRaw: string, isSuccess = false) => {
     const logType = String(logTypeRaw || '').toLowerCase();
 
     // Exact matching for funding events
-    if (logType === 'funding_request_create') {
-        return { icon: 'ri-file-add-line', bg: 'bg-info-subtle', color: 'text-info' };
-    }
-    if (logType === 'funding_request_status_update') {
-        return { icon: 'ri-refresh-line', bg: 'bg-warning-subtle', color: 'text-warning' };
-    }
-
-    // Generic fallback matching
-    if (logType.includes('create') || logType.includes('submit')) {
-        return { icon: 'ri-file-add-line', bg: 'bg-primary-subtle', color: 'text-primary' };
-    }
-    if (logType.includes('status') || logType.includes('approve') || logType.includes('accept')) {
-        if (isSuccess || logType.includes('approve') || logType.includes('accept')) {
-            return { icon: 'ri-checkbox-circle-line', bg: 'bg-success-subtle', color: 'text-success' };
-        }
-        return { icon: 'ri-close-circle-line', bg: 'bg-danger-subtle', color: 'text-danger' };
-    }
+    if (logType === 'funding_request_create' || logType === 'funding_application_create') return { icon: 'ri-file-add-line', bg: 'bg-info-subtle', color: 'text-info' };
+    if (logType === 'funding_request_status_update' || logType === 'funding_application_status_update' || logType === 'status_update') return { icon: 'ri-refresh-line', bg: 'bg-warning-subtle', color: 'text-warning' };
+    if (logType.includes('create') || logType.includes('submit')) return { icon: 'ri-file-add-line', bg: 'bg-primary-subtle', color: 'text-primary' };
+    if (logType.includes('approve') || logType.includes('accept') || isSuccess) return { icon: 'ri-checkbox-circle-line', bg: 'bg-success-subtle', color: 'text-success' };
+    if (logType.includes('reject') || logType.includes('fail') || logType.includes('decline')) return { icon: 'ri-close-circle-line', bg: 'bg-danger-subtle', color: 'text-danger' };
+    if (logType.includes('status')) return { icon: 'ri-refresh-line', bg: 'bg-warning-subtle', color: 'text-warning' };
     if (logType.includes('comment')) {
         return { icon: 'ri-chat-3-line', bg: 'bg-warning-subtle', color: 'text-warning' };
     }
@@ -171,19 +160,19 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
             if (oldFormatted && newFormatted) {
                 return (
                     <span className="d-block" style={{ lineHeight: '1.4' }}>
-                        <span className="text-dark fw-bold d-block">{prefix}</span>
+                        <span className="text-dark d-block">{prefix}</span>
                         <span className="d-inline-flex align-items-center flex-wrap gap-1 mt-1">
-                            <span style={{ color: getStatusColor(oldFormatted), fontWeight: '700' }}>{oldFormatted}</span>
+                            <span style={{ color: getStatusColor(oldFormatted) }}>{oldFormatted}</span>
                             <span className="text-muted px-1" style={{ fontSize: '11px' }}>→</span>
-                            <span style={{ color: getStatusColor(newFormatted), fontWeight: '700' }}>{newFormatted}</span>
+                            <span style={{ color: getStatusColor(newFormatted) }}>{newFormatted}</span>
                         </span>
                     </span>
                 );
             } else if (newFormatted) {
                 return (
                     <span className="d-block" style={{ lineHeight: '1.4' }}>
-                        <span className="text-dark fw-bold d-block">{prefix}</span>
-                        <span style={{ color: getStatusColor(newFormatted), fontWeight: '700' }} className="d-block mt-1">{newFormatted}</span>
+                        <span className="text-dark d-block">{prefix}</span>
+                        <span style={{ color: getStatusColor(newFormatted) }} className="d-block mt-1">{newFormatted}</span>
                     </span>
                 );
             }
@@ -193,11 +182,11 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
         if (rawTitle.includes('InProgress to Pending')) {
             return (
                 <span className="d-block" style={{ lineHeight: '1.4' }}>
-                    <span className="text-dark fw-bold d-block">Funding Request Status Changed:</span>
+                    <span className="text-dark d-block">Funding Request Status Changed:</span>
                     <span className="d-inline-flex align-items-center flex-wrap gap-1 mt-1">
-                        <span style={{ color: getStatusColor('In Progress'), fontWeight: '700' }}>In Progress</span>
+                        <span style={{ color: getStatusColor('In Progress') }}>In Progress</span>
                         <span className="text-muted px-1" style={{ fontSize: '11px' }}>→</span>
-                        <span style={{ color: getStatusColor('Pending'), fontWeight: '700' }}>Pending</span>
+                        <span style={{ color: getStatusColor('Pending') }}>Pending</span>
                     </span>
                 </span>
             );
@@ -244,9 +233,9 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
             <div className="flex-grow-1 border-0 mb-0" style={{ minWidth: 0 }}>
                 <div className="p-1">
                     <div className="d-flex align-items-start justify-content-between gap-3">
-                        <div style={{ minWidth: 0 }} onClick={toggleExpand} className="cursor-pointer flex-grow-1">
+                        <div style={{ minWidth: 0, cursor: 'pointer', flexGrow: 1 }} onClick={toggleExpand}>
                             {/* Title */}
-                            <h6 className="mb-0 fw-bold text-dark fs-13">{formatActivityTitle(title)}</h6>
+                            <h6 className="mb-0 text-dark fs-13" style={{ fontWeight: 'normal' }}>{formatActivityTitle(title)}</h6>
 
                             {/* Subtitle / Meta */}
                             <p className="mb-2 text-muted fs-11 mt-1 d-flex align-items-center gap-1">
