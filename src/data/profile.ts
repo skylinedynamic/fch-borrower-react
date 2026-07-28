@@ -153,25 +153,31 @@ export const fundingUrgencyOptions: OptionType[] = [
 export const FUNDING_PURPOSE_OTHER = 'Other'
 
 export const purposeOfFundingOptions: OptionType[] = [
-  { label: 'Working Capital (General Use)', value: 'Working Capital (General Use)' },
-  { label: 'Inventory Purchase', value: 'Inventory Purchase' },
-  { label: 'Marketing / Customer Acquisition', value: 'Marketing / Customer Acquisition' },
-  { label: 'Payroll / Operating Expenses', value: 'Payroll / Operating Expenses' },
-  { label: 'Business Expansion (New Location / Growth)', value: 'Business Expansion (New Location / Growth)' },
-  { label: 'Hiring / Staffing Expansion', value: 'Hiring / Staffing Expansion' },
-  { label: 'Product Development', value: 'Product Development' },
-  { label: 'Equipment Purchase', value: 'Equipment Purchase' },
-  { label: 'Vehicle Purchase', value: 'Vehicle Purchase' },
-  { label: 'Real Estate Acquisition', value: 'Real Estate Acquisition' },
-  { label: 'Construction / Renovation', value: 'Construction / Renovation' },
-  { label: 'Leasehold Improvements', value: 'Leasehold Improvements' },
-  { label: 'Refinance Existing Debt', value: 'Refinance Existing Debt' },
-  { label: 'Debt Consolidation', value: 'Debt Consolidation' },
-  { label: 'Payoff High-Interest Debt', value: 'Payoff High-Interest Debt' },
-  { label: 'Bridge Financing', value: 'Bridge Financing' },
+  { label: 'Accounts Receivable', value: 'Accounts Receivable' },
   { label: 'Business Acquisition', value: 'Business Acquisition' },
+  { label: 'Business Expansion', value: 'Business Expansion' },
+  { label: 'Business Line of Credit', value: 'Business Line of Credit' },
+  { label: 'Commercial Real Estate Purchase', value: 'Commercial Real Estate Purchase' },
+  { label: 'Commercial Real Estate Refinance', value: 'Commercial Real Estate Refinance' },
+  { label: 'Debt Refinance / Consolidation', value: 'Debt Refinance / Consolidation' },
+  { label: 'Equipment Lease', value: 'Equipment Lease' },
+  { label: 'Equipment Purchase', value: 'Equipment Purchase' },
+  { label: 'Franchise Purchase', value: 'Franchise Purchase' },
+  { label: 'Furniture, Fixtures & Equipment (FF&E)', value: 'Furniture, Fixtures & Equipment (FF&E)' },
+  { label: 'Ground-Up Construction', value: 'Ground-Up Construction' },
+  { label: 'Inventory', value: 'Inventory' },
+  { label: 'Land Purchase / Development', value: 'Land Purchase / Development' },
+  { label: 'Marketing / Advertising', value: 'Marketing / Advertising' },
+  { label: 'Owner Occupied Commercial Property', value: 'Owner Occupied Commercial Property' },
   { label: 'Partner Buyout', value: 'Partner Buyout' },
-  { label: FUNDING_PURPOSE_OTHER, value: FUNDING_PURPOSE_OTHER }
+  { label: 'Payroll', value: 'Payroll' },
+  { label: 'Professional Services', value: 'Professional Services' },
+  { label: 'Renovation / Tenant Improvements', value: 'Renovation / Tenant Improvements' },
+  { label: 'Startup Costs', value: 'Startup Costs' },
+  { label: 'Technology / Software', value: 'Technology / Software' },
+  { label: 'Transportation / Fleet', value: 'Transportation / Fleet' },
+  { label: 'Working Capital', value: 'Working Capital' },
+  { label: 'Other', value: 'Other' }
 ]
 
 export const personalCreditScoreOptions: OptionType[] = [

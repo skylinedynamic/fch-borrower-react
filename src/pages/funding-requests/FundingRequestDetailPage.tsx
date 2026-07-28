@@ -516,22 +516,24 @@ export default function FundingRequestDetailPage() {
                 <div className="page-content funding-requests-page">
                     <div className="container-fluid">
                         {/* Skeleton Breadcrumb */}
-                        <div className="row pb-1 page-subheader-sticky bg-body">
-                            <div className="col-12">
-                                <div className="d-flex align-items-center justify-content-between flex-row py-2">
-                                    <div className="flex-grow-1">
-                                        <div className="mb-2"><Skeleton w={200} h={24} /></div>
-                                        <div><Skeleton w={280} h={14} /></div>
-                                    </div>
-                                    <div className="mt-0">
-                                        <Skeleton w={70} h={30} rounded={false} />
+                        <div className="page-subheader-sticky bg-body">
+                            <div className="d-flex align-items-center justify-content-between py-2">
+                                <div className="flex-grow-1">
+                                    <div className="skeleton-line mb-2 fd-skel-title" />
+                                    <div className="d-flex align-items-center gap-2">
+                                        <div className="skeleton-line m-0 fd-skel-crumb-sm" />
+                                        <div className="skeleton-line m-0 fd-skel-crumb-sep" />
+                                        <div className="skeleton-line m-0 fd-skel-crumb-md" />
+                                        <div className="skeleton-line m-0 fd-skel-crumb-sep" />
+                                        <div className="skeleton-line m-0 fd-skel-crumb-lg" />
                                     </div>
                                 </div>
+                                <div className="skeleton-line m-0 fd-skel-back-btn" />
                             </div>
                         </div>
 
                         {/* Skeleton Layout */}
-                        <div className="row g-4 mt-1">
+                        <div className="row g-4">
                             {/* Left Column */}
                             <div className="col-lg-8">
                                 {/* Review Progress Card Skeleton */}
@@ -728,30 +730,28 @@ export default function FundingRequestDetailPage() {
                 <div className="container-fluid">
 
                     {/* ── Header / Breadcrumb ─────────────────────────────────── */}
-                    <div className="row pb-1 page-subheader-sticky bg-body">
-                        <div className="col-12">
-                            <div className="d-flex align-items-center justify-content-between flex-row py-2">
-                                <div className="flex-grow-1">
-                                    <h4 className="fs-20 mb-1">{pageTitle}</h4>
-                                    <nav aria-label="breadcrumb">
-                                        <ol className="breadcrumb m-0 fs-12 text-muted">
-                                            <li className="breadcrumb-item"><Link to="/" className="text-muted">Dashboard</Link></li>
-                                            <li className="breadcrumb-item"><Link to="/funding-requests" className="text-muted">Funding Requests</Link></li>
-                                            <li className="breadcrumb-item active text-primary font-weight-bold" aria-current="page">{pageTitle}</li>
-                                        </ol>
-                                    </nav>
-                                </div>
-                                <div className="mt-0">
-                                    <Link to="/funding-requests" className="btn fr-back-btn px-3 shadow-none">
-                                        &larr; Back
-                                    </Link>
-                                </div>
+                    <div className="page-subheader-sticky bg-body">
+                        <div className="d-flex align-items-center justify-content-between py-2">
+                            <div className="flex-grow-1">
+                                <h4 className="fs-18 mb-1 mt-0">{pageTitle}</h4>
+                                <nav aria-label="breadcrumb">
+                                    <ol className="breadcrumb m-0 fs-12 text-muted">
+                                        <li className="breadcrumb-item"><Link to="/" className="text-muted">Dashboard</Link></li>
+                                        <li className="breadcrumb-item"><Link to="/funding-requests" className="text-muted">Funding Requests</Link></li>
+                                        <li className="breadcrumb-item active text-primary font-weight-bold" aria-current="page">{pageTitle}</li>
+                                    </ol>
+                                </nav>
+                            </div>
+                            <div className="mt-0 d-flex align-items-center">
+                                <Link to="/funding-requests" className="btn btn-primary fw-medium d-flex align-items-center gap-2 shadow-none px-4">
+                                    <i className="ri-arrow-left-line"></i> Back
+                                </Link>
                             </div>
                         </div>
                     </div>
 
                     {/* ── Two Column Page Layout ─────────────────────────────── */}
-                    <div className="row g-4 mt-1">
+                    <div className="row g-4">
 
                         {/* ── Left Column: Details Cards (Summary, Documents, Decision) ── */}
                         <div className="col-lg-8">

@@ -43,10 +43,9 @@ const FundingDetailLoader = () => (
         <div className="container-fluid">
 
             {/* ── Breadcrumb skeleton ───────────────────────── */}
-            <div className="row page-subheader-sticky bg-body">
-                <div className="col-12 py-2">
-                    <div className="d-flex align-items-center justify-content-between">
-                        <div className="flex-grow-1">
+            <div className="page-subheader-sticky bg-body">
+                <div className="d-flex align-items-center justify-content-between py-2">
+                    <div className="flex-grow-1">
                             <div className="skeleton-line mb-2 fd-skel-title" />
                             <div className="d-flex align-items-center gap-2">
                                 <div className="skeleton-line m-0 fd-skel-crumb-sm" />
@@ -59,8 +58,6 @@ const FundingDetailLoader = () => (
                         <div className="skeleton-line m-0 fd-skel-back-btn" />
                     </div>
                 </div>
-            </div>
-
             {/* ── Main card ─────────────────────────────────── */}
             <div className="card border-0 shadow-sm fd-skel-card">
                 <div className="card-body p-4">
@@ -300,24 +297,22 @@ const FundingDetail = () => {
             <div className="container-fluid">
 
                 {/* ── Breadcrumb ─────────────────────────────────────────────── */}
-                <div className="row page-subheader-sticky bg-body">
-                    <div className="col-12">
-                        <div className="d-flex align-items-center justify-content-between flex-row py-2">
-                            <div className="flex-grow-1">
-                                <h4 className="fs-18 mb-1">{name}</h4>
-                                <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb m-0">
-                                        <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>
-                                        <li className="breadcrumb-item"><Link to="/funding">Funding Options</Link></li>
-                                        <li className="breadcrumb-item active fw-medium" aria-current="page">{name}</li>
-                                    </ol>
-                                </nav>
-                            </div>
-                            <div className="mt-0 d-flex align-items-center">
-                                <Link to="/funding" className="btn btn-primary fw-medium d-flex align-items-center gap-2 shadow-none px-4">
-                                    <i className="ri-arrow-left-line"></i> Back
-                                </Link>
-                            </div>
+                <div className="page-subheader-sticky bg-body">
+                    <div className="d-flex align-items-center justify-content-between py-2">
+                        <div className="flex-grow-1">
+                            <h4 className="fs-18 mb-1 mt-0">{name}</h4>
+                            <nav aria-label="breadcrumb">
+                                <ol className="breadcrumb m-0">
+                                    <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>
+                                    <li className="breadcrumb-item"><Link to="/funding">Funding Options</Link></li>
+                                    <li className="breadcrumb-item active fw-medium" aria-current="page">{name}</li>
+                                </ol>
+                            </nav>
+                        </div>
+                        <div className="mt-0 d-flex align-items-center">
+                            <Link to="/funding" className="btn btn-primary fw-medium d-flex align-items-center gap-2 shadow-none px-4">
+                                <i className="ri-arrow-left-line"></i> Back
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -479,11 +474,6 @@ const FundingDetail = () => {
                                     Start Funding Request
                                     <i className="ri-arrow-right-line" />
                                 </span>
-                            ) : isApproved ? (
-                                <Link to="/fund-application" state={{ approved_funding: name, funding_type: name }} className="btn btn-success d-flex align-items-center justify-content-center gap-2 fw-medium px-4">
-                                    Process Funding Application
-                                    <i className="ri-arrow-right-line" />
-                                </Link>
                             ) : (
                                 <Link to={`/funding/${id}/review`} className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4">
                                     Start Funding Request
