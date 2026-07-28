@@ -5,6 +5,7 @@ import BorrowerActivitySidebar from '../../components/Common/BorrowerActivitySid
 import { FUNDING_APPLICATION_STATUS_CLASS_MAP } from '../../config/funding'
 import { getFileConfig, getDocumentStatusBadgeClass } from '../../config/fileTypeConfig'
 import { downloadFileFromUrl, handleFileDownload } from '../../utils/fileDownload'
+import FundingApplicationDetailLoader from './components/FundingApplicationDetailLoader'
 import '../../components/Common/StatisticsCardSkeleton.css'
 
 const formatDateTime = (d: string) => {
@@ -13,18 +14,22 @@ const formatDateTime = (d: string) => {
            new Date(d).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 }
 
-const Skeleton = ({ w, h, rounded = false }: { w: number | string; h: number; rounded?: boolean }) => (
-    <div className={`skeleton-shimmer ${rounded ? 'rounded-circle' : 'rounded'}`} style={{ width: w, height: h }}></div>
-)
-
 const DetailItem = ({ label, value, icon, fullWidth = false }: { label: string; value: React.ReactNode; icon?: string; fullWidth?: boolean }) => (
   <div className={`mb-3 ${fullWidth ? 'col-12' : 'col-sm-6'}`}>
-    <div className="d-flex align-items-center mb-1 text-muted">
-      {icon && <i className={`${icon} me-2 fs-14`}></i>}
-      <span className="text-uppercase fw-bold fs-12 ls-05">{label}</span>
-    </div>
-    <div className="fs-14 fw-medium text-dark text-break">
-      {value || <span className="text-muted fst-italic">Not provided</span>}
+    <div className="d-flex align-items-start">
+      {icon && (
+        <div className="avatar-xs flex-shrink-0 me-2 mt-1">
+            <span className="avatar-title bg-primary-subtle text-primary rounded fs-15 shadow-sm">
+                <i className={`${icon}`}></i>
+            </span>
+        </div>
+      )}
+      <div className="flex-grow-1">
+        <span className="text-uppercase fw-bold text-muted fs-12 ls-05 d-block mb-1">{label}</span>
+        <div className="fs-14 fw-medium text-dark text-break">
+          {value || <span className="text-muted fst-italic">Not provided</span>}
+        </div>
+      </div>
     </div>
   </div>
 )
@@ -57,198 +62,7 @@ export default function FundingApplicationDetailPage() {
   
   const application = response?.data
 
-  if (isLoading) {
-      return (
-          <div className="page-content">
-              <div className="container-fluid">
-                  <div className="row pb-1 page-subheader-sticky bg-body">
-                      <div className="col-12">
-                          <div className="d-flex align-items-center justify-content-between flex-row py-2">
-                              <div className="flex-grow-1">
-                                  <Skeleton w={200} h={24} />
-                                  <div className="mt-2"><Skeleton w={150} h={14} /></div>
-                              </div>
-                              <div className="mt-0">
-                                  <Skeleton w={80} h={36} />
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-                  <div className="row g-4 mt-2">
-                      <div className="col-lg-8">
-                          {/* 1. Business Information Skeleton */}
-                          <div className="card border shadow-sm mb-4">
-                              <div className="card-header bg-white border-bottom py-3">
-                                  <div className="d-flex align-items-center gap-2">
-                                      <Skeleton w={24} h={24} rounded />
-                                      <Skeleton w={180} h={18} />
-                                  </div>
-                              </div>
-                              <div className="card-body pt-4">
-                                  <div className="row g-3">
-                                      <div className="col-12 mb-2">
-                                          <div className="mb-2"><Skeleton w={60} h={12} /></div>
-                                          <Skeleton w="40%" h={24} />
-                                      </div>
-                                      <div className="col-12 mb-2">
-                                          <div className="mb-2"><Skeleton w={100} h={12} /></div>
-                                          <Skeleton w="80%" h={16} />
-                                      </div>
-                                      <div className="col-12 mb-3">
-                                          <div className="mb-2"><Skeleton w={80} h={12} /></div>
-                                          <Skeleton w="60%" h={16} />
-                                      </div>
-                                      {[1, 2, 3, 4, 5, 6].map(i => (
-                                          <div key={`biz-mid-${i}`} className="col-sm-6 mb-3">
-                                              <div className="mb-2"><Skeleton w={120} h={12} /></div>
-                                              <div><Skeleton w={180} h={16} /></div>
-                                          </div>
-                                      ))}
-                                      <div className="col-12"><hr className="border-light my-1" /></div>
-                                      <div className="col-12 mb-3 mt-3">
-                                          <div className="mb-2"><Skeleton w={60} h={12} /></div>
-                                          <Skeleton w="90%" h={16} />
-                                      </div>
-                                      {[1, 2, 3, 4].map(i => (
-                                          <div key={`biz-bot-${i}`} className="col-sm-6 mb-3">
-                                              <div className="mb-2"><Skeleton w={80} h={12} /></div>
-                                              <div><Skeleton w={140} h={16} /></div>
-                                          </div>
-                                      ))}
-                                  </div>
-                              </div>
-                          </div>
-
-                          {/* 2. Financial Information Skeleton */}
-                          <div className="card border shadow-sm mb-4">
-                              <div className="card-header bg-white border-bottom py-3">
-                                  <div className="d-flex align-items-center gap-2">
-                                      <Skeleton w={24} h={24} rounded />
-                                      <Skeleton w={160} h={18} />
-                                  </div>
-                              </div>
-                              <div className="card-body pt-4">
-                                  <div className="row g-3">
-                                      {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                                          <div key={i} className="col-sm-6 mb-3">
-                                              <div className="mb-2"><Skeleton w={120} h={12} /></div>
-                                              <div><Skeleton w={160} h={16} /></div>
-                                          </div>
-                                      ))}
-                                  </div>
-                              </div>
-                          </div>
-
-                          {/* 3. Funding Request Skeleton */}
-                          <div className="card border shadow-sm mb-4">
-                              <div className="card-header bg-white border-bottom py-3">
-                                  <div className="d-flex align-items-center gap-2">
-                                      <Skeleton w={24} h={24} rounded />
-                                      <Skeleton w={140} h={18} />
-                                  </div>
-                              </div>
-                              <div className="card-body pt-4">
-                                  <div className="row g-3">
-                                      <div className="col-12 mb-3">
-                                          <div className="mb-2"><Skeleton w={100} h={12} /></div>
-                                          <Skeleton w="100%" h={16} />
-                                      </div>
-                                      <div className="col-12 mb-3">
-                                          <div className="mb-2"><Skeleton w={120} h={12} /></div>
-                                          <Skeleton w="100%" h={16} />
-                                      </div>
-                                      {[1, 2, 3, 4, 5, 6, 7].map(i => (
-                                          <div key={`req-mid-${i}`} className="col-sm-6 mb-3">
-                                              <div className="mb-2"><Skeleton w={110} h={12} /></div>
-                                              <div><Skeleton w={140} h={16} /></div>
-                                          </div>
-                                      ))}
-                                      <div className="col-12 mb-3 mt-2">
-                                          <div className="mb-2"><Skeleton w={80} h={12} /></div>
-                                          <Skeleton w="100%" h={16} />
-                                      </div>
-                                      <div className="col-12 mb-3">
-                                          <div className="mb-2"><Skeleton w={120} h={12} /></div>
-                                          <Skeleton w="100%" h={16} />
-                                      </div>
-                                  </div>
-                              </div>
-                          </div>
-
-                          {/* 4. Compliance Disclosures Skeleton */}
-                          <div className="card border shadow-sm mb-4">
-                              <div className="card-header bg-white border-bottom py-3">
-                                  <div className="d-flex align-items-center gap-2">
-                                      <Skeleton w={24} h={24} rounded />
-                                      <Skeleton w={200} h={18} />
-                                  </div>
-                              </div>
-                              <div className="card-body pt-4">
-                                  <div className="row g-3">
-                                      {[1, 2, 3, 4, 5, 6].map(i => (
-                                          <div key={i} className="col-sm-6 mb-3">
-                                              <div className="mb-2"><Skeleton w={130} h={12} /></div>
-                                              <div><Skeleton w={80} h={16} /></div>
-                                          </div>
-                                      ))}
-                                  </div>
-                              </div>
-                          </div>
-
-                          {/* 5. Documents Skeleton */}
-                          <div className="card border shadow-sm mb-4">
-                              <div className="card-header bg-white border-bottom py-3 px-4">
-                                  <div className="d-flex align-items-center gap-2">
-                                      <Skeleton w={24} h={24} rounded />
-                                      <Skeleton w={180} h={18} />
-                                  </div>
-                              </div>
-                              <div className="card-body px-4 pb-4 pt-3">
-                                  <div className="table-responsive">
-                                      <table className="table table-nowrap align-middle mb-0">
-                                          <thead className="table-light">
-                                              <tr>
-                                                  <th><Skeleton w={100} h={14} /></th>
-                                                  <th><Skeleton w={60} h={14} /></th>
-                                                  <th><Skeleton w={80} h={14} /></th>
-                                                  <th><Skeleton w={40} h={14} /></th>
-                                              </tr>
-                                          </thead>
-                                          <tbody>
-                                              {[1, 2, 3].map(i => (
-                                                  <tr key={i}>
-                                                      <td>
-                                                          <div className="d-flex align-items-center gap-2">
-                                                              <Skeleton w={24} h={24} rounded />
-                                                              <Skeleton w={140} h={14} />
-                                                          </div>
-                                                      </td>
-                                                      <td><Skeleton w={60} h={20} /></td>
-                                                      <td><Skeleton w={100} h={14} /></td>
-                                                      <td><Skeleton w={30} h={30} /></td>
-                                                  </tr>
-                                              ))}
-                                          </tbody>
-                                      </table>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                      <div className="col-lg-4">
-                          <div className="card border shadow-sm h-100 min-vh-50">
-                              <div className="card-header bg-white border-bottom py-3">
-                                  <Skeleton w={100} h={18} />
-                              </div>
-                              <div className="card-body">
-                                  <Skeleton w="100%" h={200} />
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      )
-  }
+  if (isLoading) return <FundingApplicationDetailLoader />
 
   if (!application) {
       return (
@@ -296,17 +110,8 @@ export default function FundingApplicationDetailPage() {
         <div className="row g-4 mt-2">
           <div className="col-lg-8">
             <SectionCard title="Business Information" icon="ri-building-line">
-              <DetailItem 
-                label="Status" 
-                value={
-                  <span className={`badge rounded-pill fs-12 text-uppercase ${FUNDING_APPLICATION_STATUS_CLASS_MAP[application.status] || 'bg-secondary-subtle text-secondary'}`}>
-                      {application.status}
-                  </span>
-                } 
-                fullWidth 
-              />
-              <DetailItem label="Business Name" value={application.business_name} fullWidth />
-              <DetailItem label="Full Name" value={application.full_name} fullWidth />
+              <DetailItem label="Business Name" value={application.business_name} icon="ri-store-2-line" />
+              <DetailItem label="Full Name" value={application.full_name} icon="ri-user-line" />
               <DetailItem label="Email Address" value={application.business_email} icon="ri-mail-line" />
               <DetailItem label="Phone Number" value={application.business_phone_no} icon="ri-phone-line" />
               <DetailItem label="Industry Type" value={application.industry_type} icon="ri-briefcase-line" />
@@ -316,66 +121,82 @@ export default function FundingApplicationDetailPage() {
 
               <div className="col-12"><hr className="border-light my-3" /></div>
 
-              <DetailItem label="Address" value={application.business_address} fullWidth />
-              <DetailItem label="City" value={application.business_city} />
-              <DetailItem label="State" value={application.business_state} />
-              <DetailItem label="Postal Code" value={application.business_postal_code} />
-              <DetailItem label="Country" value={application.business_country} />
+              <DetailItem label="Address" value={application.business_address} icon="ri-map-pin-line" fullWidth />
+              <DetailItem label="City" value={application.business_city} icon="ri-building-2-line" />
+              <DetailItem label="State" value={application.business_state} icon="ri-map-2-line" />
+              <DetailItem label="Postal Code" value={application.business_postal_code} icon="ri-map-pin-2-line" />
+              <DetailItem label="Country" value={application.business_country} icon="ri-global-line" />
             </SectionCard>
 
             {/* Financial Information */}
             <SectionCard title="Financial Information" icon="ri-wallet-3-line">
               <DetailItem label="Monthly Revenue" value={application.monthly_revenue} icon="ri-money-dollar-circle-line" />
-              <DetailItem label="Annual Revenue" value={application.annual_revenue} icon="ri-bank-note-line" />
+              <DetailItem label="Annual Revenue" value={application.annual_revenue} icon="ri-money-dollar-circle-line" />
               <DetailItem label="Business Bank Name" value={application.business_bank_name} icon="ri-bank-line" />
-              <DetailItem label="Checking Start Date" value={application.business_checking_start_date} icon="ri-calendar-line" />
-              <DetailItem label="Personal Credit Score" value={application.self_reported_personal_credit_score} />
-              <DetailItem label="Business Credit Score" value={application.self_reported_business_credit_score} />
-              <DetailItem label="Has Business Debt" value={application.has_business_debt ? 'Yes' : 'No'} />
-              {application.has_business_debt && (
+              <DetailItem label="Business Start Date" value={application.business_checking_start_date} icon="ri-calendar-line" />
+              <DetailItem label="Personal Credit Score" value={application.self_reported_personal_credit_score} icon="ri-dashboard-3-line" />
+              <DetailItem label="Business Credit Score" value={application.self_reported_business_credit_score} icon="ri-bar-chart-2-line" />
+              <DetailItem label="Has Business Debt" value={application.has_business_debt ? 'Yes' : 'No'} icon="ri-question-answer-line" />
+              {application.has_business_debt ? (
                 <DetailItem label="Debt Balance" value={application.debt_balance} icon="ri-bank-card-line" />
+              ) : (
+                <div className="col-sm-6"></div>
               )}
+              <DetailItem label="Time in Business" value={application.time_in_business} icon="ri-time-line" />
+              <DetailItem label="Average Monthly Deposits" value={application.average_monthly_deposits} icon="ri-safe-2-line" />
+              <DetailItem label="Average Bank Balance" value={application.avg_bank_balance} icon="ri-wallet-3-line" />
+              <div className="col-sm-6"></div>
             </SectionCard>
 
             {/* Funding Request */}
-            <SectionCard title="Funding Request" icon="ri-line-chart-line">
-              <DetailItem label="Sequence Name" value={application.funding_sequence_name} icon="ri-list-check" fullWidth />
-              <DetailItem label="Sequence Subtitle" value={application.funding_sequence_subtitle} icon="ri-align-left" fullWidth />
+            <SectionCard title="Funding Application Information" icon="ri-line-chart-line">
+              <DetailItem 
+                label="Status" 
+                value={
+                  <span className={`badge rounded-pill fs-12 text-uppercase ${FUNDING_APPLICATION_STATUS_CLASS_MAP[application.status] || 'bg-secondary-subtle text-secondary'}`}>
+                      {application.status}
+                  </span>
+                } 
+                icon="ri-information-line"
+              />
+              <DetailItem label="Sequence Name" value={application.funding_sequence_name} icon="ri-list-check" />
+              <DetailItem label="Sequence Subtitle" value={application.funding_sequence_subtitle} icon="ri-align-left" />
               <DetailItem label="Funding Request Status" value={application.funding_request_status} icon="ri-information-line" />
               <DetailItem label="Amount Range" value={application.funding_sequence_amount_range} icon="ri-bar-chart-box-line" />
               <DetailItem label="Funding Type" value={application.preferred_funding_type} icon="ri-star-line" />
               <DetailItem label="Request Amount" value={application.requested_amount ? `$${parseFloat(application.requested_amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : 'N/A'} icon="ri-money-dollar-circle-line" />
               <DetailItem label="Speed to Funds" value={application.funding_sequence_speed_to_funds} icon="ri-time-line" />
-              <DetailItem label="Timeframe Needed" value={application.timeframe_needed} icon="ri-hourglass-line" />
-              <DetailItem label="Collateral Available" value={application.collateral_available} />
+              <DetailItem label="Collateral Available" value={application.collateral_available} icon="ri-safe-2-line" />
               <DetailItem label="Uses" value={Array.isArray(application.funding_sequence_uses) ? application.funding_sequence_uses.join(', ') : application.funding_sequence_uses} icon="ri-briefcase-line" fullWidth />
-              <DetailItem label="Purpose of Funds" value={application.purpose_of_funds} fullWidth />
+              <DetailItem label="Purpose of Funds" value={application.purpose_of_funds} icon="ri-focus-2-line" fullWidth />
               {application.purpose_note && (
-                <DetailItem label="Purpose Note" value={application.purpose_note} fullWidth />
+                <DetailItem label="Purpose Note" value={application.purpose_note} icon="ri-sticky-note-line" fullWidth />
               )}
             </SectionCard>
 
             {/* Federal Compliance */}
-            <SectionCard title="Federal Compliance Disclosures" icon="pi pi-file-check">
-              <DetailItem label="Filed for Bankruptcy" value={application.filed_for_bankruptcy === null ? 'N/A' : application.filed_for_bankruptcy ? 'Yes' : 'No'} />
-              <DetailItem label="Pending Lawsuits" value={application.any_pending_lawsuits === null ? 'N/A' : application.any_pending_lawsuits ? 'Yes' : 'No'} />
-              <DetailItem label="Federal Loan Default" value={application.has_federal_loan === null ? 'N/A' : application.has_federal_loan ? 'Yes' : 'No'} />
-              <DetailItem label="Federal Debt" value={application.has_federal_debt === null ? 'N/A' : application.has_federal_debt ? 'Yes' : 'No'} />
-              <DetailItem label="Criminal Offense" value={application.has_criminal_offense === null ? 'N/A' : application.has_criminal_offense ? 'Yes' : 'No'} />
-              <DetailItem label="Parole/Probation" value={application.has_parole_or_probation === null ? 'N/A' : application.has_parole_or_probation ? 'Yes' : 'No'} />
-              <DetailItem label="Suspended/Debarred" value={application.suspended_or_debarred === null ? 'N/A' : application.suspended_or_debarred ? 'Yes' : 'No'} />
-              <DetailItem label="Judgments (Business)" value={application.any_outstanding_judgments_business === null ? 'N/A' : application.any_outstanding_judgments_business ? 'Yes' : 'No'} />
-              <DetailItem label="Judgments (Owner)" value={application.any_outstanding_judgments_owner === null ? 'N/A' : application.any_outstanding_judgments_owner ? 'Yes' : 'No'} />
+            <SectionCard title="Federal Compliance Disclosures" icon="ri-file-shield-2-line">
+              <DetailItem label="Filed for Bankruptcy" value={application.filed_for_bankruptcy === null ? 'N/A' : application.filed_for_bankruptcy ? 'Yes' : 'No'} icon="ri-scales-3-line" />
+              <DetailItem label="Pending Lawsuits" value={application.any_pending_lawsuits === null ? 'N/A' : application.any_pending_lawsuits ? 'Yes' : 'No'} icon="ri-hammer-line" />
+              <DetailItem label="Federal Loan Default" value={application.has_federal_loan === null ? 'N/A' : application.has_federal_loan ? 'Yes' : 'No'} icon="ri-bank-line" />
+              <DetailItem label="Federal Debt" value={application.has_federal_debt === null ? 'N/A' : application.has_federal_debt ? 'Yes' : 'No'} icon="ri-money-dollar-box-line" />
+              <DetailItem label="Criminal Offense" value={application.has_criminal_offense === null ? 'N/A' : application.has_criminal_offense ? 'Yes' : 'No'} icon="ri-error-warning-line" />
+              <DetailItem label="Parole/Probation" value={application.has_parole_or_probation === null ? 'N/A' : application.has_parole_or_probation ? 'Yes' : 'No'} icon="ri-user-unfollow-line" />
+              <DetailItem label="Suspended/Debarred" value={application.suspended_or_debarred === null ? 'N/A' : application.suspended_or_debarred ? 'Yes' : 'No'} icon="ri-prohibited-line" />
+              <DetailItem label="Judgments (Business)" value={application.any_outstanding_judgments_business === null ? 'N/A' : application.any_outstanding_judgments_business ? 'Yes' : 'No'} icon="ri-building-4-line" />
+              <DetailItem label="Judgments (Owner)" value={application.any_outstanding_judgments_owner === null ? 'N/A' : application.any_outstanding_judgments_owner ? 'Yes' : 'No'} icon="ri-user-line" />
+              <div className="col-sm-6"></div>
               {application.federal_compliance_disclosures_explanation && (
-                <DetailItem label="Explanation" value={application.federal_compliance_disclosures_explanation} fullWidth />
+                <DetailItem label="Explanation" value={application.federal_compliance_disclosures_explanation} icon="ri-chat-4-line" fullWidth />
               )}
             </SectionCard>
 
             {/* Disclosures & Authorization */}
-            <SectionCard title="Disclosures & Authorization" icon="pi pi-check-circle">
-              <DetailItem label="Credit Pull Authorization" value={application.credit_pull_authorization ? 'Authorized' : 'Not Authorized'} />
-              <DetailItem label="Terms & Conditions" value={application.terms_conditions_acceptance ? 'Accepted' : 'Not Accepted'} />
-              <DetailItem label="Attestation Authorization" value={application.attestation_authorization ? 'Confirmed' : 'Pending'} />
+            <SectionCard title="Disclosures & Authorization" icon="ri-checkbox-circle-line">
+              <DetailItem label="Credit Pull Authorization" value={application.credit_pull_authorization ? 'Authorized' : 'Not Authorized'} icon="ri-shield-check-line" />
+              <DetailItem label="Terms & Conditions" value={application.terms_conditions_acceptance ? 'Accepted' : 'Not Accepted'} icon="ri-file-list-3-line" />
+              <DetailItem label="Attestation Authorization" value={application.attestation_authorization ? 'Confirmed' : 'Pending'} icon="ri-verified-badge-line" />
+              <div className="col-sm-6"></div>
             </SectionCard>
 
             {/* Uploaded Documents */}
