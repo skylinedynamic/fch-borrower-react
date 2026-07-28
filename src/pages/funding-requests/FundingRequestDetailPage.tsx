@@ -67,12 +67,12 @@ const StatusBadge = ({ status }: { status: string }) => {
     if (status === FUNDING_REVIEW_STATUS.ACCEPTED)
         return <span className="badge bg-info-subtle text-info fs-12">{status}</span>
     if (status === FUNDING_REVIEW_STATUS.REJECTED)
-        return <span className="badge bg-danger-subtle text-danger fs-12">Rejected</span>
+        return <span className="badge bg-danger-subtle text-danger fs-12">{status}</span>
     if (status === FUNDING_REVIEW_STATUS.CANCELED)
-        return <span className="badge bg-secondary-subtle text-secondary fs-12">Canceled</span>
+        return <span className="badge bg-secondary-subtle text-secondary fs-12">{status}</span>
     if (status === FUNDING_REVIEW_STATUS.IN_PROGRESS)
-        return <span className="badge bg-primary-subtle text-primary fs-12">In Progress</span>
-    return <span className="badge bg-warning-subtle text-warning fs-12">Pending</span>
+        return <span className="badge bg-primary-subtle text-primary fs-12">{status}</span>
+    return <span className="badge bg-warning-subtle text-warning fs-12">{status}</span>
 }
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
