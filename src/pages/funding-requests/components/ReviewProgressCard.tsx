@@ -4,7 +4,7 @@ import {
     FUNDING_REVIEW_STATUS, 
     getFundingReviewProgress, 
     FUNDING_REVIEW_TIMELINE_STEPS, 
-    FUNDING_REVIEW_GUIDELINE_CARDS 
+    FUNDING_REVIEW_GUIDELINE_CARDS
 } from '../../../config/funding';
 
 interface ReviewProgressCardProps {
@@ -30,6 +30,13 @@ export default function ReviewProgressCard({
     const terminalStatuses = [FUNDING_REVIEW_STATUS.APPROVED, FUNDING_REVIEW_STATUS.REJECTED, FUNDING_REVIEW_STATUS.CANCELED];
     const isCurrentTerminal = terminalStatuses.includes(status);
     const terminalKey = isCurrentTerminal ? status : FUNDING_REVIEW_STATUS.APPROVED;
+
+    const baseSteps = [
+        { key: FUNDING_REVIEW_STATUS.PENDING, label: FUNDING_REVIEW_STATUS.PENDING, subtext: 'We have received your request.', icon: 'ri-file-text-line' },
+        { key: FUNDING_REVIEW_STATUS.IN_PROGRESS, label: FUNDING_REVIEW_STATUS.IN_PROGRESS, subtext: 'Our team is reviewing.', icon: 'ri-search-eye-line' },
+        { key: FUNDING_REVIEW_STATUS.ACCEPTED, label: FUNDING_REVIEW_STATUS.ACCEPTED, subtext: 'Request accepted, processing.', icon: 'ri-checkbox-circle-line' },
+        { key: FUNDING_REVIEW_STATUS.APPROVED, label: FUNDING_REVIEW_STATUS.APPROVED, subtext: 'Application is approved.', icon: 'ri-check-double-line' }
+    ];
 
     const displaySteps = FUNDING_REVIEW_TIMELINE_STEPS.filter(step => {
         if (terminalStatuses.includes(step.key)) {
@@ -128,6 +135,8 @@ export default function ReviewProgressCard({
                             };
 
                             const stepColor = getStatusColor(step.key);
+
+                            const terminalLabel = terminalKey === FUNDING_REVIEW_STATUS.REJECTED ? 'Rejected' : terminalKey === FUNDING_REVIEW_STATUS.CANCELED ? 'Canceled' : 'Approved';
 
                             return (
                                 <React.Fragment key={step.key}>

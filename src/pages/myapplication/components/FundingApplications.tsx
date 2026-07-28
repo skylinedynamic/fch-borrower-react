@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useFundingApplications } from '../../../modules/my-application/queries'
 import type { FundingApplication } from '../../../modules/my-application/types'
 import { TableRowsLoader } from '../../../components/Loader/TableRowsLoader'
@@ -7,17 +8,10 @@ import FundingApplicationDetailsModal from './FundingApplicationDetailsModal'
 import { FUNDING_APPLICATION_STATUS_CLASS_MAP } from '../../../config/funding'
 
 export default function FundingApplications() {
+  const navigate = useNavigate()
   const [page, setPage] = useState(1)
   const { data, isLoading } = useFundingApplications(page)
-  const [selectedApplication, setSelectedApplication] = useState<FundingApplication | null>(null)
-  const [detailsModalOpen, setDetailsModalOpen] = useState(false)
-
-  const toggleDetailsModal = () => setDetailsModalOpen(!detailsModalOpen)
-
-  const handleViewDetails = (app: FundingApplication) => {
-    setSelectedApplication(app)
-    setDetailsModalOpen(true)
-  }
+  // Modal approach removed in favor of dedicated details page
 
   const statusClass = (s: string) => {
     const customClass = FUNDING_APPLICATION_STATUS_CLASS_MAP[s];
@@ -55,21 +49,22 @@ export default function FundingApplications() {
                   <>
                     {rows.length > 0 ? (
                       rows.map((app: FundingApplication) => (
-                        <tr key={app.id}>
+                        <tr 
+                          key={app.id} 
+                          onClick={() => navigate(`/my-applications/funding/${app.id}`)}
+                          style={{ cursor: 'pointer' }}
+                          className="fr-table-row-hover"
+                        >
                           <td>{app.purpose_of_funds || 'N/A'}</td>
                           <td>{app.entity_type || 'N/A'}</td>
                           <td>{app.industry_type || 'N/A'}</td>
                           <td>{app.date || 'N/A'}</td>
                           <td>{app.requested_amount || 'N/A'}</td>
                           <td><span className={statusClass(app.status)}>{app.status}</span></td>
-                          <td className="text-end">
-                            <button
-                              className="btn btn-sm btn-soft-primary btn-icon"
-                              onClick={() => handleViewDetails(app)}
-                              title="View Details"
-                            >
-                              <i className="ri-eye-line"></i>
-                            </button>
+                          <td className="text-end" onClick={(e) => e.stopPropagation()}>
+                            <Link to={`/my-applications/funding/${app.id}`} className="btn btn-light btn-sm fr-download-btn">
+                              <i className="ri-eye-line align-middle"></i>
+                            </Link>
                           </td>
                         </tr>
                       ))
@@ -140,12 +135,6 @@ export default function FundingApplications() {
           )}
         </div>
       </div>
-
-      <FundingApplicationDetailsModal
-        isOpen={detailsModalOpen}
-        toggle={toggleDetailsModal}
-        application={selectedApplication}
-      />
     </>
   )
 }

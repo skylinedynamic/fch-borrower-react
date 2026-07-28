@@ -474,6 +474,20 @@ const FundingDetail = () => {
                                     Start Funding Request
                                     <i className="ri-arrow-right-line" />
                                 </span>
+                            ) : isApproved ? (
+                                <Link 
+                                    to="/fund-application" 
+                                    state={{ 
+                                        approved_funding: name, 
+                                        funding_type: name,
+                                        funding_sequence_id: id,
+                                        funding_request_id: latest_review_id,
+                                    }} 
+                                    className="btn btn-success d-flex align-items-center justify-content-center gap-2 fw-medium px-4"
+                                >
+                                    Process Funding Application
+                                    <i className="ri-arrow-right-line" />
+                                </Link>
                             ) : (
                                 <Link to={`/funding/${id}/review`} className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4">
                                     Start Funding Request

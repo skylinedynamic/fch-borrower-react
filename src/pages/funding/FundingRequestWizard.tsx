@@ -54,9 +54,9 @@ const FundingRequestWizard = () => {
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [documentToDelete, setDocumentToDelete] = useState<{ id: number; name: string } | null>(null);
-    
+
     const { data: documentsData } = useBorrowerDocuments();
-    
+
     const deleteFundingDocumentMutation = useMutation({
         mutationFn: async (documentId: number) => {
             const res = await apiClient.delete(`/borrower/funding/requests/documents/${documentId}?funding_sequence_id=${id}`);
@@ -145,22 +145,20 @@ const FundingRequestWizard = () => {
 
                     if (res.data.latest_review_status === FUNDING_REVIEW_STATUS.APPROVED) {
                         if (!isRedirecting.current) {
-                            if (!res.data.has_funding_application) {
-                                isRedirecting.current = true;
-                                toast.success('Your funding request is already approved! Please proceed with the application.');
-                                navigate('/fund-application', { 
-                                    replace: true,
-                                    state: {
-                                        purpose: initialPurpose,
-                                        amount: initialAmount,
-                                        requested_amount: initialAmount,
-                                        approved_funding: res.data.name || res.data.funding_type,
-                                        funding_type: res.data.funding_type || res.data.name
-                                    }
-                                });
-                                return;
-                            }
-                            // If has_funding_application is true, we stay on the review page
+                            isRedirecting.current = true;
+                            toast.success('Your funding request is already approved! Please proceed with the application.');
+                            navigate('/fund-application', {
+                                replace: true,
+                                state: {
+                                    purpose: initialPurpose,
+                                    amount: initialAmount,
+                                    requested_amount: initialAmount,
+                                    approved_funding: res.data.name || res.data.funding_type,
+                                    funding_type: res.data.funding_type || res.data.name,
+                                    funding_sequence_id: id,
+                                    funding_request_id: res.data.latest_review_id,
+                                }
+                            });
                         }
                     }
 
@@ -197,7 +195,7 @@ const FundingRequestWizard = () => {
                         const newAmountRaw = prev.requested_amount || res.data.latest_requested_amount || '';
                         const newAmount = newAmountRaw ? String(newAmountRaw).replace(/[^0-9.]/g, '') : '';
                         let newPurpose: any = res.data.latest_use_of_funds || prev.use_of_funds;
-                        
+
                         if (!newPurpose || (Array.isArray(newPurpose) && newPurpose.length === 0)) {
                             if (Array.isArray(parsedUsesArray) && parsedUsesArray.length > 0) {
                                 newPurpose = parsedUsesArray.map(u => typeof u === 'object' ? String(u.value || u.name || u.label) : String(u));
@@ -546,11 +544,11 @@ const FundingRequestWizard = () => {
                                             <label className="form-label fs-13 mb-2 funding-wizard-text-muted">Use of Funds</label>
                                             {parsedUses.length > 0 ? (
                                                 <div className="input-group rounded funding-wizard-input-group bg-light opacity-75">
-                                                    <input 
-                                                        type="text" 
-                                                        className="form-control border-0 bg-transparent fs-13 funding-wizard-input" 
-                                                        value={parsedUses.map(u => u.label).join(', ')} 
-                                                        disabled 
+                                                    <input
+                                                        type="text"
+                                                        className="form-control border-0 bg-transparent fs-13 funding-wizard-input"
+                                                        value={parsedUses.map(u => u.label).join(', ')}
+                                                        disabled
                                                     />
                                                 </div>
                                             ) : (
@@ -799,7 +797,7 @@ const FundingRequestWizard = () => {
                                                                     ) : (
                                                                         <>
                                                                             <span className="fs-13 fw-semibold funding-wizard-primary-text"><i className="ri-check-line align-middle me-1"></i> Uploaded</span>
-                                                                            
+
                                                                             {fundingDetail?.latest_review_status === 'Rejected' && (
                                                                                 <button
                                                                                     className="btn btn-light border btn-sm px-3 fw-medium ms-2"
@@ -820,7 +818,7 @@ const FundingRequestWizard = () => {
                                                                     )}
                                                                 </div>
                                                             </div>
-                                                            
+
                                                             {!isMissing && documentsData?.[docType.id]?.length > 0 && (
                                                                 <div className="mt-3 pt-3 border-top">
                                                                     <div className="d-flex flex-column gap-2">
@@ -838,7 +836,7 @@ const FundingRequestWizard = () => {
                                                                                             <span className="fs-13 fw-medium text-truncate" title={doc.file_name} style={{ maxWidth: '300px' }}>{doc.file_name}</span>
                                                                                         </div>
                                                                                     </div>
-                                                                                    <button 
+                                                                                    <button
                                                                                         className="btn btn-sm btn-outline-danger py-1 px-2 d-flex align-items-center gap-1"
                                                                                         onClick={() => handleRemoveFile(doc.id, doc.file_name)}
                                                                                         title="Remove document"
@@ -944,7 +942,7 @@ const FundingRequestWizard = () => {
                                             className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4"
                                             onClick={handleNext}
                                         >
-                                            {currentStep === 1 ? 'Continue to Application' : 'Continue to Documents'} <i className="ri-arrow-right-line"></i>
+                                            {currentStep === 1 ? 'Continue to Funding Request' : 'Continue to Documents'} <i className="ri-arrow-right-line"></i>
                                         </button>
                                     ) : (
                                         <span style={(submitting || (isDocsRequired && missingDocs.length > 0)) ? { cursor: 'not-allowed', display: 'inline-block' } : {}}>

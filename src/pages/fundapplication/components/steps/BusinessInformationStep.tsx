@@ -19,6 +19,8 @@ interface BusinessInformationStepProps {
   onNext: () => void
   loading: boolean
   onRegisterSave?: (fn: (() => Promise<boolean>) | null) => void
+  fundingSequenceId?: number | string | null
+  fundingRequestId?: number | string | null
 }
 
 export default function BusinessInformationStep({
@@ -30,6 +32,8 @@ export default function BusinessInformationStep({
   onNext,
   loading,
   onRegisterSave,
+  fundingSequenceId,
+  fundingRequestId,
 }: BusinessInformationStepProps) {
   const [availableStates, setAvailableStates] = useState<{ name: string; code: string; cities?: string[] }[]>([])
   const [availableCities, setAvailableCities] = useState<{ name: string; code: string }[]>([])
@@ -64,10 +68,12 @@ export default function BusinessInformationStep({
       entity_type: business.entityType,
       years_in_business: business.yearsInBusiness,
       number_of_employees: business.employees ? parseInt(business.employees) : null,
+      funding_sequence_id: fundingSequenceId || apiData?.funding_sequence_id || null,
+      funding_request_id: fundingRequestId || apiData?.funding_request_id || null,
     }
 
     try {
-      await saveBusinessInfo(payload)
+      await saveBusinessInfo(payload as any)
       return true
     } catch (error: any) {
       const errors = error.response?.data?.errors
@@ -78,7 +84,7 @@ export default function BusinessInformationStep({
       }
       return false
     }
-  }, [businessInfoId, personal, business, saveBusinessInfo])
+  }, [businessInfoId, personal, business, saveBusinessInfo, fundingSequenceId, fundingRequestId, apiData])
 
   // Register save function
   useEffect(() => {

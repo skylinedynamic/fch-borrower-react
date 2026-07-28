@@ -168,7 +168,7 @@ export const fetchAttestation = async (): Promise<AttestationData> => {
   return data.data
 }
 
-export const saveAttestation = async (payload: AttestationPayload): Promise<AttestationData> => {
+export const saveAttestation = async (payload: any): Promise<AttestationData> => {
   const { data } = await apiClient.post<AttestationResponse>('/borrower/funding-application/attestation-authorization', payload)
   return data.data
 }
