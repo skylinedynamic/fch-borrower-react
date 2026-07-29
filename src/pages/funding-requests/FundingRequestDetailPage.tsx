@@ -719,22 +719,24 @@ export default function FundingRequestDetailPage() {
                 <div className="container-fluid">
 
                     {/* ── Header / Breadcrumb ─────────────────────────────────── */}
-                    <div className="page-subheader-sticky bg-body">
-                        <div className="d-flex align-items-center justify-content-between py-2">
-                            <div className="flex-grow-1">
-                                <h4 className="fs-18 mb-1 mt-0">{pageTitle}</h4>
-                                <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb m-0 fs-12 text-muted">
-                                        <li className="breadcrumb-item"><Link to="/" className="text-muted">Dashboard</Link></li>
-                                        <li className="breadcrumb-item"><Link to="/funding-requests" className="text-muted">Funding Requests</Link></li>
-                                        <li className="breadcrumb-item active text-primary font-weight-bold" aria-current="page">{pageTitle}</li>
-                                    </ol>
-                                </nav>
-                            </div>
-                            <div className="mt-0 d-flex align-items-center">
-                                <Link to="/funding-requests" className="btn btn-primary fw-medium d-flex align-items-center gap-2 shadow-none px-4">
-                                    <i className="ri-arrow-left-line"></i> Back
-                                </Link>
+                    <div className="row pb-1 page-subheader-sticky bg-body">
+                        <div className="col-12">
+                            <div className="d-flex align-items-lg-center flex-lg-row flex-column py-2">
+                                <div className="flex-grow-1">
+                                    <h4 className="fs-18 mb-1 mt-0">{pageTitle}</h4>
+                                    <nav aria-label="breadcrumb">
+                                        <ol className="breadcrumb m-0 fs-12 text-muted">
+                                            <li className="breadcrumb-item"><Link to="/" className="text-muted">Dashboard</Link></li>
+                                            <li className="breadcrumb-item"><Link to="/funding-requests" className="text-muted">Funding Requests</Link></li>
+                                            <li className="breadcrumb-item active text-primary fw-bold" aria-current="page">{pageTitle}</li>
+                                        </ol>
+                                    </nav>
+                                </div>
+                                <div className="page-actions d-flex align-items-center gap-2 mt-3 mt-lg-0">
+                                    <Link to="/funding-requests" className="btn btn-primary fw-medium d-flex align-items-center gap-2 shadow-none px-4">
+                                        <i className="ri-arrow-left-line"></i> Back
+                                    </Link>
+                                </div>
                             </div>
                         </div>
                     </div>

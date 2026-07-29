@@ -78,7 +78,7 @@ export default function ReviewProgressCard({
     return (
         <div className="card shadow-sm border-0 mb-4 rounded-3">
             <div className="card-header bg-white border-bottom border-light p-4">
-                <div className="d-flex align-items-center justify-content-between">
+                <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
                     <div className="d-flex align-items-center">
                         <div
                             className="d-flex align-items-center justify-content-center rounded-3 fr-progress-icon-badge"
@@ -91,7 +91,7 @@ export default function ReviewProgressCard({
                         </div>
                     </div>
 
-                    <div className="d-flex align-items-center position-relative fr-progress-ring-wrap">
+                    <div className="d-flex align-items-center position-relative fr-progress-ring-wrap flex-shrink-0">
                         <svg width="76" height="76" className="fr-progress-ring-svg">
                             <circle cx="38" cy="38" r="34" stroke="#f1f5f9" strokeWidth="6" fill="none" />
                             <circle cx="38" cy="38" r="34" stroke={isErrorState ? '#ef4444' : progressPercentage === 100 ? '#22c55e' : '#2563eb'} strokeWidth="6" fill="none"
@@ -110,7 +110,7 @@ export default function ReviewProgressCard({
 
                 {/* Timeline */}
                 <div className="px-4 pb-4 overflow-x-auto">
-                    <div className="d-flex w-100 position-relative fr-timeline-track">
+                    <div className="d-flex w-100 position-relative fr-timeline-track align-items-start">
                         {displaySteps.map((step, idx) => {
                             const completed = idx < currentStatusIndex;
                             const current = idx === currentStatusIndex;
