@@ -195,6 +195,37 @@ export default function ReviewProgressCard({
                     </div>
                 </div>
 
+                <hr className="my-0 border-light" />
+
+                {/* Status Guideline */}
+                <div className="p-4 pt-3">
+                    <div className="d-flex align-items-center mb-3">
+                        <i className="ri-information-line fs-5 me-2 fr-progress-title"></i>
+                        <h6 className="mb-0 fw-bold fr-progress-title">
+                            Status Guideline
+                        </h6>
+                    </div>
+
+                    <div className="row g-2">
+                        {FUNDING_REVIEW_GUIDELINE_CARDS.map((item, idx) => (
+                            <div key={item.label} className="col-12 col-md-6 col-xl-4">
+                                <div className="d-flex align-items-center p-2 px-xl-2 rounded-3 h-100" style={{
+                                    backgroundColor: item.bg,
+                                    border: `1px solid ${item.border}`
+                                }}>
+                                    <div className="d-flex align-items-center justify-content-center rounded-circle text-white me-2" style={{ width: 24, height: 24, background: item.iconBg, flexShrink: 0 }}>
+                                        {item.icon && <i className={`${item.icon} fs-12`}></i>}
+                                    </div>
+                                    <div>
+                                        <h6 className="mb-1 fw-bold text-dark fs-13">{item.label}</h6>
+                                        <p className="mb-0 text-muted fr-step-subtext">{item.desc}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
             </div>
         </div>
     );
