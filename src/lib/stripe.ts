@@ -3,21 +3,31 @@ import type { Stripe } from '@stripe/stripe-js';
 import { fetchSettings } from '../modules/settings/services';
 
 let stripePromise: Promise<Stripe | null> | null = null;
+let currentKey: string | null = null;
 
-export const getStripe = async () => {
+export const getStripe = async (publicKey?: string) => {
+  if (publicKey) {
+    if (!stripePromise || currentKey !== publicKey) {
+      currentKey = publicKey;
+      stripePromise = loadStripe(publicKey);
+    }
+    return stripePromise;
+  }
+
   if (!stripePromise) {
     try {
       const response = await fetchSettings();
       const settings = response.data?.data || response.data || {};
       const mode = settings.payment_mode || 'sandbox';
-      const publicKey = settings[`stripe_key_${mode}`];
+      const key = settings[`stripe_key_${mode}`];
       
-      if (!publicKey) {
+      if (!key) {
         console.error(`Stripe public key not found for mode: ${mode}`);
         return null;
       }
       
-      stripePromise = loadStripe(publicKey);
+      currentKey = key;
+      stripePromise = loadStripe(key);
     } catch (error) {
       console.error('Error initializing Stripe:', error);
       return null;

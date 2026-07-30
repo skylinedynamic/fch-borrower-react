@@ -30,11 +30,6 @@ export const fetchInvoiceStats = async (params: InvoiceParams = {}): Promise<Inv
     }
 };
 
-export const processInvoicePayment = async (payload: any) => {
-    const response = await apiClient.post('/borrower/process-payment', payload);
-    return response.data;
-};
-
 export const fetchUnpaidInvoices = async (): Promise<UnpaidInvoiceResponse> => {
     const { data } = await apiClient.get<UnpaidInvoiceResponse>('/borrower/invoice/check-unpaid-invoice');
     return data;
@@ -53,4 +48,14 @@ export const downloadInvoice = async (id: string | number) => {
 export const sendInvoice = async (id: string | number) => {
     const { data } = await apiClient.post(`/common/invoices/${id}/send`);
     return data;
+};
+
+export const fetchPartnerPaymentMethods = async () => {
+    const { data } = await apiClient.get('/payment/partner-payment-methods');
+    return data;
+};
+
+export const processUnifiedPayment = async (payload: { payment_token: string; invoice_id: number | string; payment_method_id: number }) => {
+    const response = await apiClient.post('/borrower/process-payment', payload);
+    return response.data;
 };

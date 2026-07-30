@@ -1,203 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Modal from 'bootstrap/js/dist/modal';
-import {
-  CardNumberElement,
-  CardExpiryElement,
-  CardCvcElement,
-  Elements,
-  useStripe,
-  useElements,
-} from '@stripe/react-stripe-js';
-import { getStripe } from '../../../lib/stripe';
-import { processInvoicePayment } from '../../../modules/invoice/services';
 import { refreshSubscription } from '../../../lib/auth';
 import { toast } from 'react-toastify';
-import stripeLogo from '../../../../assets/images/stripe_logo.png';
+import PaymentProviderSelector from './PaymentProviderSelector';
+import { AuthorizeNetForm, SquareForm, EcryptForm, StripeForm } from './PaymentMethodForms';
 
-const CheckoutForm = ({ amount, invoice, onPaymentSuccess, onCancel, loading }) => {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  const [cardNumberFocused, setCardNumberFocused] = useState(false);
-  const [cardExpiryFocused, setCardExpiryFocused] = useState(false);
-  const [cardCvcFocused, setCardCvcFocused] = useState(false);
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    if (!stripe || !elements) return;
-
-    setIsProcessing(true);
-
-    try {
-      const cardNumberElement = elements.getElement(CardNumberElement);
-
-      const { error, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardNumberElement,
-        billing_details: {
-          name: invoice?.customer_name || 'Customer',
-          email: invoice?.email || '',
-          phone: invoice?.phone || '',
-        },
-      });
-
-      if (error) {
-        toast.error(error.message);
-        setIsProcessing(false);
-        return;
-      }
-
-      const response = await processInvoicePayment({
-        amount: Math.round(amount * 100), // convert to cents
-        currency: 'usd',
-        payment_method_id: paymentMethod.id,
-        description: `Invoice Payment #${invoice?.invoice_id} - ${invoice?.customer_name}`,
-        invoice_id: invoice?.id, // Send the internal ID
-        entity_id: invoice?.id, // For consistency if backend expects entity_id
-        entity_type: invoice?.entity_type, // If backend requires type
-      });
-
-      if (response.status) {
-        toast.success("Payment completed successfully!");
-
-        // Refresh user details to update subscription status and unlock features
-        await refreshSubscription().then(() => {
-          if (onPaymentSuccess) {
-            onPaymentSuccess(response.data?.payment_intent_id || response.data?.id);
-          }
-        });
-
-        // Force reload to ensure all states (like subscription restrictions) are fresh
-        window.location.reload();
-      } else {
-        toast.error(response.message || "Payment failed");
-      }
-    } catch (err) {
-      console.error('Payment Error:', err);
-      toast.error(err.response?.data?.message || 'Failed to process payment');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="text-start">
-      <div className="mb-4">
-        <label className="stripe-field-label">Card Number</label>
-        <div className={`stripe-input-container ${cardNumberFocused ? 'focused' : ''}`}>
-          <CardNumberElement
-            onFocus={() => setCardNumberFocused(true)}
-            onBlur={() => setCardNumberFocused(false)}
-            options={{
-              style: {
-                base: {
-                  fontSize: '16px',
-                  color: '#424770',
-                  '::placeholder': { color: '#aab7c4' },
-                },
-                invalid: { color: '#9e2146' },
-              },
-            }}
-          />
-        </div>
-      </div>
-
-      <div className="row g-3 mb-4">
-        <div className="col-7">
-          <label className="stripe-field-label">Expiration Date</label>
-          <div className={`stripe-input-container ${cardExpiryFocused ? 'focused' : ''}`}>
-            <CardExpiryElement
-              onFocus={() => setCardExpiryFocused(true)}
-              onBlur={() => setCardExpiryFocused(false)}
-              options={{
-                style: {
-                  base: {
-                    fontSize: '16px',
-                    color: '#424770',
-                    '::placeholder': { color: '#aab7c4' },
-                  },
-                  invalid: { color: '#9e2146' },
-                },
-              }}
-            />
-          </div>
-        </div>
-        <div className="col-5">
-          <label className="stripe-field-label">CVC</label>
-          <div className={`stripe-input-container ${cardCvcFocused ? 'focused' : ''}`}>
-            <CardCvcElement
-              onFocus={() => setCardCvcFocused(true)}
-              onBlur={() => setCardCvcFocused(false)}
-              options={{
-                style: {
-                  base: {
-                    fontSize: '16px',
-                    color: '#424770',
-                    '::placeholder': { color: '#aab7c4' },
-                  },
-                  invalid: { color: '#9e2146' },
-                },
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="stripe-summary-card">
-        <div className="d-flex flex-column">
-          <span className="stripe-summary-title">Total to Pay</span>
-          <h4 className="stripe-summary-amount mb-0">${amount.toFixed(2)}</h4>
-        </div>
-        <div className="avatar-sm">
-          <span className="avatar-title bg-primary text-white rounded-circle fs-4">
-            <i className="ri-secure-payment-line"></i>
-          </span>
-        </div>
-      </div>
-
-      <div className="hstack gap-2 justify-content-center">
-        <button
-          type="submit"
-          className="stripe-submit-btn"
-          disabled={!stripe || isProcessing || loading}
-        >
-          {isProcessing ? (
-            <>
-              <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-              Verifying...
-            </>
-          ) : (
-            <>
-              <i className="ri-shield-check-line me-1"></i> Confirm & Pay
-            </>
-          )}
-        </button>
-      </div>
-    </form>
-  );
-};
+const isStripeProvider = (provider) => provider?.name?.toLowerCase() === 'stripe';
+const isAuthorizeNetProvider = (provider) => ['authorize.net', 'authorizenet', 'authorize'].includes(provider?.name?.toLowerCase());
+const isSquareProvider = (provider) => provider?.name?.toLowerCase() === 'square';
+const isEcryptProvider = (provider) => provider?.name?.toLowerCase() === 'ecrypt';
 
 export default function InvoicePaymentModal({ show, onHide, onSuccess, invoice }) {
   const modalRef = useRef(null);
   const modalInstanceRef = useRef(null);
-  const [stripePromise, setStripePromise] = useState(null);
+  const [selectedProvider, setSelectedProvider] = useState(null);
 
   // Calculate amount safely
   const amount = invoice ? (typeof invoice.payment_amount === 'string'
     ? parseFloat(invoice.payment_amount.replace(/[^0-9.]/g, ''))
     : (parseFloat(invoice.payment_amount) || 0)) : 0;
-
-  useEffect(() => {
-    if (show && !stripePromise) {
-      const initStripe = async () => {
-        const promise = await getStripe();
-        setStripePromise(promise);
-      };
-      initStripe();
-    }
-  }, [show, stripePromise]);
 
   useEffect(() => {
     if (!modalRef.current) return;
@@ -207,7 +28,6 @@ export default function InvoicePaymentModal({ show, onHide, onSuccess, invoice }
         keyboard: false,
       });
     }
-
     return () => {
       if (modalInstanceRef.current) {
         modalInstanceRef.current.hide();
@@ -220,46 +40,141 @@ export default function InvoicePaymentModal({ show, onHide, onSuccess, invoice }
   useEffect(() => {
     const modal = modalInstanceRef.current;
     if (!modal) return;
-    if (show) {
-      modal.show();
-    } else {
-      modal.hide();
+    if (show) { modal.show(); } else { modal.hide(); }
+  }, [show]);
+
+  // Reset provider when modal closes
+  useEffect(() => {
+    if (!show) {
+      setSelectedProvider(null);
     }
   }, [show]);
 
-  return (
-    <div className="modal fade stripe-payment-modal" ref={modalRef} tabIndex="-1" aria-hidden="true">
-      <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content border-0 shadow-lg">
-          <div className="modal-header border-0 p-3 pb-0">
-            <button type="button" className="btn-close" onClick={onHide}></button>
-          </div>
-          <div className="modal-body p-4 text-center pt-0">
-            <div className="stripe-logo-header">
-              <img src={stripeLogo} alt="Stripe" className="stripe-logo-image" />
-            </div>
-            <p className="stripe-modal-desc mb-4">
-              Complete the enrollment for <strong>{invoice?.customer_name}</strong> by securely processing the payment below.
-            </p>
+  const handleProviderSelect = (provider) => {
+    setSelectedProvider(provider);
+  };
 
-            {stripePromise ? (
-              <Elements stripe={stripePromise}>
-                <CheckoutForm
-                  amount={amount}
-                  invoice={invoice}
-                  onPaymentSuccess={onSuccess}
-                  onCancel={onHide}
-                />
-              </Elements>
-            ) : (
-              <div className="text-center py-4">
-                <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Loading Stripe...</span>
+  const handleBackToProviders = () => {
+    setSelectedProvider(null);
+  };
+
+  const handlePaymentSuccess = async (paymentId) => {
+    try {
+      await refreshSubscription();
+    } catch (_) {
+      // non-critical
+    }
+    if (onSuccess) {
+      onSuccess(paymentId);
+    }
+    window.location.reload();
+  };
+
+  return (
+    <div className="modal fade stripe-payment-modal ppm-modal" ref={modalRef} tabIndex="-1" aria-hidden="true">
+      <div className={`modal-dialog modal-dialog-centered${selectedProvider ? ' ppm-gateway-dialog' : ''}`}>
+        <div className="modal-content ppm-content">
+          {!selectedProvider ? (
+            <>
+              <div className="ppm-card-header">
+                <div className="d-flex align-items-center gap-3">
+                  <div className="avatar-sm flex-shrink-0">
+                    <div className="avatar-title bg-primary-subtle text-primary rounded fs-20 payment-method-avatar-title">
+                      <i className="ri-bank-card-2-line"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <h5 className="mb-0 fs-15 fw-semibold text-dark">Select Payment Method</h5>
+                    <p className="text-muted mb-0 fs-12">
+                      Invoice #{invoice?.invoice_id} &middot; USD ${amount.toFixed(2)}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-muted mt-2">Initializing Stripe...</p>
+                <button type="button" className="btn-close" onClick={onHide}></button>
               </div>
-            )}
-          </div>
+
+              <div className="ppm-card-body">
+                <PaymentProviderSelector
+                  invoice={invoice}
+                  onSelect={handleProviderSelect}
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="ppm-card-header">
+                <div className="d-flex align-items-center gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-link text-muted p-0 text-decoration-none"
+                    onClick={handleBackToProviders}
+                  >
+                    <i className="ri-arrow-left-line fs-18"></i>
+                  </button>
+                  <div>
+                    <h5 className="mb-0 fs-15 fw-semibold text-dark">Complete Payment</h5>
+                    <p className="text-muted mb-0 fs-12">
+                      {selectedProvider.name} &middot; Invoice #{invoice?.invoice_id} &middot; USD ${amount.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+                <button type="button" className="btn-close" onClick={onHide}></button>
+              </div>
+
+              <div className="ppm-card-body">
+                <div className="ppm-gateway-provider">
+                  {selectedProvider.logo ? (
+                    <img src={selectedProvider.logo} alt={selectedProvider.name} className="ppm-gateway-logo-img" />
+                  ) : (
+                    <span className="ppm-gateway-icon">
+                      <i className="ri-secure-payment-line"></i>
+                    </span>
+                  )}
+                </div>
+
+                {isStripeProvider(selectedProvider) ? (
+                  <StripeForm
+                    amount={amount}
+                    invoice={invoice}
+                    selectedProvider={selectedProvider}
+                    onPaymentSuccess={handlePaymentSuccess}
+                    onCancel={onHide}
+                  />
+                ) : isAuthorizeNetProvider(selectedProvider) ? (
+                  <AuthorizeNetForm
+                    amount={amount}
+                    invoice={invoice}
+                    selectedProvider={selectedProvider}
+                    onPaymentSuccess={handlePaymentSuccess}
+                    onCancel={onHide}
+                  />
+                ) : isSquareProvider(selectedProvider) ? (
+                  <SquareForm
+                    amount={amount}
+                    invoice={invoice}
+                    selectedProvider={selectedProvider}
+                    onPaymentSuccess={handlePaymentSuccess}
+                    onCancel={onHide}
+                  />
+                ) : isEcryptProvider(selectedProvider) ? (
+                  <EcryptForm
+                    amount={amount}
+                    invoice={invoice}
+                    selectedProvider={selectedProvider}
+                    onPaymentSuccess={handlePaymentSuccess}
+                    onCancel={onHide}
+                  />
+                ) : (
+                  <div className="text-center py-4">
+                    <div className="alert alert-info mb-0 text-start">
+                      <i className="ri-information-line me-2"></i>
+                      Please complete your payment via <strong>{selectedProvider.name}</strong>. An admin or partner will manually verify and record your payment status in the system.
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
