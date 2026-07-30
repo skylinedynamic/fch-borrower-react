@@ -47,7 +47,7 @@ export default function FundingRequestStep({
 
   const approvedFundingOptions = React.useMemo(() => {
     if (!fundingOptionsData?.data?.groups) return []
-    return fundingOptionsData.data.groups.flatMap((g: any) => 
+    return fundingOptionsData.data.groups.flatMap((g: any) =>
       g.sequencings.map((seq: any) => ({
         label: seq.name,
         value: seq.name
@@ -109,8 +109,8 @@ export default function FundingRequestStep({
       setFundingRequestId(apiData.id || null)
       setFunding({
         ...funding,
-        requestedAmount: urlRequestedAmount 
-          ? formatCurrency(urlRequestedAmount) 
+        requestedAmount: urlRequestedAmount
+          ? formatCurrency(urlRequestedAmount)
           : (apiData.requested_amount ? formatCurrency(apiData.requested_amount) : ''),
         purpose: apiData.purpose_of_funds || funding.purpose,
         approvedFunding: urlApprovedFunding || apiData.approved_funding || funding.approvedFunding,
@@ -219,15 +219,22 @@ export default function FundingRequestStep({
         <label className="form-label">
           Approved Funding <span className="text-danger">*</span>
         </label>
-        <CustomDropdown
-          value={funding.approvedFunding}
-          onChange={(value) => setFunding({ ...funding, approvedFunding: value })}
-          options={approvedFundingOptions}
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Select approved funding"
-          className={`w-100 ${hasError('approved_funding') ? 'is-invalid' : ''}`}
-          disabled
+        {/* <CustomDropdown
+              value={funding.approvedFunding}
+              onChange={(value) => setFunding({ ...funding, approvedFunding: value })}
+              options={approvedFundingOptions}
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select approved funding"
+              className={`w-100 ${hasError('approved_funding') ? 'is-invalid' : ''}`}
+              disabled
+           /> */}
+        <input
+          type="text"
+          className={`form-control ${hasError('approved_funding') ? 'is-invalid' : ''}`}
+          value={funding.approvedFunding || ''}
+          readOnly
+          style={{ backgroundColor: '#f8f9fa', cursor: 'default' }}
         />
         {hasError('approved_funding') && (
           <div className="invalid-feedback d-block">{getFieldError('approved_funding')}</div>
