@@ -52,6 +52,7 @@ export interface CreditProfileMetrics {
 }
 
 export interface CreditProfile {
+  id: number
   personal_info: CreditProfilePersonalInfo
   addresses: CreditProfileAddress[]
   metrics: CreditProfileMetrics

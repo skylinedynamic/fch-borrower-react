@@ -11,6 +11,7 @@ import { formatPhoneNumber, formatZipCode, maskSSN, formatDate } from '../../../
 import TabLoader from '../../../components/Loader/TabLoader'
 import { fetchCreditProfile } from '../../../modules/credit-profile'
 import type { CreditProfile } from '../../../modules/credit-profile'
+import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 
 interface CreditProfileRequestData {
   first_name: string
@@ -74,6 +75,9 @@ export default function CreditProfileTab() {
   const [submittedData, setSubmittedData] = useState<CreditProfileRequestData | null>(null)
   const [creditProfile, setCreditProfile] = useState<CreditProfile | null>(null)
   const [showSSN, setShowSSN] = useState(false)
+  
+  const [showUpdateModal, setShowUpdateModal] = useState(false)
+  const [updating, setUpdating] = useState(false)
 
   const [formData, setFormData] = useState<FormState>({
     first_name: '',
@@ -232,6 +236,20 @@ export default function CreditProfileTab() {
       }
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleRequestUpdate = async () => {
+    if (!creditProfile) return
+    try {
+      setUpdating(true)
+      const res = await apiClient.post(`/borrower/profile/credit-profile/update-request/${creditProfile.id}`)
+      toast.success(res.data?.message || 'Request sent successfully.')
+      setShowUpdateModal(false)
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to send update request.')
+    } finally {
+      setUpdating(false)
     }
   }
 
@@ -569,9 +587,9 @@ export default function CreditProfileTab() {
 
           {/* ── Summary ── */}
           {creditProfile.metrics?.summary && (
-            <div className="col-12">
-              <div className="card border shadow-sm">
-                <div className="card-header bg-transparent border-bottom py-3">
+            <div className="col-12 mt-4">
+              <div className="card border shadow-sm h-100">
+                <div className="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
                   <div className="d-flex align-items-center gap-2">
                     <div className="rounded bg-primary-subtle p-2">
                       <i className="ri-file-text-line text-primary fs-16"></i>
@@ -581,6 +599,14 @@ export default function CreditProfileTab() {
                       <div className="text-muted fs-12">Overall assessment</div>
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    className="btn px-4 fw-medium text-white"
+                    style={{ backgroundColor: '#021f3c', borderColor: '#021f3c' }}
+                    onClick={() => setShowUpdateModal(true)}
+                  >
+                    Request to update credit profile data
+                  </button>
                 </div>
                 <div className="card-body px-4 py-3">
                   <p className="text-dark fs-14 mb-0">{creditProfile.metrics.summary}</p>
@@ -589,6 +615,55 @@ export default function CreditProfileTab() {
             </div>
           )}
         </div>
+
+        {/* Update Request Modal */}
+        <Modal isOpen={showUpdateModal} toggle={() => !updating && setShowUpdateModal(false)} centered modalClassName="flip">
+          <div className="modal-body p-5 text-center">
+            <button
+              type="button"
+              className="btn-close position-absolute end-0 top-0 m-3"
+              onClick={() => setShowUpdateModal(false)}
+              aria-label="Close"
+              disabled={updating}
+            ></button>
+            <lord-icon
+              src="https://cdn.lordicon.com/tdrtiskw.json"
+              trigger="loop"
+              colors="primary:#121331,secondary:#08a88a"
+              style={{ width: '90px', height: '90px' }}
+            ></lord-icon>
+            <div className="mt-4 text-center">
+              <h4>Are you sure?</h4>
+              <p className="text-muted fs-15 mb-4">
+                Are you sure you want to request a credit profile update? This will notify the admin to pull your latest iSoftPull data and update your profile.
+              </p>
+              <div className="hstack gap-2 justify-content-center">
+                <button
+                  className="btn btn-light fw-medium"
+                  onClick={() => setShowUpdateModal(false)}
+                  disabled={updating}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn px-4 text-white"
+                  style={{ backgroundColor: '#021f3c', borderColor: '#021f3c' }}
+                  onClick={handleRequestUpdate}
+                  disabled={updating}
+                >
+                  {updating ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      Sending...
+                    </>
+                  ) : (
+                    'Confirm'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </Modal>
       </div>
     )
   }
