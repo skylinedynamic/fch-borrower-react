@@ -404,18 +404,15 @@ export default function BusinessInformationStep({
         <label className="form-label">
           Time in Business <span className="text-danger">*</span>
         </label>
-        <CustomDropdown
-          value={business.yearsInBusiness}
-          onChange={(value) => setBusiness((prev) => ({ ...prev, yearsInBusiness: value }))}
-          options={yearsInBusinessOptions}
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Select time in business"
-          className={`w-100 ${hasError('years_in_business') ? 'is-invalid' : ''}`}
+        <input
+          type="text"
+          className="form-control bg-light"
+          value={business.yearsInBusiness || 'N/A'}
+          disabled
         />
-        {hasError('years_in_business') && (
-          <div className="invalid-feedback d-block">{getFieldError('years_in_business')}</div>
-        )}
+        <small className="text-muted d-block mt-1">
+          Calculated from your Business Start Date
+        </small>
       </div>
       <div className="col-md-6">
         <label className="form-label">Number of Employees</label>
