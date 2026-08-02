@@ -107,6 +107,27 @@ export default function CreditProfileTab() {
     }
   }, [user])
 
+  // Prefill from submitted data
+  useEffect(() => {
+    if (submittedData) {
+      setFormData(prev => ({
+        ...prev,
+        first_name: submittedData.first_name || prev.first_name,
+        middle_name: submittedData.middle_name || prev.middle_name,
+        last_name: submittedData.last_name || prev.last_name,
+        address: submittedData.address || prev.address,
+        apt_suite_other: submittedData.apt_suite_other || prev.apt_suite_other,
+        city: submittedData.city || prev.city,
+        state: submittedData.state || prev.state,
+        zip: submittedData.zip || prev.zip,
+        ssn: submittedData.ssn || prev.ssn,
+        date_of_birth: submittedData.date_of_birth ? submittedData.date_of_birth.substring(0, 10) : prev.date_of_birth,
+        phone: submittedData.phone || prev.phone,
+        email: submittedData.email || prev.email,
+      }))
+    }
+  }, [submittedData])
+
   // If credit_profile_updated flag is set, fetch credit profile data.
   // If not set, mark as initialized immediately so the form shows right away.
   useEffect(() => {
@@ -122,7 +143,29 @@ export default function CreditProfileTab() {
     try {
       setLoading(true)
       const data = await fetchCreditProfile()
-      setCreditProfile(data)
+
+      // If it doesn't have personal_info, it's the request data, not the actual profile.
+      // We populate the form so the user can edit it.
+      if (data && !data.personal_info) {
+        setFormData(prev => ({
+          ...prev,
+          first_name: data.first_name || prev.first_name,
+          middle_name: data.middle_name || prev.middle_name,
+          last_name: data.last_name || prev.last_name,
+          address: data.address || prev.address,
+          apt_suite_other: data.apt_suite_other || prev.apt_suite_other,
+          city: data.city || prev.city,
+          state: data.state || prev.state,
+          zip: data.zip || prev.zip,
+          ssn: data.ssn || prev.ssn,
+          date_of_birth: data.date_of_birth ? data.date_of_birth.substring(0, 10) : prev.date_of_birth,
+          phone: data.phone || prev.phone,
+          email: data.email || prev.email,
+        }))
+        setCreditProfile(null)
+      } else {
+        setCreditProfile(data)
+      }
     } catch {
       setCreditProfile(null)
     } finally {
@@ -169,7 +212,8 @@ export default function CreditProfileTab() {
     setErrors({})
     try {
       setSubmitting(true)
-      await apiClient.post('/borrower/profile/credit-profile-request', formData)
+      const res = await apiClient.post('/borrower/profile/credit-profile-request', formData)
+      toast.success(res.data?.message || 'Credit profile request submitted successfully.')
       // On success: fetch the saved record and show details view
       await fetchSubmittedDetails()
     } catch (err: any) {
@@ -180,9 +224,11 @@ export default function CreditProfileTab() {
           serverErrors[key] = Array.isArray(val) ? val[0] : String(val)
         })
         setErrors(serverErrors)
+        toast.error(err.response?.data?.message || 'Please check the form for errors and try again.')
       } else {
         // Non-validation error (500, network, etc.) — show a generic field-level message
         setErrors({ _form: err.response?.data?.message || 'Something went wrong. Please try again.' })
+        toast.error(err.response?.data?.message || 'Something went wrong. Please try again.')
       }
     } finally {
       setSubmitting(false)
@@ -547,11 +593,13 @@ export default function CreditProfileTab() {
     )
   }
 
-  // ─── Submitted details view (fallback) ─────────────────────────────────────
-  if (submittedData) {
-    return (
-      <div className="fade-panel">
-        {/* ── Success banner ── */}
+
+
+  // ─── Form view ──────────────────────────────────────────────────────────────
+  return (
+    <div className="fade-panel">
+      {/* ── Success banner (if already submitted) ── */}
+      {submittedData && (
         <div className="d-flex align-items-center gap-3 p-3 mb-4 rounded-3 border"
           style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)', borderColor: '#86efac !important' }}>
           <div className="rounded-circle bg-success d-flex align-items-center justify-content-center flex-shrink-0"
@@ -561,7 +609,7 @@ export default function CreditProfileTab() {
           <div>
             <div className="fw-bold text-success-emphasis fs-15">Credit Profile Submitted</div>
             <div className="text-success-emphasis fs-13 opacity-75">
-              Your soft credit check request has been securely saved. No impact to your credit score.
+              Your soft credit check request has been securely saved. You can edit your details below if needed.
             </div>
           </div>
           <div className="ms-auto flex-shrink-0">
@@ -570,150 +618,9 @@ export default function CreditProfileTab() {
             </span>
           </div>
         </div>
-
-        <div className="row g-4">
-          {/* ── Personal Information ── */}
-          <div className="col-lg-6">
-            <div className="card border shadow-sm h-100">
-              <div className="card-header bg-transparent border-bottom py-3">
-                <div className="d-flex align-items-center gap-2">
-                  <div className="rounded bg-primary-subtle p-2">
-                    <i className="ri-user-3-line text-primary fs-16"></i>
-                  </div>
-                  <div>
-                    <div className="fw-semibold text-dark fs-14">Personal Information</div>
-                    <div className="text-muted fs-12">Applicant identity details</div>
-                  </div>
-                </div>
-              </div>
-              <div className="card-body px-4 py-3">
-                <DetailItem
-                  label="Full Name"
-                  icon="ri-account-circle-line"
-                  value={[submittedData.first_name, submittedData.middle_name, submittedData.last_name].filter(Boolean).join(' ')}
-                />
-                <DetailItem
-                  label="Date of Birth"
-                  icon="ri-cake-2-line"
-                  value={formatDate(submittedData.date_of_birth)}
-                />
-                <DetailItem
-                  label="Social Security Number"
-                  icon="ri-lock-line"
-                  value={
-                    <div className="d-flex align-items-center gap-2">
-                      <span className="font-monospace fs-14">
-                        {showSSN && submittedData.ssn ? submittedData.ssn : maskSSN(submittedData.ssn || '')}
-                      </span>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-soft-secondary py-0 px-2 fs-12"
-                        onClick={() => setShowSSN(s => !s)}
-                      >
-                        <i className={`${showSSN ? 'ri-eye-off-line' : 'ri-eye-line'} align-middle me-1`}></i>
-                        {showSSN ? 'Hide' : 'Reveal'}
-                      </button>
-                    </div>
-                  }
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* ── Contact Information ── */}
-          <div className="col-lg-6">
-            <div className="card border shadow-sm h-100">
-              <div className="card-header bg-transparent border-bottom py-3">
-                <div className="d-flex align-items-center gap-2">
-                  <div className="rounded bg-info-subtle p-2">
-                    <i className="ri-contacts-line text-info fs-16"></i>
-                  </div>
-                  <div>
-                    <div className="fw-semibold text-dark fs-14">Contact Information</div>
-                    <div className="text-muted fs-12">Reach and communication details</div>
-                  </div>
-                </div>
-              </div>
-              <div className="card-body px-4 py-3">
-                <DetailItem
-                  label="Email Address"
-                  icon="ri-mail-line"
-                  value={<a href={`mailto:${submittedData.email}`} className="text-primary text-decoration-none">{submittedData.email}</a>}
-                />
-                <DetailItem
-                  label="Phone Number"
-                  icon="ri-phone-line"
-                  value={<a href={`tel:${submittedData.phone}`} className="text-dark text-decoration-none">{submittedData.phone}</a>}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* ── Address Information ── */}
-          <div className="col-12">
-            <div className="card border shadow-sm">
-              <div className="card-header bg-transparent border-bottom py-3">
-                <div className="d-flex align-items-center gap-2">
-                  <div className="rounded bg-warning-subtle p-2">
-                    <i className="ri-map-pin-2-line text-warning fs-16"></i>
-                  </div>
-                  <div>
-                    <div className="fw-semibold text-dark fs-14">Address Details</div>
-                    <div className="text-muted fs-12">Residential address for credit verification</div>
-                  </div>
-                </div>
-              </div>
-              <div className="card-body px-4 py-3">
-                <div className="row g-0">
-                  <div className="col-md-4">
-                    <DetailItem
-                      label="Street Address"
-                      icon="ri-road-map-line"
-                      value={
-                        <>
-                          {submittedData.address}
-                          {submittedData.apt_suite_other && (
-                            <span className="text-muted ms-2 fs-13">({submittedData.apt_suite_other})</span>
-                          )}
-                        </>
-                      }
-                    />
-                  </div>
-                  <div className="col-md-3">
-                    <DetailItem label="City" icon="ri-building-2-line" value={submittedData.city} />
-                  </div>
-                  <div className="col-md-3">
-                    <DetailItem label="State" icon="ri-map-2-line" value={submittedData.state} />
-                  </div>
-                  <div className="col-md-2">
-                    <DetailItem label="Zip Code" icon="ri-mail-send-line" value={submittedData.zip} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Submission timestamp ── */}
-          {submittedData.created_at && (
-            <div className="col-12">
-              <div className="d-flex align-items-center gap-2 text-muted fs-12 justify-content-end">
-                <i className="ri-time-line"></i>
-                Submitted on {new Date(submittedData.created_at).toLocaleString('en-US', {
-                  dateStyle: 'medium', timeStyle: 'short'
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    )
-  }
-
-  // ─── Form view ──────────────────────────────────────────────────────────────
-  return (
-    <div className="fade-panel">
+      )}
       {/* Info notice */}
-      <div className="rounded-3 border border-primary-subtle bg-primary-subtle px-4 py-3 mb-4 d-flex align-items-start gap-3">
+      {/* <div className="rounded-3 border border-primary-subtle bg-primary-subtle px-4 py-3 mb-4 d-flex align-items-start gap-3">
         <div className="flex-shrink-0 rounded-circle bg-primary d-flex align-items-center justify-content-center"
           style={{ width: 38, height: 38, minWidth: 38 }}>
           <i className="ri-shield-user-line text-white fs-18"></i>
@@ -726,7 +633,7 @@ export default function CreditProfileTab() {
             <strong> encrypted</strong> and stored securely in compliance with financial regulations.
           </div>
         </div>
-      </div>
+      </div> */}
 
       <form onSubmit={handleSubmit} noValidate>
         {/* ── Full Name ── */}
