@@ -8,6 +8,7 @@ export const LOCKED_BUSINESS_FIELDS = [
     'business_start_date',
 ];
 
+
 export const LOCKED_PERSONAL_FIELDS = [];
 
 export const LOCKED_FINANCIAL_FIELDS = [
