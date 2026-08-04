@@ -265,6 +265,8 @@ const FundingDetail = () => {
         readiness_factors = [],
         missing_documents = [],
         latest_review_status,
+        latest_review_id = null,
+        has_funding_application = false,
     } = data;
 
     const colors = getFundingColorStyles(icon_color);
