@@ -1,12 +1,14 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FUNDING_REVIEW_STATUS } from '../../config/funding';
 
 export const BANNER_HEIGHT = 52; // px — approximate height of the banner
 
 export default function GlobalFundingBanner({ activeRequest, count = 0 }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
+  if (location.pathname.startsWith('/fund-application')) return null;
   if (!activeRequest || count === 0) return null;
 
   const rawRange = activeRequest.estimated_funding_range || activeRequest.requested_amount;

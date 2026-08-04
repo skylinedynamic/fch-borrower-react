@@ -17,6 +17,8 @@ interface FinancialInformationStepProps {
   onBack: () => void
   loading: boolean
   onRegisterSave?: (fn: (() => Promise<boolean>) | null) => void
+  fundingSequenceId?: number | string | null
+  fundingRequestId?: number | string | null
 }
 
 export default function FinancialInformationStep({
@@ -26,10 +28,12 @@ export default function FinancialInformationStep({
   onBack,
   loading,
   onRegisterSave,
+  fundingSequenceId,
+  fundingRequestId,
 }: FinancialInformationStepProps) {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
-  const { data: apiData, isLoading: isApiLoading, isSuccess } = useFinancialInfo()
+  const { data: apiData, isLoading: isApiLoading, isSuccess } = useFinancialInfo(fundingRequestId)
   const { mutateAsync: saveFinancialInfo, isPending: isSaving } = useSaveFinancialInfo()
 
   // Helper to format date as YYYY-MM-DD

@@ -42,7 +42,7 @@ export default function BusinessInformationStep({
   const [businessInfoId, setBusinessInfoId] = useState<number | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
-  const { data: apiData, isLoading: isApiLoading, isSuccess } = useBusinessInfo()
+  const { data: apiData, isLoading: isApiLoading, isSuccess } = useBusinessInfo(fundingRequestId)
   const { mutateAsync: saveBusinessInfo, isPending: isSaving } = useSaveBusinessInfo()
 
   // Memoized save handler

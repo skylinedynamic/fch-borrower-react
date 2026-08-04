@@ -15,8 +15,9 @@ import CoBorrowerModal from './components/shared/CoBorrowerModal'
 
 // Hooks
 import { useCoBorrowers } from './hooks/useCoBorrowers'
-import { FUNDING_PURPOSE_OTHER, purposeOfFundingOptions } from '../../data/profile'
+import { FUNDING_PURPOSE_OTHER, purposeOfFundingOptions, timeframeOptions } from '../../data/profile'
 import { useFundingRequest, useFundingApplicationDocuments } from '../../modules/funding-application/queries'
+import { formatCurrency } from '../../utils/formatters'
 
 // Types & Utils
 import {
@@ -31,6 +32,52 @@ import {
   type FederalCompliance,
   type Attestation,
 } from './types'
+
+const matchPurpose = (raw: string | null | undefined): string => {
+  if (!raw) return ''
+  const trimmed = raw.trim()
+
+  if (trimmed.includes(',')) {
+    return trimmed
+  }
+
+  const exact = purposeOfFundingOptions.find(o => o.value.toLowerCase() === trimmed.toLowerCase())
+  if (exact) return exact.value
+
+  const lowerAll = trimmed.toLowerCase()
+  if (lowerAll === 'working capital') return 'Working Capital'
+  if (lowerAll.includes('equipment')) return 'Equipment Purchase'
+  if (lowerAll.includes('inventory')) return 'Inventory'
+  if (lowerAll.includes('payroll')) return 'Payroll'
+  if (lowerAll.includes('real estate') || lowerAll.includes('property')) return 'Commercial Real Estate Purchase'
+  if (lowerAll.includes('line of credit')) return 'Business Line of Credit'
+  if (lowerAll.includes('expansion')) return 'Business Expansion'
+  if (lowerAll.includes('acquisition')) return 'Business Acquisition'
+
+  return trimmed
+}
+
+const matchTimeframe = (raw: string | null | undefined): string => {
+  if (!raw) return ''
+  const trimmed = raw.trim()
+  const exact = timeframeOptions.find(o => o.value.toLowerCase() === trimmed.toLowerCase())
+  if (exact) return exact.value
+
+  const lower = trimmed.toLowerCase()
+  if (lower.includes('hour') || lower.includes('1-3 day') || lower.includes('1-5 day') || lower.includes('3-7 day') || lower.includes('immediately')) {
+    return 'Immediately'
+  }
+  if (lower.includes('7-14') || lower.includes('1-2 week') || lower.includes('2 week')) {
+    return '1-2 Weeks'
+  }
+  if (lower.includes('21-45') || lower.includes('30-60') || lower.includes('month')) {
+    return '1 Month'
+  }
+  if (lower.includes('flexible')) {
+    return 'Flexible'
+  }
+  return trimmed
+}
 
 // Constants
 const STEP_INDICES = {
@@ -60,10 +107,17 @@ const FEDERAL_COMPLIANCE_KEYS: (keyof FederalCompliance)[] = [
 ]
 
 export default function FundApplication() {
+  const navigate = useNavigate()
+  const { id } = useParams()
+  const location = useLocation()
+  const [fundingSequenceId, setFundingSequenceId] = useState<string | number | null>(null)
+  const [fundingRequestId, setFundingRequestId] = useState<string | number | null>(null)
+
   const [activeStep, setActiveStep] = useState<number>(STEP_INDICES.BUSINESS_INFO)
   const [loading, setLoading] = useState(true)
   const [isNavigatingSave, setIsNavigatingSave] = useState(false)
   const [mobileOpenIdx, setMobileOpenIdx] = useState<number | null>(STEP_INDICES.BUSINESS_INFO)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const activeStepSaveRef = React.useRef<(() => Promise<boolean>) | null>(null)
 
@@ -139,20 +193,6 @@ export default function FundApplication() {
     purposeNote: '',
   })
 
-  const [fundingSequenceId, setFundingSequenceId] = useState<number | string | null>(null)
-  const [fundingRequestId, setFundingRequestId] = useState<number | string | null>(null)
-
-  const location = useLocation()
-  const navigate = useNavigate()
-  const { id } = useParams()
-
-  // Guard: remove strict requirement for location.state to allow GET navigation with query params
-  // useEffect(() => {
-  //   if (!location.state) {
-  //     navigate('/funding-requests', { replace: true });
-  //   }
-  // }, [])
-
   // Initialize funding state from location.state & query params
   useEffect(() => {
     const state = location.state as any;
@@ -165,35 +205,18 @@ export default function FundApplication() {
 
     if (state && (state.purpose || state.approved_funding || state.requested_amount || state.funding_type)) {
       setFunding(prev => {
-        // Try to find an exact or partial match for the purpose
-        let matchedPurpose = state.purpose || prev.purpose;
-        if (state.purpose) {
-          const exactMatch = purposeOfFundingOptions.find(opt => opt.value === state.purpose);
-          if (exactMatch) {
-            matchedPurpose = exactMatch.value;
-          } else {
-            const lowerPassed = state.purpose.toLowerCase();
-            const partialMatch = purposeOfFundingOptions.find(opt => 
-              opt.value.toLowerCase().includes(lowerPassed) || lowerPassed.includes(opt.value.toLowerCase())
-            );
-            if (partialMatch) {
-              matchedPurpose = partialMatch.value;
-            } else if (state.purpose === 'Working Capital') {
-              matchedPurpose = 'Working Capital (General Use)';
-            }
-          }
-        }
+        let matchedPurpose = state.purpose ? matchPurpose(state.purpose) : prev.purpose;
         
         return {
           ...prev,
           purpose: matchedPurpose,
           approvedFunding: state.approved_funding || prev.approvedFunding,
-          requestedAmount: state.requested_amount || prev.requestedAmount,
+          requestedAmount: state.requested_amount ? formatCurrency(state.requested_amount) : prev.requestedAmount,
           fundingType: state.funding_type || prev.fundingType,
         };
       })
     }
-  }, [location.state])
+  }, [location.state, id])
 
   const [federal, setFederal] = useState<FederalCompliance>({
     legalBusinessName: '',
@@ -234,11 +257,43 @@ export default function FundApplication() {
   })
 
   // Fetch funding request and documents (tab-wise lazy loading)
-  const { data: fundingData } = useFundingRequest({ enabled: activeStep >= STEP_INDICES.FUNDING_REQUEST })
+  const currentReqId = fundingRequestId || id || null
+  const { data: fundingData } = useFundingRequest(currentReqId)
   const fundingApplicationId = fundingData?.id ?? null
   const { data: documentsData } = useFundingApplicationDocuments(fundingApplicationId, {
     enabled: activeStep >= STEP_INDICES.DOCUMENT_UPLOAD,
   })
+
+  // Synchronize funding data when fetched from API
+  useEffect(() => {
+    if (fundingData) {
+      const rawAmount = fundingData.requested_amount
+      const parsedAmount = rawAmount ? formatCurrency(rawAmount) : ''
+      const rawPurpose = fundingData.purpose_of_funds
+      const resolvedPurpose = matchPurpose(rawPurpose)
+      const resolvedApproved = fundingData.approved_funding || ''
+      const resolvedType = fundingData.preferred_funding_type || ''
+      const resolvedTimeframe = matchTimeframe(fundingData.timeframe_needed)
+
+      setFunding(prev => ({
+        ...prev,
+        requestedAmount: prev.requestedAmount || parsedAmount,
+        purpose: prev.purpose || resolvedPurpose,
+        approvedFunding: prev.approvedFunding || resolvedApproved,
+        fundingType: prev.fundingType || resolvedType,
+        timeframe: prev.timeframe || resolvedTimeframe,
+        collateral: prev.collateral || fundingData.collateral_available || '',
+        purposeNote: prev.purposeNote || fundingData.purpose_note || '',
+      }))
+
+      if (fundingData.funding_sequence_id && !fundingSequenceId) {
+        setFundingSequenceId(fundingData.funding_sequence_id)
+      }
+      if (fundingData.funding_request_id && !fundingRequestId) {
+        setFundingRequestId(fundingData.funding_request_id)
+      }
+    }
+  }, [fundingData])
 
   // Initial loading effect
   useEffect(() => {
@@ -449,15 +504,33 @@ export default function FundApplication() {
             onAddCoBorrower={submitCoBorrower}
             onEditCoBorrower={editCoBorrower}
             isValid={isStepValid(STEP_INDICES.OWNERSHIP_INFO)}
+            fundingSequenceId={fundingSequenceId}
+            fundingRequestId={fundingRequestId || id}
             {...commonStepProps}
           />
         )
 
       case STEP_INDICES.FINANCIAL_INFO:
-        return <FinancialInformationStep financial={financial} setFinancial={setFinancial} {...commonStepProps} />
+        return (
+          <FinancialInformationStep
+            financial={financial}
+            setFinancial={setFinancial}
+            fundingSequenceId={fundingSequenceId}
+            fundingRequestId={fundingRequestId || id}
+            {...commonStepProps}
+          />
+        )
 
       case STEP_INDICES.FUNDING_REQUEST:
-        return <FundingRequestStep funding={funding} setFunding={setFunding} {...commonStepProps} />
+        return (
+          <FundingRequestStep
+            funding={funding}
+            setFunding={setFunding}
+            fundingSequenceId={fundingSequenceId}
+            fundingRequestId={fundingRequestId || id}
+            {...commonStepProps}
+          />
+        )
 
       case STEP_INDICES.DOCUMENT_UPLOAD:
         return <DocumentUploadStep {...commonStepProps} />

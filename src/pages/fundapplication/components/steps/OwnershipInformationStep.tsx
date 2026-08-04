@@ -30,6 +30,8 @@ interface OwnershipInformationStepProps {
   loading: boolean
   isValid: boolean
   onRegisterSave?: (fn: (() => Promise<boolean>) | null) => void
+  fundingSequenceId?: number | string | null
+  fundingRequestId?: number | string | null
 }
 
 export default function OwnershipInformationStep({
@@ -48,6 +50,8 @@ export default function OwnershipInformationStep({
   loading,
   isValid,
   onRegisterSave,
+  fundingSequenceId,
+  fundingRequestId,
 }: OwnershipInformationStepProps) {
   const [availableStates, setAvailableStates] = useState<{ name: string; code: string; cities?: string[] }[]>([])
   const [availableCities, setAvailableCities] = useState<{ name: string; code: string }[]>([])
@@ -55,7 +59,7 @@ export default function OwnershipInformationStep({
   const [lastCustomCity, setLastCustomCity] = useState('')
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
-  const { data: apiData, isLoading: isApiLoading, isSuccess } = useOwnershipInfo()
+  const { data: apiData, isLoading: isApiLoading, isSuccess } = useOwnershipInfo(fundingRequestId)
   const { mutateAsync: saveOwnershipInfo, isPending: isSaving } = useSaveOwnershipInfo()
 
   // Memoized save handler
