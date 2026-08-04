@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-toastify'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
 // Components
 import BusinessInformationStep from './components/steps/BusinessInformationStep'
@@ -144,26 +144,24 @@ export default function FundApplication() {
 
   const location = useLocation()
   const navigate = useNavigate()
+  const { id } = useParams()
 
-  // Guard: redirect to /funding-requests if the page was accessed directly
-  // (without any router state — direct URL access always has null state)
-  useEffect(() => {
-    if (!location.state) {
-      navigate('/funding-requests', { replace: true });
-    }
-  }, [])
+  // Guard: remove strict requirement for location.state to allow GET navigation with query params
+  // useEffect(() => {
+  //   if (!location.state) {
+  //     navigate('/funding-requests', { replace: true });
+  //   }
+  // }, [])
 
   // Initialize funding state from location.state & query params
   useEffect(() => {
     const state = location.state as any;
-    if (state) {
-      const searchParams = new URLSearchParams(window.location.search);
-      const seqId = state.funding_sequence_id ?? state.fundingSequenceId ?? searchParams.get('funding_sequence_id') ?? searchParams.get('fundingSequenceId');
-      const reqId = state.funding_request_id ?? state.fundingRequestId ?? searchParams.get('funding_request_id') ?? searchParams.get('fundingRequestId');
-      
-      if (seqId) setFundingSequenceId(seqId);
-      if (reqId) setFundingRequestId(reqId);
-    }
+    const searchParams = new URLSearchParams(window.location.search);
+    const seqId = state?.funding_sequence_id ?? state?.fundingSequenceId ?? searchParams.get('funding_sequence_id') ?? searchParams.get('fundingSequenceId');
+    const reqId = id ?? state?.funding_request_id ?? state?.fundingRequestId ?? searchParams.get('funding_request_id') ?? searchParams.get('fundingRequestId');
+    
+    if (seqId) setFundingSequenceId(seqId);
+    if (reqId) setFundingRequestId(reqId);
 
     if (state && (state.purpose || state.approved_funding || state.requested_amount || state.funding_type)) {
       setFunding(prev => {

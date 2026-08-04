@@ -746,15 +746,15 @@ export default function FundingRequestDetailPage() {
 
                         {/* ── Left Column: Details Cards (Summary, Documents, Decision) ── */}
                         <div className="col-lg-8">
-                            <ReviewProgressCard 
-                                status={review.status} 
-                                createdAt={review.created_at} 
+                            <ReviewProgressCard
+                                status={review.status}
+                                createdAt={review.created_at}
                                 updatedAt={review.updated_at}
-                                rejectReason={review.reject_reason} 
+                                rejectReason={review.reject_reason}
                             />
 
                             {/* Decision Details */}
-                            {(review.reviewer?.name || [FUNDING_REVIEW_STATUS.APPROVED, FUNDING_REVIEW_STATUS.REJECTED, 'Accepted'].includes(review.status)) && (
+                            {(review.reviewer?.name || [FUNDING_REVIEW_STATUS.APPROVED, FUNDING_REVIEW_STATUS.REJECTED, FUNDING_REVIEW_STATUS.ACCEPTED].includes(review.status)) && (
                                 <div className="card border-0 shadow-sm mb-4">
                                     <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
                                         <h6 className="mb-0 fw-bold fs-15">
@@ -784,7 +784,7 @@ export default function FundingRequestDetailPage() {
                                                             )}
                                                         </p>
                                                         <div className="mt-3">
-                                                            <Link 
+                                                            <Link
                                                                 to={`/funding/${review.funding_sequence_id || review.funding_sequence?.id}/review`}
                                                                 state={{
                                                                     purpose: review.use_of_funds,
@@ -801,30 +801,49 @@ export default function FundingRequestDetailPage() {
                                             )}
                                             {review.status === FUNDING_REVIEW_STATUS.APPROVED && (
                                                 <div className="col-12">
-                                                    <div className="alert alert-success border-0 mb-0">
-                                                        <p className="mb-0 fs-13">
-                                                            <span className="fw-bold">Approved:</span>{' '}
-                                                            Your funding request has been approved for {review.funding_type}. Please proceed with the final funding application.
-                                                        </p>
-                                                        <div className="mt-3">
-                                                            <Link 
-                                                                to="/fund-application"
-                                                                state={{
-                                                                    purpose: review.use_of_funds,
-                                                                    amount: review.requested_amount,
-                                                                    requested_amount: review.requested_amount,
-                                                                    approved_funding: review.funding_sequence?.name || review.funding_type,
-                                                                    funding_type: review.funding_type || review.funding_sequence?.name,
-                                                                    funding_sequence_id: review.funding_sequence_id,
-                                                                    funding_request_id: review.id,
-                                                                }}
-                                                                className="btn btn-success btn-sm fw-medium px-4 d-inline-flex align-items-center"
-                                                            >
-                                                                Process Funding Application
-                                                                <i className="ri-arrow-right-line ms-2"></i>
-                                                            </Link>
+                                                    {review.application_status ? (
+                                                        <div className="alert alert-info border-0 mb-0">
+                                                            <p className="mb-0 fs-13">
+                                                                <span className="fw-bold">Application In Progress:</span>{' '}
+                                                                Funding application for {review.funding_type} has been started (Status: <strong>{review.application_status}</strong>).
+                                                            </p>
+                                                            <div className="mt-3 d-flex gap-2 flex-wrap">
+                                                                {(String(review.application_status || '').toLowerCase().includes('hold') || String(review.application_status || '').toLowerCase().includes('draft')) ? (
+                                                                    <Link
+                                                                        to={`/fund-application/${review.id}`}
+                                                                        className="btn btn-success btn-sm fw-medium px-3 d-inline-flex align-items-center"
+                                                                    >
+                                                                        Continue Application
+                                                                        <i className="ri-arrow-right-line ms-2"></i>
+                                                                    </Link>
+                                                                ) : (
+                                                                    <Link
+                                                                        to={review.funding_application_id ? `/my-applications/funding/${review.funding_application_id}` : '/my-applications'}
+                                                                        className="btn btn-info btn-sm fw-medium px-3 d-inline-flex align-items-center"
+                                                                    >
+                                                                        <i className="ri-file-list-line me-1"></i> View Application
+                                                                        <i className="ri-arrow-right-line ms-2"></i>
+                                                                    </Link>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                    </div>
+                                                    ) : (
+                                                        <div className="alert alert-success border-0 mb-0">
+                                                            <p className="mb-0 fs-13">
+                                                                <span className="fw-bold">Approved:</span>{' '}
+                                                                Your funding request has been approved for {review.funding_type}. Please proceed with the final funding application.
+                                                            </p>
+                                                            <div className="mt-3">
+                                                                <Link
+                                                                    to={`/fund-application/${review.id}`}
+                                                                    className="btn btn-success btn-sm fw-medium px-4 d-inline-flex align-items-center"
+                                                                >
+                                                                    Process Application
+                                                                    <i className="ri-arrow-right-line ms-2"></i>
+                                                                </Link>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>

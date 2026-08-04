@@ -265,6 +265,8 @@ const FundingDetail = () => {
         readiness_factors = [],
         missing_documents = [],
         latest_review_status,
+        has_funding_application = false,
+        latest_review_id = null,
     } = data;
 
     const colors = getFundingColorStyles(icon_color);
@@ -290,7 +292,7 @@ const FundingDetail = () => {
         return s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED || s === FACTOR_STATUS_VALUES.WEAK;
     });
     const isPending = latest_review_status === FUNDING_REVIEW_STATUS.PENDING;
-    const isApproved = latest_review_status === FUNDING_REVIEW_STATUS.APPROVED || latest_review_status === 'Approved';
+    const isApproved = latest_review_status === FUNDING_REVIEW_STATUS.APPROVED;
 
     return (
         <div className="page-content">
@@ -469,23 +471,25 @@ const FundingDetail = () => {
                             </p>
                         </div>
                         <span id="btn-start-funding-request-wrapper" className="funding-detail-btn-wrapper">
-                            {(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') && !isApproved ? (
+                            {has_funding_application ? (
+                                <Link 
+                                    to="/my-applications"
+                                    className="btn btn-info d-flex align-items-center justify-content-center gap-2 fw-medium px-4"
+                                >
+                                    View Application
+                                    <i className="ri-arrow-right-line" />
+                                </Link>
+                            ) : (hasMissingFactors || isPending || finalEngineStatus === 'Hidden') && !isApproved ? (
                                 <span className="btn btn-primary disabled d-flex align-items-center justify-content-center gap-2 fw-medium px-4">
                                     Start Funding Request
                                     <i className="ri-arrow-right-line" />
                                 </span>
                             ) : isApproved ? (
                                 <Link 
-                                    to="/fund-application" 
-                                    state={{ 
-                                        approved_funding: name, 
-                                        funding_type: name,
-                                        funding_sequence_id: id,
-                                        funding_request_id: latest_review_id,
-                                    }} 
+                                    to={`/fund-application/${latest_review_id}`}
                                     className="btn btn-success d-flex align-items-center justify-content-center gap-2 fw-medium px-4"
                                 >
-                                    Process Funding Application
+                                    Process Application
                                     <i className="ri-arrow-right-line" />
                                 </Link>
                             ) : (
