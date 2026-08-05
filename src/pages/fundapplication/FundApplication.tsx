@@ -486,7 +486,7 @@ export default function FundApplication() {
             loading={loading}
             onRegisterSave={registerSave}
             fundingSequenceId={fundingSequenceId}
-            fundingRequestId={fundingRequestId}
+            fundingRequestId={fundingRequestId || id}
           />
         )
 
@@ -533,7 +533,14 @@ export default function FundApplication() {
         )
 
       case STEP_INDICES.DOCUMENT_UPLOAD:
-        return <DocumentUploadStep {...commonStepProps} />
+        return (
+          <DocumentUploadStep
+            fundingSequenceId={fundingSequenceId}
+            fundingRequestId={fundingRequestId || id}
+            fundingApplicationId={fundingApplicationId}
+            {...commonStepProps}
+          />
+        )
 
       case STEP_INDICES.DISCLOSURES:
         return (

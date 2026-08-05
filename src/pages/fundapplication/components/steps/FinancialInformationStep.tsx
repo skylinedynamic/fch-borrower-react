@@ -123,6 +123,22 @@ export default function FinancialInformationStep({
   const debtOk = !financial.existingDebt || !!financial.debtBalance
   const isValid = baseOk && debtOk
 
+  const dynamicPersonalCreditScoreOptions = React.useMemo(() => {
+    const opts = [...selfReportedCreditScoreOptions]
+    if (financial.personalCreditScore && !opts.some((c) => c.value.toLowerCase() === financial.personalCreditScore.toLowerCase())) {
+      opts.unshift({ label: financial.personalCreditScore, value: financial.personalCreditScore })
+    }
+    return opts
+  }, [financial.personalCreditScore])
+
+  const dynamicBusinessCreditScoreOptions = React.useMemo(() => {
+    const opts = [...selfReportedBusinessCreditScoreOptions]
+    if (financial.businessCreditScore && !opts.some((c) => c.value.toLowerCase() === financial.businessCreditScore.toLowerCase())) {
+      opts.unshift({ label: financial.businessCreditScore, value: financial.businessCreditScore })
+    }
+    return opts
+  }, [financial.businessCreditScore])
+
   if (loading || isApiLoading) {
     return <FormSkeleton fieldCount={6} />
   }
@@ -199,7 +215,7 @@ export default function FinancialInformationStep({
         <CustomDropdown
           value={financial.personalCreditScore}
           onChange={(value) => setFinancial({ ...financial, personalCreditScore: value })}
-          options={selfReportedCreditScoreOptions}
+          options={dynamicPersonalCreditScoreOptions}
           optionLabel="label"
           optionValue="value"
           placeholder="Select self-reported personal credit score"
@@ -214,7 +230,7 @@ export default function FinancialInformationStep({
         <CustomDropdown
           value={financial.businessCreditScore}
           onChange={(value) => setFinancial({ ...financial, businessCreditScore: value })}
-          options={selfReportedBusinessCreditScoreOptions}
+          options={dynamicBusinessCreditScoreOptions}
           optionLabel="label"
           optionValue="value"
           placeholder="Select self-reported business credit score"

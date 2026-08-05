@@ -191,6 +191,30 @@ export default function BusinessInformationStep({
     }
   }, [business.city, availableCities])
 
+  const dynamicIndustryTypes = React.useMemo(() => {
+    const opts = [...industryTypes]
+    if (business.industryType && !opts.some((o) => o.value.toLowerCase() === business.industryType.toLowerCase())) {
+      opts.unshift({ label: business.industryType, value: business.industryType })
+    }
+    return opts
+  }, [business.industryType])
+
+  const dynamicEntityTypes = React.useMemo(() => {
+    const opts = [...entityTypes]
+    if (business.entityType && !opts.some((o) => o.value.toLowerCase() === business.entityType.toLowerCase())) {
+      opts.unshift({ label: business.entityType, value: business.entityType })
+    }
+    return opts
+  }, [business.entityType])
+
+  const dynamicStates = React.useMemo(() => {
+    const opts = [...availableStates]
+    if (business.state && !opts.some((s) => s.name.toLowerCase() === business.state.toLowerCase() || s.code.toLowerCase() === business.state.toLowerCase())) {
+      opts.unshift({ name: business.state, code: business.state })
+    }
+    return opts
+  }, [availableStates, business.state])
+
   if (loading || isApiLoading) {
     return <FormSkeleton fieldCount={14} />
   }
@@ -245,38 +269,57 @@ export default function BusinessInformationStep({
       </div>
       <div className="col-md-6">
         <label className="form-label">
-          Mobile Phone <span className="text-danger">*</span>
+          Phone Number <span className="text-danger">*</span>
         </label>
         <div className="input-group">
-          <span className="input-group-text bg-light border" style={{ width: '120px' }}>
-            {personal.phoneCountry}
-          </span>
+          <CustomDropdown
+            value={personal.phoneCountry}
+            onChange={(value) => {
+              setPersonal((prev) => ({ ...prev, phoneCountry: value }))
+              const countryCode = getCountryCodeFromDisplay(value)
+              const selectedCountry = countriesData.find((c) => c.code === countryCode)
+              if (selectedCountry) {
+                setAvailableStates(selectedCountry.states)
+              }
+            }}
+            options={countriesData.map((c) => ({
+              label: formatCountryDisplay(c.code, c.phone_code),
+              value: formatCountryDisplay(c.code, c.phone_code),
+            }))}
+            optionLabel="label"
+            optionValue="value"
+            style={{ width: '130px', flex: 'none' }}
+          />
           <input
-            type="tel"
+            type="text"
             className={`form-control ${hasError('business_phone_no') ? 'is-invalid' : ''}`}
-            placeholder="Enter number"
+            placeholder="(555) 000-0000"
             value={personal.phoneNumber}
             onChange={(e) => setPersonal((prev) => ({ ...prev, phoneNumber: formatPhoneNumber(e.target.value) }))}
           />
-          {hasError('business_phone_no') && <div className="invalid-feedback">{getFieldError('business_phone_no')}</div>}
         </div>
+        {hasError('business_phone_no') && (
+          <div className="invalid-feedback d-block">{getFieldError('business_phone_no')}</div>
+        )}
       </div>
 
       <div className="col-md-6">
         <label className="form-label">
-          Business Street Address <span className="text-danger">*</span>
+          Business Address <span className="text-danger">*</span>
         </label>
         <input
           type="text"
           className={`form-control ${hasError('business_address') ? 'is-invalid' : ''}`}
-          placeholder="Enter business street address"
+          placeholder="Enter business address"
           value={business.businessAddress}
           onChange={(e) => setBusiness((prev) => ({ ...prev, businessAddress: e.target.value }))}
         />
-        {hasError('business_address') && <div className="invalid-feedback">{getFieldError('business_address')}</div>}
+        {hasError('business_address') && (
+          <div className="invalid-feedback">{getFieldError('business_address')}</div>
+        )}
       </div>
 
-      <div className={showCityInput ? 'col-md-3' : 'col-md-6'}>
+      <div className="col-md-6">
         <label className="form-label">
           City <span className="text-danger">*</span>
         </label>
@@ -293,29 +336,29 @@ export default function BusinessInformationStep({
           }}
           options={availableCities}
           optionLabel="name"
-          optionValue="code"
-          placeholder="Select city"
+          optionValue="name"
           searchable={true}
+          placeholder="Select city"
           className={`w-100 ${hasError('business_city') ? 'is-invalid' : ''}`}
-          disabled={!business.state}
         />
-        {hasError('business_city') && <div className="invalid-feedback d-block">{getFieldError('business_city')}</div>}
+        {hasError('business_city') && !showCityInput && (
+          <div className="invalid-feedback d-block">{getFieldError('business_city')}</div>
+        )}
       </div>
 
       {showCityInput && (
-        <div className="col-md-3">
+        <div className="col-md-6">
           <label className="form-label">
-            City Name <span className="text-danger">*</span>
+            Custom City Name <span className="text-danger">*</span>
           </label>
           <input
             type="text"
             className={`form-control ${hasError('business_city') ? 'is-invalid' : ''}`}
-            placeholder="Enter city name"
+            placeholder="Enter custom city"
             value={business.city}
             onChange={(e) => {
-              const val = e.target.value
-              setLastCustomCity(val)
-              setBusiness((prev) => ({ ...prev, city: val }))
+              setLastCustomCity(e.target.value)
+              setBusiness((prev) => ({ ...prev, city: e.target.value }))
             }}
             required
           />
@@ -342,7 +385,7 @@ export default function BusinessInformationStep({
               city: defaultCity,
             }))
           }}
-          options={availableStates}
+          options={dynamicStates}
           optionLabel="name"
           optionValue="name"
           searchable={true}
@@ -375,7 +418,7 @@ export default function BusinessInformationStep({
         <CustomDropdown
           value={business.industryType}
           onChange={(value) => setBusiness((prev) => ({ ...prev, industryType: value }))}
-          options={industryTypes}
+          options={dynamicIndustryTypes}
           optionLabel="label"
           optionValue="value"
           searchable={true}
@@ -391,7 +434,7 @@ export default function BusinessInformationStep({
         <CustomDropdown
           value={business.entityType}
           onChange={(value) => setBusiness((prev) => ({ ...prev, entityType: value }))}
-          options={entityTypes}
+          options={dynamicEntityTypes}
           optionLabel="label"
           optionValue="value"
           placeholder="Select entity type"
