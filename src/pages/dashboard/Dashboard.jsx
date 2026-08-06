@@ -550,7 +550,7 @@ export default function Dashboard() {
                                         className="btn btn-primary fw-bold w-100 mb-3 shadow-sm border-0 d-flex justify-content-center align-items-center"
                                         onClick={() => navigate(`/fund-application/${currentActiveRequest.id}`)}
                                     >
-                                        Process Application
+                                        Process Funding Application
                                         <i className="ri-arrow-right-line ms-1"></i>
                                     </button>
                                     {activeApprovedRequestCount > 1 && (
