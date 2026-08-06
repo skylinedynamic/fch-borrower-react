@@ -6,7 +6,7 @@ import { Column } from 'primereact/column'
 import { Dropdown } from 'primereact/dropdown'
 import StatisticsCardSkeleton from '../../components/Common/StatisticsCardSkeleton'
 import StatisticsCard from '../../components/Common/StatisticsCard'
-import { FUNDING_REVIEW_STATUS } from '../../config/funding'
+import { FUNDING_REVIEW_STATUS, FUNDING_APPLICATION_STATUS_OPTIONS } from '../../config/funding'
 import '../../../assets/css/funding-requests.css'
 
 export default function FundingRequestList() {
@@ -15,10 +15,12 @@ export default function FundingRequestList() {
     const [perPage, setPerPage] = useState(10)
     const [searchText, setSearchText] = useState('')
     const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
+    const [selectedAppStatus, setSelectedAppStatus] = useState<string | null>(null)
     const [selectedFundingType, setSelectedFundingType] = useState<string | null>(null)
 
     const [appliedSearchText, setAppliedSearchText] = useState('')
     const [appliedStatus, setAppliedStatus] = useState<string | null>(null)
+    const [appliedAppStatus, setAppliedAppStatus] = useState<string | null>(null)
     const [appliedFundingType, setAppliedFundingType] = useState<string | null>(null)
 
     const [sortField, setSortField] = useState<string>('id')
@@ -29,6 +31,7 @@ export default function FundingRequestList() {
         per_page: perPage,
         search: appliedSearchText,
         status: appliedStatus || undefined,
+        application_status: appliedAppStatus || undefined,
         funding_sequence_id: appliedFundingType || undefined,
         sort_field: sortField,
         sort_order: sortOrder === 1 ? 'asc' : 'desc'
@@ -77,6 +80,7 @@ export default function FundingRequestList() {
     const handleApplyFilters = () => {
         setAppliedSearchText(searchText)
         setAppliedStatus(selectedStatus)
+        setAppliedAppStatus(selectedAppStatus)
         setAppliedFundingType(selectedFundingType)
         setPage(1)
     }
@@ -84,9 +88,11 @@ export default function FundingRequestList() {
     const handleClearFilters = () => {
         setSearchText('')
         setSelectedStatus(null)
+        setSelectedAppStatus(null)
         setSelectedFundingType(null)
         setAppliedSearchText('')
         setAppliedStatus(null)
+        setAppliedAppStatus(null)
         setAppliedFundingType(null)
         setPage(1)
     }
@@ -190,7 +196,7 @@ export default function FundingRequestList() {
                                     handleApplyFilters();
                                 }}>
                                     <div className="row g-3 mb-4">
-                                        <div className="col-xxl-4 col-sm-6">
+                                        <div className="col-xl-3 col-md-6">
                                             <div className="search-box">
                                                 <input
                                                     type="text"
@@ -209,7 +215,7 @@ export default function FundingRequestList() {
                                                 <i className="ri-search-line search-icon"></i>
                                             </div>
                                         </div>
-                                        <div className="col-xxl-3 col-sm-6">
+                                        <div className="col-xl-2 col-md-6">
                                             <Dropdown
                                                 value={selectedStatus}
                                                 options={Object.values(FUNDING_REVIEW_STATUS).map(status => ({
@@ -217,11 +223,23 @@ export default function FundingRequestList() {
                                                     value: status
                                                 }))}
                                                 onChange={(e) => setSelectedStatus(e.value)}
-                                                placeholder="All Statuses"
+                                                placeholder="Request Status"
                                                 className="w-100 bg-light border-light fr-filter-dropdown"
                                             />
                                         </div>
-                                        <div className="col-xxl-3 col-sm-6">
+                                        <div className="col-xl-2 col-md-6">
+                                            <Dropdown
+                                                value={selectedAppStatus}
+                                                options={[
+                                                    { label: 'Not Started', value: 'Not Started' },
+                                                    ...FUNDING_APPLICATION_STATUS_OPTIONS
+                                                ]}
+                                                onChange={(e) => setSelectedAppStatus(e.value)}
+                                                placeholder="Application Status"
+                                                className="w-100 bg-light border-light fr-filter-dropdown"
+                                            />
+                                        </div>
+                                        <div className="col-xl-2 col-md-6">
                                             <Dropdown
                                                 value={selectedFundingType}
                                                 options={fundingTypes.map((ft: any) => ({
@@ -229,11 +247,11 @@ export default function FundingRequestList() {
                                                     value: ft.id
                                                 }))}
                                                 onChange={(e) => setSelectedFundingType(e.value)}
-                                                placeholder="All Funding Types"
+                                                placeholder="Funding Type"
                                                 className="w-100 bg-light border-light fr-filter-dropdown"
                                             />
                                         </div>
-                                        <div className="col-xxl-2 col-sm-6 d-flex gap-2 justify-content-end">
+                                        <div className="col-xl-3 col-md-12 d-flex gap-2 justify-content-end">
                                             <button
                                                 type="button"
                                                 className="btn btn-warning flex-grow-1"
