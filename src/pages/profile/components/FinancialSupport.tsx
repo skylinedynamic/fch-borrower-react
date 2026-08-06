@@ -209,7 +209,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           <label className="form-label">Years in Business</label>
           <div className="position-relative">
             <div className="form-control bg-light" style={{ minHeight: '38.39px', display: 'flex', alignItems: 'center' }}>
-              {data.years_in_business || 'Not Set'}
+              {data.years_in_business || 'Set the Business Start Date'}
             </div>
           </div>
         </div>
