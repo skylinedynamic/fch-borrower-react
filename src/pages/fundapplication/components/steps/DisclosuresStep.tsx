@@ -37,6 +37,7 @@ export default function DisclosuresStep({
 
     const payload = {
       id: disclosureId,
+      funding_request_id: initialRequestId || null,
       credit_pull_authorization: disclosure.agreeTerms,
       terms_conditions_acceptance: disclosure.creditCheckConsent,
     }

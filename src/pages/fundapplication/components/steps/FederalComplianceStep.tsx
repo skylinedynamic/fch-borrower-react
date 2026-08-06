@@ -54,6 +54,7 @@ export default function FederalComplianceStep({
 
     const payload = {
       id: complianceId,
+      funding_request_id: initialRequestId || null,
       filed_for_bankruptcy: mapPayloadVal(federal.bankruptcy),
       any_pending_lawsuits: mapPayloadVal(federal.lawsuit),
       has_federal_loan: mapPayloadVal(federal.federalLoanDefault),
