@@ -79,6 +79,7 @@ export default function AttestationStep({
     setValidationErrors({})
     const payload = {
       id: attestationId,
+      funding_request_id: initialRequestId || null,
       signature_name: attestation.signature_name,
       esign_consent: attestation.esign_consent,
       terms_consent: attestation.terms_consent,
