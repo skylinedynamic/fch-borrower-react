@@ -50,7 +50,7 @@ export default function FinancialInformationStep({
 
     const payload = {
       id: financial.id || null,
-      funding_request_id: initialRequestId || null,
+      funding_request_id: fundingRequestId || null,
       monthly_revenue: unformatCurrency(financial.monthlyRevenue),
       annual_revenue: unformatCurrency(financial.annualRevenue),
       business_bank_name: financial.bankName,

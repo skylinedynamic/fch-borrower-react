@@ -68,7 +68,7 @@ export default function OwnershipInformationStep({
 
     const payload = {
       id: owner.id ?? null,
-      funding_request_id: initialRequestId || null,
+      funding_request_id: fundingRequestId || null,
       first_name: owner.firstName,
       last_name: owner.lastName,
       date_of_birth: owner.dob,

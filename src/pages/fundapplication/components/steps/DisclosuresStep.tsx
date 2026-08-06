@@ -14,6 +14,7 @@ interface DisclosuresStepProps {
   onNext: () => void
   onBack: () => void
   loading: boolean
+  fundingRequestId?: number | string | null
   onRegisterSave?: (fn: (() => Promise<boolean>) | null) => void
 }
 
@@ -24,6 +25,7 @@ export default function DisclosuresStep({
   onNext,
   onBack,
   loading,
+  fundingRequestId,
   onRegisterSave,
 }: DisclosuresStepProps) {
   const { data: apiData, isLoading: isApiLoading, isSuccess } = useDisclosuresConsent()
@@ -37,7 +39,7 @@ export default function DisclosuresStep({
 
     const payload = {
       id: disclosureId,
-      funding_request_id: initialRequestId || null,
+      funding_request_id: fundingRequestId || null,
       credit_pull_authorization: disclosure.agreeTerms,
       terms_conditions_acceptance: disclosure.creditCheckConsent,
     }
