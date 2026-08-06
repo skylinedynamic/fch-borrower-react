@@ -116,8 +116,7 @@ export default function FundingApplicationDetailPage() {
               <DetailItem label="Phone Number" value={application.business_phone_no} icon="ri-phone-line" />
               <DetailItem label="Industry Type" value={application.industry_type} icon="ri-briefcase-line" />
               <DetailItem label="Entity Type" value={application.entity_type} icon="ri-community-line" />
-              <DetailItem label="Years in Business" value={application.years_in_business} icon="ri-time-line" />
-              <DetailItem label="Number of Employees" value={application.number_of_employees} icon="ri-group-line" />
+              <DetailItem label="Time in Business" value={application.time_in_business || application.years_in_business} icon="ri-time-line" />
 
               <div className="col-12"><hr className="border-light my-3" /></div>
 
@@ -162,9 +161,9 @@ export default function FundingApplicationDetailPage() {
               <DetailItem label="Sequence Name" value={application.funding_sequence_name} icon="ri-list-check" />
               <DetailItem label="Sequence Subtitle" value={application.funding_sequence_subtitle} icon="ri-align-left" />
               <DetailItem label="Funding Request Status" value={application.funding_request_status} icon="ri-information-line" />
-              <DetailItem label="Amount Range" value={application.funding_sequence_amount_range} icon="ri-bar-chart-box-line" />
+              <DetailItem label="Amount Range" value={application.funding_sequence_amount_range ? application.funding_sequence_amount_range.split('-').map((v: string) => `$${Number(v.trim()).toLocaleString('en-US')}`).join(' - ') : 'N/A'} icon="ri-bar-chart-box-line" />
               <DetailItem label="Funding Type" value={application.preferred_funding_type} icon="ri-star-line" />
-              <DetailItem label="Request Amount" value={application.requested_amount ? `$${parseFloat(application.requested_amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : 'N/A'} icon="ri-money-dollar-circle-line" />
+              <DetailItem label="Request Amount" value={application.requested_amount || 'N/A'} icon="ri-money-dollar-circle-line" />
               <DetailItem label="Speed to Funds" value={application.funding_sequence_speed_to_funds} icon="ri-time-line" />
               <DetailItem label="Collateral Available" value={application.collateral_available} icon="ri-safe-2-line" />
               <DetailItem label="Uses" value={Array.isArray(application.funding_sequence_uses) ? application.funding_sequence_uses.join(', ') : application.funding_sequence_uses} icon="ri-briefcase-line" fullWidth />
@@ -174,22 +173,7 @@ export default function FundingApplicationDetailPage() {
               )}
             </SectionCard>
 
-            {/* Federal Compliance */}
-            <SectionCard title="Federal Compliance Disclosures" icon="ri-file-shield-2-line">
-              <DetailItem label="Filed for Bankruptcy" value={application.filed_for_bankruptcy === null ? 'N/A' : application.filed_for_bankruptcy ? 'Yes' : 'No'} icon="ri-scales-3-line" />
-              <DetailItem label="Pending Lawsuits" value={application.any_pending_lawsuits === null ? 'N/A' : application.any_pending_lawsuits ? 'Yes' : 'No'} icon="ri-hammer-line" />
-              <DetailItem label="Federal Loan Default" value={application.has_federal_loan === null ? 'N/A' : application.has_federal_loan ? 'Yes' : 'No'} icon="ri-bank-line" />
-              <DetailItem label="Federal Debt" value={application.has_federal_debt === null ? 'N/A' : application.has_federal_debt ? 'Yes' : 'No'} icon="ri-money-dollar-box-line" />
-              <DetailItem label="Criminal Offense" value={application.has_criminal_offense === null ? 'N/A' : application.has_criminal_offense ? 'Yes' : 'No'} icon="ri-error-warning-line" />
-              <DetailItem label="Parole/Probation" value={application.has_parole_or_probation === null ? 'N/A' : application.has_parole_or_probation ? 'Yes' : 'No'} icon="ri-user-unfollow-line" />
-              <DetailItem label="Suspended/Debarred" value={application.suspended_or_debarred === null ? 'N/A' : application.suspended_or_debarred ? 'Yes' : 'No'} icon="ri-prohibited-line" />
-              <DetailItem label="Judgments (Business)" value={application.any_outstanding_judgments_business === null ? 'N/A' : application.any_outstanding_judgments_business ? 'Yes' : 'No'} icon="ri-building-4-line" />
-              <DetailItem label="Judgments (Owner)" value={application.any_outstanding_judgments_owner === null ? 'N/A' : application.any_outstanding_judgments_owner ? 'Yes' : 'No'} icon="ri-user-line" />
-              <div className="col-sm-6"></div>
-              {application.federal_compliance_disclosures_explanation && (
-                <DetailItem label="Explanation" value={application.federal_compliance_disclosures_explanation} icon="ri-chat-4-line" fullWidth />
-              )}
-            </SectionCard>
+
 
             {/* Disclosures & Authorization */}
             <SectionCard title="Disclosures & Authorization" icon="ri-checkbox-circle-line">

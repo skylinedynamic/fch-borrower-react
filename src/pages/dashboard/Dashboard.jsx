@@ -26,6 +26,8 @@ export default function Dashboard() {
     const isRestricted = isSubscriptionRestricted(userSubscription);
 
 
+    const [activeRequestIndex, setActiveRequestIndex] = useState(0);
+
     // Fetch dashboard data
     const { data: dashboardData, isLoading, error } = useDashboard();
 
@@ -55,8 +57,8 @@ export default function Dashboard() {
             iconColor: 'text-success',
         },
         {
-            title: 'Pre Qualification Applications',
-            value: dashboardData.data.states.pre_qualifications.toString(),
+            title: 'Total Funding Requests',
+            value: (dashboardData.data.states.funding_requests || 0).toString(),
             iconClass: 'las la-chart-pie',
             iconBg: 'bg-soft-warning',
             iconColor: 'text-warning',
@@ -142,13 +144,16 @@ export default function Dashboard() {
     const isCertified = partnerType.includes('certified') || partnerType === PARTNER_TYPES.CERTIFIED.toLowerCase();
     const showAlert = (isRestricted || isWL || isCertified) && pendingInvoices.length > 0;
 
+    const activeApprovedRequests = dashboardData?.data?.active_approved_funding_requests || [];
+    const activeApprovedRequestCount = dashboardData?.data?.active_approved_funding_request_count || 0;
+    const currentActiveRequest = activeApprovedRequests[activeRequestIndex] || dashboardData?.data?.active_approved_funding_request;
 
     // Credit Score from API
     const ficoScore = dashboardData?.data.fico_score;
     const hasFico = ficoScore !== null && ficoScore !== undefined && ficoScore !== '';
     const displayFico = hasFico ? Number(ficoScore) : null;
 
-    const creditScoreData = {
+    const creditScoreData = React.useMemo(() => ({
         labels: ['Score', 'Remaining'],
         datasets: [
             {
@@ -158,14 +163,15 @@ export default function Dashboard() {
                 borderWidth: 0
             }
         ]
-    };
-    const creditScoreOptions = {
+    }), [hasFico, displayFico]);
+
+    const creditScoreOptions = React.useMemo(() => ({
         cutout: '80%',
         plugins: {
             legend: { display: false },
             tooltip: { enabled: false }
         }
-    };
+    }), []);
 
     // Tier data from API
     const tierData = dashboardData?.data.tier;
@@ -258,6 +264,7 @@ export default function Dashboard() {
                         </div>
                     </div>
                 )}
+
                 <div className="row">
                     <div className="col-12">
                         <div className="d-flex align-items-lg-center flex-lg-row flex-column justify-content-between py-2">
@@ -272,12 +279,12 @@ export default function Dashboard() {
                 {/* --- KPI Cards --- */}
                 <div className="row">
                     {kpiData.map((kpi, index) => (
-                        <div className="col-xl-3 col-md-6" key={index}>
-                            <div className="card dashboard-card card-animate border-0 shadow-sm mb-0">
+                        <div className="col-xl-3 col-md-6 mb-3" key={index}>
+                            <div className="card dashboard-card card-animate border-0 shadow-sm mb-0 h-100">
                                 <div className="card-body p-4">
                                     <div className="d-flex justify-content-between">
                                         <div className="flex-grow-1">
-                                            <p className="text-uppercase fs-12 text-muted mb-2">{kpi.title}</p>
+                                            <p className="text-uppercase fs-12 text-muted mb-2 text-truncate" title={kpi.title}>{kpi.title}</p>
                                             <h4 className="mb-0 fs-22 fw-bold text-dark"><span className="counter-value">{kpi.value}</span></h4>
                                         </div>
                                         <div className={`avatar-sm flex-shrink-0`}>
@@ -511,6 +518,67 @@ export default function Dashboard() {
 
                     {/* --- Right Column (Sidebar Widgets) --- */}
                     <div className="col-xl-3">
+
+                        {currentActiveRequest && (
+                            <div className="card shadow mb-3 mt-0 border-2 border-opacity-50" style={{ transform: 'translateY(-2px)', transition: 'all 0.3s ease' }}>
+                                <div className="card-body p-4 bg-success-subtle">
+                                    <div className="d-flex align-items-center mb-3">
+                                        <div className="avatar-sm flex-shrink-0">
+                                            <span className="avatar-title bg-success rounded fs-3">
+                                                <i className="ri-checkbox-circle-line"></i>
+                                            </span>
+                                        </div>
+                                        <div className="ms-3 flex-grow-1">
+                                            <h5 className="fs-16 mb-1 text-success fw-bold">Next Step</h5>
+                                            <p className="text-dark mb-0 fw-medium">{activeApprovedRequestCount > 1 ? `${activeApprovedRequestCount} Applications Ready to Process` : 'Application Ready to Process'}</p>
+                                        </div>
+                                    </div>
+                                    <div className="bg-transparent p-2 rounded mb-3">
+                                        <div className="d-flex justify-content-between align-items-center mb-1">
+                                            <span className="text-muted fs-12 text-uppercase fw-semibold">Funding Type</span>
+                                            <span className="text-dark fw-bold fs-13 text-end">{currentActiveRequest.funding_type || 'N/A'}</span>
+                                        </div>
+                                        <div className="d-flex justify-content-between align-items-center">
+                                            <span className="text-muted fs-12 text-uppercase fw-semibold">Amount</span>
+                                            <span className="text-dark fw-bold fs-13">${Number(currentActiveRequest.requested_amount || 0).toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                    <p className="text-dark mb-3 fs-15 text-center">
+                                        Complete your Funding Application to continue.
+                                    </p>
+                                    <button
+                                        className="btn btn-primary fw-bold w-100 mb-3 shadow-sm border-0 d-flex justify-content-center align-items-center"
+                                        onClick={() => navigate(`/fund-application/${currentActiveRequest.id}`)}
+                                    >
+                                        Process Funding Application
+                                        <i className="ri-arrow-right-line ms-1"></i>
+                                    </button>
+                                    {activeApprovedRequestCount > 1 && (
+                                        <div className="d-flex justify-content-between align-items-center bg-white rounded-pill px-3 py-1 shadow-sm border border-success border-opacity-25">
+                                            <button
+                                                className="btn btn-sm btn-link text-success text-decoration-none p-0 fw-bold"
+                                                onClick={() => setActiveRequestIndex(prev => Math.max(0, prev - 1))}
+                                                disabled={activeRequestIndex === 0}
+                                                style={{ opacity: activeRequestIndex === 0 ? 0.4 : 1 }}
+                                            >
+                                                <i className="ri-arrow-left-line me-1"></i> Prev
+                                            </button>
+                                            <span className="badge bg-success-subtle text-success fw-bold px-2 py-1">
+                                                {activeRequestIndex + 1} / {activeApprovedRequestCount}
+                                            </span>
+                                            <button
+                                                className="btn btn-sm btn-link text-success text-decoration-none p-0 fw-bold"
+                                                onClick={() => setActiveRequestIndex(prev => Math.min(activeApprovedRequestCount - 1, prev + 1))}
+                                                disabled={activeRequestIndex === activeApprovedRequestCount - 1}
+                                                style={{ opacity: activeRequestIndex === activeApprovedRequestCount - 1 ? 0.4 : 1 }}
+                                            >
+                                                Next <i className="ri-arrow-right-line ms-1"></i>
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Upcoming Meetings/Tasks */}
                         <div className="card dashboard-card border-0 shadow-sm mb-3">

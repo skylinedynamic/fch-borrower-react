@@ -30,6 +30,8 @@ interface OwnershipInformationStepProps {
   loading: boolean
   isValid: boolean
   onRegisterSave?: (fn: (() => Promise<boolean>) | null) => void
+  fundingSequenceId?: number | string | null
+  fundingRequestId?: number | string | null
 }
 
 export default function OwnershipInformationStep({
@@ -48,6 +50,8 @@ export default function OwnershipInformationStep({
   loading,
   isValid,
   onRegisterSave,
+  fundingSequenceId,
+  fundingRequestId,
 }: OwnershipInformationStepProps) {
   const [availableStates, setAvailableStates] = useState<{ name: string; code: string; cities?: string[] }[]>([])
   const [availableCities, setAvailableCities] = useState<{ name: string; code: string }[]>([])
@@ -55,7 +59,7 @@ export default function OwnershipInformationStep({
   const [lastCustomCity, setLastCustomCity] = useState('')
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
-  const { data: apiData, isLoading: isApiLoading, isSuccess } = useOwnershipInfo()
+  const { data: apiData, isLoading: isApiLoading, isSuccess } = useOwnershipInfo(fundingRequestId)
   const { mutateAsync: saveOwnershipInfo, isPending: isSaving } = useSaveOwnershipInfo()
 
   // Memoized save handler
@@ -242,6 +246,30 @@ export default function OwnershipInformationStep({
     }
   }, [coBorrowers, setOwner])
 
+  const dynamicStates = React.useMemo(() => {
+    const opts = [...availableStates]
+    if (owner.state && !opts.some((s) => s.name.toLowerCase() === owner.state.toLowerCase() || s.code.toLowerCase() === owner.state.toLowerCase())) {
+      opts.unshift({ name: owner.state, code: owner.state })
+    }
+    return opts
+  }, [availableStates, owner.state])
+
+  const dynamicCities = React.useMemo(() => {
+    const opts = [...availableCities]
+    if (owner.city && !opts.some((c) => c.name.toLowerCase() === owner.city.toLowerCase() || c.code.toLowerCase() === owner.city.toLowerCase())) {
+      opts.unshift({ name: owner.city, code: owner.city })
+    }
+    return opts
+  }, [availableCities, owner.city])
+
+  const dynamicCitizenshipOptions = React.useMemo(() => {
+    const opts = [...citizenshipOptions]
+    if (owner.citizenship && !opts.some((c) => c.value.toLowerCase() === owner.citizenship.toLowerCase())) {
+      opts.unshift({ label: owner.citizenship, value: owner.citizenship })
+    }
+    return opts
+  }, [owner.citizenship])
+
   if (loading || isApiLoading) {
     return <FormSkeleton fieldCount={10} />
   }
@@ -348,7 +376,7 @@ export default function OwnershipInformationStep({
           <CustomDropdown
             value={owner.citizenship}
             onChange={(value) => setOwner({ ...owner, citizenship: value })}
-            options={citizenshipOptions}
+            options={dynamicCitizenshipOptions}
             optionLabel="label"
             optionValue="value"
             placeholder="Select citizenship status"
@@ -405,7 +433,7 @@ export default function OwnershipInformationStep({
               }
               setOwner({ ...owner, state: value, city: defaultCity })
             }}
-            options={availableStates}
+            options={dynamicStates}
             optionLabel="name"
             optionValue="name"
             placeholder="Select state"
@@ -429,7 +457,7 @@ export default function OwnershipInformationStep({
                 setOwner({ ...owner, city: value })
               }
             }}
-            options={availableCities}
+            options={dynamicCities}
             optionLabel="name"
             optionValue="code"
             placeholder="Select city"

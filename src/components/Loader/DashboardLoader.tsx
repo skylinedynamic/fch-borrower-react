@@ -19,7 +19,7 @@ export default function DashboardLoader() {
                 {/* KPI Cards Skeleton */}
                 <div className="row">
                     {Array.from({ length: 4 }).map((_, index) => (
-                        <div className="col-xl-3 col-md-6" key={index}>
+                        <div className="col-xl-3 col-md-6 mb-3" key={index}>
                             <div className="card dashboard-card card-animate border-0 shadow-sm h-100">
                                 <div className="card-body p-4">
                                     <div className="d-flex justify-content-between">
@@ -31,10 +31,6 @@ export default function DashboardLoader() {
                                             <span className="skeleton-rect" style={{ width: '48px', height: '48px', borderRadius: '8px' }}></span>
                                         </div>
                                     </div>
-                                    <div className="mt-3 pt-1 d-flex justify-content-between align-items-center">
-                                        <div className="skeleton-line" style={{ width: '80px', height: '12px' }}></div>
-                                        <div className="skeleton-line" style={{ width: '60px', height: '12px' }}></div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -44,6 +40,23 @@ export default function DashboardLoader() {
                 <div className="row mt-3">
                     {/* Left Column (Main Content) */}
                     <div className="col-xl-9">
+                        {/* Capital Access Skeleton */}
+                        <div className="row mb-3">
+                            <div className="col-12">
+                                <div className="card border-0 shadow-sm" style={{ height: '180px' }}>
+                                    <div className="card-body p-4 d-flex">
+                                        <div className="flex-grow-1">
+                                            <div className="skeleton-line mb-4" style={{ width: '200px', height: '20px' }}></div>
+                                            <div className="skeleton-circle mb-3" style={{ width: '100px', height: '100px' }}></div>
+                                        </div>
+                                        <div className="flex-shrink-0" style={{ width: '250px' }}>
+                                            <div className="skeleton-rect h-100 w-100" style={{ borderRadius: '12px' }}></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         {/* Credit Score & Tier Skeleton */}
                         <div className="row mb-3">
                             <div className="col-md-6">

@@ -126,7 +126,7 @@ export default function App() {
             <Route path="change-password" element={<ChangePassword />} />
 
             <Route path="pre-qualification" element={<PreQualification />} />
-            <Route path="fund-application" element={<FundApplication />} />
+            <Route path="fund-application/:id?" element={<FundApplication />} />
             <Route path="my-applications" element={<MyApplication />} />
             <Route path="my-applications/funding/:id" element={<FundingApplicationDetailPage />} />
             <Route path="appointment" element={<Appointments />} />

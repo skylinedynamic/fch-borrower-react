@@ -19,6 +19,9 @@ type DocumentUploadStepProps = {
   onBack: () => void
   loading: boolean
   onRegisterSave?: (fn: (() => Promise<boolean>) | null) => void
+  fundingSequenceId?: number | string | null
+  fundingRequestId?: number | string | null
+  fundingApplicationId?: number | string | null
 }
 
 export default function DocumentUploadStep({
@@ -26,6 +29,9 @@ export default function DocumentUploadStep({
   onBack,
   loading,
   onRegisterSave,
+  fundingSequenceId,
+  fundingRequestId: initialRequestId,
+  fundingApplicationId: initialAppId,
 }: DocumentUploadStepProps) {
   const [sections, setSections] = useState<string[]>([])
   const [uploads, setUploads] = useState<Record<string, FileSystemItem[]>>({})
@@ -43,22 +49,17 @@ export default function DocumentUploadStep({
   const [openSection, setOpenSection] = useState<string | null>(null)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [documentToDelete, setDocumentToDelete] = useState<{ id: number; name: string } | null>(null)
-  const [fundingRequestId, setFundingRequestId] = useState<number | null>(null)
   
   const queryClient = useQueryClient()
 
   // Fetch funding request to get ID
-  const { data: fundingData } = useFundingRequest()
+  const { data: fundingData } = useFundingRequest(initialRequestId)
   
-  useEffect(() => {
-    if (fundingData?.id) {
-        setFundingRequestId(fundingData.id)
-    }
-  }, [fundingData])
+  const effectiveAppId = initialAppId || initialRequestId || fundingData?.id || null
 
   // Fetch document types and funding documents
   const { data: types, isLoading: typesLoading } = useDocumentTypes()
-  const { data: documentsData, isLoading: docsLoading } = useFundingApplicationDocuments(fundingRequestId)
+  const { data: documentsData, isLoading: docsLoading } = useFundingApplicationDocuments(effectiveAppId)
   const deleteDocumentMutation = useDeleteFundingApplicationDocument()
   const uploadDocumentsMutation = useUploadFundingApplicationDocuments()
 
@@ -108,7 +109,7 @@ export default function DocumentUploadStep({
   }
 
   const handleFileSelection = async (selectedFiles: FileSystemItem[]) => {
-    if (currentSection && types && fundingRequestId) {
+    if (currentSection && types && effectiveAppId) {
       const docType = types.find(t => t.name === currentSection)
       if (docType) {
         setUploadingSections(prev => ({ ...prev, [currentSection]: true }))
@@ -116,7 +117,7 @@ export default function DocumentUploadStep({
           const filePaths = selectedFiles.map(f => f.path)
           
           await uploadDocumentsMutation.mutateAsync({
-            funding_application_id: fundingRequestId,
+            funding_application_id: effectiveAppId,
             document_type_id: docType.id,
             files: filePaths,
           })
@@ -149,7 +150,7 @@ export default function DocumentUploadStep({
         setShowDeleteModal(false)
         setDocumentToDelete(null)
         // Invalidate fetching docs
-        queryClient.invalidateQueries({ queryKey: queryKeys.fundingApplication.documents(fundingRequestId) })
+        queryClient.invalidateQueries({ queryKey: queryKeys.fundingApplication.documents(effectiveAppId) })
       },
       onError: (error) => {
         toast.error('Failed to delete document')
