@@ -17,3 +17,8 @@ export const fetchPaymentDetail = async (id: string | number) => {
     const { data } = await apiClient.get(`${BASE_URL}/${id}`);
     return data;
 };
+
+export const approvePayment = async (id: string | number, payload: { note: string }) => {
+    const { data } = await apiClient.post('/common/payments/' + id + '/approve', payload);
+    return data;
+};

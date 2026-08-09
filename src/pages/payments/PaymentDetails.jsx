@@ -1,8 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { fetchPaymentDetail } from '../../modules/payment';
+import Modal from 'bootstrap/js/dist/modal';
+import { fetchPaymentDetail, approvePayment } from '../../modules/payment';
 import { toast } from 'react-toastify';
-import { PAYMENT_STATUS_COLORS, PAYMENT_ENVIRONMENT_COLORS, PAYMENT_ENVIRONMENT_LABELS } from '../../data/paymentConfig';
+import {
+    PAYMENT_STATUS_COLORS,
+    PAYMENT_ENVIRONMENT_COLORS,
+    PAYMENT_ENVIRONMENT_LABELS,
+    TRANSACTION_TYPE_DEBIT,
+    TRANSACTION_TYPE_CREDIT
+} from '../../config/paymentConfig';
 import { ENTITY_TYPE_PARTNER, ENTITY_TYPE_BORROWER } from '../../config/appConfig';
 import DetailsSkeletonLoader from '../../components/Loader/DetailsSkeletonLoader';
 
@@ -10,6 +17,50 @@ export default function PaymentDetails() {
     const { id } = useParams();
     const [payment, setPayment] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    // Approval state
+    const [approvalNote, setApprovalNote] = useState('');
+    const [noteError, setNoteError] = useState('');
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [approving, setApproving] = useState(false);
+
+    // Bootstrap Modal Ref
+    const modalRef = useRef(null);
+    const modalInstanceRef = useRef(null);
+
+    useEffect(() => {
+        if (!modalRef.current) return;
+        if (!modalInstanceRef.current) {
+            modalInstanceRef.current = new Modal(modalRef.current, {
+                backdrop: 'static',
+                keyboard: false,
+            });
+        }
+    }, [payment]);
+
+    useEffect(() => {
+        const modal = modalInstanceRef.current;
+        if (!modal) return;
+        if (showConfirmModal) {
+            modal.show();
+        } else {
+            modal.hide();
+        }
+    }, [showConfirmModal]);
+
+    useEffect(() => {
+        return () => {
+            if (modalInstanceRef.current) {
+                try {
+                    modalInstanceRef.current.hide();
+                    if (typeof modalInstanceRef.current.dispose === 'function') {
+                        modalInstanceRef.current.dispose();
+                    }
+                } catch (_) {}
+                modalInstanceRef.current = null;
+            }
+        };
+    }, []);
 
     useEffect(() => {
         const getDetails = async () => {
@@ -32,6 +83,34 @@ export default function PaymentDetails() {
         getDetails();
     }, [id]);
 
+    const handleApproveClick = () => {
+        if (!approvalNote.trim()) {
+            setNoteError('Approval note is required.');
+            return;
+        }
+        setNoteError('');
+        setShowConfirmModal(true);
+    };
+
+    const handleConfirmApprove = async () => {
+        try {
+            setApproving(true);
+            const response = await approvePayment(id, { note: approvalNote.trim() });
+            if (response.status || response.data) {
+                toast.success(response.message || 'Payment approved successfully!');
+                setPayment(response.data || response);
+                setShowConfirmModal(false);
+            } else {
+                toast.error(response.message || 'Failed to approve payment.');
+            }
+        } catch (error) {
+            console.error('Error approving payment:', error);
+            toast.error(error.response?.data?.message || 'Error approving payment');
+        } finally {
+            setApproving(false);
+        }
+    };
+
     if (!loading && !payment) {
         return (
             <div className="page-content">
@@ -48,6 +127,7 @@ export default function PaymentDetails() {
     const envColor = PAYMENT_ENVIRONMENT_COLORS[envVal] || 'info';
     const envLabel = PAYMENT_ENVIRONMENT_LABELS[envVal] || 'Sandbox';
     const payerType = payment?.entity_type?.includes(ENTITY_TYPE_PARTNER) ? ENTITY_TYPE_PARTNER : payment?.entity_type?.includes(ENTITY_TYPE_BORROWER) ? ENTITY_TYPE_BORROWER : 'Customer';
+    const approvalRemarks = payment?.note || payment?.details?.approval_note;
 
     return (
         <div className="page-content">
@@ -73,7 +153,7 @@ export default function PaymentDetails() {
                 ) : (
                     <div className="row">
                         <div className="col-lg-12">
-                            <div className="card border-0 overflow-hidden shadow-sm">
+                            <div className="card border-0 overflow-hidden shadow-sm mb-4">
                                 <div className="card-header border-bottom border-primary border-opacity-25 p-4">
                                     <div className="d-flex align-items-center">
                                         <div className="flex-shrink-0 avatar-sm">
@@ -93,7 +173,7 @@ export default function PaymentDetails() {
                                         </div>
                                         <div className="flex-shrink-0 text-end">
                                             <h2 className="text-primary mb-1">
-                                                {payment.displayable_amount || '-'}
+                                                {payment.displayable_amount || payment.amount || '-'}
                                             </h2>
                                             <span className={`badge bg-${statusColor} fs-12 text-uppercase`}>{payment.status}</span>
                                         </div>
@@ -101,6 +181,16 @@ export default function PaymentDetails() {
                                 </div>
 
                                 <div className="card-body p-4">
+                                    {approvalRemarks && (
+                                        <div className="alert alert-success bg-success-subtle text-success border-0 p-3 mb-4 rounded">
+                                            <div className="d-flex align-items-center mb-1">
+                                                <i className="ri-checkbox-circle-fill fs-18 me-2 text-success"></i>
+                                                <span className="fw-semibold fs-14">Approval Remarks:</span>
+                                            </div>
+                                            <p className="mb-0 fs-13 ps-4 text-dark">{approvalRemarks}</p>
+                                        </div>
+                                    )}
+
                                     <h5 className="fs-15 fw-bold mb-3 border-bottom pb-2">Payment Details</h5>
                                     <div className="row mb-4">
                                         <div className="col-lg-3 col-sm-6 mb-3">
@@ -110,6 +200,18 @@ export default function PaymentDetails() {
                                         <div className="col-lg-3 col-sm-6 mb-3">
                                             <p className="text-muted mb-1 text-uppercase fw-semibold fs-12">Payment Type</p>
                                             <h5 className="fs-14 mb-0">{payment.payment_type || '-'}</h5>
+                                        </div>
+                                        <div className="col-lg-3 col-sm-6 mb-3">
+                                            <p className="text-muted mb-1 text-uppercase fw-semibold fs-12">Transaction Type</p>
+                                            {(() => {
+                                                const type = payment.transaction_type || (payment.is_partner_paying ? TRANSACTION_TYPE_DEBIT : TRANSACTION_TYPE_CREDIT);
+                                                const isDebit = String(type).toLowerCase() === TRANSACTION_TYPE_DEBIT.toLowerCase();
+                                                return (
+                                                    <span className={`badge bg-${isDebit ? 'danger-subtle text-danger' : 'success-subtle text-success'} text-uppercase fw-semibold fs-12`}>
+                                                        {type}
+                                                    </span>
+                                                );
+                                            })()}
                                         </div>
                                         <div className="col-lg-3 col-sm-6 mb-3">
                                             <p className="text-muted mb-1 text-uppercase fw-semibold fs-12">Environment</p>
@@ -122,7 +224,7 @@ export default function PaymentDetails() {
                                     </div>
 
                                     <h5 className="fs-15 fw-bold mb-3 border-bottom pb-2">Payer Information</h5>
-                                    <div className="row bg-light rounded p-3 m-0">
+                                    <div className="row bg-light rounded p-3 m-0 mb-4">
                                         <div className="col-lg-3 col-sm-6 mb-3 mb-lg-0">
                                             <p className="text-muted mb-1 text-uppercase fw-semibold fs-12">Entity Type</p>
                                             <h5 className="fs-14 mb-0"><span className="badge bg-secondary-subtle text-secondary px-2 py-1">{payerType}</span></h5>
@@ -140,11 +242,104 @@ export default function PaymentDetails() {
                                             <h5 className="fs-14 mb-0">{payment.phone || '-'}</h5>
                                         </div>
                                     </div>
+
+                                    {/* Bottom Payment Approval Section */}
+                                    {payment.can_approve && (
+                                        <div className="border border-warning rounded p-4 bg-warning bg-opacity-10 mt-4">
+                                            <h5 className="fs-16 fw-bold text-warning mb-2">
+                                                <i className="ri-time-line me-2 fs-18 align-middle"></i>Payment Approval
+                                            </h5>
+                                            <p className="text-muted fs-13 mb-3">
+                                                This payment is currently <strong>Processing</strong> and requires your approval. Enter approval details below and click <strong>Approve Payment</strong>.
+                                            </p>
+                                            <div className="mb-3">
+                                                <label className="form-label fw-semibold fs-13">
+                                                    Approval Note / Remarks <span className="text-danger">*</span>
+                                                </label>
+                                                <textarea
+                                                    className={`form-control ${noteError ? 'is-invalid' : ''}`}
+                                                    rows="3"
+                                                    placeholder="Enter approval details (e.g., Bank name, wire transfer reference ID, check number, or approval note)..."
+                                                    value={approvalNote}
+                                                    onChange={(e) => {
+                                                        setApprovalNote(e.target.value);
+                                                        if (e.target.value.trim()) setNoteError('');
+                                                    }}
+                                                    disabled={approving}
+                                                ></textarea>
+                                                {noteError && <div className="invalid-feedback">{noteError}</div>}
+                                            </div>
+                                            <div className="d-flex justify-content-end">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-success px-4 fw-medium"
+                                                    onClick={handleApproveClick}
+                                                    disabled={approving}
+                                                >
+                                                    <i className="ri-check-double-line me-1"></i> Approve Payment
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
                 )}
+            </div>
+
+            {/* Approval Confirmation Modal with Bootstrap JS Animated Flip */}
+            <div className="modal fade flip" ref={modalRef} tabIndex="-1" aria-hidden="true">
+                <div className="modal-dialog modal-dialog-centered">
+                    <div className="modal-content border-0 shadow">
+                        <div className="modal-header border-bottom py-3">
+                            <h5 className="modal-title mb-0 fw-semibold">
+                                <i className="ri-shield-check-line me-2 text-success fs-18 align-middle"></i>Confirm Payment Approval
+                            </h5>
+                            <button
+                                type="button"
+                                className="btn-close"
+                                onClick={() => setShowConfirmModal(false)}
+                                disabled={approving}
+                            ></button>
+                        </div>
+                        <div className="modal-body p-4">
+                            <p className="text-muted fs-14 mb-3">
+                                Are you sure you want to approve this payment of <strong className="text-dark">{payment?.displayable_amount || payment?.amount}</strong> for Invoice <strong className="text-dark">{payment?.invoice_id || '-'}</strong>?
+                            </p>
+                            <div className="bg-light rounded p-3 mb-3 border">
+                                <span className="fw-semibold fs-13 text-muted d-block mb-1">Approval Note / Remarks:</span>
+                                <p className="mb-0 fs-13 text-dark text-break fw-medium">{approvalNote}</p>
+                            </div>
+                            <p className="text-muted fs-12 mb-0">
+                                <i className="ri-information-line me-1 align-middle text-primary"></i>
+                                This action will mark the payment and invoice as <strong>Paid</strong> and update the payment date to today.
+                            </p>
+                        </div>
+                        <div className="modal-footer border-0 pt-0">
+                            <button
+                                type="button"
+                                className="btn btn-light"
+                                onClick={() => setShowConfirmModal(false)}
+                                disabled={approving}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-success px-4"
+                                onClick={handleConfirmApprove}
+                                disabled={approving}
+                            >
+                                {approving ? (
+                                    <span><i className="ri-loader-4-line spin me-1"></i> Approving...</span>
+                                ) : (
+                                    <span><i className="ri-check-line me-1"></i> Confirm & Approve</span>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

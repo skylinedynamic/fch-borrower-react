@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { DataTable } from '../../../components/Table/DataTableWrapper';
 import { Column } from 'primereact/column';
 import { Dropdown } from 'primereact/dropdown';
-import { INVOICE_STATUS_COLORS, INVOICE_STATUS_OPTIONS, STATUS_PAID } from '../../../data/invoiceConfig';
+import { INVOICE_STATUS_COLORS, INVOICE_STATUS_OPTIONS, STATUS_PAID, STATUS_PROCESSING } from '../../../config/invoiceConfig';
 import InvoicePaymentModal from './InvoicePaymentModal';
 import InvoicePreviewModal from './InvoicePreviewModal';
 import { useAuthStore } from '../../../store/auth/authStore';
@@ -77,7 +77,7 @@ export default function InvoiceTable({
     };
 
     const actionBodyTemplate = (rowData) => {
-        const isNotPaid = rowData.status !== STATUS_PAID;
+        const isNotPaid = rowData.status !== STATUS_PAID && rowData.status !== STATUS_PROCESSING;
         return (
             <div className="d-flex align-items-center justify-content-center gap-2">
                 <button
