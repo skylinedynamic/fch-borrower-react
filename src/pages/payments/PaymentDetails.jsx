@@ -56,7 +56,7 @@ export default function PaymentDetails() {
                     if (typeof modalInstanceRef.current.dispose === 'function') {
                         modalInstanceRef.current.dispose();
                     }
-                } catch (_) {}
+                } catch (_) { }
                 modalInstanceRef.current = null;
             }
         };
