@@ -153,17 +153,22 @@ export default function Dashboard() {
     const hasFico = ficoScore !== null && ficoScore !== undefined && ficoScore !== '';
     const displayFico = hasFico ? Number(ficoScore) : null;
 
-    const creditScoreData = React.useMemo(() => ({
-        labels: ['Score', 'Remaining'],
-        datasets: [
-            {
-                data: hasFico ? [displayFico, 850 - displayFico] : [0, 100],
-                backgroundColor: ['#405189', '#f0f0f0'],
-                hoverBackgroundColor: ['#405189', '#f0f0f0'],
-                borderWidth: 0
-            }
-        ]
-    }), [hasFico, displayFico]);
+    const creditScoreData = React.useMemo(() => {
+        // Cap the score to a max of 850 so the chart doesn't wrap around multiple times for values > 850
+        const cappedFicoScore = hasFico ? Math.min(displayFico, 850) : 0;
+        
+        return {
+            labels: ['Score', 'Remaining'],
+            datasets: [
+                {
+                    data: hasFico ? [cappedFicoScore, 850 - cappedFicoScore] : [0, 100],
+                    backgroundColor: ['#405189', '#f0f0f0'],
+                    hoverBackgroundColor: ['#405189', '#f0f0f0'],
+                    borderWidth: 0
+                }
+            ]
+        };
+    }, [hasFico, displayFico]);
 
     const creditScoreOptions = React.useMemo(() => ({
         cutout: '80%',
