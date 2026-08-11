@@ -60,6 +60,12 @@ export const PROVIDER_BANK_TRANSFER = PAYMENT_METHOD_PROVIDER[6];
 export const TRANSACTION_TYPE_DEBIT = 'Debit';
 export const TRANSACTION_TYPE_CREDIT = 'Credit';
 
+export const PAYMENT_STATUS_SUCCEEDED = 'succeeded';
+export const PAYMENT_STATUS_PAID = 'Paid';
+export const PAYMENT_STATUS_UNPAID = 'Unpaid';
+export const PAYMENT_STATUS_PROCESSING = 'Processing';
+export const PAYMENT_STATUS_FAILED = 'Failed';
+
 export const PAYMENT_METHOD_OPTIONS = [
   { label: 'All Methods', value: null },
   { label: PROVIDER_STRIPE, value: PROVIDER_STRIPE },

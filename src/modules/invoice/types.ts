@@ -73,6 +73,7 @@ export interface InvoiceResponse {
     };
     status: boolean;
     message?: string;
+    stats?: InvoiceStatsData;
 }
 
 export interface PaymentPayload {

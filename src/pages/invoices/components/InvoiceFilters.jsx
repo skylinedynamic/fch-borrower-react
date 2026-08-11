@@ -69,6 +69,8 @@ export default function InvoiceFilters({
                         <Dropdown 
                             value={selectedStatus}
                             options={INVOICE_STATUS_OPTIONS} 
+                            optionLabel="label"
+                            optionValue="value"
                             placeholder="All Status" 
                             className="w-100 bg-light border-light"
                             onChange={(e) => setSelectedStatus(e.value)}

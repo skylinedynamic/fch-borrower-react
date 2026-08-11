@@ -124,7 +124,7 @@ export default function InvoiceTable({
                 onFilter={onFilter}
                 filters={filters}
                 filterDisplay="menu"
-                globalFilterFields={['invoice_id', 'customer_name', 'email', 'created_at', 'payment_amount', 'status']}
+                globalFilterFields={['created_at', 'invoice_id', 'payment_amount', 'status']}
                 loading={loading}
                 dataKey="id"
                 scrollable
@@ -135,13 +135,11 @@ export default function InvoiceTable({
                 onRowClick={(e) => navigate(`/invoices/${e.data.id}`)}
                 rowClassName={() => 'cursor-pointer'}
             >
-                <Column field="invoice_id" header="Invoice ID" sortable filter showFilterMatchModes filterPlaceholder="Search by ID" style={{ minWidth: '100px' }}></Column>
-                <Column field="customer_name" header="Customer" sortable filter showFilterMatchModes filterPlaceholder="Search by name" style={{ minWidth: '180px' }}></Column>
-                <Column field="email" header="Email" bodyClassName="text-muted" sortable filter showFilterMatchModes filterPlaceholder="Search by email" style={{ minWidth: '100px' }}></Column>
                 <Column field="created_at" header="Invoice Date" sortable filter showFilterMatchModes filterPlaceholder="Search by date" style={{ minWidth: '120px' }}></Column>
+                <Column field="invoice_id" header="Invoice ID" sortable filter showFilterMatchModes filterPlaceholder="Search by ID" style={{ minWidth: '100px' }}></Column>
                 <Column field="payment_amount" header="Amount" body={amountBodyTemplate} sortable filter showFilterMatchModes filterPlaceholder="Search by amount" style={{ minWidth: '120px' }}></Column>
                 <Column field="status" header="Status" body={statusBodyTemplate} sortable filter filterElement={statusFilterElement} showFilterMatchModes={false} style={{ minWidth: '150px' }}></Column>
-                <Column header="Action" body={actionBodyTemplate} style={{ minWidth: '150px' }} alignHeader="center" align="center"></Column>
+                <Column header="Action" body={actionBodyTemplate} style={{ minWidth: '150px' }} alignHeader="center" align="center" headerClassName="text-center" bodyClassName="text-center"></Column>
             </DataTable>
 
             <InvoicePaymentModal

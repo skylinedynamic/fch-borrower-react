@@ -179,7 +179,7 @@ export default function Sidebar() {
             <LinkItem to="/payments" label="Payments" icon="ri-money-dollar-box-line" restricted={isFreeTierModule} />
 
             {/* Billing Details — locked on free trial */}
-            <LinkItem to="/billing-details" label="Billing Details" icon="ri-bank-card-line" restricted={isFreeTierModule} />
+            <LinkItem to="/billing-details" label="Billing Details" icon="ri-bank-card-line" restricted={isFreeTierModule || isRestricted} />
 
             <LinkItem to="/documents" label="Documents" icon="ri-file-2-line" restricted={isRestricted} />
 
