@@ -140,11 +140,11 @@ const StripeCardInputForm = ({
 // Provider skeleton loader for modal
 const ModalProvidersLoader = () => (
   <div className="row g-3 mb-4">
-    {[1, 2, 3].map((i) => (
+    {[1, 2, 3, 4, 5, 6].map((i) => (
       <div key={i} className="col-12 col-sm-6 col-md-4">
-        <div className="card border rounded-1 p-3 text-center h-100 mb-0 shadow-sm bg-white">
-          <div className="d-flex flex-column align-items-center justify-content-center">
-            <Skeleton width="100px" height="42px" className="mb-2 rounded-1" />
+        <div className="card border rounded-1 p-3 text-center h-100 mb-0 shadow-sm bg-white" style={{ minHeight: '115px' }}>
+          <div className="card-body p-3 d-flex flex-column align-items-center justify-content-center">
+            <Skeleton width="110px" height="50px" className="mb-2 rounded-1" />
             <Skeleton width="60%" height="1rem" className="mb-0" />
           </div>
         </div>
@@ -341,6 +341,7 @@ const ChangePaymentMethodModal = ({
                             ? 'border-2 border-primary bg-primary-subtle shadow-sm'
                             : 'border bg-white hover-shadow'
                             }`}
+                          style={{ minHeight: '115px' }}
                           onClick={() => setSelectedProvider(p)}
                         >
                           {isSelected && (
@@ -351,16 +352,17 @@ const ChangePaymentMethodModal = ({
                             </div>
                           )}
                           <div className="card-body p-3 text-center d-flex flex-column align-items-center justify-content-center">
-                            <div className="provider-card-logo-container mb-2">
+                            <div className="provider-card-logo-container mb-2 d-flex align-items-center justify-content-center" style={{ height: '55px' }}>
                               {p.logo ? (
                                 <img
                                   src={p.logo}
                                   alt={p.display_name}
                                   className="img-fluid provider-card-logo-img"
+                                  style={{ maxHeight: '50px', maxWidth: '100%', objectFit: 'contain' }}
                                 />
                               ) : (
-                                <div className="avatar-sm">
-                                  <span className="avatar-title bg-light text-primary rounded-circle fs-20">
+                                <div className="avatar-md">
+                                  <span className="avatar-title bg-light text-primary rounded-circle fs-24">
                                     <i className="ri-bank-card-line"></i>
                                   </span>
                                 </div>
@@ -891,14 +893,14 @@ export default function BillingDetails() {
                       </div>
                       <button
                         type="button"
-                        className="btn btn-sm btn-soft-primary px-2.5 py-1 fs-12 fw-bold rounded-1"
+                        className="btn btn-sm btn-soft-primary px-2.5 py-1 fs-12 fw-medium rounded-1"
                         onClick={() => setShowChangeModal(true)}
                       >
                         <i className="ri-edit-line me-1"></i> Change
                       </button>
                     </div>
 
-                    <div className="d-flex align-items-center gap-3 mt-auto pt-1">
+                    <div className="d-flex align-items-center gap-3 pt-2">
                       {borrower?.payment_provider?.logo ? (
                         <div className="billing-card-logo-box">
                           <img
