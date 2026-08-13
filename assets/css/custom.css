@@ -4453,7 +4453,6 @@ File: Custom Css File
 
 .stripe-submit-btn {
     background-color: var(--primary-color) !important;
-    border-color: var(--primary-color) !important;
     color: #ffffff !important;
     font-size: 15px;
     font-weight: 600;
@@ -4466,7 +4465,6 @@ File: Custom Css File
 
 .stripe-submit-btn:hover:not(:disabled) {
     background-color: var(--primary-color) !important;
-    border-color: var(--primary-color) !important;
     filter: brightness(85%);
     transform: translateY(-1px);
     box-shadow: 0 6px 12px rgba(0, 31, 63, 0.18);
