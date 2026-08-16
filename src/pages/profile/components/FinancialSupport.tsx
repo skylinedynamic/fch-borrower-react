@@ -112,7 +112,6 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
     setErrors({})
     const payload: SaveFinancialInfoRequest = {
       currency: data.currency,
-      years_in_business: data.years_in_business,
       monthly_revenue: parseFloat(unformatCurrency(String(data.monthly_revenue || ''))) || 0,
       annual_revenue: parseFloat(unformatCurrency(String(data.annual_revenue || ''))) || 0,
       annual_personal_income: parseFloat(unformatCurrency(String(data.annual_personal_income || ''))) || 0,
@@ -207,30 +206,12 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           {errors.currency && <div className="invalid-feedback d-block">{errors.currency}</div>}
         </div>
         <div className="col-md-6">
-          <label className="form-label">Years in Business <span className="text-danger">*</span></label>
+          <label className="form-label">Years in Business</label>
           <div className="position-relative">
-            <CustomDropdown
-              searchable={true}
-              value={data.years_in_business}
-              onChange={(value) => onChange({ ...data, years_in_business: value })}
-              options={yearsInBusinessOptions}
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Select years"
-              className={`w-100 ${errors.years_in_business ? 'is-invalid' : ''} ${isFieldLocked('years_in_business') ? 'bg-light border-dashed locked-field-padding' : ''}`}
-              disabled={isFieldLocked('years_in_business')}
-            />
-            {isFieldLocked('years_in_business') && (
-              <button
-                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
-                onClick={() => handleOpenRequestModal('Years in Business', 'years_in_business', data.years_in_business)}
-              >
-                Change Request
-              </button>
-            )}
+            <div className="form-control bg-light" style={{ minHeight: '38.39px', display: 'flex', alignItems: 'center' }}>
+              {data.years_in_business || 'Please set business start date'}
+            </div>
           </div>
-          {errors.years_in_business && <div className="invalid-feedback d-block">{errors.years_in_business}</div>}
         </div>
 
         <div className="col-md-6">
@@ -629,6 +610,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
                   maxDate: "today",
                   monthSelectorType: "dropdown",
                   static: true,
+                  disableMobile: true,
                   plugins: [yearDropdownPlugin(1900)],
                 }}
                 placeholder="Select account open date"

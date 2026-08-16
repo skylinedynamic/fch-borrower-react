@@ -18,6 +18,54 @@ interface FundingRequestStepProps {
   onBack: () => void
   loading: boolean
   onRegisterSave?: (fn: (() => Promise<boolean>) | null) => void
+  fundingRequestId?: number | string | null
+  fundingSequenceId?: number | string | null
+}
+
+const matchPurpose = (raw: string | null | undefined): string => {
+  if (!raw) return ''
+  const trimmed = raw.trim()
+
+  if (trimmed.includes(',')) {
+    return trimmed
+  }
+
+  const exact = purposeOfFundingOptions.find(o => o.value.toLowerCase() === trimmed.toLowerCase())
+  if (exact) return exact.value
+
+  const lowerAll = trimmed.toLowerCase()
+  if (lowerAll === 'working capital') return 'Working Capital'
+  if (lowerAll.includes('equipment')) return 'Equipment Purchase'
+  if (lowerAll.includes('inventory')) return 'Inventory'
+  if (lowerAll.includes('payroll')) return 'Payroll'
+  if (lowerAll.includes('real estate') || lowerAll.includes('property')) return 'Commercial Real Estate Purchase'
+  if (lowerAll.includes('line of credit')) return 'Business Line of Credit'
+  if (lowerAll.includes('expansion')) return 'Business Expansion'
+  if (lowerAll.includes('acquisition')) return 'Business Acquisition'
+
+  return trimmed
+}
+
+const matchTimeframe = (raw: string | null | undefined): string => {
+  if (!raw) return ''
+  const trimmed = raw.trim()
+  const exact = timeframeOptions.find(o => o.value.toLowerCase() === trimmed.toLowerCase())
+  if (exact) return exact.value
+
+  const lower = trimmed.toLowerCase()
+  if (lower.includes('hour') || lower.includes('1-3 day') || lower.includes('1-5 day') || lower.includes('3-7 day') || lower.includes('immediately')) {
+    return 'Immediately'
+  }
+  if (lower.includes('7-14') || lower.includes('1-2 week') || lower.includes('2 week')) {
+    return '1-2 Weeks'
+  }
+  if (lower.includes('21-45') || lower.includes('30-60') || lower.includes('month')) {
+    return '1 Month'
+  }
+  if (lower.includes('flexible')) {
+    return 'Flexible'
+  }
+  return trimmed
 }
 
 export default function FundingRequestStep({
@@ -27,17 +75,27 @@ export default function FundingRequestStep({
   onBack,
   loading,
   onRegisterSave,
+  fundingRequestId: initialFundingRequestId,
+  fundingSequenceId,
 }: FundingRequestStepProps) {
-  const { data: apiData, isLoading: isApiLoading, isSuccess } = useFundingRequest()
-  const saveMutation = useSaveFundingRequest()
-  const [fundingRequestId, setFundingRequestId] = useState<number | null>(null)
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
-
   const location = useLocation()
+  const searchParams = new URLSearchParams(location.search)
   const urlApprovedFunding = (location.state as any)?.approved_funding
   const urlRequestedAmount = (location.state as any)?.requested_amount
   const urlFundingType = (location.state as any)?.funding_type
   const urlPurpose = (location.state as any)?.purpose
+
+  const effectiveRequestId = initialFundingRequestId 
+    || (location.state as any)?.funding_request_id 
+    || (location.state as any)?.fundingRequestId 
+    || searchParams.get('funding_request_id')
+    || searchParams.get('fundingRequestId')
+    || null
+
+  const { data: apiData, isLoading: isApiLoading, isSuccess } = useFundingRequest(effectiveRequestId)
+  const saveMutation = useSaveFundingRequest()
+  const [fundingRequestId, setFundingRequestId] = useState<number | null>(null)
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
   // Fetch approved funding options
   const { data: fundingOptionsData } = useQuery({
@@ -47,7 +105,7 @@ export default function FundingRequestStep({
 
   const approvedFundingOptions = React.useMemo(() => {
     if (!fundingOptionsData?.data?.groups) return []
-    return fundingOptionsData.data.groups.flatMap((g: any) => 
+    return fundingOptionsData.data.groups.flatMap((g: any) =>
       g.sequencings.map((seq: any) => ({
         label: seq.name,
         value: seq.name
@@ -57,11 +115,30 @@ export default function FundingRequestStep({
 
   const dynamicFundingTypeOptions = React.useMemo(() => {
     const opts = [...fundingTypeOptions]
-    if (urlFundingType && !opts.find(o => o.value === urlFundingType)) {
-      opts.push({ label: urlFundingType, value: urlFundingType })
+    const currentType = funding.fundingType || urlFundingType || apiData?.preferred_funding_type
+    if (currentType && !opts.find(o => o.value.toLowerCase() === currentType.toLowerCase())) {
+      opts.unshift({ label: currentType, value: currentType })
     }
     return opts
-  }, [urlFundingType])
+  }, [funding.fundingType, urlFundingType, apiData?.preferred_funding_type])
+
+  const dynamicPurposeOptions = React.useMemo(() => {
+    const opts = [...purposeOfFundingOptions]
+    const currentPurpose = funding.purpose
+    if (currentPurpose && !opts.find(o => o.value.toLowerCase() === currentPurpose.toLowerCase())) {
+      opts.unshift({ label: currentPurpose, value: currentPurpose })
+    }
+    return opts
+  }, [funding.purpose])
+
+  const dynamicTimeframeOptions = React.useMemo(() => {
+    const opts = [...timeframeOptions]
+    const currentTimeframe = funding.timeframe
+    if (currentTimeframe && !opts.find(o => o.value.toLowerCase() === currentTimeframe.toLowerCase())) {
+      opts.push({ label: currentTimeframe, value: currentTimeframe })
+    }
+    return opts
+  }, [funding.timeframe])
 
   // Memoized save handler
   const handleSave = useCallback(async (): Promise<boolean> => {
@@ -69,6 +146,8 @@ export default function FundingRequestStep({
 
     const payload = {
       id: fundingRequestId,
+      funding_request_id: effectiveRequestId || apiData?.funding_request_id || null,
+      funding_sequence_id: fundingSequenceId || apiData?.funding_sequence_id || null,
       requested_amount: unformatCurrency(funding.requestedAmount) || null,
       purpose_of_funds: funding.purpose || null,
       preferred_funding_type: funding.fundingType || null,
@@ -91,7 +170,7 @@ export default function FundingRequestStep({
       }
       return false
     }
-  }, [fundingRequestId, funding, saveMutation])
+  }, [fundingRequestId, effectiveRequestId, apiData, fundingSequenceId, funding, saveMutation])
 
   // Register save function
   useEffect(() => {
@@ -107,15 +186,24 @@ export default function FundingRequestStep({
   useEffect(() => {
     if (isSuccess && apiData) {
       setFundingRequestId(apiData.id || null)
+
+      const rawAmount = urlRequestedAmount || apiData.requested_amount
+      const parsedAmount = rawAmount ? formatCurrency(rawAmount) : ''
+
+      const rawPurpose = urlPurpose || apiData.purpose_of_funds
+      const resolvedPurpose = matchPurpose(rawPurpose) || funding.purpose || ''
+
+      const resolvedApprovedFunding = urlApprovedFunding || apiData.approved_funding || funding.approvedFunding || ''
+      const resolvedFundingType = urlFundingType || apiData.preferred_funding_type || funding.fundingType || ''
+      const resolvedTimeframe = matchTimeframe(apiData.timeframe_needed) || funding.timeframe || ''
+
       setFunding({
         ...funding,
-        requestedAmount: urlRequestedAmount 
-          ? formatCurrency(urlRequestedAmount) 
-          : (apiData.requested_amount ? formatCurrency(apiData.requested_amount) : ''),
-        purpose: apiData.purpose_of_funds || funding.purpose,
-        approvedFunding: urlApprovedFunding || apiData.approved_funding || funding.approvedFunding,
-        fundingType: apiData.preferred_funding_type || funding.fundingType,
-        timeframe: apiData.timeframe_needed || '',
+        requestedAmount: parsedAmount,
+        purpose: resolvedPurpose,
+        approvedFunding: resolvedApprovedFunding,
+        fundingType: resolvedFundingType,
+        timeframe: resolvedTimeframe,
         collateral: apiData.collateral_available || '',
         purposeNote: apiData.purpose_note || '',
       })
@@ -124,12 +212,12 @@ export default function FundingRequestStep({
       setFunding({
         ...funding,
         approvedFunding: urlApprovedFunding,
-        requestedAmount: urlRequestedAmount ? formatCurrency(urlRequestedAmount) : '',
+        requestedAmount: urlRequestedAmount ? formatCurrency(urlRequestedAmount) : funding.requestedAmount,
         fundingType: urlFundingType || funding.fundingType,
-        purpose: urlPurpose || funding.purpose,
+        purpose: matchPurpose(urlPurpose) || funding.purpose,
       })
     }
-  }, [isSuccess, apiData])
+  }, [isSuccess, apiData, effectiveRequestId])
 
   // Helper to get field error
   const getFieldError = (fieldName: string): string | undefined => {
@@ -172,7 +260,8 @@ export default function FundingRequestStep({
           className={`form-control ${hasError('requested_amount') ? 'is-invalid' : ''}`}
           placeholder="Enter requested amount"
           value={funding.requestedAmount}
-          onChange={(e) => setFunding({ ...funding, requestedAmount: formatCurrency(e.target.value) })}
+          readOnly
+          style={{ backgroundColor: '#f8f9fa', cursor: 'default' }}
         />
         {hasError('requested_amount') && <div className="invalid-feedback">{getFieldError('requested_amount')}</div>}
       </div>
@@ -187,7 +276,7 @@ export default function FundingRequestStep({
             purpose: value,
             purposeNote: value === FUNDING_PURPOSE_OTHER ? funding.purposeNote : ''
           })}
-          options={purposeOfFundingOptions}
+          options={dynamicPurposeOptions}
           optionLabel="label"
           optionValue="value"
           placeholder="Select purpose of funds"
@@ -219,15 +308,22 @@ export default function FundingRequestStep({
         <label className="form-label">
           Approved Funding <span className="text-danger">*</span>
         </label>
-        <CustomDropdown
-          value={funding.approvedFunding}
-          onChange={(value) => setFunding({ ...funding, approvedFunding: value })}
-          options={approvedFundingOptions}
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Select approved funding"
-          className={`w-100 ${hasError('approved_funding') ? 'is-invalid' : ''}`}
-          disabled
+        {/* <CustomDropdown
+              value={funding.approvedFunding}
+              onChange={(value) => setFunding({ ...funding, approvedFunding: value })}
+              options={approvedFundingOptions}
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select approved funding"
+              className={`w-100 ${hasError('approved_funding') ? 'is-invalid' : ''}`}
+              disabled
+           /> */}
+        <input
+          type="text"
+          className={`form-control ${hasError('approved_funding') ? 'is-invalid' : ''}`}
+          value={funding.approvedFunding || ''}
+          readOnly
+          style={{ backgroundColor: '#f8f9fa', cursor: 'default' }}
         />
         {hasError('approved_funding') && (
           <div className="invalid-feedback d-block">{getFieldError('approved_funding')}</div>
@@ -256,7 +352,7 @@ export default function FundingRequestStep({
         <CustomDropdown
           value={funding.timeframe}
           onChange={(value) => setFunding({ ...funding, timeframe: value })}
-          options={timeframeOptions}
+          options={dynamicTimeframeOptions}
           optionLabel="label"
           optionValue="value"
           placeholder="Select timeframe needed"

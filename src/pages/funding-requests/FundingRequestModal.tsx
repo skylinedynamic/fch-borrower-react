@@ -48,14 +48,7 @@ export default function FundingRequestModal({ show, onHide, review }: FundingReq
 
     const handleProceed = () => {
         onHide()
-        navigate(`/fund-application`, {
-            state: {
-                approved_funding: displayReview.funding_type || displayReview.funding_sequence?.name || '',
-                funding_type: displayReview.funding_type || displayReview.funding_sequence?.name || '',
-                purpose: displayReview.use_of_funds || '',
-                requested_amount: displayReview.requested_amount || ''
-            }
-        })
+        navigate(`/fund-application/${displayReview.id}`)
     }
 
     const reviewId = displayReview.id ? `FR-2024-${String(displayReview.id).padStart(5, '0')}` : '';
@@ -223,11 +216,19 @@ export default function FundingRequestModal({ show, onHide, review }: FundingReq
 
                                     {displayReview.status === FUNDING_REVIEW_STATUS.APPROVED && (
                                         <div className="mt-4">
-                                            <div className="alert alert-success">
-                                                <p className="mb-0"><span className="fw-semibold">APPROVED:</span>
-                                                    <span> Your funding request has been approved for {displayReview.funding_type}. Please proceed with the final funding application to complete your request.</span>
-                                                </p>
-                                            </div>
+                                            {displayReview.application_status ? (
+                                                <div className="alert alert-info">
+                                                    <p className="mb-0"><span className="fw-semibold">APPLICATION IN PROGRESS:</span>
+                                                        <span> Funding application for {displayReview.funding_type} has been started (Status: <strong>{displayReview.application_status}</strong>).</span>
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                <div className="alert alert-success">
+                                                    <p className="mb-0"><span className="fw-semibold">APPROVED:</span>
+                                                        <span> Your funding request has been approved for {displayReview.funding_type}. Please proceed with the final funding application to complete your request.</span>
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 
@@ -236,9 +237,29 @@ export default function FundingRequestModal({ show, onHide, review }: FundingReq
                                             <button className="btn btn-light border" onClick={onHide}>
                                                 <i className="ri-close-line align-bottom me-1"></i> Close
                                             </button>
-                                            {displayReview.status === FUNDING_REVIEW_STATUS.APPROVED && (
-                                                <button className="btn btn-primary shadow-sm" onClick={handleProceed}>
-                                                    Process to Fund Application <i className="ri-arrow-right-line ms-1 align-bottom"></i>
+                                            {displayReview.application_status && !String(displayReview.application_status).toLowerCase().includes('hold') && !String(displayReview.application_status).toLowerCase().includes('draft') && (
+                                                <button 
+                                                    className="btn btn-info shadow-sm"
+                                                    onClick={() => {
+                                                        onHide();
+                                                        if (displayReview.funding_application_id) {
+                                                            navigate(`/my-applications/funding/${displayReview.funding_application_id}`);
+                                                        } else {
+                                                            navigate('/my-applications');
+                                                        }
+                                                    }}
+                                                >
+                                                    <i className="ri-file-list-line align-bottom me-1"></i> View Application
+                                                </button>
+                                            )}
+                                            {displayReview.status === FUNDING_REVIEW_STATUS.APPROVED && !displayReview.application_status && (
+                                                <button className="btn btn-success shadow-sm" onClick={handleProceed}>
+                                                    Process Application <i className="ri-arrow-right-line ms-1 align-bottom"></i>
+                                                </button>
+                                            )}
+                                            {displayReview.status === FUNDING_REVIEW_STATUS.APPROVED && (String(displayReview.application_status || '').toLowerCase().includes('hold') || String(displayReview.application_status || '').toLowerCase().includes('draft')) && (
+                                                <button className="btn btn-success shadow-sm" onClick={handleProceed}>
+                                                    Continue Application <i className="ri-arrow-right-line ms-1 align-bottom"></i>
                                                 </button>
                                             )}
                                             {displayReview.status === FUNDING_REVIEW_STATUS.REJECTED && (

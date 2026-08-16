@@ -21,6 +21,18 @@ export const fetchPreQualificationDetail = async (id: number | string): Promise<
   return data
 }
 
+export const fetchFundingApplicationDetail = async (id: number | string): Promise<FundingApplicationResponse> => {
+  const { data } = await apiClient.get<FundingApplicationResponse>(`/common/request-application/funding-application/${id}`)
+  return data
+}
+
+export const downloadFundingApplicationDocument = async (documentId: string | number): Promise<any> => {
+    const response = await apiClient.get(`/borrower/funding-application/documents/${Number(documentId)}/download`, {
+        responseType: 'blob'
+    });
+    return response;
+};
+
 export const fetchFundingApplications = async (page: number = 1): Promise<FundingApplicationResponse> => {
   const { data } = await apiClient.post<FundingApplicationResponse>(`${BASE_URL}/funding-application`, {
     page

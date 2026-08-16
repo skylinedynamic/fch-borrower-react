@@ -111,7 +111,7 @@ const Funding = () => {
                     <div className="col-12">
                         <div className="d-flex align-items-center justify-content-between py-2">
                             <div className="flex-grow-1">
-                                <h4 className="fs-20 mb-1">Funding Options</h4>
+                                <h4 className="fs-18 mb-1 mt-0">Funding Options</h4>
                                 <nav aria-label="breadcrumb">
                                     <ol className="breadcrumb m-0">
                                         <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>

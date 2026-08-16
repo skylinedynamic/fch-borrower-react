@@ -37,23 +37,12 @@ const getActivityIcon = (logTypeRaw: string, isSuccess = false) => {
     const logType = String(logTypeRaw || '').toLowerCase();
 
     // Exact matching for funding events
-    if (logType === 'funding_request_create') {
-        return { icon: 'ri-file-add-line', bg: 'bg-info-subtle', color: 'text-info' };
-    }
-    if (logType === 'funding_request_status_update') {
-        return { icon: 'ri-refresh-line', bg: 'bg-warning-subtle', color: 'text-warning' };
-    }
-
-    // Generic fallback matching
-    if (logType.includes('create') || logType.includes('submit')) {
-        return { icon: 'ri-file-add-line', bg: 'bg-primary-subtle', color: 'text-primary' };
-    }
-    if (logType.includes('status') || logType.includes('approve') || logType.includes('accept')) {
-        if (isSuccess || logType.includes('approve') || logType.includes('accept')) {
-            return { icon: 'ri-checkbox-circle-line', bg: 'bg-success-subtle', color: 'text-success' };
-        }
-        return { icon: 'ri-close-circle-line', bg: 'bg-danger-subtle', color: 'text-danger' };
-    }
+    if (logType === 'funding_request_create' || logType === 'funding_application_create') return { icon: 'ri-file-add-line', bg: 'bg-info-subtle', color: 'text-info' };
+    if (logType === 'funding_request_status_update' || logType === 'funding_application_status_update' || logType === 'status_update') return { icon: 'ri-refresh-line', bg: 'bg-warning-subtle', color: 'text-warning' };
+    if (logType.includes('create') || logType.includes('submit')) return { icon: 'ri-file-add-line', bg: 'bg-primary-subtle', color: 'text-primary' };
+    if (logType.includes('approve') || logType.includes('accept') || isSuccess) return { icon: 'ri-checkbox-circle-line', bg: 'bg-success-subtle', color: 'text-success' };
+    if (logType.includes('reject') || logType.includes('fail') || logType.includes('decline')) return { icon: 'ri-close-circle-line', bg: 'bg-danger-subtle', color: 'text-danger' };
+    if (logType.includes('status')) return { icon: 'ri-refresh-line', bg: 'bg-warning-subtle', color: 'text-warning' };
     if (logType.includes('comment')) {
         return { icon: 'ri-chat-3-line', bg: 'bg-warning-subtle', color: 'text-warning' };
     }
@@ -78,12 +67,12 @@ const StatusBadge = ({ status }: { status: string }) => {
     if (status === FUNDING_REVIEW_STATUS.ACCEPTED)
         return <span className="badge bg-info-subtle text-info fs-12">{status}</span>
     if (status === FUNDING_REVIEW_STATUS.REJECTED)
-        return <span className="badge bg-danger-subtle text-danger fs-12">Rejected</span>
+        return <span className="badge bg-danger-subtle text-danger fs-12">{status}</span>
     if (status === FUNDING_REVIEW_STATUS.CANCELED)
-        return <span className="badge bg-secondary-subtle text-secondary fs-12">Canceled</span>
+        return <span className="badge bg-secondary-subtle text-secondary fs-12">{status}</span>
     if (status === FUNDING_REVIEW_STATUS.IN_PROGRESS)
-        return <span className="badge bg-primary-subtle text-primary fs-12">In Progress</span>
-    return <span className="badge bg-warning-subtle text-warning fs-12">Pending</span>
+        return <span className="badge bg-primary-subtle text-primary fs-12">{status}</span>
+    return <span className="badge bg-warning-subtle text-warning fs-12">{status}</span>
 }
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -171,19 +160,19 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
             if (oldFormatted && newFormatted) {
                 return (
                     <span className="d-block" style={{ lineHeight: '1.4' }}>
-                        <span className="text-dark fw-bold d-block">{prefix}</span>
+                        <span className="text-dark d-block">{prefix}</span>
                         <span className="d-inline-flex align-items-center flex-wrap gap-1 mt-1">
-                            <span style={{ color: getStatusColor(oldFormatted), fontWeight: '700' }}>{oldFormatted}</span>
+                            <span style={{ color: getStatusColor(oldFormatted) }}>{oldFormatted}</span>
                             <span className="text-muted px-1" style={{ fontSize: '11px' }}>→</span>
-                            <span style={{ color: getStatusColor(newFormatted), fontWeight: '700' }}>{newFormatted}</span>
+                            <span style={{ color: getStatusColor(newFormatted) }}>{newFormatted}</span>
                         </span>
                     </span>
                 );
             } else if (newFormatted) {
                 return (
                     <span className="d-block" style={{ lineHeight: '1.4' }}>
-                        <span className="text-dark fw-bold d-block">{prefix}</span>
-                        <span style={{ color: getStatusColor(newFormatted), fontWeight: '700' }} className="d-block mt-1">{newFormatted}</span>
+                        <span className="text-dark d-block">{prefix}</span>
+                        <span style={{ color: getStatusColor(newFormatted) }} className="d-block mt-1">{newFormatted}</span>
                     </span>
                 );
             }
@@ -193,11 +182,11 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
         if (rawTitle.includes('InProgress to Pending')) {
             return (
                 <span className="d-block" style={{ lineHeight: '1.4' }}>
-                    <span className="text-dark fw-bold d-block">Funding Request Status Changed:</span>
+                    <span className="text-dark d-block">Funding Request Status Changed:</span>
                     <span className="d-inline-flex align-items-center flex-wrap gap-1 mt-1">
-                        <span style={{ color: getStatusColor('In Progress'), fontWeight: '700' }}>In Progress</span>
+                        <span style={{ color: getStatusColor('In Progress') }}>In Progress</span>
                         <span className="text-muted px-1" style={{ fontSize: '11px' }}>→</span>
-                        <span style={{ color: getStatusColor('Pending'), fontWeight: '700' }}>Pending</span>
+                        <span style={{ color: getStatusColor('Pending') }}>Pending</span>
                     </span>
                 </span>
             );
@@ -244,9 +233,9 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
             <div className="flex-grow-1 border-0 mb-0" style={{ minWidth: 0 }}>
                 <div className="p-1">
                     <div className="d-flex align-items-start justify-content-between gap-3">
-                        <div style={{ minWidth: 0 }} onClick={toggleExpand} className="cursor-pointer flex-grow-1">
+                        <div style={{ minWidth: 0, cursor: 'pointer', flexGrow: 1 }} onClick={toggleExpand}>
                             {/* Title */}
-                            <h6 className="mb-0 fw-bold text-dark fs-13">{formatActivityTitle(title)}</h6>
+                            <h6 className="mb-0 text-dark fs-13" style={{ fontWeight: 'normal' }}>{formatActivityTitle(title)}</h6>
 
                             {/* Subtitle / Meta */}
                             <p className="mb-2 text-muted fs-11 mt-1 d-flex align-items-center gap-1">
@@ -516,22 +505,24 @@ export default function FundingRequestDetailPage() {
                 <div className="page-content funding-requests-page">
                     <div className="container-fluid">
                         {/* Skeleton Breadcrumb */}
-                        <div className="row pb-1 page-subheader-sticky bg-body">
-                            <div className="col-12">
-                                <div className="d-flex align-items-center justify-content-between flex-row py-2">
-                                    <div className="flex-grow-1">
-                                        <div className="mb-2"><Skeleton w={200} h={24} /></div>
-                                        <div><Skeleton w={280} h={14} /></div>
-                                    </div>
-                                    <div className="mt-0">
-                                        <Skeleton w={70} h={30} rounded={false} />
+                        <div className="page-subheader-sticky bg-body">
+                            <div className="d-flex align-items-center justify-content-between py-2">
+                                <div className="flex-grow-1">
+                                    <div className="skeleton-line mb-2 fd-skel-title" />
+                                    <div className="d-flex align-items-center gap-2">
+                                        <div className="skeleton-line m-0 fd-skel-crumb-sm" />
+                                        <div className="skeleton-line m-0 fd-skel-crumb-sep" />
+                                        <div className="skeleton-line m-0 fd-skel-crumb-md" />
+                                        <div className="skeleton-line m-0 fd-skel-crumb-sep" />
+                                        <div className="skeleton-line m-0 fd-skel-crumb-lg" />
                                     </div>
                                 </div>
+                                <div className="skeleton-line m-0 fd-skel-back-btn" />
                             </div>
                         </div>
 
                         {/* Skeleton Layout */}
-                        <div className="row g-4 mt-1">
+                        <div className="row g-4">
                             {/* Left Column */}
                             <div className="col-lg-8">
                                 {/* Review Progress Card Skeleton */}
@@ -714,6 +705,13 @@ export default function FundingRequestDetailPage() {
     const countComments = activities.filter(a => String(a.log_type_raw || '').includes('comment')).length
     const countUpdates = activities.filter(a => String(a.log_type_raw || '').includes('update') || String(a.log_type_raw || '').includes('status')).length
 
+    // Application Status Logic
+    const isApproved = review.status === FUNDING_REVIEW_STATUS.APPROVED;
+    const appStatus = String(review.application_status || '').toLowerCase();
+    const isNotStarted = isApproved && !review.application_status;
+    const isOnHoldOrDraft = isApproved && (appStatus.includes('hold') || appStatus.includes('draft'));
+    const isSubmittedOrComplete = Boolean(review.application_status && !isOnHoldOrDraft);
+
     return (
         <React.Fragment>
             <style dangerouslySetInnerHTML={{
@@ -730,20 +728,47 @@ export default function FundingRequestDetailPage() {
                     {/* ── Header / Breadcrumb ─────────────────────────────────── */}
                     <div className="row pb-1 page-subheader-sticky bg-body">
                         <div className="col-12">
-                            <div className="d-flex align-items-center justify-content-between flex-row py-2">
+                            <div className="d-flex align-items-lg-center flex-lg-row flex-column py-2">
                                 <div className="flex-grow-1">
-                                    <h4 className="fs-20 mb-1">{pageTitle}</h4>
+                                    <h4 className="fs-18 mb-1 mt-0">{pageTitle}</h4>
                                     <nav aria-label="breadcrumb">
                                         <ol className="breadcrumb m-0 fs-12 text-muted">
                                             <li className="breadcrumb-item"><Link to="/" className="text-muted">Dashboard</Link></li>
                                             <li className="breadcrumb-item"><Link to="/funding-requests" className="text-muted">Funding Requests</Link></li>
-                                            <li className="breadcrumb-item active text-primary font-weight-bold" aria-current="page">{pageTitle}</li>
+                                            <li className="breadcrumb-item active text-primary fw-bold" aria-current="page">{pageTitle}</li>
                                         </ol>
                                     </nav>
                                 </div>
-                                <div className="mt-0">
-                                    <Link to="/funding-requests" className="btn fr-back-btn px-3 shadow-none">
-                                        &larr; Back
+                                <div className="page-actions d-flex align-items-center gap-2 mt-3 mt-lg-0">
+                                    {isNotStarted && (
+                                        <Link
+                                            to={`/fund-application/${review.id}`}
+                                            className="btn btn-success fw-medium d-flex align-items-center gap-2 shadow-none px-4"
+                                            title="Process Application"
+                                        >
+                                            Process Application <i className="ri-arrow-right-line"></i>
+                                        </Link>
+                                    )}
+                                    {isOnHoldOrDraft && (
+                                        <Link
+                                            to={`/fund-application/${review.id}`}
+                                            className="btn btn-success fw-medium d-flex align-items-center gap-2 shadow-none px-4"
+                                            title="Continue Application"
+                                        >
+                                            Continue Application <i className="ri-arrow-right-line"></i>
+                                        </Link>
+                                    )}
+                                    {isSubmittedOrComplete && (
+                                        <Link
+                                            to={review.funding_application_id ? `/my-applications/funding/${review.funding_application_id}` : '/my-applications'}
+                                            className="btn btn-info fw-medium d-flex align-items-center gap-2 shadow-none px-4"
+                                            title="View Application"
+                                        >
+                                            <i className="ri-file-list-line me-1"></i> View Application
+                                        </Link>
+                                    )}
+                                    <Link to="/funding-requests" className="btn btn-primary fw-medium d-flex align-items-center gap-2 shadow-none px-4">
+                                        <i className="ri-arrow-left-line"></i> Back
                                     </Link>
                                 </div>
                             </div>
@@ -751,19 +776,19 @@ export default function FundingRequestDetailPage() {
                     </div>
 
                     {/* ── Two Column Page Layout ─────────────────────────────── */}
-                    <div className="row g-4 mt-1">
+                    <div className="row g-4">
 
                         {/* ── Left Column: Details Cards (Summary, Documents, Decision) ── */}
                         <div className="col-lg-8">
-                            <ReviewProgressCard 
-                                status={review.status} 
-                                createdAt={review.created_at} 
+                            <ReviewProgressCard
+                                status={review.status}
+                                createdAt={review.created_at}
                                 updatedAt={review.updated_at}
-                                rejectReason={review.reject_reason} 
+                                rejectReason={review.reject_reason}
                             />
 
                             {/* Decision Details */}
-                            {(review.reviewer?.name || [FUNDING_REVIEW_STATUS.APPROVED, FUNDING_REVIEW_STATUS.REJECTED, 'Accepted'].includes(review.status)) && (
+                            {(review.reviewer?.name || [FUNDING_REVIEW_STATUS.APPROVED, FUNDING_REVIEW_STATUS.REJECTED, FUNDING_REVIEW_STATUS.ACCEPTED].includes(review.status)) && (
                                 <div className="card border-0 shadow-sm mb-4">
                                     <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
                                         <h6 className="mb-0 fw-bold fs-15">
@@ -793,7 +818,7 @@ export default function FundingRequestDetailPage() {
                                                             )}
                                                         </p>
                                                         <div className="mt-3">
-                                                            <Link 
+                                                            <Link
                                                                 to={`/funding/${review.funding_sequence_id || review.funding_sequence?.id}/review`}
                                                                 state={{
                                                                     purpose: review.use_of_funds,
@@ -810,28 +835,21 @@ export default function FundingRequestDetailPage() {
                                             )}
                                             {review.status === FUNDING_REVIEW_STATUS.APPROVED && (
                                                 <div className="col-12">
-                                                    <div className="alert alert-success border-0 mb-0">
-                                                        <p className="mb-0 fs-13">
-                                                            <span className="fw-bold">Approved:</span>{' '}
-                                                            Your funding request has been approved for {review.funding_type}. Please proceed with the final funding application.
-                                                        </p>
-                                                        <div className="mt-3">
-                                                            <Link 
-                                                                to="/fund-application"
-                                                                state={{
-                                                                    purpose: review.use_of_funds,
-                                                                    amount: review.requested_amount,
-                                                                    requested_amount: review.requested_amount,
-                                                                    approved_funding: review.funding_sequence?.name || review.funding_type,
-                                                                    funding_type: review.funding_type || review.funding_sequence?.name
-                                                                }}
-                                                                className="btn btn-success btn-sm fw-medium px-4 d-inline-flex align-items-center"
-                                                            >
-                                                                Process Funding Application
-                                                                <i className="ri-arrow-right-line ms-2"></i>
-                                                            </Link>
+                                                    {review.application_status ? (
+                                                        <div className="alert alert-info border-0 mb-0">
+                                                            <p className="mb-0 fs-13">
+                                                                <span className="fw-bold">Application In Progress:</span>{' '}
+                                                                Funding application for {review.funding_type} has been started (Status: <strong>{review.application_status}</strong>).
+                                                            </p>
                                                         </div>
-                                                    </div>
+                                                    ) : (
+                                                        <div className="alert alert-success border-0 mb-0">
+                                                            <p className="mb-0 fs-13">
+                                                                <span className="fw-bold">Approved:</span>{' '}
+                                                                Your funding request has been approved for {review.funding_type}. Please proceed with the final funding application.
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>

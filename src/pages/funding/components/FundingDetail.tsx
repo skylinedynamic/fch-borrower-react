@@ -43,24 +43,21 @@ const FundingDetailLoader = () => (
         <div className="container-fluid">
 
             {/* ── Breadcrumb skeleton ───────────────────────── */}
-            <div className="row page-subheader-sticky bg-body">
-                <div className="col-12 py-2">
-                    <div className="d-flex align-items-center justify-content-between">
-                        <div className="flex-grow-1">
-                            <div className="skeleton-line mb-2 fd-skel-title" />
-                            <div className="d-flex align-items-center gap-2">
-                                <div className="skeleton-line m-0 fd-skel-crumb-sm" />
-                                <div className="skeleton-line m-0 fd-skel-crumb-sep" />
-                                <div className="skeleton-line m-0 fd-skel-crumb-md" />
-                                <div className="skeleton-line m-0 fd-skel-crumb-sep" />
-                                <div className="skeleton-line m-0 fd-skel-crumb-lg" />
-                            </div>
+            <div className="page-subheader-sticky bg-body">
+                <div className="d-flex align-items-center justify-content-between py-2">
+                    <div className="flex-grow-1">
+                        <div className="skeleton-line mb-2 fd-skel-title" />
+                        <div className="d-flex align-items-center gap-2">
+                            <div className="skeleton-line m-0 fd-skel-crumb-sm" />
+                            <div className="skeleton-line m-0 fd-skel-crumb-sep" />
+                            <div className="skeleton-line m-0 fd-skel-crumb-md" />
+                            <div className="skeleton-line m-0 fd-skel-crumb-sep" />
+                            <div className="skeleton-line m-0 fd-skel-crumb-lg" />
                         </div>
-                        <div className="skeleton-line m-0 fd-skel-back-btn" />
                     </div>
+                    <div className="skeleton-line m-0 fd-skel-back-btn" />
                 </div>
             </div>
-
             {/* ── Main card ─────────────────────────────────── */}
             <div className="card border-0 shadow-sm fd-skel-card">
                 <div className="card-body p-4">
@@ -168,7 +165,7 @@ const ReadinessItem: React.FC<{ factor: any, isLast: boolean }> = ({ factor, isL
     }
 
     let badgeText = factor.status;
-    
+
     if ((factor.label === READINESS_FACTOR_LABELS.RESTRICTED_STATE || factor.label === READINESS_FACTOR_LABELS.RESTRICTED_INDUSTRY) && s === FACTOR_STATUS_VALUES.FAILED) {
         badgeText = BADGE_LABELS.RESTRICTED;
     } else if ((factor.label === READINESS_FACTOR_LABELS.STATE_ELIGIBILITY || factor.label === READINESS_FACTOR_LABELS.INDUSTRY_ELIGIBILITY) && (s === FACTOR_STATUS_VALUES.GOOD || s === FACTOR_STATUS_VALUES.STRONG)) {
@@ -268,6 +265,8 @@ const FundingDetail = () => {
         readiness_factors = [],
         missing_documents = [],
         latest_review_status,
+        latest_review_id = null,
+        has_funding_application = false,
     } = data;
 
     const colors = getFundingColorStyles(icon_color);
@@ -293,31 +292,29 @@ const FundingDetail = () => {
         return s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED || s === FACTOR_STATUS_VALUES.WEAK;
     });
     const isPending = latest_review_status === FUNDING_REVIEW_STATUS.PENDING;
-    const isApproved = latest_review_status === FUNDING_REVIEW_STATUS.APPROVED || latest_review_status === 'Approved';
+    const isApproved = latest_review_status === FUNDING_REVIEW_STATUS.APPROVED;
 
     return (
         <div className="page-content">
             <div className="container-fluid">
 
                 {/* ── Breadcrumb ─────────────────────────────────────────────── */}
-                <div className="row page-subheader-sticky bg-body">
-                    <div className="col-12">
-                        <div className="d-flex align-items-center justify-content-between flex-row py-2">
-                            <div className="flex-grow-1">
-                                <h4 className="fs-18 mb-1">{name}</h4>
-                                <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb m-0">
-                                        <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>
-                                        <li className="breadcrumb-item"><Link to="/funding">Funding Options</Link></li>
-                                        <li className="breadcrumb-item active fw-medium" aria-current="page">{name}</li>
-                                    </ol>
-                                </nav>
-                            </div>
-                            <div className="mt-0 d-flex align-items-center">
-                                <Link to="/funding" className="btn btn-primary fw-medium d-flex align-items-center gap-2 shadow-none px-4">
-                                    <i className="ri-arrow-left-line"></i> Back
-                                </Link>
-                            </div>
+                <div className="page-subheader-sticky bg-body">
+                    <div className="d-flex align-items-center justify-content-between py-2">
+                        <div className="flex-grow-1">
+                            <h4 className="fs-18 mb-1 mt-0">{name}</h4>
+                            <nav aria-label="breadcrumb">
+                                <ol className="breadcrumb m-0">
+                                    <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>
+                                    <li className="breadcrumb-item"><Link to="/funding">Funding Options</Link></li>
+                                    <li className="breadcrumb-item active fw-medium" aria-current="page">{name}</li>
+                                </ol>
+                            </nav>
+                        </div>
+                        <div className="mt-0 d-flex align-items-center">
+                            <Link to="/funding" className="btn btn-primary fw-medium d-flex align-items-center gap-2 shadow-none px-4">
+                                <i className="ri-arrow-left-line"></i> Back
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -426,7 +423,7 @@ const FundingDetail = () => {
                                         const visibleFactors = activeFactors.filter((f: any) => {
                                             const s = (f.status || '').toLowerCase();
                                             const isStateOrIndustry = f.label === READINESS_FACTOR_LABELS.RESTRICTED_STATE || f.label === READINESS_FACTOR_LABELS.RESTRICTED_INDUSTRY || f.label === READINESS_FACTOR_LABELS.STATE_ELIGIBILITY || f.label === READINESS_FACTOR_LABELS.INDUSTRY_ELIGIBILITY;
-                                            
+
                                             // Hide state/industry if they are Good/Strong
                                             if (isStateOrIndustry && (s === FACTOR_STATUS_VALUES.GOOD || s === FACTOR_STATUS_VALUES.STRONG)) {
                                                 return false;
@@ -474,14 +471,25 @@ const FundingDetail = () => {
                             </p>
                         </div>
                         <span id="btn-start-funding-request-wrapper" className="funding-detail-btn-wrapper">
-                            {(hasMissingFactors || isPending || finalEngineStatus === 'Hidden') && !isApproved ? (
+                            {has_funding_application ? (
+                                <Link
+                                    to="/my-applications"
+                                    className="btn btn-info d-flex align-items-center justify-content-center gap-2 fw-medium px-4"
+                                >
+                                    View Application
+                                    <i className="ri-arrow-right-line" />
+                                </Link>
+                            ) : (hasMissingFactors || isPending || finalEngineStatus === 'Hidden') && !isApproved ? (
                                 <span className="btn btn-primary disabled d-flex align-items-center justify-content-center gap-2 fw-medium px-4">
                                     Start Funding Request
                                     <i className="ri-arrow-right-line" />
                                 </span>
                             ) : isApproved ? (
-                                <Link to="/fund-application" state={{ approved_funding: name, funding_type: name }} className="btn btn-success d-flex align-items-center justify-content-center gap-2 fw-medium px-4">
-                                    Process Funding Application
+                                <Link
+                                    to={`/fund-application/${latest_review_id}`}
+                                    className="btn btn-success d-flex align-items-center justify-content-center gap-2 fw-medium px-4"
+                                >
+                                    Process Application
                                     <i className="ri-arrow-right-line" />
                                 </Link>
                             ) : (

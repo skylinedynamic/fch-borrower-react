@@ -15,10 +15,26 @@ export const PAYMENT_CYCLE_OPTIONS = [
   { label: "Yearly", value: "Yearly" },
 ];
 
-export const PAYMENT_STATUS_COLORS = {
+export const PAYMENT_STATUS_COLORS: { [key: string]: string } = {
   succeeded: "success",
   pending: "warning",
   failed: "danger",
   disputed: "info",
   refunded: "secondary",
+};
+
+export const PAYMENT_ENVIRONMENT_OPTIONS = [
+  { label: 'All Environment', value: null },
+  { label: 'Production', value: 1 },
+  { label: 'Sandbox', value: 0 }
+];
+
+export const PAYMENT_ENVIRONMENT_COLORS: { [key: number]: string } = {
+  [1]: 'success', // Production
+  [0]: 'info'     // Sandbox
+};
+
+export const PAYMENT_ENVIRONMENT_LABELS: { [key: number]: string } = {
+  [1]: 'Production',
+  [0]: 'Sandbox'
 };

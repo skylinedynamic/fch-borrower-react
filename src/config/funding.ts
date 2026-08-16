@@ -56,7 +56,7 @@ export const FUNDING_REVIEW_STATUS = {
     APPROVED: 'Approved',
     ACCEPTED: 'Accepted',
     REJECTED: 'Rejected',
-    CANCELED: 'Canceled'
+    CANCELED: 'Cancelled'
 };
 
 export const FUNDING_REVIEW_STATUS_COLORS: Record<string, string> = {
@@ -68,8 +68,19 @@ export const FUNDING_REVIEW_STATUS_COLORS: Record<string, string> = {
     [FUNDING_REVIEW_STATUS.CANCELED]: '#EF4444',   // Red
 };
 
+export const FUNDING_REVIEW_STATUS_OPTIONS = [
+    { label: 'Pending', value: FUNDING_REVIEW_STATUS.PENDING },
+    { label: 'Accepted', value: FUNDING_REVIEW_STATUS.ACCEPTED },
+    { label: 'In Progress', value: FUNDING_REVIEW_STATUS.IN_PROGRESS },
+    { label: 'Approved', value: FUNDING_REVIEW_STATUS.APPROVED },
+    { label: 'Rejected', value: FUNDING_REVIEW_STATUS.REJECTED },
+    { label: 'Cancelled', value: FUNDING_REVIEW_STATUS.CANCELED }
+];
+
 export const FUNDING_APPLICATION_STATUS = {
-    PENDING: 'Pending',
+    ON_HOLD: 'On Hold',
+    DRAFT: 'Draft',
+    PENDING: 'Submitted – Pending Review',
     SUBMITTED: 'Submitted (Received)',
     UNDERWRITING_REVIEW: 'Underwriting Review',
     MISSING_DOCUMENTS: 'Missing Documents (Action Required)',
@@ -89,7 +100,9 @@ export const FUNDING_APPLICATION_STATUS = {
 };
 
 export const FUNDING_APPLICATION_STATUS_OPTIONS = [
-    { label: 'Pending', value: FUNDING_APPLICATION_STATUS.PENDING },
+    { label: 'On Hold', value: FUNDING_APPLICATION_STATUS.ON_HOLD },
+    { label: 'Draft', value: FUNDING_APPLICATION_STATUS.DRAFT },
+    { label: 'Submitted – Pending Review', value: FUNDING_APPLICATION_STATUS.PENDING },
     { label: 'Submitted (Received)', value: FUNDING_APPLICATION_STATUS.SUBMITTED },
     { label: 'Underwriting Review', value: FUNDING_APPLICATION_STATUS.UNDERWRITING_REVIEW },
     { label: 'Missing Documents (Action Required)', value: FUNDING_APPLICATION_STATUS.MISSING_DOCUMENTS },
@@ -109,22 +122,25 @@ export const FUNDING_APPLICATION_STATUS_OPTIONS = [
 ];
 
 export const FUNDING_APPLICATION_STATUS_CLASS_MAP: Record<string, string> = {
-    [FUNDING_APPLICATION_STATUS_OPTIONS[0].value]: 'bg-warning-subtle text-warning',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[1].value]: 'bg-info-subtle text-info',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[2].value]: 'bg-primary-subtle text-primary',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[3].value]: 'bg-danger-subtle text-danger',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[4].value]: 'bg-info-subtle text-info',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[5].value]: 'bg-success-subtle text-success',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[6].value]: 'bg-success text-white',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[7].value]: 'bg-primary-subtle text-primary',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[8].value]: 'bg-info-subtle text-info',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[0].value]: 'bg-secondary-subtle text-secondary',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[1].value]: 'bg-secondary-subtle text-secondary',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[2].value]: 'bg-warning-subtle text-warning',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[3].value]: 'bg-info-subtle text-info',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[4].value]: 'bg-primary-subtle text-primary',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[5].value]: 'bg-danger-subtle text-danger',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[6].value]: 'bg-info-subtle text-info',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[7].value]: 'bg-success-subtle text-success',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[8].value]: 'bg-success text-white',
     [FUNDING_APPLICATION_STATUS_OPTIONS[9].value]: 'bg-primary-subtle text-primary',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[10].value]: 'bg-success-subtle text-success',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[11].value]: 'bg-success text-white',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[12].value]: 'bg-warning-subtle text-warning',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[13].value]: 'bg-success-subtle text-success',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[14].value]: 'bg-success text-white',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[16].value]: 'bg-danger-subtle text-danger',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[10].value]: 'bg-info-subtle text-info',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[11].value]: 'bg-primary-subtle text-primary',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[12].value]: 'bg-success-subtle text-success',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[13].value]: 'bg-success text-white',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[14].value]: 'bg-warning-subtle text-warning',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[15].value]: 'bg-success-subtle text-success',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[16].value]: 'bg-success text-white',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[17].value]: 'bg-success-subtle text-success',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[18].value]: 'bg-danger-subtle text-danger',
 };
 
 export const FUNDING_WIZARD_STEPS = [
@@ -235,40 +251,40 @@ export const FUNDING_REVIEW_TIMELINE_STEPS = [
     },
     {
         key: FUNDING_REVIEW_STATUS.PENDING,
-        label: 'Pending',
+        label: FUNDING_REVIEW_STATUS.PENDING,
         icon: 'ri-time-line',
     },
     {
         key: FUNDING_REVIEW_STATUS.ACCEPTED,
-        label: 'Accepted',
+        label: FUNDING_REVIEW_STATUS.ACCEPTED,
         icon: 'ri-checkbox-circle-line',
     },
     {
         key: FUNDING_REVIEW_STATUS.IN_PROGRESS,
-        label: 'In Progress',
+        label: FUNDING_REVIEW_STATUS.IN_PROGRESS,
         subtext: 'Under Review',
         icon: 'ri-user-3-fill',
     },
     {
         key: FUNDING_REVIEW_STATUS.APPROVED,
-        label: 'Approved',
+        label: FUNDING_REVIEW_STATUS.APPROVED,
         icon: 'ri-user-follow-line',
     },
     {
         key: FUNDING_REVIEW_STATUS.REJECTED,
-        label: 'Rejected',
+        label: FUNDING_REVIEW_STATUS.REJECTED,
         icon: 'ri-user-unfollow-line',
     },
     {
         key: FUNDING_REVIEW_STATUS.CANCELED,
-        label: 'Canceled',
+        label: FUNDING_REVIEW_STATUS.CANCELED,
         icon: 'ri-stop-circle-line',
     },
 ];
 
 export const FUNDING_REVIEW_GUIDELINE_CARDS = [
     {
-        label: 'Pending',
+        label: FUNDING_REVIEW_STATUS.PENDING,
         desc: 'Request submitted and waiting for review.',
         bg: '#f0fdf4',
         border: '#bbf7d0',
@@ -276,7 +292,7 @@ export const FUNDING_REVIEW_GUIDELINE_CARDS = [
         icon: 'ri-time-line'
     },
     {
-        label: 'Accepted',
+        label: FUNDING_REVIEW_STATUS.ACCEPTED,
         desc: 'Review completed successfully.',
         bg: '#fefce8',
         border: '#fef08a',
@@ -284,7 +300,7 @@ export const FUNDING_REVIEW_GUIDELINE_CARDS = [
         icon: 'ri-check-line'
     },
     {
-        label: 'In Progress',
+        label: FUNDING_REVIEW_STATUS.IN_PROGRESS,
         desc: 'Admin can reviewing the request.',
         bg: '#eff6ff',
         border: '#bfdbfe',
@@ -292,7 +308,7 @@ export const FUNDING_REVIEW_GUIDELINE_CARDS = [
         icon: 'ri-shield-user-fill'
     },
     {
-        label: 'Approved',
+        label: FUNDING_REVIEW_STATUS.APPROVED,
         desc: 'Borrower can start funding application.',
         bg: '#f0fdf4',
         border: '#bbf7d0',
@@ -300,7 +316,7 @@ export const FUNDING_REVIEW_GUIDELINE_CARDS = [
         icon: 'ri-check-line'
     },
     {
-        label: 'Rejected',
+        label: FUNDING_REVIEW_STATUS.REJECTED,
         desc: 'Request declined missing information.',
         bg: '#fef2f2',
         border: '#fecaca',
@@ -308,7 +324,7 @@ export const FUNDING_REVIEW_GUIDELINE_CARDS = [
         icon: 'ri-close-line'
     },
     {
-        label: 'Canceled',
+        label: FUNDING_REVIEW_STATUS.CANCELED,
         desc: 'Request has been canceled.',
         bg: '#fef2f2',
         border: '#fecaca',

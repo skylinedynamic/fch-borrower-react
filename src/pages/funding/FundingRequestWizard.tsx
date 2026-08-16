@@ -54,9 +54,9 @@ const FundingRequestWizard = () => {
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [documentToDelete, setDocumentToDelete] = useState<{ id: number; name: string } | null>(null);
-    
+
     const { data: documentsData } = useBorrowerDocuments();
-    
+
     const deleteFundingDocumentMutation = useMutation({
         mutationFn: async (documentId: number) => {
             const res = await apiClient.delete(`/borrower/funding/requests/documents/${documentId}?funding_sequence_id=${id}`);
@@ -71,6 +71,7 @@ const FundingRequestWizard = () => {
 
     const businessDetails = businessRes?.data || businessRes || {};
     const financialInfo = financialRes?.data || financialRes || {};
+
 
     const parsedUses = React.useMemo(() => {
         if (!fundingDetail?.uses) return [];
@@ -147,18 +148,19 @@ const FundingRequestWizard = () => {
                         if (!isRedirecting.current) {
                             isRedirecting.current = true;
                             toast.success('Your funding request is already approved! Please proceed with the application.');
-                            navigate('/fund-application', { 
+                            navigate('/fund-application', {
                                 replace: true,
                                 state: {
                                     purpose: initialPurpose,
                                     amount: initialAmount,
                                     requested_amount: initialAmount,
                                     approved_funding: res.data.name || res.data.funding_type,
-                                    funding_type: res.data.funding_type || res.data.name
+                                    funding_type: res.data.funding_type || res.data.name,
+                                    funding_sequence_id: id,
+                                    funding_request_id: res.data.latest_review_id,
                                 }
                             });
                         }
-                        return;
                     }
 
                     if (isHidden || hasMissingFactors) {
@@ -194,7 +196,7 @@ const FundingRequestWizard = () => {
                         const newAmountRaw = prev.requested_amount || res.data.latest_requested_amount || '';
                         const newAmount = newAmountRaw ? String(newAmountRaw).replace(/[^0-9.]/g, '') : '';
                         let newPurpose: any = res.data.latest_use_of_funds || prev.use_of_funds;
-                        
+
                         if (!newPurpose || (Array.isArray(newPurpose) && newPurpose.length === 0)) {
                             if (Array.isArray(parsedUsesArray) && parsedUsesArray.length > 0) {
                                 newPurpose = parsedUsesArray.map(u => typeof u === 'object' ? String(u.value || u.name || u.label) : String(u));
@@ -395,9 +397,9 @@ const FundingRequestWizard = () => {
                 {/* ── Breadcrumb ─────────────────────────────────────────────── */}
                 <div className="row page-subheader-sticky bg-body">
                     <div className="col-12">
-                        <div className="d-flex align-items-center justify-content-between flex-row py-2">
+                        <div className="d-flex align-items-center justify-content-between py-2">
                             <div className="flex-grow-1">
-                                <h4 className="fs-20 mb-1">Funding Request</h4>
+                                <h4 className="fs-20 mb-1 mt-0">Funding Request</h4>
                                 <nav aria-label="breadcrumb">
                                     <ol className="breadcrumb m-0">
                                         <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>
@@ -406,6 +408,11 @@ const FundingRequestWizard = () => {
                                         <li className="breadcrumb-item active fw-medium" aria-current="page">Funding Request</li>
                                     </ol>
                                 </nav>
+                            </div>
+                            <div className="mt-0 d-flex align-items-center">
+                                <Link to="/funding" className="btn btn-primary fw-medium d-flex align-items-center gap-2 shadow-none px-4">
+                                    <i className="ri-arrow-left-line"></i> Back
+                                </Link>
                             </div>
                         </div>
                     </div>
@@ -538,11 +545,11 @@ const FundingRequestWizard = () => {
                                             <label className="form-label fs-13 mb-2 funding-wizard-text-muted">Use of Funds</label>
                                             {parsedUses.length > 0 ? (
                                                 <div className="input-group rounded funding-wizard-input-group bg-light opacity-75">
-                                                    <input 
-                                                        type="text" 
-                                                        className="form-control border-0 bg-transparent fs-13 funding-wizard-input" 
-                                                        value={parsedUses.map(u => u.label).join(', ')} 
-                                                        disabled 
+                                                    <input
+                                                        type="text"
+                                                        className="form-control border-0 bg-transparent fs-13 funding-wizard-input"
+                                                        value={parsedUses.map(u => u.label).join(', ')}
+                                                        disabled
                                                     />
                                                 </div>
                                             ) : (
@@ -603,27 +610,27 @@ const FundingRequestWizard = () => {
                                                 <div className="d-flex flex-column gap-3">
                                                     <div className="d-flex justify-content-between align-items-start">
                                                         <span className="text-muted fs-13 funding-wizard-w-45">Legal Business Name</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.legal_business_name || 'ABC Solutions LLC'}</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.legal_business_name || businessDetails?.business_name || '—'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
                                                         <span className="text-muted fs-13 funding-wizard-w-45">Business Structure</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.entity_type || 'Limited Liability Company (LLC)'}</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.entity_type || businessDetails?.business_entity_type || '—'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
                                                         <span className="text-muted fs-13 funding-wizard-w-45">Industry</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.industry || 'Professional Services'}</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.industry || businessDetails?.business_industry_type || '—'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
                                                         <span className="text-muted fs-13 funding-wizard-w-45">EIN / Tax ID</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.tax_id || '12-3456789'}</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.tax_id || businessDetails?.business_ein || '—'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13 funding-wizard-w-45">Time in Business</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.time_in_business || '2 - 5 Years'}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Business Phone</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.business_phone || '—'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13 funding-wizard-w-45">Number of Employees</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.number_of_employees || '5 - 10'}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Business Email</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.business_email || '—'}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -640,24 +647,32 @@ const FundingRequestWizard = () => {
                                                 </div>
                                                 <div className="d-flex flex-column gap-3">
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13 funding-wizard-w-45">Gross Annual Revenue</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">${financialInfo?.gross_annual_revenue?.toLocaleString() || '500,000'}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Annual Revenue</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{financialInfo?.annual_revenue ? `$${Number(financialInfo.annual_revenue).toLocaleString()}` : '—'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13 funding-wizard-w-45">Average Monthly Revenue</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">${financialInfo?.average_monthly_revenue?.toLocaleString() || '45,000'}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Monthly Revenue</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{financialInfo?.monthly_revenue ? `$${Number(financialInfo.monthly_revenue).toLocaleString()}` : '—'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13 funding-wizard-w-45">Time in Business</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.time_in_business || '2 - 5 Years'}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Annual Personal Income</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{financialInfo?.annual_personal_income ? `$${Number(financialInfo.annual_personal_income).toLocaleString()}` : '—'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13 funding-wizard-w-45">Requested Amount</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">${Number(formData.requested_amount || 0).toLocaleString()}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Avg Monthly Deposits</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{financialInfo?.average_monthly_deposits ? `$${Number(financialInfo.average_monthly_deposits).toLocaleString()}` : '—'}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13 funding-wizard-w-45">Use of Funds</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{Array.isArray(formData.use_of_funds) ? formData.use_of_funds.join(', ') : formData.use_of_funds}</span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Monthly Deposit Count</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{financialInfo?.monthly_deposit_count ?? '—'}</span>
+                                                    </div>
+                                                    <div className="d-flex justify-content-between align-items-start">
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Avg Daily Balance (ADB)</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{financialInfo?.avg_bank_balance ? `$${Number(financialInfo.avg_bank_balance).toLocaleString()}` : '—'}</span>
+                                                    </div>
+                                                    <div className="d-flex justify-content-between align-items-start">
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Years in Business</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{financialInfo?.years_in_business || businessDetails?.time_in_business || '—'}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -674,19 +689,28 @@ const FundingRequestWizard = () => {
                                                 </div>
                                                 <div className="d-flex flex-column gap-3">
                                                     <div className="d-flex justify-content-between align-items-start">
-                                                        <span className="text-muted fs-13 funding-wizard-w-35">Address</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-65">
-                                                            {businessDetails?.address_line1 || '123 Business Blvd, Suite 100'}<br />
-                                                            {businessDetails?.city || 'New York'}, {businessDetails?.state || 'NY'} {businessDetails?.zip_code || '10001'}
-                                                        </span>
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Address</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.business_address || '—'}</span>
                                                     </div>
-                                                    <div className="d-flex justify-content-between align-items-start mt-2">
-                                                        <span className="text-muted fs-13 funding-wizard-w-35">Phone</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-65">{businessDetails?.business_phone || '(555) 123-4567'}</span>
+                                                    <div className="d-flex justify-content-between align-items-start">
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Country</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.country || '—'}</span>
                                                     </div>
-                                                    <div className="d-flex justify-content-between align-items-start mt-2">
-                                                        <span className="text-muted fs-13 funding-wizard-w-35">Email</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-65">{businessDetails?.business_email || 'info@abcsolutions.com'}</span>
+                                                    <div className="d-flex justify-content-between align-items-start">
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">State</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.business_state || '—'}</span>
+                                                    </div>
+                                                    <div className="d-flex justify-content-between align-items-start">
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">City</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.business_city || '—'}</span>
+                                                    </div>
+                                                    <div className="d-flex justify-content-between align-items-start">
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Zip Code</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.business_postal_code || '—'}</span>
+                                                    </div>
+                                                    <div className="d-flex justify-content-between align-items-start">
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Website</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{businessDetails?.business_website || '—'}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -705,6 +729,14 @@ const FundingRequestWizard = () => {
                                                     <div className="d-flex justify-content-between align-items-start">
                                                         <span className="text-muted fs-13 funding-wizard-w-45">Funding Type</span>
                                                         <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{fundingDetail.funding_type_name || fundingDetail.name}</span>
+                                                    </div>
+                                                    <div className="d-flex justify-content-between align-items-start">
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Requested Amount</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">${Number(formData.requested_amount || 0).toLocaleString()}</span>
+                                                    </div>
+                                                    <div className="d-flex justify-content-between align-items-start">
+                                                        <span className="text-muted fs-13 funding-wizard-w-45">Use of Funds</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{Array.isArray(formData.use_of_funds) ? formData.use_of_funds.join(', ') : formData.use_of_funds}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
                                                         <span className="text-muted fs-13 funding-wizard-w-45">Estimated Speed to Funds</span>
@@ -791,7 +823,7 @@ const FundingRequestWizard = () => {
                                                                     ) : (
                                                                         <>
                                                                             <span className="fs-13 fw-semibold funding-wizard-primary-text"><i className="ri-check-line align-middle me-1"></i> Uploaded</span>
-                                                                            
+
                                                                             {fundingDetail?.latest_review_status === 'Rejected' && (
                                                                                 <button
                                                                                     className="btn btn-light border btn-sm px-3 fw-medium ms-2"
@@ -812,7 +844,7 @@ const FundingRequestWizard = () => {
                                                                     )}
                                                                 </div>
                                                             </div>
-                                                            
+
                                                             {!isMissing && documentsData?.[docType.id]?.length > 0 && (
                                                                 <div className="mt-3 pt-3 border-top">
                                                                     <div className="d-flex flex-column gap-2">
@@ -830,7 +862,7 @@ const FundingRequestWizard = () => {
                                                                                             <span className="fs-13 fw-medium text-truncate" title={doc.file_name} style={{ maxWidth: '300px' }}>{doc.file_name}</span>
                                                                                         </div>
                                                                                     </div>
-                                                                                    <button 
+                                                                                    <button
                                                                                         className="btn btn-sm btn-outline-danger py-1 px-2 d-flex align-items-center gap-1"
                                                                                         onClick={() => handleRemoveFile(doc.id, doc.file_name)}
                                                                                         title="Remove document"
@@ -936,7 +968,7 @@ const FundingRequestWizard = () => {
                                             className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4"
                                             onClick={handleNext}
                                         >
-                                            {currentStep === 1 ? 'Continue to Application' : 'Continue to Documents'} <i className="ri-arrow-right-line"></i>
+                                            {currentStep === 1 ? 'Continue to Funding Request' : 'Continue to Documents'} <i className="ri-arrow-right-line"></i>
                                         </button>
                                     ) : (
                                         <span style={(submitting || (isDocsRequired && missingDocs.length > 0)) ? { cursor: 'not-allowed', display: 'inline-block' } : {}}>

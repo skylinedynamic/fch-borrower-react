@@ -11,6 +11,7 @@ import { formatPhoneNumber, formatZipCode, maskSSN, formatDate } from '../../../
 import TabLoader from '../../../components/Loader/TabLoader'
 import { fetchCreditProfile } from '../../../modules/credit-profile'
 import type { CreditProfile } from '../../../modules/credit-profile'
+import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 
 interface CreditProfileRequestData {
   first_name: string
@@ -74,6 +75,9 @@ export default function CreditProfileTab() {
   const [submittedData, setSubmittedData] = useState<CreditProfileRequestData | null>(null)
   const [creditProfile, setCreditProfile] = useState<CreditProfile | null>(null)
   const [showSSN, setShowSSN] = useState(false)
+  
+  const [showUpdateModal, setShowUpdateModal] = useState(false)
+  const [updating, setUpdating] = useState(false)
 
   const [formData, setFormData] = useState<FormState>({
     first_name: '',
@@ -107,6 +111,27 @@ export default function CreditProfileTab() {
     }
   }, [user])
 
+  // Prefill from submitted data
+  useEffect(() => {
+    if (submittedData) {
+      setFormData(prev => ({
+        ...prev,
+        first_name: submittedData.first_name || prev.first_name,
+        middle_name: submittedData.middle_name || prev.middle_name,
+        last_name: submittedData.last_name || prev.last_name,
+        address: submittedData.address || prev.address,
+        apt_suite_other: submittedData.apt_suite_other || prev.apt_suite_other,
+        city: submittedData.city || prev.city,
+        state: submittedData.state || prev.state,
+        zip: submittedData.zip || prev.zip,
+        ssn: submittedData.ssn || prev.ssn,
+        date_of_birth: submittedData.date_of_birth ? submittedData.date_of_birth.substring(0, 10) : prev.date_of_birth,
+        phone: submittedData.phone || prev.phone,
+        email: submittedData.email || prev.email,
+      }))
+    }
+  }, [submittedData])
+
   // If credit_profile_updated flag is set, fetch credit profile data.
   // If not set, mark as initialized immediately so the form shows right away.
   useEffect(() => {
@@ -122,7 +147,29 @@ export default function CreditProfileTab() {
     try {
       setLoading(true)
       const data = await fetchCreditProfile()
-      setCreditProfile(data)
+
+      // If it doesn't have personal_info, it's the request data, not the actual profile.
+      // We populate the form so the user can edit it.
+      if (data && !data.personal_info) {
+        setFormData(prev => ({
+          ...prev,
+          first_name: data.first_name || prev.first_name,
+          middle_name: data.middle_name || prev.middle_name,
+          last_name: data.last_name || prev.last_name,
+          address: data.address || prev.address,
+          apt_suite_other: data.apt_suite_other || prev.apt_suite_other,
+          city: data.city || prev.city,
+          state: data.state || prev.state,
+          zip: data.zip || prev.zip,
+          ssn: data.ssn || prev.ssn,
+          date_of_birth: data.date_of_birth ? data.date_of_birth.substring(0, 10) : prev.date_of_birth,
+          phone: data.phone || prev.phone,
+          email: data.email || prev.email,
+        }))
+        setCreditProfile(null)
+      } else {
+        setCreditProfile(data)
+      }
     } catch {
       setCreditProfile(null)
     } finally {
@@ -169,7 +216,8 @@ export default function CreditProfileTab() {
     setErrors({})
     try {
       setSubmitting(true)
-      await apiClient.post('/borrower/profile/credit-profile-request', formData)
+      const res = await apiClient.post('/borrower/profile/credit-profile-request', formData)
+      toast.success(res.data?.message || 'Credit profile request submitted successfully.')
       // On success: fetch the saved record and show details view
       await fetchSubmittedDetails()
     } catch (err: any) {
@@ -180,12 +228,28 @@ export default function CreditProfileTab() {
           serverErrors[key] = Array.isArray(val) ? val[0] : String(val)
         })
         setErrors(serverErrors)
+        toast.error(err.response?.data?.message || 'Please check the form for errors and try again.')
       } else {
         // Non-validation error (500, network, etc.) — show a generic field-level message
         setErrors({ _form: err.response?.data?.message || 'Something went wrong. Please try again.' })
+        toast.error(err.response?.data?.message || 'Something went wrong. Please try again.')
       }
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleRequestUpdate = async () => {
+    if (!creditProfile) return
+    try {
+      setUpdating(true)
+      const res = await apiClient.post(`/borrower/profile/credit-profile/update-request/${creditProfile.id}`)
+      toast.success(res.data?.message || 'Request sent successfully.')
+      setShowUpdateModal(false)
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to send update request.')
+    } finally {
+      setUpdating(false)
     }
   }
 
@@ -523,9 +587,9 @@ export default function CreditProfileTab() {
 
           {/* ── Summary ── */}
           {creditProfile.metrics?.summary && (
-            <div className="col-12">
-              <div className="card border shadow-sm">
-                <div className="card-header bg-transparent border-bottom py-3">
+            <div className="col-12 mt-4">
+              <div className="card border shadow-sm h-100">
+                <div className="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
                   <div className="d-flex align-items-center gap-2">
                     <div className="rounded bg-primary-subtle p-2">
                       <i className="ri-file-text-line text-primary fs-16"></i>
@@ -535,6 +599,14 @@ export default function CreditProfileTab() {
                       <div className="text-muted fs-12">Overall assessment</div>
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    className="btn px-4 fw-medium text-white"
+                    style={{ backgroundColor: '#021f3c', borderColor: '#021f3c' }}
+                    onClick={() => setShowUpdateModal(true)}
+                  >
+                    Request to update credit profile data
+                  </button>
                 </div>
                 <div className="card-body px-4 py-3">
                   <p className="text-dark fs-14 mb-0">{creditProfile.metrics.summary}</p>
@@ -543,15 +615,66 @@ export default function CreditProfileTab() {
             </div>
           )}
         </div>
+
+        {/* Update Request Modal */}
+        <Modal isOpen={showUpdateModal} toggle={() => !updating && setShowUpdateModal(false)} centered modalClassName="flip">
+          <div className="modal-body p-5 text-center">
+            <button
+              type="button"
+              className="btn-close position-absolute end-0 top-0 m-3"
+              onClick={() => setShowUpdateModal(false)}
+              aria-label="Close"
+              disabled={updating}
+            ></button>
+            <lord-icon
+              src="https://cdn.lordicon.com/tdrtiskw.json"
+              trigger="loop"
+              colors="primary:#121331,secondary:#08a88a"
+              style={{ width: '90px', height: '90px' }}
+            ></lord-icon>
+            <div className="mt-4 text-center">
+              <h4>Are you sure?</h4>
+              <p className="text-muted fs-15 mb-4">
+                Are you sure you want to request a credit profile update? This will notify the admin to pull your latest iSoftPull data and update your profile.
+              </p>
+              <div className="hstack gap-2 justify-content-center">
+                <button
+                  className="btn btn-light fw-medium"
+                  onClick={() => setShowUpdateModal(false)}
+                  disabled={updating}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn px-4 text-white"
+                  style={{ backgroundColor: '#021f3c', borderColor: '#021f3c' }}
+                  onClick={handleRequestUpdate}
+                  disabled={updating}
+                >
+                  {updating ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      Sending...
+                    </>
+                  ) : (
+                    'Confirm'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </Modal>
       </div>
     )
   }
 
-  // ─── Submitted details view (fallback) ─────────────────────────────────────
-  if (submittedData) {
-    return (
-      <div className="fade-panel">
-        {/* ── Success banner ── */}
+
+
+  // ─── Form view ──────────────────────────────────────────────────────────────
+  return (
+    <div className="fade-panel">
+      {/* ── Success banner (if already submitted) ── */}
+      {submittedData && (
         <div className="d-flex align-items-center gap-3 p-3 mb-4 rounded-3 border"
           style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)', borderColor: '#86efac !important' }}>
           <div className="rounded-circle bg-success d-flex align-items-center justify-content-center flex-shrink-0"
@@ -561,7 +684,7 @@ export default function CreditProfileTab() {
           <div>
             <div className="fw-bold text-success-emphasis fs-15">Credit Profile Submitted</div>
             <div className="text-success-emphasis fs-13 opacity-75">
-              Your soft credit check request has been securely saved. No impact to your credit score.
+              Your soft credit check request has been securely saved. You can edit your details below if needed.
             </div>
           </div>
           <div className="ms-auto flex-shrink-0">
@@ -570,150 +693,9 @@ export default function CreditProfileTab() {
             </span>
           </div>
         </div>
-
-        <div className="row g-4">
-          {/* ── Personal Information ── */}
-          <div className="col-lg-6">
-            <div className="card border shadow-sm h-100">
-              <div className="card-header bg-transparent border-bottom py-3">
-                <div className="d-flex align-items-center gap-2">
-                  <div className="rounded bg-primary-subtle p-2">
-                    <i className="ri-user-3-line text-primary fs-16"></i>
-                  </div>
-                  <div>
-                    <div className="fw-semibold text-dark fs-14">Personal Information</div>
-                    <div className="text-muted fs-12">Applicant identity details</div>
-                  </div>
-                </div>
-              </div>
-              <div className="card-body px-4 py-3">
-                <DetailItem
-                  label="Full Name"
-                  icon="ri-account-circle-line"
-                  value={[submittedData.first_name, submittedData.middle_name, submittedData.last_name].filter(Boolean).join(' ')}
-                />
-                <DetailItem
-                  label="Date of Birth"
-                  icon="ri-cake-2-line"
-                  value={formatDate(submittedData.date_of_birth)}
-                />
-                <DetailItem
-                  label="Social Security Number"
-                  icon="ri-lock-line"
-                  value={
-                    <div className="d-flex align-items-center gap-2">
-                      <span className="font-monospace fs-14">
-                        {showSSN && submittedData.ssn ? submittedData.ssn : maskSSN(submittedData.ssn || '')}
-                      </span>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-soft-secondary py-0 px-2 fs-12"
-                        onClick={() => setShowSSN(s => !s)}
-                      >
-                        <i className={`${showSSN ? 'ri-eye-off-line' : 'ri-eye-line'} align-middle me-1`}></i>
-                        {showSSN ? 'Hide' : 'Reveal'}
-                      </button>
-                    </div>
-                  }
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* ── Contact Information ── */}
-          <div className="col-lg-6">
-            <div className="card border shadow-sm h-100">
-              <div className="card-header bg-transparent border-bottom py-3">
-                <div className="d-flex align-items-center gap-2">
-                  <div className="rounded bg-info-subtle p-2">
-                    <i className="ri-contacts-line text-info fs-16"></i>
-                  </div>
-                  <div>
-                    <div className="fw-semibold text-dark fs-14">Contact Information</div>
-                    <div className="text-muted fs-12">Reach and communication details</div>
-                  </div>
-                </div>
-              </div>
-              <div className="card-body px-4 py-3">
-                <DetailItem
-                  label="Email Address"
-                  icon="ri-mail-line"
-                  value={<a href={`mailto:${submittedData.email}`} className="text-primary text-decoration-none">{submittedData.email}</a>}
-                />
-                <DetailItem
-                  label="Phone Number"
-                  icon="ri-phone-line"
-                  value={<a href={`tel:${submittedData.phone}`} className="text-dark text-decoration-none">{submittedData.phone}</a>}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* ── Address Information ── */}
-          <div className="col-12">
-            <div className="card border shadow-sm">
-              <div className="card-header bg-transparent border-bottom py-3">
-                <div className="d-flex align-items-center gap-2">
-                  <div className="rounded bg-warning-subtle p-2">
-                    <i className="ri-map-pin-2-line text-warning fs-16"></i>
-                  </div>
-                  <div>
-                    <div className="fw-semibold text-dark fs-14">Address Details</div>
-                    <div className="text-muted fs-12">Residential address for credit verification</div>
-                  </div>
-                </div>
-              </div>
-              <div className="card-body px-4 py-3">
-                <div className="row g-0">
-                  <div className="col-md-4">
-                    <DetailItem
-                      label="Street Address"
-                      icon="ri-road-map-line"
-                      value={
-                        <>
-                          {submittedData.address}
-                          {submittedData.apt_suite_other && (
-                            <span className="text-muted ms-2 fs-13">({submittedData.apt_suite_other})</span>
-                          )}
-                        </>
-                      }
-                    />
-                  </div>
-                  <div className="col-md-3">
-                    <DetailItem label="City" icon="ri-building-2-line" value={submittedData.city} />
-                  </div>
-                  <div className="col-md-3">
-                    <DetailItem label="State" icon="ri-map-2-line" value={submittedData.state} />
-                  </div>
-                  <div className="col-md-2">
-                    <DetailItem label="Zip Code" icon="ri-mail-send-line" value={submittedData.zip} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Submission timestamp ── */}
-          {submittedData.created_at && (
-            <div className="col-12">
-              <div className="d-flex align-items-center gap-2 text-muted fs-12 justify-content-end">
-                <i className="ri-time-line"></i>
-                Submitted on {new Date(submittedData.created_at).toLocaleString('en-US', {
-                  dateStyle: 'medium', timeStyle: 'short'
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    )
-  }
-
-  // ─── Form view ──────────────────────────────────────────────────────────────
-  return (
-    <div className="fade-panel">
+      )}
       {/* Info notice */}
-      <div className="rounded-3 border border-primary-subtle bg-primary-subtle px-4 py-3 mb-4 d-flex align-items-start gap-3">
+      {/* <div className="rounded-3 border border-primary-subtle bg-primary-subtle px-4 py-3 mb-4 d-flex align-items-start gap-3">
         <div className="flex-shrink-0 rounded-circle bg-primary d-flex align-items-center justify-content-center"
           style={{ width: 38, height: 38, minWidth: 38 }}>
           <i className="ri-shield-user-line text-white fs-18"></i>
@@ -726,7 +708,7 @@ export default function CreditProfileTab() {
             <strong> encrypted</strong> and stored securely in compliance with financial regulations.
           </div>
         </div>
-      </div>
+      </div> */}
 
       <form onSubmit={handleSubmit} noValidate>
         {/* ── Full Name ── */}

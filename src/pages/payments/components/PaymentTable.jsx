@@ -1,9 +1,8 @@
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DataTable } from '../../../components/Table/DataTableWrapper';
 import { Column } from 'primereact/column';
 import { Dropdown } from 'primereact/dropdown';
-import { PAYMENT_STATUS_OPTIONS, PAYMENT_STATUS_COLORS } from '../../../data/paymentConfig';
-import TableLoader from '../../../components/Loader/TableLoader';
+import { PAYMENT_STATUS_OPTIONS, PAYMENT_STATUS_COLORS, PAYMENT_ENVIRONMENT_OPTIONS, PAYMENT_ENVIRONMENT_COLORS, PAYMENT_ENVIRONMENT_LABELS } from '../../../data/paymentConfig';
 
 export default function PaymentTable({
     data,
@@ -18,9 +17,7 @@ export default function PaymentTable({
     sortField,
     sortOrder
 }) {
-    if (loading && (!data || data.length === 0)) {
-        return <TableLoader rows={perPage} columns={8} />;
-    }
+    const navigate = useNavigate();
     const statusBodyTemplate = (rowData) => {
         const status = rowData.status?.toLowerCase();
         const color = PAYMENT_STATUS_COLORS[status] || 'primary';
@@ -32,11 +29,38 @@ export default function PaymentTable({
     };
 
     const amountBodyTemplate = (rowData) => {
-        return `$${Number(rowData.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        return rowData.displayable_amount || rowData.amount;
     };
 
     const nameBodyTemplate = (rowData) => {
         return rowData.partner_name || rowData.borrower_name || '-';
+    };
+
+    const environmentFilterElement = (options) => {
+        return (
+            <Dropdown
+                value={options.value}
+                options={PAYMENT_ENVIRONMENT_OPTIONS}
+                onChange={(e) => options.filterApplyCallback(e.value)}
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select Environment"
+                className="p-column-filter"
+                showClear
+                style={{ minWidth: '10rem' }}
+            />
+        );
+    };
+
+    const environmentBodyTemplate = (rowData) => {
+        const envVal = rowData.is_environment ? 1 : 0;
+        const color = PAYMENT_ENVIRONMENT_COLORS[envVal] || 'info';
+        const label = PAYMENT_ENVIRONMENT_LABELS[envVal] || 'Sandbox';
+        return (
+            <span className={`badge bg-${color} text-uppercase`}>
+                {label}
+            </span>
+        );
     };
 
     const statusFilterElement = (options) => {
@@ -55,7 +79,6 @@ export default function PaymentTable({
         );
     };
 
-
     return (
         <div className="table-responsive table-card mt-1">
             <DataTable
@@ -64,6 +87,7 @@ export default function PaymentTable({
                 lazy
                 first={(page - 1) * perPage}
                 rows={perPage}
+                rowsPerPageOptions={[10, 25, 50, 100]}
                 totalRecords={totalRecords}
                 onPage={onPage}
                 onSort={onSort}
@@ -72,12 +96,16 @@ export default function PaymentTable({
                 onFilter={onFilter}
                 filters={filters}
                 filterDisplay="menu"
-                globalFilterFields={['transaction_date', 'invoice_id', 'from', 'payment_type', 'borrower_name', 'partner_name', 'transaction_id', 'amount', 'status']}
+                globalFilterFields={['transaction_date', 'invoice_id', 'from', 'payment_type', 'borrower_name', 'partner_name', 'transaction_id', 'amount', 'status', 'is_environment']}
                 loading={loading}
                 dataKey="id"
                 className="p-datatable-sm"
                 emptyMessage={<div className="text-center">No payments found.</div>}
+                scrollable
+                scrollHeight="flex"
                 responsiveLayout="scroll"
+                onRowClick={(e) => navigate(`/payments/${e.data.id}`)}
+                rowClassName={() => 'cursor-pointer'}
             >
                 <Column field="transaction_date" header="Payment Date" sortable filter showFilterMatchModes filterPlaceholder="Search by date" style={{ minWidth: '100px' }}></Column>
                 <Column field="invoice_id" header="Invoice ID" sortable filter showFilterMatchModes filterPlaceholder="Search by invoice ID" style={{ minWidth: '100px' }}></Column>
@@ -96,6 +124,7 @@ export default function PaymentTable({
                 <Column field="transaction_id" header="Transaction ID" sortable filter showFilterMatchModes filterPlaceholder="Search by ID" style={{ minWidth: '130px' }}></Column>
                 <Column field="amount" header="Amount" body={amountBodyTemplate} sortable filter showFilterMatchModes filterPlaceholder="Search by amount" style={{ minWidth: '100px' }}></Column>
                 <Column field="status" header="Status" body={statusBodyTemplate} sortable filter filterElement={statusFilterElement} showFilterMatchModes={false} style={{ minWidth: '100px' }}></Column>
+                <Column field="is_environment" header="Environment" body={environmentBodyTemplate} sortable filter filterElement={environmentFilterElement} showFilterMatchModes={false} style={{ minWidth: '130px' }}></Column>
             </DataTable>
         </div>
     );

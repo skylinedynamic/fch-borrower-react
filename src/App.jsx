@@ -7,15 +7,18 @@ import ForgotPassword from '../src/pages/singin/ForgotPassword.jsx'
 import ResetPassword from '../src/pages/singin/ResetPassword.jsx'
 // import SignUp from '../src/pages/singin/SignUp.jsx'
 import CreditGuide from '../src/pages/credit-builder/creditguide/CreditGuide.tsx'
-import FundApplication from '../src/pages/fundapplication/FundApplication.tsx'
-import PreQualification from '../src/pages/prequalification/PreQualification.tsx'
 import Documents from '../src/pages/documents/Documents.tsx'
 import { ProtectedRoute, GuestRoute, HostRoute, CapitalAccessGuard, CapitalAccessStrategyGuard, checkSession, refreshSubscription } from './lib/auth'
 import { useAuthStore } from './store/auth'
 import Profile from '../src/pages/profile/profile.tsx'
+import PreQualification from '../src/pages/prequalification/PreQualification.tsx'
 import MyApplication from '../src/pages/myapplication/MyApplication.tsx'
+import FundingApplicationDetailPage from '../src/pages/myapplication/FundingApplicationDetailPage.tsx'
+import FundApplication from '../src/pages/fundapplication/FundApplication.tsx'
 import Invoices from '../src/pages/invoices/Invoices.jsx'
+import InvoiceDetails from '../src/pages/invoices/InvoiceDetails.jsx'
 import Payments from '../src/pages/payments/Payments.jsx'
+import PaymentDetails from '../src/pages/payments/PaymentDetails.jsx'
 import Appointments from '../src/pages/appointment/Appointments.tsx'
 import ChangePassword from '../src/pages/settings/ChangePassword.jsx'
 import CreditOverview from '../src/pages/credit-builder/creditoverview/CreditOverview.tsx'
@@ -117,12 +120,15 @@ export default function App() {
             <Route index element={<Dashboard />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="invoices" element={<Invoices />} />
+            <Route path="invoices/:id" element={<InvoiceDetails />} />
             <Route path="payments" element={<Payments />} />
+            <Route path="payments/:id" element={<PaymentDetails />} />
             <Route path="change-password" element={<ChangePassword />} />
 
             <Route path="pre-qualification" element={<PreQualification />} />
-            <Route path="fund-application" element={<FundApplication />} />
+            <Route path="fund-application/:id?" element={<FundApplication />} />
             <Route path="my-applications" element={<MyApplication />} />
+            <Route path="my-applications/funding/:id" element={<FundingApplicationDetailPage />} />
             <Route path="appointment" element={<Appointments />} />
             <Route path="funding" element={<Funding />} />
             <Route path="funding/:id" element={<FundingDetail />} />

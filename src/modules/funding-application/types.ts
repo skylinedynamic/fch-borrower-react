@@ -138,6 +138,19 @@ export interface FederalComplianceResponse {
 export interface AttestationData {
   id: number | null
   attestation_authorization: boolean
+  signature_data?: any
+}
+
+export interface AttestationPayload {
+  id: number | null
+  attestation_authorization?: boolean
+  signature_name: string
+  esign_consent: boolean
+  terms_consent: boolean
+  privacy_consent: boolean
+  credit_consent: boolean
+  legal_binding_consent: boolean
+  timezone: string
 }
 
 export interface AttestationResponse {

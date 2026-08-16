@@ -8,6 +8,7 @@ import { isSubscriptionRestricted, isFreeTrialLocked } from '../../lib/auth/subs
 import { PARTNER_TYPES } from '../../config/partnerTypeOptions'
 import logoImg from '../../../assets/images/fch-logo-wide.png'
 import avatarDefault from '../../../assets/images/users/avatar-1.jpg'
+import { useDashboard } from '../../modules/dashboard'
 
 export default function Sidebar() {
   const navigate = useNavigate()
@@ -29,6 +30,10 @@ export default function Sidebar() {
   const secondaryLogo = branding?.secondary_logo_full_url
   const displayLogo = isMobile ? secondaryLogo : primaryLogo
   const compactLogo = secondaryLogo
+
+  const { data: dashboardData } = useDashboard()
+  const activeApprovedRequest = dashboardData?.data?.active_approved_funding_request
+  const activeApprovedRequestCount = dashboardData?.data?.active_approved_funding_request_count || 0
 
   // Cleaned up unused context
   const [creditOpen, setCreditOpen] = useState(() => {
@@ -89,8 +94,7 @@ export default function Sidebar() {
     }
   }
 
-  // Helper for rendering nav links
-  const LinkItem = ({ to, label, icon, restricted, end, highlight }) => (
+  const LinkItem = ({ to, label, icon, restricted, end, highlight, badge, badgeBlink }) => (
     <li className="nav-item">
       <NavLink
         end={end}
@@ -104,7 +108,12 @@ export default function Sidebar() {
           }
         }}
       >
-        <i className={icon}></i> <span>{label} {restricted && <i className="ri-lock-line align-middle ms-1"></i>}</span>
+        <i className={icon}></i>
+        <span className="d-flex align-items-center w-100">
+          {label}
+          {restricted && <i className="ri-lock-line align-middle ms-1"></i>}
+          {badge && <span className={`badge ms-auto rounded-pill bg-danger ${badgeBlink ? 'animate-blink' : ''}`}>{badge}</span>}
+        </span>
       </NavLink>
     </li>
   )
@@ -166,7 +175,13 @@ export default function Sidebar() {
 
             <LinkItem to="/pre-qualification" label="Pre Qualification" icon="ri-clipboard-line" restricted={isRestricted} />
             {/* <LinkItem to="/fund-application" label="Fund Application" icon="ri-hand-coin-line" restricted={isRestricted} /> */}
-            <LinkItem to="/funding-requests" label="Funding Request" icon="ri-file-search-line" restricted={isRestricted} />
+            <LinkItem
+              to="/funding-requests"
+              label="Funding Request"
+              icon="ri-file-search-line"
+              restricted={isRestricted}
+              badge={activeApprovedRequestCount > 0 ? activeApprovedRequestCount : undefined}
+            />
             <LinkItem to="/my-applications" label="My Applications" icon="ri-file-list-line" restricted={isRestricted} />
 
             {/* Capital Access — locked on free trial */}

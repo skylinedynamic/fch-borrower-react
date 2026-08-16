@@ -4,7 +4,7 @@ import {
     FUNDING_REVIEW_STATUS, 
     getFundingReviewProgress, 
     FUNDING_REVIEW_TIMELINE_STEPS, 
-    FUNDING_REVIEW_GUIDELINE_CARDS 
+    FUNDING_REVIEW_GUIDELINE_CARDS
 } from '../../../config/funding';
 
 interface ReviewProgressCardProps {
@@ -30,6 +30,13 @@ export default function ReviewProgressCard({
     const terminalStatuses = [FUNDING_REVIEW_STATUS.APPROVED, FUNDING_REVIEW_STATUS.REJECTED, FUNDING_REVIEW_STATUS.CANCELED];
     const isCurrentTerminal = terminalStatuses.includes(status);
     const terminalKey = isCurrentTerminal ? status : FUNDING_REVIEW_STATUS.APPROVED;
+
+    const baseSteps = [
+        { key: FUNDING_REVIEW_STATUS.PENDING, label: FUNDING_REVIEW_STATUS.PENDING, subtext: 'We have received your request.', icon: 'ri-file-text-line' },
+        { key: FUNDING_REVIEW_STATUS.IN_PROGRESS, label: FUNDING_REVIEW_STATUS.IN_PROGRESS, subtext: 'Our team is reviewing.', icon: 'ri-search-eye-line' },
+        { key: FUNDING_REVIEW_STATUS.ACCEPTED, label: FUNDING_REVIEW_STATUS.ACCEPTED, subtext: 'Request accepted, processing.', icon: 'ri-checkbox-circle-line' },
+        { key: FUNDING_REVIEW_STATUS.APPROVED, label: FUNDING_REVIEW_STATUS.APPROVED, subtext: 'Application is approved.', icon: 'ri-check-double-line' }
+    ];
 
     const displaySteps = FUNDING_REVIEW_TIMELINE_STEPS.filter(step => {
         if (terminalStatuses.includes(step.key)) {
@@ -71,7 +78,7 @@ export default function ReviewProgressCard({
     return (
         <div className="card shadow-sm border-0 mb-4 rounded-3">
             <div className="card-header bg-white border-bottom border-light p-4">
-                <div className="d-flex align-items-center justify-content-between">
+                <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
                     <div className="d-flex align-items-center">
                         <div
                             className="d-flex align-items-center justify-content-center rounded-3 fr-progress-icon-badge"
@@ -84,7 +91,7 @@ export default function ReviewProgressCard({
                         </div>
                     </div>
 
-                    <div className="d-flex align-items-center position-relative fr-progress-ring-wrap">
+                    <div className="d-flex align-items-center position-relative fr-progress-ring-wrap flex-shrink-0">
                         <svg width="76" height="76" className="fr-progress-ring-svg">
                             <circle cx="38" cy="38" r="34" stroke="#f1f5f9" strokeWidth="6" fill="none" />
                             <circle cx="38" cy="38" r="34" stroke={isErrorState ? '#ef4444' : progressPercentage === 100 ? '#22c55e' : '#2563eb'} strokeWidth="6" fill="none"
@@ -103,7 +110,7 @@ export default function ReviewProgressCard({
 
                 {/* Timeline */}
                 <div className="px-4 pb-4 overflow-x-auto">
-                    <div className="d-flex w-100 position-relative fr-timeline-track">
+                    <div className="d-flex w-100 position-relative fr-timeline-track align-items-start">
                         {displaySteps.map((step, idx) => {
                             const completed = idx < currentStatusIndex;
                             const current = idx === currentStatusIndex;
@@ -128,6 +135,8 @@ export default function ReviewProgressCard({
                             };
 
                             const stepColor = getStatusColor(step.key);
+
+                            const terminalLabel = terminalKey === FUNDING_REVIEW_STATUS.REJECTED ? 'Rejected' : terminalKey === FUNDING_REVIEW_STATUS.CANCELED ? 'Canceled' : 'Approved';
 
                             return (
                                 <React.Fragment key={step.key}>
@@ -183,6 +192,37 @@ export default function ReviewProgressCard({
                                 </React.Fragment>
                             );
                         })}
+                    </div>
+                </div>
+
+                <hr className="my-0 border-light" />
+
+                {/* Status Guideline */}
+                <div className="p-4 pt-3">
+                    <div className="d-flex align-items-center mb-3">
+                        <i className="ri-information-line fs-5 me-2 fr-progress-title"></i>
+                        <h6 className="mb-0 fw-bold fr-progress-title">
+                            Status Guideline
+                        </h6>
+                    </div>
+
+                    <div className="row g-2">
+                        {FUNDING_REVIEW_GUIDELINE_CARDS.map((item, idx) => (
+                            <div key={item.label} className="col-12 col-md-6 col-xl-4">
+                                <div className="d-flex align-items-center p-2 px-xl-2 rounded-3 h-100" style={{
+                                    backgroundColor: item.bg,
+                                    border: `1px solid ${item.border}`
+                                }}>
+                                    <div className="d-flex align-items-center justify-content-center rounded-circle text-white me-2" style={{ width: 24, height: 24, background: item.iconBg, flexShrink: 0 }}>
+                                        {item.icon && <i className={`${item.icon} fs-12`}></i>}
+                                    </div>
+                                    <div>
+                                        <h6 className="mb-1 fw-bold text-dark fs-13">{item.label}</h6>
+                                        <p className="mb-0 text-muted fr-step-subtext">{item.desc}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
 

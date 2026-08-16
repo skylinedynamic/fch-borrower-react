@@ -12,6 +12,7 @@ interface FederalComplianceStepProps {
   onBack: () => void
   loading: boolean
   isValid: boolean
+  fundingRequestId?: number | string | null
   onRegisterSave?: (fn: (() => Promise<boolean>) | null) => void
 }
 
@@ -34,6 +35,7 @@ export default function FederalComplianceStep({
   onBack,
   loading,
   isValid,
+  fundingRequestId,
   onRegisterSave,
 }: FederalComplianceStepProps) {
   const { data: apiData, isLoading: isApiLoading, isSuccess } = useFederalCompliance()
@@ -54,6 +56,7 @@ export default function FederalComplianceStep({
 
     const payload = {
       id: complianceId,
+      funding_request_id: fundingRequestId || null,
       filed_for_bankruptcy: mapPayloadVal(federal.bankruptcy),
       any_pending_lawsuits: mapPayloadVal(federal.lawsuit),
       has_federal_loan: mapPayloadVal(federal.federalLoanDefault),
