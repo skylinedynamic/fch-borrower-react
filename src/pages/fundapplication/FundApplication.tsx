@@ -286,10 +286,10 @@ export default function FundApplication() {
         purposeNote: fundingData.purpose_note || '',
       })
 
-      if (fundingData.funding_sequence_id && !fundingSequenceId) {
+      if (fundingData.funding_sequence_id) {
         setFundingSequenceId(fundingData.funding_sequence_id)
       }
-      if (fundingData.funding_request_id && !fundingRequestId) {
+      if (fundingData.funding_request_id) {
         setFundingRequestId(fundingData.funding_request_id)
       }
     }
