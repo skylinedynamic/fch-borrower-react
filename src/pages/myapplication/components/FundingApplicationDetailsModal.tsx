@@ -62,8 +62,7 @@ export default function FundingApplicationDetailsModal({ isOpen, toggle, applica
           <DetailItem label="Phone Number" value={application.business_phone_no} icon="pi pi-phone" />
           <DetailItem label="Industry Type" value={application.industry_type} icon="pi pi-briefcase" />
           <DetailItem label="Entity Type" value={application.entity_type} icon="pi pi-sitemap" />
-          <DetailItem label="Years in Business" value={application.years_in_business} icon="pi pi-clock" />
-          <DetailItem label="Number of Employees" value={application.number_of_employees} icon="pi pi-users" />
+          <DetailItem label="Time in Business" value={application.time_in_business || application.years_in_business} icon="pi pi-clock" />
 
           <div className="col-12"><hr className="border-light my-3" /></div>
 
@@ -108,7 +107,7 @@ export default function FundingApplicationDetailsModal({ isOpen, toggle, applica
 
         {/* Funding Request */}
         <SectionCard title="Funding Request" icon="pi pi-chart-line">
-          <DetailItem label="Requested Amount" value={application.requested_amount ? `$${parseFloat(application.requested_amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : 'N/A'} icon="pi pi-dollar" />
+          <DetailItem label="Requested Amount" value={application.requested_amount || 'N/A'} icon="pi pi-dollar" />
           <DetailItem label="Preferred Funding Type" value={application.preferred_funding_type} icon="pi pi-star" />
           <DetailItem label="Timeframe Needed" value={application.timeframe_needed} icon="pi pi-hourglass" />
           <DetailItem label="Collateral Available" value={application.collateral_available} />
@@ -118,21 +117,7 @@ export default function FundingApplicationDetailsModal({ isOpen, toggle, applica
           )}
         </SectionCard>
 
-        {/* Federal Compliance */}
-        <SectionCard title="Federal Compliance Disclosures" icon="pi pi-file-check">
-          <DetailItem label="Filed for Bankruptcy" value={application.filed_for_bankruptcy === null ? 'N/A' : application.filed_for_bankruptcy ? 'Yes' : 'No'} />
-          <DetailItem label="Pending Lawsuits" value={application.any_pending_lawsuits === null ? 'N/A' : application.any_pending_lawsuits ? 'Yes' : 'No'} />
-          <DetailItem label="Federal Loan Default" value={application.has_federal_loan === null ? 'N/A' : application.has_federal_loan ? 'Yes' : 'No'} />
-          <DetailItem label="Federal Debt" value={application.has_federal_debt === null ? 'N/A' : application.has_federal_debt ? 'Yes' : 'No'} />
-          <DetailItem label="Criminal Offense" value={application.has_criminal_offense === null ? 'N/A' : application.has_criminal_offense ? 'Yes' : 'No'} />
-          <DetailItem label="Parole/Probation" value={application.has_parole_or_probation === null ? 'N/A' : application.has_parole_or_probation ? 'Yes' : 'No'} />
-          <DetailItem label="Suspended/Debarred" value={application.suspended_or_debarred === null ? 'N/A' : application.suspended_or_debarred ? 'Yes' : 'No'} />
-          <DetailItem label="Judgments (Business)" value={application.any_outstanding_judgments_business === null ? 'N/A' : application.any_outstanding_judgments_business ? 'Yes' : 'No'} />
-          <DetailItem label="Judgments (Owner)" value={application.any_outstanding_judgments_owner === null ? 'N/A' : application.any_outstanding_judgments_owner ? 'Yes' : 'No'} />
-          {application.federal_compliance_disclosures_explanation && (
-            <DetailItem label="Explanation" value={application.federal_compliance_disclosures_explanation} fullWidth />
-          )}
-        </SectionCard>
+
 
         {/* Disclosures & Authorization */}
         <div className="card border shadow-sm border-success-subtle">

@@ -16,6 +16,7 @@ interface AttestationStepProps {
   onSubmit: () => void
   onBack: () => void
   loading: boolean
+  fundingRequestId?: number | string | null
 }
 
 export default function AttestationStep({
@@ -24,6 +25,7 @@ export default function AttestationStep({
   onSubmit,
   onBack,
   loading,
+  fundingRequestId,
 }: AttestationStepProps) {
   const navigate = useNavigate()
   const { branding } = useBrandingStore()
@@ -79,6 +81,7 @@ export default function AttestationStep({
     setValidationErrors({})
     const payload = {
       id: attestationId,
+      funding_request_id: fundingRequestId || null,
       signature_name: attestation.signature_name,
       esign_consent: attestation.esign_consent,
       terms_consent: attestation.terms_consent,

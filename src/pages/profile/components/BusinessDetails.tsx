@@ -67,7 +67,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
     }
 
     // Remove read-only fields from payload
-    const { business_credit_score, ...finalPayload } = payload;
+    const { business_credit_score, personal_credit_score, ...finalPayload } = payload;
 
     saveBusiness(finalPayload as any, {
       onSuccess: (response) => {
@@ -591,27 +591,17 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
 
         {/* New Field: Personal Credit Score */}
         <div className="col-md-6">
-          <label className="form-label">Personal Credit Score <span className="text-danger">*</span></label>
+          <label className="form-label">Personal Credit Score </label>
           <div className="position-relative">
             <input
               type="number"
-              placeholder="Enter personal credit score"
-              className={`form-control ${errors.personal_credit_score ? 'is-invalid' : ''} ${isFieldLocked('personal_credit_score') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+              placeholder="Not available"
+              className={`form-control bg-light border-dashed locked-field-padding ${errors.personal_credit_score ? 'is-invalid' : ''}`}
               value={data.personal_credit_score || ''}
-              onChange={(e) => onChange({ ...data, personal_credit_score: Number(e.target.value) })}
               min={300}
               max={850}
-              readOnly={isFieldLocked('personal_credit_score')}
+              readOnly={true}
             />
-            {isFieldLocked('personal_credit_score') && (
-              <button
-                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
-                onClick={() => handleOpenRequestModal('Personal Credit Score', 'personal_credit_score', data.personal_credit_score)}
-              >
-                Change Request
-              </button>
-            )}
           </div>
           {errors.personal_credit_score && (
             <div className="invalid-feedback d-block">{errors.personal_credit_score}</div>

@@ -128,7 +128,7 @@ export type FinancialInfoResponse = {
 
 export type SaveFinancialInfoRequest = {
   currency: string
-  years_in_business: string
+  years_in_business?: string
   monthly_revenue: number
   annual_revenue: number
   annual_personal_income: number

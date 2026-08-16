@@ -10,6 +10,8 @@ export const useSaveBusinessInfo = () => {
     mutationFn: saveBusinessInfo,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.fundingApplication.businessInfo() })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['funding-requests'] })
     },
   })
 }
@@ -20,6 +22,8 @@ export const useSaveOwnershipInfo = () => {
     mutationFn: saveOwnershipInfo,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.fundingApplication.ownershipInfo() })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['funding-requests'] })
     },
   })
 }
@@ -30,6 +34,8 @@ export const useSaveFinancialInfo = () => {
     mutationFn: saveFinancialInfo,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.fundingApplication.financialInfo() })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['funding-requests'] })
     },
   })
 }
@@ -40,6 +46,8 @@ export const useSaveFundingRequest = () => {
     mutationFn: saveFundingRequest,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.fundingApplication.fundingRequest() })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['funding-requests'] })
     },
   })
 }
@@ -50,6 +58,8 @@ export const useSaveDisclosuresConsent = () => {
     mutationFn: saveDisclosuresConsent,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.fundingApplication.disclosuresConsent() })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['funding-requests'] })
     },
   })
 }
@@ -60,6 +70,8 @@ export const useSaveFederalCompliance = () => {
     mutationFn: saveFederalCompliance,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.fundingApplication.federalCompliance() })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['funding-requests'] })
     },
   })
 }
@@ -68,57 +80,67 @@ export const useSaveAttestation = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: saveAttestation,
-    // No query key to invalidate as there is no fetchAttestation yet, but keeping structure clean
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['funding-requests'] })
+      queryClient.invalidateQueries({ queryKey: ['my-applications'] })
+    },
   })
 }
 
-export const useAttestation = () => {
-  return useQuery({
-    queryKey: ['attestation'], // Ideally this would be in queryKeys factory
-    queryFn: fetchAttestation,
-  })
-}
-
-export const useBusinessInfo = () => {
-  return useQuery({
-    queryKey: queryKeys.fundingApplication.businessInfo(),
-    queryFn: fetchBusinessInfo,
-  })
-}
-
-export const useOwnershipInfo = () => {
-  return useQuery({
-    queryKey: queryKeys.fundingApplication.ownershipInfo(),
-    queryFn: fetchOwnershipInfo,
-  })
-}
-
-export const useFinancialInfo = () => {
-  return useQuery({
-    queryKey: queryKeys.fundingApplication.financialInfo(),
-    queryFn: fetchFinancialInfo,
-  })
-}
-
-export const useDisclosuresConsent = () => {
-  return useQuery({
-    queryKey: queryKeys.fundingApplication.disclosuresConsent(),
-    queryFn: fetchDisclosuresConsent,
-  })
-}
-
-export const useFundingRequest = (options?: { enabled?: boolean }) => {
-  return useQuery<FundingRequestData>({
-    queryKey: queryKeys.fundingApplication.fundingRequest(),
-    queryFn: fetchFundingRequest,
+export const useAttestation = (fundingRequestId?: number | string | null, options?: { enabled?: boolean }) => {
+  return useQuery<AttestationData>({
+    queryKey: ['attestation', fundingRequestId ?? 'current'],
+    queryFn: () => fetchAttestation(fundingRequestId),
     enabled: options?.enabled,
   })
 }
 
-export const useFederalCompliance = () => {
+export const useBusinessInfo = (fundingRequestId?: number | string | null, options?: { enabled?: boolean }) => {
   return useQuery({
-    queryKey: queryKeys.fundingApplication.federalCompliance(),
-    queryFn: fetchFederalCompliance,
+    queryKey: [...queryKeys.fundingApplication.businessInfo(), fundingRequestId ?? 'current'],
+    queryFn: () => fetchBusinessInfo(fundingRequestId),
+    enabled: options?.enabled,
+  })
+}
+
+export const useOwnershipInfo = (fundingRequestId?: number | string | null, options?: { enabled?: boolean }) => {
+  return useQuery({
+    queryKey: [...queryKeys.fundingApplication.ownershipInfo(), fundingRequestId ?? 'current'],
+    queryFn: () => fetchOwnershipInfo(fundingRequestId),
+    enabled: options?.enabled,
+  })
+}
+
+export const useFinancialInfo = (fundingRequestId?: number | string | null, options?: { enabled?: boolean }) => {
+  return useQuery({
+    queryKey: [...queryKeys.fundingApplication.financialInfo(), fundingRequestId ?? 'current'],
+    queryFn: () => fetchFinancialInfo(fundingRequestId),
+    enabled: options?.enabled,
+  })
+}
+
+export const useDisclosuresConsent = (fundingRequestId?: number | string | null, options?: { enabled?: boolean }) => {
+  return useQuery({
+    queryKey: [...queryKeys.fundingApplication.disclosuresConsent(), fundingRequestId ?? 'current'],
+    queryFn: () => fetchDisclosuresConsent(fundingRequestId),
+    enabled: options?.enabled,
+  })
+}
+
+export const useFundingRequest = (fundingRequestId?: number | string | null, options?: { enabled?: boolean }) => {
+  return useQuery<FundingRequestData>({
+    queryKey: [...queryKeys.fundingApplication.fundingRequest(), fundingRequestId ?? 'current'],
+    queryFn: () => fetchFundingRequest(fundingRequestId),
+    enabled: options?.enabled,
+  })
+}
+
+export const useFederalCompliance = (fundingRequestId?: number | string | null, options?: { enabled?: boolean }) => {
+  return useQuery({
+    queryKey: [...queryKeys.fundingApplication.federalCompliance(), fundingRequestId ?? 'current'],
+    queryFn: () => fetchFederalCompliance(fundingRequestId),
+    enabled: options?.enabled,
   })
 }
 

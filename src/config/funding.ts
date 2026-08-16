@@ -51,12 +51,12 @@ export const FUNDING_COLOR_MAP: Record<string, string> = {
 };
 
 export const FUNDING_REVIEW_STATUS = {
-    PENDING: 'Funding Request Pending',
-    IN_PROGRESS: 'Request In Progress',
-    APPROVED: 'Application Request Approved',
-    ACCEPTED: 'Funding Request Accepted',
-    REJECTED: 'Request Rejected',
-    CANCELED: 'Request Canceled'
+    PENDING: 'Pending',
+    IN_PROGRESS: 'In Progress',
+    APPROVED: 'Approved',
+    ACCEPTED: 'Accepted',
+    REJECTED: 'Rejected',
+    CANCELED: 'Cancelled'
 };
 
 export const FUNDING_REVIEW_STATUS_COLORS: Record<string, string> = {
@@ -68,8 +68,19 @@ export const FUNDING_REVIEW_STATUS_COLORS: Record<string, string> = {
     [FUNDING_REVIEW_STATUS.CANCELED]: '#EF4444',   // Red
 };
 
+export const FUNDING_REVIEW_STATUS_OPTIONS = [
+    { label: 'Pending', value: FUNDING_REVIEW_STATUS.PENDING },
+    { label: 'Accepted', value: FUNDING_REVIEW_STATUS.ACCEPTED },
+    { label: 'In Progress', value: FUNDING_REVIEW_STATUS.IN_PROGRESS },
+    { label: 'Approved', value: FUNDING_REVIEW_STATUS.APPROVED },
+    { label: 'Rejected', value: FUNDING_REVIEW_STATUS.REJECTED },
+    { label: 'Cancelled', value: FUNDING_REVIEW_STATUS.CANCELED }
+];
+
 export const FUNDING_APPLICATION_STATUS = {
-    PENDING: 'Pending',
+    ON_HOLD: 'On Hold',
+    DRAFT: 'Draft',
+    PENDING: 'Submitted – Pending Review',
     SUBMITTED: 'Submitted (Received)',
     UNDERWRITING_REVIEW: 'Underwriting Review',
     MISSING_DOCUMENTS: 'Missing Documents (Action Required)',
@@ -89,7 +100,9 @@ export const FUNDING_APPLICATION_STATUS = {
 };
 
 export const FUNDING_APPLICATION_STATUS_OPTIONS = [
-    { label: 'Pending', value: FUNDING_APPLICATION_STATUS.PENDING },
+    { label: 'On Hold', value: FUNDING_APPLICATION_STATUS.ON_HOLD },
+    { label: 'Draft', value: FUNDING_APPLICATION_STATUS.DRAFT },
+    { label: 'Submitted – Pending Review', value: FUNDING_APPLICATION_STATUS.PENDING },
     { label: 'Submitted (Received)', value: FUNDING_APPLICATION_STATUS.SUBMITTED },
     { label: 'Underwriting Review', value: FUNDING_APPLICATION_STATUS.UNDERWRITING_REVIEW },
     { label: 'Missing Documents (Action Required)', value: FUNDING_APPLICATION_STATUS.MISSING_DOCUMENTS },
@@ -109,22 +122,25 @@ export const FUNDING_APPLICATION_STATUS_OPTIONS = [
 ];
 
 export const FUNDING_APPLICATION_STATUS_CLASS_MAP: Record<string, string> = {
-    [FUNDING_APPLICATION_STATUS_OPTIONS[0].value]: 'bg-warning-subtle text-warning',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[1].value]: 'bg-info-subtle text-info',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[2].value]: 'bg-primary-subtle text-primary',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[3].value]: 'bg-danger-subtle text-danger',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[4].value]: 'bg-info-subtle text-info',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[5].value]: 'bg-success-subtle text-success',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[6].value]: 'bg-success text-white',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[7].value]: 'bg-primary-subtle text-primary',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[8].value]: 'bg-info-subtle text-info',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[0].value]: 'bg-secondary-subtle text-secondary',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[1].value]: 'bg-secondary-subtle text-secondary',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[2].value]: 'bg-warning-subtle text-warning',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[3].value]: 'bg-info-subtle text-info',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[4].value]: 'bg-primary-subtle text-primary',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[5].value]: 'bg-danger-subtle text-danger',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[6].value]: 'bg-info-subtle text-info',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[7].value]: 'bg-success-subtle text-success',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[8].value]: 'bg-success text-white',
     [FUNDING_APPLICATION_STATUS_OPTIONS[9].value]: 'bg-primary-subtle text-primary',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[10].value]: 'bg-success-subtle text-success',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[11].value]: 'bg-success text-white',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[12].value]: 'bg-warning-subtle text-warning',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[13].value]: 'bg-success-subtle text-success',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[14].value]: 'bg-success text-white',
-    [FUNDING_APPLICATION_STATUS_OPTIONS[16].value]: 'bg-danger-subtle text-danger',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[10].value]: 'bg-info-subtle text-info',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[11].value]: 'bg-primary-subtle text-primary',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[12].value]: 'bg-success-subtle text-success',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[13].value]: 'bg-success text-white',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[14].value]: 'bg-warning-subtle text-warning',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[15].value]: 'bg-success-subtle text-success',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[16].value]: 'bg-success text-white',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[17].value]: 'bg-success-subtle text-success',
+    [FUNDING_APPLICATION_STATUS_OPTIONS[18].value]: 'bg-danger-subtle text-danger',
 };
 
 export const FUNDING_WIZARD_STEPS = [
