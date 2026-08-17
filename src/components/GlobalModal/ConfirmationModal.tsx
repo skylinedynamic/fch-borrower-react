@@ -87,22 +87,33 @@ export default function ConfirmationModal({
       aria-hidden="true"
     >
       <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content border-0 shadow-lg rounded-1 overflow-hidden">
-          <div className="modal-body p-4 text-center">
-            <div className="avatar-xl mx-auto mb-3">
-              <span className={`avatar-title ${iconBgClass || 'bg-danger-subtle'} ${iconTextClass || 'text-danger'} rounded-circle fs-48`}>
-                <i className={iconClass || 'ri-error-warning-line'}></i>
-              </span>
-            </div>
-            <div className="mt-3 text-center">
-              <h4 className="fs-18 fw-bold text-dark mb-2">{title}</h4>
-              <p className="text-muted fs-14 mb-4 lh-base px-2">
+        <div className="modal-content">
+          <div className="modal-body p-5 text-center">
+            {iconClass ? (
+              <div className="avatar-xl mx-auto mb-3">
+                <span className={`avatar-title ${iconBgClass || 'bg-danger-subtle'} ${iconTextClass || 'text-danger'} rounded-circle fs-48`}>
+                  <i className={iconClass}></i>
+                </span>
+              </div>
+            ) : (
+              <div className="mx-auto mb-4">
+                <lord-icon
+                  src={icon}
+                  trigger="loop"
+                  colors={iconColors || 'primary:#121331,secondary:#08a88a'}
+                  style={{ width: '90px', height: '90px' }}
+                ></lord-icon>
+              </div>
+            )}
+            <div className="mt-2 text-center">
+              <h4>{title}</h4>
+              <p className="text-muted fs-15 mb-4">
                 {message}
               </p>
               <div className="hstack gap-2 justify-content-center">
                 <button
                   type="button"
-                  className="btn btn-light fw-medium px-3"
+                  className="btn btn-light fw-medium"
                   onClick={onClose}
                   disabled={loading}
                 >

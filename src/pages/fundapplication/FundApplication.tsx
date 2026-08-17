@@ -398,16 +398,13 @@ export default function FundApplication() {
     [canProceedFromBusinessInfo, owner, financial, funding, disclosure, federal, attestation]
   )
 
-  const initializedRef = React.useRef(false)
   useEffect(() => {
-    if (fundingData && !loading && !initializedRef.current) {
+    if (!loading) {
       const firstInvalid = tabs.findIndex((_, index) => !isStepValid(index))
-      const initialHighest = firstInvalid === -1 ? tabs.length - 1 : firstInvalid
-      setHighestVisitedStep(initialHighest)
-      // We removed setActiveStep(initialHighest) so it always starts at step 1 for the user to review
-      initializedRef.current = true
+      const calculatedHighest = firstInvalid === -1 ? tabs.length - 1 : firstInvalid
+      setHighestVisitedStep(prev => Math.max(prev, calculatedHighest))
     }
-  }, [fundingData, loading, isStepValid])
+  }, [loading, isStepValid])
 
   useEffect(() => {
     setHighestVisitedStep(prev => Math.max(prev, activeStep))
@@ -459,15 +456,18 @@ export default function FundApplication() {
         return
       }
 
-      // If navigating forward, simulate a click on the "Save & Next" button
-      // This ensures validation and submission flow is exactly the same as clicking the button
-      const btn = document.getElementById('btn-save-next')
-      if (btn) {
-        btn.click()
-        return // Let the button handler manage the step transition
+      // If navigating forward, use the active step's save function to save and validate
+      if (activeStepSaveRef.current) {
+        setIsNavigatingSave(true)
+        const success = await activeStepSaveRef.current()
+        setIsNavigatingSave(false)
+        if (success) {
+          setActiveStep(targetIndex)
+        }
+        return
       }
 
-      // Fallback (or if no button exists, e.g. read-only step)
+      // Fallback (e.g. read-only step without a save function)
       setActiveStep(targetIndex)
     },
     [activeStep, maxAllowedIdx]
@@ -502,7 +502,12 @@ export default function FundApplication() {
   )
 
   // Render the current step content
-  const renderStep = (stepIndex: number): React.ReactNode => {
+  const renderStep = (stepIndex: number, isActive: boolean): React.ReactNode => {
+    const currentCommonProps = {
+      ...commonStepProps,
+      onRegisterSave: isActive ? registerSave : undefined,
+    }
+
     switch (stepIndex) {
       case STEP_INDICES.BUSINESS_INFO:
         return (
@@ -514,7 +519,7 @@ export default function FundApplication() {
             canProceed={canProceedFromBusinessInfo}
             onNext={() => setActiveStep(STEP_INDICES.OWNERSHIP_INFO)}
             loading={loading}
-            onRegisterSave={registerSave}
+            onRegisterSave={isActive ? registerSave : undefined}
             fundingSequenceId={fundingSequenceId}
             fundingRequestId={fundingRequestId || id}
           />
@@ -536,7 +541,7 @@ export default function FundApplication() {
             isValid={isStepValid(STEP_INDICES.OWNERSHIP_INFO)}
             fundingSequenceId={fundingSequenceId}
             fundingRequestId={fundingRequestId || id}
-            {...commonStepProps}
+            {...currentCommonProps}
           />
         )
 
@@ -547,7 +552,7 @@ export default function FundApplication() {
             setFinancial={setFinancial}
             fundingSequenceId={fundingSequenceId}
             fundingRequestId={fundingRequestId || id}
-            {...commonStepProps}
+            {...currentCommonProps}
           />
         )
 
@@ -558,7 +563,7 @@ export default function FundApplication() {
             setFunding={setFunding}
             fundingSequenceId={fundingSequenceId}
             fundingRequestId={fundingRequestId || id}
-            {...commonStepProps}
+            {...currentCommonProps}
           />
         )
 
@@ -568,7 +573,7 @@ export default function FundApplication() {
             fundingSequenceId={fundingSequenceId}
             fundingRequestId={fundingRequestId || id}
             fundingApplicationId={fundingApplicationId}
-            {...commonStepProps}
+            {...currentCommonProps}
           />
         )
 
@@ -578,7 +583,7 @@ export default function FundApplication() {
             disclosure={disclosure}
             setDisclosure={setDisclosure}
             disclosureItems={disclosureItems}
-            {...commonStepProps}
+            {...currentCommonProps}
           />
         )
 
@@ -588,7 +593,7 @@ export default function FundApplication() {
             federal={federal}
             setFederal={setFederal}
             isValid={isStepValid(STEP_INDICES.FEDERAL_COMPLIANCE)}
-            {...commonStepProps}
+            {...currentCommonProps}
           />
         )
 
@@ -691,7 +696,13 @@ export default function FundApplication() {
                   Step {activeStep + 1} of {stepsTotal}: {tabs[activeStep]}
                 </span>
               </div>
-              <div className="card-body">{renderStep(activeStep)}</div>
+              <div className="card-body">
+                {tabs.map((_, idx) => (
+                  <div key={idx} style={{ display: activeStep === idx ? 'block' : 'none' }}>
+                    {renderStep(idx, activeStep === idx)}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -723,7 +734,9 @@ export default function FundApplication() {
                           )}
                           <i className={`ri-arrow-${isOpen ? 'up' : 'down'}-s-line ms-auto`}></i>
                         </button>
-                        {isOpen && <div className="p-3">{renderStep(idx)}</div>}
+                        <div className="p-3" style={{ display: isOpen ? 'block' : 'none' }}>
+                          {renderStep(idx, isOpen)}
+                        </div>
                       </li>
                     )
                   })}
