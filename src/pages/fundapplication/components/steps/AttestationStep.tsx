@@ -41,7 +41,7 @@ export default function AttestationStep({
   })
   const toggleModal = () => setModalState({ ...modalState, isOpen: !modalState.isOpen })
 
-  const { data: apiData, isLoading: isApiLoading, isSuccess } = useAttestation()
+  const { data: apiData, isLoading: isApiLoading, isSuccess } = useAttestation(fundingRequestId)
   const { mutate: saveAttestation, isPending: isSaving } = useSaveAttestation()
 
   // Pre-fill form from API

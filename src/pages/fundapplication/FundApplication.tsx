@@ -563,6 +563,7 @@ export default function FundApplication() {
             disclosure={disclosure}
             setDisclosure={setDisclosure}
             disclosureItems={disclosureItems}
+            fundingRequestId={fundingRequestId || id}
             {...commonStepProps}
           />
         )
@@ -573,6 +574,7 @@ export default function FundApplication() {
             federal={federal}
             setFederal={setFederal}
             isValid={isStepValid(STEP_INDICES.FEDERAL_COMPLIANCE)}
+            fundingRequestId={fundingRequestId || id}
             {...commonStepProps}
           />
         )
@@ -582,6 +584,7 @@ export default function FundApplication() {
           <AttestationStep
             attestation={attestation}
             setAttestation={setAttestation}
+            fundingRequestId={fundingRequestId || id}
             onBack={() => setActiveStep(STEP_INDICES.FEDERAL_COMPLIANCE)}
             onSubmit={() => toast.success('Application submitted!')}
             loading={loading}

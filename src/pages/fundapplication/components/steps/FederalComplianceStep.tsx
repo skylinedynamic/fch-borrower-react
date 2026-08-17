@@ -38,7 +38,7 @@ export default function FederalComplianceStep({
   fundingRequestId,
   onRegisterSave,
 }: FederalComplianceStepProps) {
-  const { data: apiData, isLoading: isApiLoading, isSuccess } = useFederalCompliance()
+  const { data: apiData, isLoading: isApiLoading, isSuccess } = useFederalCompliance(fundingRequestId)
   const { mutateAsync: saveCompliance, isPending: isSaving } = useSaveFederalCompliance()
   const [complianceId, setComplianceId] = useState<number | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})

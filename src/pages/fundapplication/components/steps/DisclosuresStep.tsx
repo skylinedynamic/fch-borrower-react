@@ -28,7 +28,7 @@ export default function DisclosuresStep({
   fundingRequestId,
   onRegisterSave,
 }: DisclosuresStepProps) {
-  const { data: apiData, isLoading: isApiLoading, isSuccess } = useDisclosuresConsent()
+  const { data: apiData, isLoading: isApiLoading, isSuccess } = useDisclosuresConsent(fundingRequestId)
   const { mutateAsync: saveDisclosures, isPending: isSaving } = useSaveDisclosuresConsent()
   const [disclosureId, setDisclosureId] = useState<number | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
