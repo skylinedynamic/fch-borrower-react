@@ -101,12 +101,15 @@ export interface DisclosuresConsentResponse {
 }
 export interface FundingRequestData {
   id: number | null
-  requested_amount: string | null
-  purpose_of_funds: string | null
-  preferred_funding_type: string | null
-  timeframe_needed: string | null
-  collateral_available: string | null
-  purpose_note: string | null
+  requested_amount?: string | null
+  purpose_of_funds?: string | null
+  approved_funding?: string | null
+  preferred_funding_type?: string | null
+  timeframe_needed?: string | null
+  collateral_available?: string | null
+  purpose_note?: string | null
+  status?: string | null
+  is_funding_request_saved?: boolean
 }
 
 export interface FundingRequestResponse {

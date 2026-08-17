@@ -361,6 +361,7 @@ export default function FundApplication() {
 
         case STEP_INDICES.FUNDING_REQUEST:
           return Boolean(
+            fundingData?.is_funding_request_saved &&
             funding.requestedAmount &&
             funding.purpose &&
             funding.fundingType &&
