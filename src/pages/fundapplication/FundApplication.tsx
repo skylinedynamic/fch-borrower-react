@@ -399,30 +399,44 @@ export default function FundApplication() {
     [canProceedFromBusinessInfo, owner, financial, funding, disclosure, federal, attestation]
   )
 
+  const isApplicationSubmitted = Boolean(
+    fundingData?.status && 
+    fundingData.status !== 'On Hold' && 
+    fundingData.status !== 'Draft'
+  )
+
   // Check if a step is complete (for progress display)
   const isStepComplete = useCallback(
     (stepIndex: number): boolean => {
+      if (isApplicationSubmitted) return true;
+
       // Document upload shows checkmark ONLY if user passed the tab AND has files
       if (stepIndex === STEP_INDICES.DOCUMENT_UPLOAD) {
         return activeStep > STEP_INDICES.DOCUMENT_UPLOAD && Boolean(documentsData && documentsData.length > 0)
       }
       return isStepValid(stepIndex)
     },
-    [activeStep, documentsData, isStepValid]
+    [activeStep, documentsData, isStepValid, isApplicationSubmitted]
   )
 
   // Progress calculations
   const stepsTotal = tabs.length
-  const completedCount = tabs.reduce((acc, _, index) => acc + (isStepComplete(index) ? 1 : 0), 0)
-  const progressPct = Math.round((completedCount / stepsTotal) * 100)
-  const firstInvalidIdx = tabs.findIndex((_, index) => !isStepValid(index))
-  const maxAllowedIdx = firstInvalidIdx === -1 ? stepsTotal - 1 : firstInvalidIdx
+  const completedCount = isApplicationSubmitted ? stepsTotal : tabs.reduce((acc, _, index) => acc + (isStepComplete(index) ? 1 : 0), 0)
+  const progressPct = isApplicationSubmitted ? 100 : Math.round((completedCount / stepsTotal) * 100)
+  const firstInvalidIdx = isApplicationSubmitted ? -1 : tabs.findIndex((_, index) => !isStepValid(index))
+  const maxAllowedIdx = isApplicationSubmitted ? stepsTotal - 1 : (firstInvalidIdx === -1 ? stepsTotal - 1 : firstInvalidIdx)
 
   // Handle tab switching with auto-save
   const handleTabSwitch = useCallback(
     async (targetIndex: number) => {
       if (targetIndex === activeStep) return
       if (targetIndex > maxAllowedIdx) return
+
+      // If application is submitted, just navigate without saving
+      if (isApplicationSubmitted) {
+        setActiveStep(targetIndex)
+        return
+      }
 
       // If navigating backwards, do not save
       if (targetIndex < activeStep) {
