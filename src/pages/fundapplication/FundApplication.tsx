@@ -114,6 +114,7 @@ export default function FundApplication() {
   const [fundingRequestId, setFundingRequestId] = useState<string | number | null>(null)
 
   const [activeStep, setActiveStep] = useState<number>(STEP_INDICES.BUSINESS_INFO)
+  const [highestVisitedStep, setHighestVisitedStep] = useState<number>(STEP_INDICES.BUSINESS_INFO)
   const [loading, setLoading] = useState(true)
   const [isNavigatingSave, setIsNavigatingSave] = useState(false)
   const [mobileOpenIdx, setMobileOpenIdx] = useState<number | null>(STEP_INDICES.BUSINESS_INFO)
@@ -199,14 +200,14 @@ export default function FundApplication() {
     const searchParams = new URLSearchParams(window.location.search);
     const seqId = state?.funding_sequence_id ?? state?.fundingSequenceId ?? searchParams.get('funding_sequence_id') ?? searchParams.get('fundingSequenceId');
     const reqId = id ?? state?.funding_request_id ?? state?.fundingRequestId ?? searchParams.get('funding_request_id') ?? searchParams.get('fundingRequestId');
-    
+
     if (seqId) setFundingSequenceId(seqId);
     if (reqId) setFundingRequestId(reqId);
 
     if (state && (state.purpose || state.approved_funding || state.requested_amount || state.funding_type)) {
       setFunding(prev => {
         let matchedPurpose = state.purpose ? matchPurpose(state.purpose) : prev.purpose;
-        
+
         return {
           ...prev,
           purpose: matchedPurpose,
@@ -261,7 +262,7 @@ export default function FundApplication() {
   const { data: fundingData } = useFundingRequest(currentReqId)
   const fundingApplicationId = fundingData?.id ?? null
   const { data: documentsData } = useFundingApplicationDocuments(fundingApplicationId, {
-    enabled: activeStep >= STEP_INDICES.DOCUMENT_UPLOAD,
+    enabled: !!fundingApplicationId,
   })
 
   // Synchronize funding data when fetched from API
@@ -275,16 +276,15 @@ export default function FundApplication() {
       const resolvedType = fundingData.preferred_funding_type || ''
       const resolvedTimeframe = matchTimeframe(fundingData.timeframe_needed)
 
-      setFunding(prev => ({
-        ...prev,
-        requestedAmount: prev.requestedAmount || parsedAmount,
-        purpose: prev.purpose || resolvedPurpose,
-        approvedFunding: prev.approvedFunding || resolvedApproved,
-        fundingType: prev.fundingType || resolvedType,
-        timeframe: prev.timeframe || resolvedTimeframe,
-        collateral: prev.collateral || fundingData.collateral_available || '',
-        purposeNote: prev.purposeNote || fundingData.purpose_note || '',
-      }))
+      setFunding({
+        requestedAmount: parsedAmount,
+        purpose: resolvedPurpose,
+        approvedFunding: resolvedApproved,
+        fundingType: resolvedType,
+        timeframe: resolvedTimeframe,
+        collateral: fundingData.collateral_available || '',
+        purposeNote: fundingData.purpose_note || '',
+      })
 
       if (fundingData.funding_sequence_id) {
         setFundingSequenceId(fundingData.funding_sequence_id)
@@ -398,16 +398,40 @@ export default function FundApplication() {
     [canProceedFromBusinessInfo, owner, financial, funding, disclosure, federal, attestation]
   )
 
+
+  const initializedRef = React.useRef(false)
+  useEffect(() => {
+    if (fundingData && !loading && !initializedRef.current) {
+      const firstInvalid = tabs.findIndex((_, index) => !isStepValid(index))
+      const initialHighest = firstInvalid === -1 ? tabs.length - 1 : firstInvalid
+      setHighestVisitedStep(initialHighest)
+      // We removed setActiveStep(initialHighest) so it always starts at step 1 for the user to review
+      initializedRef.current = true
+    }
+  }, [fundingData, loading, isStepValid])
+
+  useEffect(() => {
+    setHighestVisitedStep(prev => Math.max(prev, activeStep))
+  }, [activeStep])
+
   // Check if a step is complete (for progress display)
   const isStepComplete = useCallback(
     (stepIndex: number): boolean => {
-      // Document upload shows checkmark ONLY if user passed the tab AND has files
+      // If no funding application is saved yet, don't show checkmarks for unvisited future steps
+      if (!fundingApplicationId && stepIndex > highestVisitedStep) return false;
+
+      // Document upload shows checkmark ONLY if it has files
       if (stepIndex === STEP_INDICES.DOCUMENT_UPLOAD) {
-        return activeStep > STEP_INDICES.DOCUMENT_UPLOAD && Boolean(documentsData && documentsData.length > 0)
+        return Boolean(documentsData && documentsData.length > 0)
       }
-      return isStepValid(stepIndex)
+      if (!isStepValid(stepIndex)) return false;
+
+      // Active step never shows a checkmark (it shows its number highlighted)
+      if (stepIndex === activeStep) return false;
+
+      return true;
     },
-    [activeStep, documentsData, isStepValid]
+    [activeStep, highestVisitedStep, documentsData, isStepValid, fundingApplicationId]
   )
 
   // Progress calculations
@@ -429,15 +453,18 @@ export default function FundApplication() {
         return
       }
 
-      // If navigating forward, simulate a click on the "Save & Next" button
-      // This ensures validation and submission flow is exactly the same as clicking the button
-      const btn = document.getElementById('btn-save-next')
-      if (btn) {
-        btn.click()
-        return // Let the button handler manage the step transition
+      // If navigating forward, use the active step's save function to save and validate
+      if (activeStepSaveRef.current) {
+        setIsNavigatingSave(true)
+        const success = await activeStepSaveRef.current()
+        setIsNavigatingSave(false)
+        if (success) {
+          setActiveStep(targetIndex)
+        }
+        return
       }
 
-      // Fallback (or if no button exists, e.g. read-only step)
+      // Fallback
       setActiveStep(targetIndex)
     },
     [activeStep, maxAllowedIdx]
@@ -606,8 +633,8 @@ export default function FundApplication() {
         {/* Page Header */}
         <div className="text-center mb-4">
           <h4 className="mb-1">
-            {funding.approvedFunding 
-              ? `Complete Your ${funding.approvedFunding} Application` 
+            {funding.approvedFunding
+              ? `Complete Your ${funding.approvedFunding} Application`
               : 'Start Your Business Funding Application'}
           </h4>
           <div className="text-muted">
@@ -642,7 +669,7 @@ export default function FundApplication() {
                           <span className="fw-semibold sidebar-step-label">{label}</span>
                           {isActive && <span className="sidebar-step-notch show"></span>}
                           {isActive && isNavigatingSave && (
-                            <span className="ms-auto spinner-border spinner-border-sm text-primary"></span>
+                            <span className="ms-auto spinner-border spinner-border-sm text-white"></span>
                           )}
                         </button>
                       </li>
@@ -689,7 +716,7 @@ export default function FundApplication() {
                           {renderStepBadge(idx, isCompleted)}
                           <span className="align-middle fw-semibold">{label}</span>
                           {isActive && isNavigatingSave && (
-                            <span className="ms-2 spinner-border spinner-border-sm text-primary"></span>
+                            <span className="ms-2 spinner-border spinner-border-sm text-white"></span>
                           )}
                           <i className={`ri-arrow-${isOpen ? 'up' : 'down'}-s-line ms-auto`}></i>
                         </button>
@@ -703,11 +730,11 @@ export default function FundApplication() {
           </div>
         </div>
       </div>
-      <CoBorrowerModal 
-        coDraft={coDraft} 
-        setCoDraft={setCoDraft} 
-        onSubmit={submitCoBorrower} 
-        isEditing={isEditing} 
+      <CoBorrowerModal
+        coDraft={coDraft}
+        setCoDraft={setCoDraft}
+        onSubmit={submitCoBorrower}
+        isEditing={isEditing}
       />
     </div>
   )

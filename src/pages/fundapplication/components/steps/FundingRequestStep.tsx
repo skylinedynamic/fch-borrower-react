@@ -85,9 +85,9 @@ export default function FundingRequestStep({
   const urlFundingType = (location.state as any)?.funding_type
   const urlPurpose = (location.state as any)?.purpose
 
-  const effectiveRequestId = initialFundingRequestId 
-    || (location.state as any)?.funding_request_id 
-    || (location.state as any)?.fundingRequestId 
+  const effectiveRequestId = initialFundingRequestId
+    || (location.state as any)?.funding_request_id
+    || (location.state as any)?.fundingRequestId
     || searchParams.get('funding_request_id')
     || searchParams.get('fundingRequestId')
     || null
@@ -199,13 +199,13 @@ export default function FundingRequestStep({
 
       setFunding({
         ...funding,
-        requestedAmount: parsedAmount || funding.requestedAmount || '',
+        requestedAmount: parsedAmount,
         purpose: resolvedPurpose,
         approvedFunding: resolvedApprovedFunding,
         fundingType: resolvedFundingType,
         timeframe: resolvedTimeframe,
-        collateral: apiData.collateral_available || funding.collateral || '',
-        purposeNote: apiData.purpose_note || funding.purposeNote || '',
+        collateral: apiData.collateral_available || '',
+        purposeNote: apiData.purpose_note || '',
       })
     } else if (urlApprovedFunding && !funding.approvedFunding) {
       // If no API data yet, but we have a URL param, pre-fill it immediately
