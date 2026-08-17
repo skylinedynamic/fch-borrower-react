@@ -29,17 +29,7 @@ export default function GlobalFundingBanner({ activeRequest, count = 0 }) {
   if (location.pathname.startsWith('/fund-application')) return null;
   if (!activeRequest || count === 0) return null;
 
-  const rawRange = activeRequest.estimated_funding_range || activeRequest.requested_amount;
-  let estimatedRange = FUNDING_REVIEW_STATUS.PENDING;
-
-  if (rawRange) {
-    if (typeof rawRange === 'string' && (rawRange.includes('$') || rawRange.includes('-') || rawRange.includes('–'))) {
-      estimatedRange = rawRange;
-    } else {
-      const num = Number(rawRange);
-      estimatedRange = !isNaN(num) ? `$${num.toLocaleString()}` : rawRange;
-    }
-  }
+  const estimatedRange = activeRequest.estimated_funding_range || activeRequest.requested_amount || FUNDING_REVIEW_STATUS.PENDING;
 
   return (
     <>
@@ -57,24 +47,24 @@ export default function GlobalFundingBanner({ activeRequest, count = 0 }) {
         }}
       >
         <div className="d-flex align-items-center justify-content-center flex-column flex-sm-row gap-3 py-2">
-        <div>
-          <strong>🎉 {count > 1 ? `You have ${count} Funding Requests Approved!` : 'Your Funding Request has been Approved!'}</strong>
-          <br className="d-sm-none" />
-          {count === 1 && (
-            <span className="ms-sm-2">
-              Estimated Funding: <strong>{estimatedRange}</strong> — Your application is ready.
-            </span>
-          )}
-          {count > 1 && <span className="ms-sm-2">Your applications are ready to be processed.</span>}
+          <div>
+            <strong>🎉 {count > 1 ? `You have ${count} Funding Requests Approved!` : 'Your Funding Request has been Approved!'}</strong>
+            <br className="d-sm-none" />
+            {count === 1 && (
+              <span className="ms-sm-2">
+                Estimated Funding: <strong>{estimatedRange}</strong> — You’re ready to start your application.
+              </span>
+            )}
+            {count > 1 && <span className="ms-sm-2">You’re ready to start your applications.</span>}
+          </div>
+          <button
+            onClick={() => navigate(`/fund-application/${activeRequest.id}`)}
+            className="btn btn-light btn-sm fw-bold text-primary rounded-pill px-3 shadow-sm border-0 d-flex align-items-center"
+          >
+            Start Funding Application
+            <i className="ri-arrow-right-line ms-1"></i>
+          </button>
         </div>
-        <button
-          onClick={() => navigate(`/fund-application/${activeRequest.id}`)}
-          className="btn btn-light btn-sm fw-bold text-primary rounded-pill px-3 shadow-sm border-0 d-flex align-items-center"
-        >
-          Process Funding Application
-          <i className="ri-arrow-right-line ms-1"></i>
-        </button>
-      </div>
       </div>
       {/* Dynamic spacer to push page content down without overlapping breadcrumbs */}
       <div style={{ height: `${currentHeight}px`, flexShrink: 0, width: '100%' }} aria-hidden="true" />
