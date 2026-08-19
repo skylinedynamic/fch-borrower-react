@@ -76,6 +76,11 @@ export type FundingRequest = {
   fundingType: string
   timeframe: string
   collateral: string
+  is_funding_request_saved?: boolean
+  is_ownership_info_saved?: boolean
+  is_financial_info_saved?: boolean
+  is_federal_compliance_saved?: boolean
+  signature_data?: any
 }
 
 export type FileEntry = {

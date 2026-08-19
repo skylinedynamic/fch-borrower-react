@@ -117,6 +117,7 @@ export default function FinancialInformationStep({
   const handleNext = async () => {
     const success = await handleSave()
     if (success) {
+      toast.success('Financial information saved successfully')
       onNext()
     }
   }

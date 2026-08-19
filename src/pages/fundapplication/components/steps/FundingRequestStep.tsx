@@ -85,9 +85,9 @@ export default function FundingRequestStep({
   const urlFundingType = (location.state as any)?.funding_type
   const urlPurpose = (location.state as any)?.purpose
 
-  const effectiveRequestId = initialFundingRequestId 
-    || (location.state as any)?.funding_request_id 
-    || (location.state as any)?.fundingRequestId 
+  const effectiveRequestId = initialFundingRequestId
+    || (location.state as any)?.funding_request_id
+    || (location.state as any)?.fundingRequestId
     || searchParams.get('funding_request_id')
     || searchParams.get('fundingRequestId')
     || null
@@ -235,6 +235,7 @@ export default function FundingRequestStep({
 
     const success = await handleSave()
     if (success) {
+      toast.success('Funding request saved successfully')
       onNext()
     }
   }

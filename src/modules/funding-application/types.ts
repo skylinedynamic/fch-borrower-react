@@ -101,12 +101,15 @@ export interface DisclosuresConsentResponse {
 }
 export interface FundingRequestData {
   id: number | null
-  requested_amount: string | null
-  purpose_of_funds: string | null
-  preferred_funding_type: string | null
-  timeframe_needed: string | null
-  collateral_available: string | null
-  purpose_note: string | null
+  requested_amount?: string | null
+  purpose_of_funds?: string | null
+  approved_funding?: string | null
+  preferred_funding_type?: string | null
+  timeframe_needed?: string | null
+  collateral_available?: string | null
+  purpose_note?: string | null
+  status?: string | null
+  is_funding_request_saved?: boolean
 }
 
 export interface FundingRequestResponse {
@@ -127,6 +130,7 @@ export interface FederalComplianceData {
   any_outstanding_judgments_business: boolean | null
   any_outstanding_judgments_owner: boolean | null
   federal_compliance_disclosures_explanation: string | null
+  is_federal_compliance_saved?: boolean
 }
 
 export interface FederalComplianceResponse {
