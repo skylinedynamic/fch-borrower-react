@@ -222,6 +222,7 @@ export default function BusinessInformationStep({
   const handleNext = async () => {
     const success = await handleSave()
     if (success) {
+      toast.success('Business information saved successfully')
       onNext()
     }
   }

@@ -35,7 +35,7 @@ export default function GlobalFundingBanner({ activeRequest, count = 0 }) {
     <>
       <div
         ref={bannerRef}
-        className="alert alert-success alert-solid fade show text-center rounded-0 mb-0 w-100"
+        className="alert alert-success alert-solid fade show text-center rounded-0 mb-0 global-funding-banner"
         role="alert"
         style={{
           position: 'fixed',

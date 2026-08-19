@@ -1948,4 +1948,21 @@
         overflow-y: auto !important;
         display: block !important;
     }
+
+    /* Global Funding Banner Mobile Styles */
+    .global-funding-banner {
+        padding: 10px 15px !important;
+        font-size: 13px !important;
+    }
+    .global-funding-banner strong {
+        font-size: 14px !important;
+    }
+    .global-funding-banner .gap-3 {
+        gap: 10px !important;
+    }
+    .global-funding-banner .btn {
+        padding: 8px 15px !important;
+        font-size: 13px !important;
+        justify-content: center !important;
+    }
 }

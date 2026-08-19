@@ -28,7 +28,7 @@ export default function CapitalAccessLocked() {
                 </div>
                 <h3 className="ca-locked-title">Unlock Your Funding Readiness</h3>
                 <p className="ca-locked-description">
-                  To view your personalized **Funding Readiness Score**, explore **Estimated Total Access**, and execute strategic funding plays, your business credit profile needs to be verified and finalized.
+                  To view your personalized **Capital Access Readiness Scores**, explore **Estimated Total Access**, and execute strategic funding plays, your business credit profile needs to be verified and finalized.
                 </p>
                 <div className="ca-locked-action-box">
                   <div className="ca-locked-action-icon">
