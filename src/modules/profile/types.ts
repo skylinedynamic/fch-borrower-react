@@ -66,7 +66,9 @@ export type BusinessDetailsData = {
   business_postal_code: string
   business_website: string
   business_entity_type: string
+  business_entity_type_note?: string
   business_industry_type: string
+  business_industry_type_note?: string
   business_start_date?: string
   business_credit_score?: number
   personal_credit_score?: number
@@ -90,7 +92,9 @@ export type SaveBusinessDetailsRequest = {
   business_zip_code: string
   business_website: string
   business_entity_type: string
+  business_entity_type_note?: string
   business_industry_type: string
+  business_industry_type_note?: string
   business_country: string
   business_country_code?: string
   business_start_date?: string
