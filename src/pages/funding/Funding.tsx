@@ -46,7 +46,7 @@ interface StatConfig {
 
 const STAT_CONFIG: StatConfig[] = [
     { key: 'funding_readiness_score', label: 'Funding Readiness Score', icon: 'ri-bar-chart-fill', color: 'primary', format: formatReadiness },
-    { key: 'fico_score', label: 'Personal Credit Score', subValue: 'FICO', icon: 'ri-dashboard-line', color: 'info', format: formatFico },
+    { key: 'fico_score', label: 'Personal Credit Score', subValue: '(FICO)', icon: 'ri-dashboard-line', color: 'info', format: formatFico },
     { key: 'monthly_revenue', label: 'Monthly Revenue', icon: 'ri-money-dollar-circle-line', color: 'success', format: formatRevenue },
     { key: 'time_in_business', label: 'Time in Business', icon: 'ri-calendar-line', color: 'warning', format: formatTimeInBusiness },
 ];
