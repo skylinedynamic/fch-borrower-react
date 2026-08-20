@@ -28,8 +28,10 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color }) => (
 );
 
 // ─── Stat config ──────────────────────────────────────────────────────────────
-const formatMoney = (v: any) => `$${((Number(v) || 0) / 1_000_000).toFixed(2)}M`;
-const formatCount = (v: any) => `${Number(v) || 0}`;
+const formatReadiness = (v: any) => v === 'N/A' || v == null || v === '' ? '0' : `${v}`;
+const formatFico = (v: any) => v === 'N/A' || !v || v === '0' || v === '0.00' ? 'N/A' : `${v}`;
+const formatRevenue = (v: any) => v === 'N/A' || !v || v === '0' || v === '0.00' ? 'N/A' : `${v}`;
+const formatTimeInBusiness = (v: any) => v === 'N/A' || !v || v === '0' ? 'N/A' : `${v}`;
 
 interface StatConfig {
     key: string;
@@ -41,10 +43,10 @@ interface StatConfig {
 }
 
 const STAT_CONFIG: StatConfig[] = [
-    { key: 'total_approved', label: 'Total Approved', labelKey: 'total_approved_label', icon: 'ri-money-dollar-circle-line', color: 'success', format: formatMoney },
-    { key: 'total_funded', label: 'Total Funded', labelKey: 'total_funded_label', icon: 'ri-file-text-line', color: 'info', format: formatMoney },
-    { key: 'total_options', label: 'Funding Options', labelKey: 'total_options_label', icon: 'ri-line-chart-line', color: 'primary', format: formatCount },
-    { key: 'total_groups', label: 'Funding Groups', labelKey: 'total_groups_label', icon: 'ri-group-line', color: 'warning', format: formatCount },
+    { key: 'funding_readiness_score', label: 'Funding Readiness Score', icon: 'ri-bar-chart-fill', color: 'primary', format: formatReadiness },
+    { key: 'fico_score', label: 'FICO Score', icon: 'ri-dashboard-line', color: 'info', format: formatFico },
+    { key: 'monthly_revenue', label: 'Monthly Revenue', icon: 'ri-money-dollar-circle-line', color: 'success', format: formatRevenue },
+    { key: 'time_in_business', label: 'Time in Business', icon: 'ri-calendar-line', color: 'warning', format: formatTimeInBusiness },
 ];
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
@@ -56,7 +58,7 @@ const Funding = () => {
 
     const [appliedType, setAppliedType] = useState<string>('all');
 
-    useEffect(() => { 
+    useEffect(() => {
         loadData('');
     }, []);
 
@@ -95,11 +97,11 @@ const Funding = () => {
         loadData(searchQuery.trim());
     };
 
-    const clearAll = () => { 
-        setSearchQuery(''); 
-        setActiveType('all'); 
+    const clearAll = () => {
+        setSearchQuery('');
+        setActiveType('all');
         setAppliedType('all');
-        loadData(''); 
+        loadData('');
     };
 
     return (
