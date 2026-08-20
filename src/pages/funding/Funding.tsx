@@ -9,18 +9,19 @@ import CustomDropdown from '../../components/Common/CustomDropdown';
 import { toast } from 'react-toastify';
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
-interface StatCardProps { icon: string; label: string; value: string; color: string; }
+interface StatCardProps { icon: string; label: string; value: string; color: string; subValue?: string; }
 
-const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color }) => (
+const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color, subValue }) => (
     <div className="col-6 col-md-6 col-xl-3 funding-stat-card-col">
-        <div className="card shadow-sm border-0 rounded-2 bg-white card-animate">
+        <div className="card shadow-sm border-0 rounded-2 bg-white card-animate h-100">
             <div className="card-body py-3 px-4 d-flex align-items-center funding-stat-card-body">
                 <div className={`avatar-md bg-${color}-subtle rounded d-flex align-items-center justify-content-center me-3 flex-shrink-0 funding-stat-card-icon`}>
                     <i className={`${icon} text-${color} fs-24 funding-stat-card-icon-i`}></i>
                 </div>
                 <div>
                     <p className="text-muted mb-0 fs-13 fw-medium text-uppercase funding-stat-card-label">{label}</p>
-                    <h4 className="mb-0 fw-bold text-dark fs-22 lh-1 funding-stat-card-value">{value}</h4>
+                    <h4 className="mb-0 fw-bold text-dark fs-22 lh-1 funding-stat-card-value mt-1">{value}</h4>
+                    {subValue && <small className="text-muted d-block mt-1 fs-11 fw-medium">{subValue}</small>}
                 </div>
             </div>
         </div>
@@ -40,11 +41,12 @@ interface StatConfig {
     icon: string;
     color: string;
     format: (v: any) => string;
+    subValue?: string;
 }
 
 const STAT_CONFIG: StatConfig[] = [
     { key: 'funding_readiness_score', label: 'Funding Readiness Score', icon: 'ri-bar-chart-fill', color: 'primary', format: formatReadiness },
-    { key: 'fico_score', label: 'FICO Score', icon: 'ri-dashboard-line', color: 'info', format: formatFico },
+    { key: 'fico_score', label: 'Personal Credit Score', subValue: 'FICO', icon: 'ri-dashboard-line', color: 'info', format: formatFico },
     { key: 'monthly_revenue', label: 'Monthly Revenue', icon: 'ri-money-dollar-circle-line', color: 'success', format: formatRevenue },
     { key: 'time_in_business', label: 'Time in Business', icon: 'ri-calendar-line', color: 'warning', format: formatTimeInBusiness },
 ];
@@ -134,6 +136,7 @@ const Funding = () => {
                             color={cfg.color}
                             label={cfg.labelKey && stats[cfg.labelKey] ? stats[cfg.labelKey] : cfg.label}
                             value={cfg.format(stats[cfg.key])}
+                            subValue={cfg.subValue}
                         />
                     ))}
                 </div>
