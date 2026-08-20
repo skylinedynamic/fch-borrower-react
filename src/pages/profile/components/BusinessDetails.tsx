@@ -109,7 +109,9 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
         business_zip_code: apiData.business_postal_code,
         business_website: apiData.business_website,
         business_entity_type: apiData.business_entity_type,
+        business_entity_type_note: apiData.business_entity_type_note || '',
         business_industry_type: apiData.business_industry_type,
+        business_industry_type_note: apiData.business_industry_type_note || '',
         business_start_date: apiData.business_start_date,
         business_credit_score: apiData.business_credit_score,
         personal_credit_score: apiData.personal_credit_score,
@@ -548,6 +550,23 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
           </div>
           {errors.business_entity_type && <div className="invalid-feedback d-block">{errors.business_entity_type}</div>}
         </div>
+        
+        {data.business_entity_type === (entityTypes.find(e => e.label === 'Other')?.value || 'Other') && (
+          <div className="col-md-6">
+            <label className="form-label">Entity Type Details <span className="text-danger">*</span></label>
+            <div className="position-relative">
+              <input
+                type="text"
+                placeholder="Enter entity type details"
+                value={data.business_entity_type_note || ''}
+                onChange={(e) => onChange({ ...data, business_entity_type_note: e.target.value })}
+                className={`form-control ${errors.business_entity_type_note ? 'is-invalid' : ''} ${isFieldLocked('business_entity_type_note' as any) ? 'bg-light border-dashed locked-field-padding' : ''}`}
+                readOnly={isFieldLocked('business_entity_type_note' as any)}
+              />
+            </div>
+            {errors.business_entity_type_note && <div className="invalid-feedback d-block">{errors.business_entity_type_note}</div>}
+          </div>
+        )}
 
 
         {/* New Field: Business Start Date */}
@@ -676,6 +695,23 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
           </div>
           {errors.business_industry_type && <div className="invalid-feedback d-block">{errors.business_industry_type}</div>}
         </div>
+        
+        {data.business_industry_type === (industryTypes.find(i => i.label === 'Other')?.value || 'Other') && (
+          <div className="col-md-6">
+            <label className="form-label">Industry Type Details <span className="text-danger">*</span></label>
+            <div className="position-relative">
+              <input
+                type="text"
+                placeholder="Enter industry type details"
+                value={data.business_industry_type_note || ''}
+                onChange={(e) => onChange({ ...data, business_industry_type_note: e.target.value })}
+                className={`form-control ${errors.business_industry_type_note ? 'is-invalid' : ''} ${isFieldLocked('business_industry_type_note' as any) ? 'bg-light border-dashed locked-field-padding' : ''}`}
+                readOnly={isFieldLocked('business_industry_type_note' as any)}
+              />
+            </div>
+            {errors.business_industry_type_note && <div className="invalid-feedback d-block">{errors.business_industry_type_note}</div>}
+          </div>
+        )}
         <div className="col-12 d-flex justify-content-between mt-4">
           <button type="button" className="btn btn-warning" onClick={onBack}>Previous</button>
           <button type="button" className="btn primary-btn" onClick={handleSave} disabled={isPending}>
