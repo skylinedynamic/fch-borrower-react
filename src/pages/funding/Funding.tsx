@@ -28,10 +28,10 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color }) => (
 );
 
 // ─── Stat config ──────────────────────────────────────────────────────────────
-const formatReadiness = (v: any) => v === 'N/A' || v == null ? 'N/A' : `${v}/100`;
-const formatFico = (v: any) => v === 'N/A' || v == null ? 'N/A' : `${v}`;
-const formatRevenue = (v: any) => (v === 'N/A' || v == null) ? 'N/A' : v;
-const formatTimeInBusiness = (v: any) => (v === 'N/A' || v == null) ? 'N/A' : v;
+const formatReadiness = (v: any) => v === 'N/A' || v == null || v === '' ? '0' : `${v}`;
+const formatFico = (v: any) => v === 'N/A' || !v || v === '0' || v === '0.00' ? 'N/A' : `${v}`;
+const formatRevenue = (v: any) => v === 'N/A' || !v || v === '0' || v === '0.00' ? 'N/A' : `${v}`;
+const formatTimeInBusiness = (v: any) => v === 'N/A' || !v || v === '0' ? 'N/A' : `${v}`;
 
 interface StatConfig {
     key: string;
