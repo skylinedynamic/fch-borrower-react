@@ -351,7 +351,7 @@ export default function Dashboard() {
                                                             {status}
                                                         </div>
                                                         <div className="ca-dw-access-badge mb-0">
-                                                            <span>Est. Access:</span>
+                                                            <span>Total Est. Access:</span>
                                                             <strong>{totalAccess}</strong>
                                                         </div>
                                                     </div>
