@@ -126,12 +126,14 @@ const BankTransferDetailsView = ({ selectedProvider, invoice, onSuccess }) => {
         });
       }
       setSubmitted(true);
-      toast.success(`Payment submitted successfully! Status: ${STATUS_PROCESSING}`);
       if (onSuccess) {
         onSuccess({
           status: STATUS_PROCESSING,
           invoice_status: STATUS_PROCESSING,
           payment_status: STATUS_PROCESSING,
+          isManual: true,
+          invoice: invoice,
+          provider: selectedProvider?.name || 'Bank Transfer',
         });
       }
     } catch (err) {
@@ -145,21 +147,19 @@ const BankTransferDetailsView = ({ selectedProvider, invoice, onSuccess }) => {
   return (
     <div className="text-start py-2">
       {submitted ? (
-        <div className="card border-0 bg-success-subtle shadow-sm rounded-3 text-center p-4">
-          <div className="avatar-md mx-auto mb-2">
-            <span className="avatar-title bg-success text-white rounded-circle fs-28 shadow-sm">
-              <i className="ri-checkbox-circle-fill"></i>
-            </span>
+        <div className="card border-0 bg-success-subtle shadow-sm rounded-1 text-center p-4">
+          <div className="mb-3 text-center">
+            <i className="ri-checkbox-circle-fill text-success confirmation-large-check-icon"></i>
           </div>
-          <h5 className="fw-bold text-success mb-1">Payment Status: Processing</h5>
-          <p className="fs-13 text-muted mb-0">
+          <h5 className="fw-bold text-success mb-2 fs-18">Payment Status: Processing</h5>
+          <p className="fs-14 text-muted mb-0">
             Your payment confirmation for Invoice #{invoice?.invoice_id || invoice?.id} (USD ${amount.toFixed(2)}) has been submitted. Administration will verify your transfer and notify you upon confirmation.
           </p>
         </div>
       ) : (
         <>
           {/* Informational Alert Box */}
-          <div className="alert alert-info border-0 shadow-sm rounded-3 p-3 mb-3 d-flex align-items-start gap-3">
+          <div className="alert alert-info border-0 shadow-sm rounded-1 p-3 mb-3 d-flex align-items-start gap-3">
             <div className="avatar-xs flex-shrink-0 mt-0.5">
               <span className="avatar-title bg-info text-white rounded-circle fs-15">
                 <i className="ri-information-line"></i>
@@ -191,7 +191,7 @@ const BankTransferDetailsView = ({ selectedProvider, invoice, onSuccess }) => {
                     role="button"
                     tabIndex={0}
                   >
-                    <div className={`card border shadow-sm rounded-3 h-100 mb-0 bg-white ${isSelected ? 'border-primary shadow' : ''}`}>
+                    <div className={`card border shadow-sm rounded-1 h-100 mb-0 bg-white ${isSelected ? 'border-primary shadow' : ''}`}>
                       {/* Card Header */}
                       <div className="card-header bg-light-subtle border-0 py-2.5 px-3 d-flex align-items-center justify-content-between">
                         <div className="d-flex align-items-center gap-2">
@@ -215,90 +215,90 @@ const BankTransferDetailsView = ({ selectedProvider, invoice, onSuccess }) => {
                         ) : null}
                       </div>
 
-                    {/* Card Content Table */}
-                    <div className="card-body p-3 pt-1">
-                      <table className="table table-borderless table-sm mb-0 fs-13">
-                        <tbody>
-                          {bank.account_name && (
+                      {/* Card Content Table */}
+                      <div className="card-body p-3 pt-1">
+                        <table className="table table-borderless table-sm mb-0 fs-13">
+                          <tbody>
+                            {bank.account_name && (
+                              <tr>
+                                <td className="text-muted fw-medium py-1 align-middle col-w-40">Account Name</td>
+                                <td className="fw-bold text-dark py-1 align-middle text-truncate">{bank.account_name}</td>
+                              </tr>
+                            )}
                             <tr>
-                              <td className="text-muted fw-medium py-1 align-middle" style={{ width: '40%' }}>Account Name</td>
-                              <td className="fw-bold text-dark py-1 align-middle text-truncate">{bank.account_name}</td>
-                            </tr>
-                          )}
-                          <tr>
-                            <td className="text-muted fw-medium py-1 align-middle">Account Number</td>
-                            <td className="py-1 align-middle">
-                              <span className="fw-bold font-monospace text-dark me-1">{bank.account_number || 'N/A'}</span>
-                              {bank.account_number && (
-                                <button
-                                  type="button"
-                                  className="btn p-0 border-0 bg-transparent text-primary ms-1 shadow-none align-middle"
-                                  onClick={() => handleCopy(bank.account_number, `acc_${index}`)}
-                                  title="Copy Account Number"
-                                >
-                                  {copiedField === `acc_${index}` ? (
-                                    <i className="ri-check-line text-success fs-15"></i>
-                                  ) : (
-                                    <i className="ri-file-copy-line fs-14"></i>
-                                  )}
-                                </button>
-                              )}
-                            </td>
-                          </tr>
-                          {bank.routing_number && (
-                            <tr>
-                              <td className="text-muted fw-medium py-1 align-middle">Routing / ABA</td>
+                              <td className="text-muted fw-medium py-1 align-middle">Account Number</td>
                               <td className="py-1 align-middle">
-                                <span className="fw-bold font-monospace text-dark me-1">{bank.routing_number}</span>
-                                <button
-                                  type="button"
-                                  className="btn p-0 border-0 bg-transparent text-primary ms-1 shadow-none align-middle"
-                                  onClick={() => handleCopy(bank.routing_number, `rout_${index}`)}
-                                  title="Copy Routing Number"
-                                >
-                                  {copiedField === `rout_${index}` ? (
-                                    <i className="ri-check-line text-success fs-15"></i>
-                                  ) : (
-                                    <i className="ri-file-copy-line fs-14"></i>
-                                  )}
-                                </button>
+                                <span className="fw-bold font-monospace text-dark me-1">{bank.account_number || 'N/A'}</span>
+                                {bank.account_number && (
+                                  <button
+                                    type="button"
+                                    className="btn p-0 border-0 bg-transparent text-primary ms-1 shadow-none align-middle"
+                                    onClick={() => handleCopy(bank.account_number, `acc_${index}`)}
+                                    title="Copy Account Number"
+                                  >
+                                    {copiedField === `acc_${index}` ? (
+                                      <i className="ri-check-line text-success fs-15"></i>
+                                    ) : (
+                                      <i className="ri-file-copy-line fs-14"></i>
+                                    )}
+                                  </button>
+                                )}
                               </td>
                             </tr>
-                          )}
-                          {(invoice?.invoice_id || invoice?.id) && (
-                            <tr>
-                              <td className="text-muted fw-medium py-1 align-middle">Reference Memo</td>
-                              <td className="py-1 align-middle">
-                                <span className="fw-bold font-monospace text-primary me-1">Invoice #{invoice.invoice_id || invoice.id}</span>
-                                <button
-                                  type="button"
-                                  className="btn p-0 border-0 bg-transparent text-primary ms-1 shadow-none align-middle"
-                                  onClick={() => handleCopy(`Invoice #${invoice.invoice_id || invoice.id}`, `memo_${index}`)}
-                                  title="Copy Reference"
-                                >
-                                  {copiedField === `memo_${index}` ? (
-                                    <i className="ri-check-line text-success fs-15"></i>
-                                  ) : (
-                                    <i className="ri-file-copy-line fs-14"></i>
-                                  )}
-                                </button>
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
+                            {bank.routing_number && (
+                              <tr>
+                                <td className="text-muted fw-medium py-1 align-middle">Routing / ABA</td>
+                                <td className="py-1 align-middle">
+                                  <span className="fw-bold font-monospace text-dark me-1">{bank.routing_number}</span>
+                                  <button
+                                    type="button"
+                                    className="btn p-0 border-0 bg-transparent text-primary ms-1 shadow-none align-middle"
+                                    onClick={() => handleCopy(bank.routing_number, `rout_${index}`)}
+                                    title="Copy Routing Number"
+                                  >
+                                    {copiedField === `rout_${index}` ? (
+                                      <i className="ri-check-line text-success fs-15"></i>
+                                    ) : (
+                                      <i className="ri-file-copy-line fs-14"></i>
+                                    )}
+                                  </button>
+                                </td>
+                              </tr>
+                            )}
+                            {(invoice?.invoice_id || invoice?.id) && (
+                              <tr>
+                                <td className="text-muted fw-medium py-1 align-middle">Reference Memo</td>
+                                <td className="py-1 align-middle">
+                                  <span className="fw-bold font-monospace text-primary me-1">Invoice #{invoice.invoice_id || invoice.id}</span>
+                                  <button
+                                    type="button"
+                                    className="btn p-0 border-0 bg-transparent text-primary ms-1 shadow-none align-middle"
+                                    onClick={() => handleCopy(`Invoice #${invoice.invoice_id || invoice.id}`, `memo_${index}`)}
+                                    title="Copy Reference"
+                                  >
+                                    {copiedField === `memo_${index}` ? (
+                                      <i className="ri-check-line text-success fs-15"></i>
+                                    ) : (
+                                      <i className="ri-file-copy-line fs-14"></i>
+                                    )}
+                                  </button>
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
 
-                      {bank.instructions && (
-                        <div className="bg-light p-2 rounded-2 fs-12 text-muted mt-2">
-                          <i className="ri-information-line me-1 text-primary"></i>
-                          <strong>Instructions:</strong> {bank.instructions}
-                        </div>
-                      )}
+                        {bank.instructions && (
+                          <div className="bg-light p-2 rounded-1 fs-12 text-muted mt-2">
+                            <i className="ri-information-line me-1 text-primary"></i>
+                            <strong>Instructions:</strong> {bank.instructions}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
             </div>
           ) : (
             <div className="alert alert-warning mb-0 fs-13">
@@ -314,8 +314,7 @@ const BankTransferDetailsView = ({ selectedProvider, invoice, onSuccess }) => {
             </label>
             <input
               type="text"
-              className="form-control form-control-sm border shadow-none bg-white font-monospace fs-13"
-              style={{ border: '1px solid #bcc5d1', borderRadius: '6px', padding: '8px 12px' }}
+              className="form-control form-control-sm shadow-none bg-white font-monospace fs-13 form-control-custom-transaction"
               placeholder="Enter bank wire / transfer transaction number"
               value={transactionNumber}
               onChange={(e) => setTransactionNumber(e.target.value)}
@@ -333,7 +332,7 @@ const BankTransferDetailsView = ({ selectedProvider, invoice, onSuccess }) => {
             </div>
             <button
               type="button"
-              className="btn btn-primary px-4 py-2 fw-semibold rounded-3 d-inline-flex align-items-center gap-2"
+              className="btn btn-primary px-4 py-2 fw-semibold rounded-1 d-inline-flex align-items-center gap-2"
               onClick={handleConfirmPayment}
               disabled={submitting}
             >
@@ -383,12 +382,14 @@ const ManualProcessingNoticeView = ({ selectedProvider, invoice, onSuccess }) =>
         }
       }
       setSubmitted(true);
-      toast.success(`Payment submitted successfully! Status: ${STATUS_PROCESSING}`);
       if (onSuccess) {
         onSuccess({
           status: STATUS_PROCESSING,
           invoice_status: STATUS_PROCESSING,
           payment_status: STATUS_PROCESSING,
+          isManual: true,
+          invoice: invoice,
+          provider: selectedProvider?.name || 'Manual Payment',
         });
       }
     } catch (err) {
@@ -399,89 +400,78 @@ const ManualProcessingNoticeView = ({ selectedProvider, invoice, onSuccess }) =>
     }
   };
 
+  if (submitted) {
+    return (
+      <div className="text-start py-3">
+        <div className="card border-0 bg-success-subtle shadow-sm rounded-1 text-center p-4">
+          <div className="mb-3 text-center">
+            <i className="ri-checkbox-circle-fill text-success confirmation-large-check-icon"></i>
+          </div>
+          <h5 className="fw-bold text-success mb-2 fs-18">Payment Status: Processing</h5>
+          <p className="fs-14 text-muted mb-0">
+            Your payment confirmation for Invoice #{invoice?.invoice_id || invoice?.id} (USD ${amount.toFixed(2)}) has been submitted. Administration will verify your transfer and notify you upon confirmation.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="text-start py-3">
-      {submitted ? (
-        <div className="card border-0 shadow-sm rounded-4 overflow-hidden mb-0 bg-white border border-success-subtle text-center p-4">
-          <div className="avatar-md mx-auto mb-3">
-            <span className="avatar-title bg-success-subtle text-success rounded-circle fs-32 shadow-sm">
-              <i className="ri-checkbox-circle-fill"></i>
-            </span>
-          </div>
-          <h5 className="fw-bold text-dark mb-1">Payment Confirmation Submitted</h5>
-          <p className="text-muted fs-13 mb-3">Invoice #{invoice?.invoice_id || invoice?.id} &middot; USD ${amount.toFixed(2)}</p>
-
-          <div className="d-inline-flex align-items-center gap-2 bg-warning-subtle text-warning border border-warning-subtle px-3 py-1.5 rounded-pill mb-4">
-            <span className="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
-            <span className="fw-bold fs-12 text-uppercase" style={{ letterSpacing: '0.5px' }}>Status: {STATUS_PROCESSING}</span>
-          </div>
-
-          <div className="p-3 bg-light rounded-3 text-start fs-13 text-muted max-w-md mx-auto">
-            <p className="mb-1 text-dark fw-semibold">Next Steps:</p>
-            <p className="mb-0">
-              Your payment status is updated to <strong>{STATUS_PROCESSING}</strong>. Administration will verify your transfer and notify you upon final confirmation.
-            </p>
-          </div>
+      <div className="alert alert-info border-0 shadow-sm rounded-1 p-3.5 mb-4 d-flex align-items-start gap-3">
+        <div className="avatar-xs flex-shrink-0 mt-1">
+          <span className="avatar-title bg-info-subtle text-info rounded-circle fs-16">
+            <i className="ri-information-line"></i>
+          </span>
         </div>
-      ) : (
-        <>
-          <div className="alert alert-info border-0 shadow-sm rounded-3 p-3.5 mb-4 d-flex align-items-start gap-3">
-            <div className="avatar-xs flex-shrink-0 mt-1">
-              <span className="avatar-title bg-info-subtle text-info rounded-circle fs-16">
-                <i className="ri-information-line"></i>
-              </span>
-            </div>
-            <div>
-              <h6 className="mb-1 text-info fw-semibold">{selectedProvider?.name || 'Payment Method'}</h6>
-              <p className="mb-0 fs-13 text-muted">
-                It will process manually, after confirmation from administration you will be notified.
-              </p>
-            </div>
-          </div>
+        <div>
+          <h6 className="mb-1 text-info fw-semibold">{selectedProvider?.name || 'Payment Method'}</h6>
+          <p className="mb-0 fs-13 text-muted">
+            It will process manually, after confirmation from administration you will be notified.
+          </p>
+        </div>
+      </div>
 
-          {/* Transaction Number Input */}
-          <div className="mb-4 text-start">
-            <label className="form-label fw-semibold text-dark fs-13 mb-1">
-              Transaction Number <span className="text-muted fw-normal fs-12">(Optional)</span>
-            </label>
-            <input
-              type="text"
-              className="form-control form-control-sm border shadow-none bg-white font-monospace fs-13"
-              style={{ border: '1px solid #bcc5d1', borderRadius: '6px', padding: '8px 12px' }}
-              placeholder="Enter transaction / reference number"
-              value={transactionNumber}
-              onChange={(e) => setTransactionNumber(e.target.value)}
-            />
-            <small className="text-muted fs-11 mt-1 d-block">
-              Provide your reference ID to help administration verify your payment.
-            </small>
-          </div>
+      {/* Transaction Number Input */}
+      <div className="mb-4 text-start">
+        <label className="form-label fw-semibold text-dark fs-13 mb-1">
+          Transaction Number <span className="text-muted fw-normal fs-12">(Optional)</span>
+        </label>
+        <input
+          type="text"
+          className="form-control form-control-sm shadow-none bg-white font-monospace fs-13 form-control-custom-transaction"
+          placeholder="Enter transaction / reference number"
+          value={transactionNumber}
+          onChange={(e) => setTransactionNumber(e.target.value)}
+        />
+        <small className="text-muted fs-11 mt-1 d-block">
+          Provide your reference ID to help administration verify your payment.
+        </small>
+      </div>
 
-          <div className="mt-4 pt-3 border-top d-flex align-items-center justify-content-between gap-3">
-            <div className="text-start">
-              <span className="fs-11 text-muted d-block text-uppercase fw-semibold" style={{ letterSpacing: '0.5px' }}>Total Due</span>
-              <span className="fs-18 fw-extrabold text-dark font-monospace">${amount.toFixed(2)} USD</span>
-            </div>
-            <button
-              type="button"
-              className="btn btn-primary btn-lg px-4 py-2.5 fs-15 fw-bold shadow-md rounded-3 d-inline-flex align-items-center gap-2 transition-all"
-              onClick={handleConfirmPayment}
-              disabled={submitting}
-            >
-              {submitting ? (
-                <>
-                  <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  <i className="ri-checkbox-circle-fill fs-18"></i> Confirm Payment
-                </>
-              )}
-            </button>
-          </div>
-        </>
-      )}
+      <div className="mt-4 pt-3 border-top d-flex align-items-center justify-content-between gap-3">
+        <div className="text-start">
+          <span className="fs-11 text-muted d-block text-uppercase fw-semibold letter-spacing-sm">Total Due</span>
+          <span className="fs-18 fw-extrabold text-dark font-monospace">${amount.toFixed(2)} USD</span>
+        </div>
+        <button
+          type="button"
+          className="btn btn-primary btn-lg px-4 py-2.5 fs-15 fw-bold shadow-md rounded-1 d-inline-flex align-items-center gap-2 transition-all"
+          onClick={handleConfirmPayment}
+          disabled={submitting}
+        >
+          {submitting ? (
+            <>
+              <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+              Submitting...
+            </>
+          ) : (
+            <>
+              <i className="ri-checkbox-circle-fill fs-18"></i> Confirm Payment
+            </>
+          )}
+        </button>
+      </div>
     </div>
   );
 };
@@ -537,10 +527,9 @@ export default function InvoicePaymentModal({ show, onHide, onSuccess, invoice }
   const providerLogo = selectedProvider ? resolveLogo(selectedProvider.name, selectedProvider.logo) : '';
 
   return (
-    <div className="modal fade stripe-payment-modal ppm-modal" ref={modalRef} tabIndex="-1" aria-hidden="true">
+    <div className="modal fade stripe-payment-modal ppm-modal flip" ref={modalRef} tabIndex="-1" aria-hidden="true">
       <div
-        className={`modal-dialog modal-dialog-centered${isBankTransfer ? ' modal-xl' : ''}`}
-        style={isBankTransfer ? { maxWidth: '850px', width: '92%' } : {}}
+        className={`modal-dialog modal-dialog-centered${isBankTransfer ? ' modal-xl ppm-bank-transfer-dialog' : ''}`}
       >
         <div className="modal-content ppm-content">
           {!selectedProvider ? (
@@ -591,16 +580,15 @@ export default function InvoicePaymentModal({ show, onHide, onSuccess, invoice }
               </div>
 
               <div className="ppm-card-body">
-                <div className="ppm-gateway-provider mb-1 pb-0 text-center" style={{ margin: '0 0 10px 0', padding: 0 }}>
+                <div className="ppm-gateway-provider mb-2 pb-0 text-center">
                   {providerLogo ? (
                     <img
                       src={providerLogo}
                       alt={selectedProvider.name}
                       className="ppm-gateway-logo-img"
-                      style={{ height: '80px', width: 'auto', maxHeight: '95px', maxWidth: '300px', objectFit: 'contain' }}
                     />
                   ) : (
-                    <span className="ppm-gateway-icon" style={{ fontSize: '48px' }}>
+                    <span className="ppm-gateway-icon ppm-gateway-icon-large">
                       <i className="ri-secure-payment-line"></i>
                     </span>
                   )}
@@ -619,12 +607,14 @@ export default function InvoicePaymentModal({ show, onHide, onSuccess, invoice }
                     selectedProvider={selectedProvider}
                     invoice={invoice}
                     onSuccess={onSuccess}
+                    onHide={onHide}
                   />
                 ) : (
                   <ManualProcessingNoticeView
                     selectedProvider={selectedProvider}
                     invoice={invoice}
                     onSuccess={onSuccess}
+                    onHide={onHide}
                   />
                 )}
               </div>

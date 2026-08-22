@@ -5121,3 +5121,103 @@ File: Custom Css File
     width: 120px;
     height: 120px;
 }
+
+/* ── Payment Verification Submitted Modal ── */
+.payment-verification-modal .modal-dialog {
+    max-width: 480px;
+}
+
+.payment-verification-modal .modal-content {
+    border-radius: 4px !important;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+
+.payment-verification-modal .verification-icon-circle {
+    width: 76px;
+    height: 76px;
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    box-shadow: 0 6px 18px rgba(34, 197, 94, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.payment-verification-modal .verification-icon-circle i {
+    font-size: 42px;
+}
+
+.payment-verification-modal .verification-details-card {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px !important;
+}
+
+.payment-verification-modal .verification-alert {
+    border-radius: 4px !important;
+}
+
+.payment-verification-modal .btn-confirm {
+    border-radius: 4px !important;
+}
+
+/* ── Invoice Payment Modal & Components (4px radius) ── */
+.stripe-payment-modal .modal-content,
+.ppm-modal .modal-content,
+.ppm-content {
+    border-radius: 4px !important;
+}
+
+.stripe-payment-modal .card,
+.ppm-modal .card {
+    border-radius: 4px !important;
+}
+
+.ppm-bank-transfer-dialog {
+    max-width: 780px !important;
+    width: 90% !important;
+}
+
+.form-control-custom-transaction {
+    border: 1px solid #bcc5d1 !important;
+    border-radius: 4px !important;
+    padding: 8px 12px;
+}
+
+.letter-spacing-sm {
+    letter-spacing: 0.5px;
+}
+
+.ppm-gateway-logo-img {
+    height: 80px;
+    width: auto;
+    max-height: 95px;
+    max-width: 300px;
+    object-fit: contain;
+}
+
+.ppm-gateway-icon-large {
+    font-size: 48px;
+}
+
+.col-w-40 {
+    width: 40%;
+}
+
+.table-col-num {
+    width: 50px;
+}
+
+.invoice-summary-table {
+    width: 250px;
+}
+
+.confirmation-large-check-icon {
+    font-size: 64px;
+    line-height: 1;
+    display: inline-block;
+}
+
+

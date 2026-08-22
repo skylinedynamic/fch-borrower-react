@@ -169,7 +169,7 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
     const subtotal = amount;
 
     return (
-        <div className="modal fade" ref={modalRef} tabIndex="-1" aria-hidden="true">
+        <div className="modal fade flip" ref={modalRef} tabIndex="-1" aria-hidden="true">
             <div className="modal-dialog modal-lg modal-dialog-centered">
                 <div className="modal-content border-0 shadow-lg">
 
