@@ -38,9 +38,7 @@ export default function InvoiceTable({
         setShowPreviewModal(true);
     };
 
-    const handlePaymentSuccess = (paymentId) => {
-        setShowPaymentModal(false);
-        setSelectedInvoice(null);
+    const handlePaymentSuccess = () => {
         if (onRefresh) {
             onRefresh();
         }
@@ -58,6 +56,10 @@ export default function InvoiceTable({
 
     const amountBodyTemplate = (rowData) => {
         return <span>{rowData.displayable_amount || rowData.displayable_payment_amount || '-'}</span>;
+    };
+
+    const typeBodyTemplate = (rowData) => {
+        return <span className="fw-medium">{rowData.type || '-'}</span>;
     };
 
     const statusFilterElement = (options) => {
@@ -124,7 +126,7 @@ export default function InvoiceTable({
                 onFilter={onFilter}
                 filters={filters}
                 filterDisplay="menu"
-                globalFilterFields={['created_at', 'invoice_id', 'payment_amount', 'status']}
+                globalFilterFields={['created_at', 'invoice_id', 'payment_amount', 'type', 'status']}
                 loading={loading}
                 dataKey="id"
                 scrollable
@@ -138,6 +140,7 @@ export default function InvoiceTable({
                 <Column field="created_at" header="Invoice Date" sortable filter showFilterMatchModes filterPlaceholder="Search by date" style={{ minWidth: '120px' }}></Column>
                 <Column field="invoice_id" header="Invoice ID" sortable filter showFilterMatchModes filterPlaceholder="Search by ID" style={{ minWidth: '100px' }}></Column>
                 <Column field="payment_amount" header="Amount" body={amountBodyTemplate} sortable filter showFilterMatchModes filterPlaceholder="Search by amount" style={{ minWidth: '120px' }}></Column>
+                <Column field="type" header="Type" body={typeBodyTemplate} sortable filter showFilterMatchModes filterPlaceholder="Search by type" style={{ minWidth: '120px' }}></Column>
                 <Column field="status" header="Status" body={statusBodyTemplate} sortable filter filterElement={statusFilterElement} showFilterMatchModes={false} style={{ minWidth: '150px' }}></Column>
                 <Column header="Action" body={actionBodyTemplate} style={{ minWidth: '150px' }} alignHeader="center" align="center" headerClassName="text-center" bodyClassName="text-center"></Column>
             </DataTable>
