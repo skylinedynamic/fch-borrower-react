@@ -8,14 +8,14 @@ export default mergeConfig(
       pool: 'threads',
       environment: 'jsdom',
       globals: true,
-      setupFiles: ['src/test/setup.ts'],
-      include: ['src/**/*.{test,spec}.{ts,tsx,js,jsx}'],
+      setupFiles: ['tests/setup.ts'],
+      include: ['tests/**/*.{test,spec}.{ts,tsx,js,jsx}'],
       css: false,
       coverage: {
         provider: 'v8',
         reporter: ['text', 'html', 'lcov'],
         include: ['src/**/*.{ts,tsx,js,jsx}'],
-        exclude: ['src/test/**', 'src/**/*.d.ts', 'src/main.jsx'],
+        exclude: ['src/**/*.d.ts', 'src/main.jsx'],
       },
     },
   })
