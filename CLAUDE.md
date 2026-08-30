@@ -12,6 +12,9 @@ Sibling repos under `d:\laragon\www\`, part of the same FCH (Four Corner Funding
 - `npm run dev` — start dev server
 - `npm run build` — production build
 - `npm run preview` — preview build
+- `npm run typecheck` — `tsc --noEmit`; not part of `npm run build` (plain `vite build` only transpiles), so run it explicitly — it's also a hard gate in CI and both deploy workflows
+- `npm test` — run the Vitest suite once; `npm run test:watch` for watch mode, `npm run test:coverage` for a coverage report
+- `npm run test:e2e` — run the Playwright suite (`npm run test:e2e:ui` for the interactive runner)
 
 ## Architecture
 - **Routing**: all routes are centralized in `src/App.jsx` (react-router-dom v6, nested `<Route>`s under a `Layout`). Route access is gated by guards in `src/lib/auth/` (`ProtectedRoute`, `GuestRoute`, `HostRoute`, `CapitalAccessGuard`, `CapitalAccessStrategyGuard`, `PermissionGuard`) — wrap new protected routes in the matching guard rather than checking auth state inside the page.
@@ -23,7 +26,7 @@ Sibling repos under `d:\laragon\www\`, part of the same FCH (Four Corner Funding
 - **Config/constants**: static option lists and status enums live in `src/config/*.ts` (typed) — this is the canonical place for a value used in more than one file, not a repeated inline string. `src/data/` (`countries.ts`, `credit-builder.ts`, `profile.ts`, `tier.ts`) holds larger static datasets in the same spirit — prefer `src/config/` for enums/option lists and `src/data/` for bigger reference data, don't split a single dataset across both.
 - **`primereact/datatable` is aliased** in `vite.config.js` to `src/components/Table/DataTableWrapper.jsx` — every `DataTable` import in the app resolves there, not to the PrimeReact package directly. Check that wrapper before assuming default PrimeReact `DataTable` behavior.
 - **Legacy jQuery-era libraries** (jQuery, Summernote, Select2, SweetAlert2, the FullCalendar suite, Chart.js, react-pdf, flatpickr) coexist with the React 18 stack in older pages — don't reach for them in new code, but expect to see them when touching existing screens that use rich text, date pickers, or calendars.
-- The codebase is a `.jsx` → `.tsx` migration in progress (`tsconfig.json` has `strict: true`). Write new/changed files in TypeScript (`.ts`/`.tsx`); don't add new `.jsx` — note this rule is not being consistently followed today (new `.jsx` files have landed as recently as August 2026), so don't assume a file's extension reflects intent.
+- The codebase is a `.jsx` → `.tsx` migration in progress (`tsconfig.json` has `strict: true`, plus `allowJs: true`/`checkJs: false` so `.tsx` files — mainly tests — can import a `.jsx` file with real inferred types instead of an implicit-`any` error; `.jsx` file *contents* still aren't type-checked). Write new/changed files in TypeScript (`.ts`/`.tsx`); don't add new `.jsx` — note this rule is not being consistently followed today (new `.jsx` files have landed as recently as August 2026), so don't assume a file's extension reflects intent.
 
 ## Coding standards
 - No ESLint/Prettier is configured yet — set one up (ESLint + `typescript-eslint` + Prettier) before relying on style review alone.
@@ -32,16 +35,22 @@ Sibling repos under `d:\laragon\www\`, part of the same FCH (Four Corner Funding
 - Status/role/permission strings and dropdown options belong in `src/config/` or the module's `types.ts`, not repeated as inline literals.
 
 ## TDD (strict)
-No test runner is configured yet — that is the first task before any TDD-covered work starts here. Once set up (Vitest + React Testing Library, Playwright/Cypress for E2E):
+Test runner: Vitest + React Testing Library + MSW for unit/integration, Playwright for E2E (`vitest.config.ts`, `playwright.config.ts`). All tests live under a top-level `tests/` tree mirroring `src/` (e.g. `src/utils/formatters.ts` → `tests/utils/formatters.test.ts`) — do not co-locate `*.test.*` files next to source. Shared harness: `tests/setup.ts` (jest-dom matchers, MSW server lifecycle, jsdom shims), `tests/test-utils.tsx` (`renderWithProviders`/`createTestQueryClient` — wraps `QueryClientProvider`/`MemoryRouter`), `tests/mocks/` (MSW handlers/server). Mock HTTP calls via MSW against the real `apiClient`, not by mocking `services.ts` functions, so the request/response mapping is actually exercised.
+
+For **new/changed code**:
 1. Write a failing test for the behavior first.
 2. Write the minimum code to pass it.
 3. Refactor with the test green.
 No production code without a preceding failing test. Never weaken/skip a test to make it pass.
 
+For **retroactive coverage of existing code** (backfilling this suite): there's no red step when the code predates the test — write a characterization test against current behavior. If that process surfaces an actual bug, switch back to strict red→green: write the test expecting *correct* behavior, watch it fail, then fix the bug.
+
 Cover the level the change actually needs, not just one:
 - **Unit** — hooks/utils/store logic in isolation, dependencies mocked.
 - **Integration** — a component rendered with its real children/store/query client (no mocking the thing under test).
-- **Functional** — an actual user flow end-to-end (form submit → API call → UI result) via Playwright/Cypress.
+- **Functional** — an actual user flow end-to-end (form submit → API call → UI result) via Playwright.
+
+A private/unexported component or helper that needs direct unit testing may be exported for that purpose (additive-only, e.g. `const x` → `export const x`) — don't restructure the file beyond that.
 
 ## Compliance & data security
 This app touches applicant PII, credit, and payment (Stripe) data — see the `code-reviewer` agent's compliance/data-security categories (PCI-DSS, FCRA, GLBA, TCPA, state privacy law). Never log or persist raw card numbers, SSNs, or bank account numbers client-side; only handle Stripe tokens/Elements. The API base URL is configured via `VITE_API_BASE_URL` (`.env`/`.env.example`); production deploys inject a separate value into `.env.production` at build time (see Branching below) — never commit a real production value into a tracked `.env` file.
