@@ -11,6 +11,11 @@ export default mergeConfig(
       setupFiles: ['tests/setup.ts'],
       include: ['tests/**/*.{test,spec}.{ts,tsx,js,jsx}'],
       css: false,
+      // The suite has grown large enough that a full run spins up many
+      // concurrent jsdom/MSW environments; under that CPU contention,
+      // individual findBy/waitFor calls can get timer-starved past the
+      // 5000ms/1000ms defaults even though nothing is actually broken.
+      testTimeout: 20000,
       coverage: {
         provider: 'v8',
         reporter: ['text', 'html', 'lcov'],

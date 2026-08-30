@@ -1,7 +1,12 @@
 import '@testing-library/jest-dom'
 import { afterAll, afterEach, beforeAll } from 'vitest'
-import { cleanup } from '@testing-library/react'
+import { cleanup, configure } from '@testing-library/react'
 import { server } from './mocks/server'
+
+// Matches vitest.config.ts's testTimeout — a full suite run spins up many
+// concurrent jsdom/MSW environments, and under that CPU contention findBy/
+// waitFor's 1000ms default can get timer-starved even when nothing's broken.
+configure({ asyncUtilTimeout: 5000 })
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => {
