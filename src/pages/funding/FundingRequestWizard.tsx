@@ -17,6 +17,7 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { apiClient } from '../../lib/http';
 import { queryKeys } from '../../lib/query';
 import { useBusinessDetails, useFinancialInfo } from '../../modules/profile/queries';
+import type { BusinessDetailsData, FinancialInfoData } from '../../modules/profile/types';
 import { FUNDING_WIZARD_STEPS, FUNDING_REVIEW_STATUS, FACTOR_STATUS_VALUES } from '../../config/funding';
 import { useBrandingStore } from '../../store/brandingStore';
 const steps = FUNDING_WIZARD_STEPS;
@@ -69,8 +70,13 @@ const FundingRequestWizard = () => {
     const { data: businessRes } = useBusinessDetails();
     const { data: financialRes } = useFinancialInfo();
 
-    const businessDetails = businessRes?.data || businessRes || {};
-    const financialInfo = financialRes?.data || financialRes || {};
+    // The profile module's services already unwrap the API envelope (fetchBusinessDetails/
+    // fetchFinancialInfo return the flat data object directly), so `businessRes`/`financialRes`
+    // never actually carry a nested `.data`. The extra field-name fallbacks below (e.g.
+    // `legal_business_name`) aren't part of the declared module types either, so these are kept
+    // loosely typed rather than widening the shared profile module's types.
+    const businessDetails: Partial<BusinessDetailsData> & Record<string, any> = businessRes || {};
+    const financialInfo: Partial<FinancialInfoData> & Record<string, any> = financialRes || {};
 
 
     const parsedUses = React.useMemo(() => {
@@ -845,10 +851,10 @@ const FundingRequestWizard = () => {
                                                                 </div>
                                                             </div>
 
-                                                            {!isMissing && documentsData?.[docType.id]?.length > 0 && (
+                                                            {!isMissing && (documentsData?.[docType.id]?.length ?? 0) > 0 && (
                                                                 <div className="mt-3 pt-3 border-top">
                                                                     <div className="d-flex flex-column gap-2">
-                                                                        {documentsData[docType.id].map((doc: any) => {
+                                                                        {documentsData?.[docType.id]?.map((doc: any) => {
                                                                             const isPdf = doc.file_name.toLowerCase().endsWith('.pdf');
                                                                             return (
                                                                                 <div key={doc.id} className="d-flex align-items-center justify-content-between border rounded px-2 py-2 bg-white">

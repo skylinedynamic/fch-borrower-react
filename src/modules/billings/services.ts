@@ -7,7 +7,8 @@ export interface PaymentProviderItem {
   display_name: string;
   logo?: string | null;
   publishable_key?: string | null;
-  status?: number;
+  // Backend (PartnerPaymentProviderResource) always casts this to a real boolean.
+  status?: boolean;
 }
 
 export const fetchBillingDetails = async (): Promise<BillingDetailsData> => {

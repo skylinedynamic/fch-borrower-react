@@ -10,23 +10,16 @@ import { apiClient } from '../../../lib/http/apiClient'
 import { formatPhoneNumber, formatZipCode, maskSSN, formatDate } from '../../../utils/formatters'
 import TabLoader from '../../../components/Loader/TabLoader'
 import { fetchCreditProfile } from '../../../modules/credit-profile'
-import type { CreditProfile } from '../../../modules/credit-profile'
+import type { CreditProfile, CreditProfileRequestData } from '../../../modules/credit-profile'
+import type { AuthUser } from '../../../store/auth'
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 
-interface CreditProfileRequestData {
-  first_name: string
-  middle_name: string | null
-  last_name: string
-  address: string
-  apt_suite_other: string | null
-  city: string
-  state: string
-  zip: string
-  ssn: string
-  date_of_birth: string
-  phone: string
-  email: string
-  created_at?: string
+// Fields present on the auth user object that AuthUser's index signature otherwise
+// types as `unknown` (AuthUser has no explicit first_name/last_name/phone_number).
+type AuthUserProfileFields = AuthUser & {
+  first_name?: string
+  last_name?: string
+  phone_number?: string
 }
 
 interface FormState {
@@ -101,12 +94,13 @@ export default function CreditProfileTab() {
   // Prefill from user personal info
   useEffect(() => {
     if (user) {
+      const authUser = user as AuthUserProfileFields
       setFormData(prev => ({
         ...prev,
-        first_name: user.first_name || prev.first_name,
-        last_name: user.last_name || prev.last_name,
-        email: user.email || prev.email,
-        phone: user.phone_number || prev.phone,
+        first_name: authUser.first_name || prev.first_name,
+        last_name: authUser.last_name || prev.last_name,
+        email: authUser.email || prev.email,
+        phone: authUser.phone_number || prev.phone,
       }))
     }
   }, [user])

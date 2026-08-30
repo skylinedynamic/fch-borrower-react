@@ -57,3 +57,27 @@ export interface CreditProfile {
   addresses: CreditProfileAddress[]
   metrics: CreditProfileMetrics
 }
+
+// The `/borrower/profile/credit-profile` endpoint returns either the
+// bureau-pulled CreditProfile above, or — when no credit profile has been
+// pulled yet — the borrower's raw, previously-submitted credit profile
+// request (flat first_name/last_name/... fields, per
+// CreditProfileRequestResource on the backend). `personal_info` is declared
+// here (always undefined) purely as a discriminant so the two shapes can be
+// told apart via `!data.personal_info`.
+export interface CreditProfileRequestData {
+  first_name: string
+  middle_name: string | null
+  last_name: string
+  address: string
+  apt_suite_other: string | null
+  city: string
+  state: string
+  zip: string
+  ssn: string
+  date_of_birth: string
+  phone: string
+  email: string
+  created_at?: string
+  personal_info?: undefined
+}

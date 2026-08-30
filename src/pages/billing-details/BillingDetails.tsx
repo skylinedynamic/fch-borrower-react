@@ -248,7 +248,7 @@ const ChangePaymentMethodModal = ({
     setLoadingProviders(true);
     try {
       const res = await fetchPaymentProviders();
-      const list = Array.isArray(res) ? res.filter((p) => p.status !== false && p.status !== 0) : [];
+      const list = Array.isArray(res) ? res.filter((p) => p.status !== false) : [];
       setProviders(list);
       if (list.length > 0) {
         const matching = list.find(

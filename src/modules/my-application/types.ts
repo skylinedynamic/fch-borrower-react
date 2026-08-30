@@ -85,6 +85,7 @@ export interface PreQualificationDetailResponse {
 
 export interface FundingApplication {
   id: number
+  application_number: string | null
   borrower_id: number
   status: string
   full_name: string
@@ -127,6 +128,13 @@ export interface FundingApplication {
   preferred_funding_type: string
   timeframe_needed: string
   collateral_available: string
+  average_monthly_deposits: string | null
+  avg_bank_balance: string | null
+  time_in_business: string | null
+  funding_sequence_name: string | null
+  funding_sequence_subtitle: string | null
+  funding_sequence_speed_to_funds: string | null
+  funding_sequence_uses: string[] | string | null
   credit_pull_authorization: boolean
   terms_conditions_acceptance: boolean
   filed_for_bankruptcy: boolean | null
@@ -140,6 +148,7 @@ export interface FundingApplication {
   any_outstanding_judgments_owner: boolean | null
   federal_compliance_disclosures_explanation: string | null
   attestation_authorization: boolean
+  date: string
 }
 
 export interface FundingApplicationResponse {
@@ -147,4 +156,82 @@ export interface FundingApplicationResponse {
   message: string
   data: FundingApplication[]
   meta: Meta
+}
+
+export interface FundingApplicationDocumentFile {
+  id: number
+  funding_application_id: number
+  borrower_id: number
+  borrower_doc_type_id: number
+  name: string | null
+  path: string | null
+  url: string | null
+  original_name: string | null
+  extension: string | null
+  mime: string | null
+  size: number | null
+  created_at: string | null
+  status?: string
+}
+
+export interface FundingApplicationDocumentGroup {
+  type: string
+  files: FundingApplicationDocumentFile[]
+}
+
+export interface FundingApplicationCoBorrower {
+  id: number
+  first_name: string | null
+  last_name: string | null
+  role: string | null
+  ownership: string | null
+  email: string | null
+  mobile_phone: string | null
+  home_phone: string | null
+  date_of_birth: string | null
+  ssn: string | null
+  street_address: string | null
+  city: string | null
+  state: string | null
+  zip_code: string | null
+  drivers_license_number: string | null
+  drivers_license_state: string | null
+}
+
+// Detail endpoint (GET /common/request-application/funding-application/{id}) returns a
+// single funding application object (not a list) via FCH\Common\Application\FundingApplicationResource,
+// which is a superset of the list resource's fields.
+export interface FundingApplicationDetail extends FundingApplication {
+  partner_id: number | null
+  funding_sequence_amount_range: string | null
+  funding_request_status: string | null
+  status_note: string | null
+  status_class: string | null
+  co_borrowers: FundingApplicationCoBorrower[]
+  documents: FundingApplicationDocumentGroup[]
+  total_commission: string | number | null
+  admin_commission: string | number | null
+  partner_commission: string | number | null
+  total_commission_amount: string | number | null
+  admin_commission_amount: string | number | null
+  partner_commission_amount: string | number | null
+  commission_status: string | null
+  payment_status: string | null
+  total_funded_amount: string | number | null
+  funded_note: string | null
+  currency: string | null
+  currency_symbol: string | null
+  conversion_rate: string | number | null
+  download_histories: unknown
+  signature_data: unknown
+  partner: unknown
+  borrower: unknown
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface FundingApplicationDetailResponse {
+  status: boolean
+  message: string
+  data: FundingApplicationDetail
 }

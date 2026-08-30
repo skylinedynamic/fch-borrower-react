@@ -4,7 +4,7 @@ import { fetchPreQualificationRequests, fetchAdvisor, fetchPreQualificationDetai
 export const usePreQualificationRequests = (page: number = 1, perPage: number = 5) => {
   return useQuery({
     queryKey: ['pre-qualification-requests', page, perPage],
-    queryFn: () => fetchPreQualificationRequests(page, perPage),
+    queryFn: () => fetchPreQualificationRequests(page),
     staleTime: 0,
   })
 }

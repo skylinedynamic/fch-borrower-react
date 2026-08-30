@@ -1,3 +1,5 @@
+import type { SavePersonalInfoRequest } from '../modules/profile/types'
+
 export const LOCKED_BUSINESS_FIELDS = [
     'business_ein',
     'business_address',
@@ -9,7 +11,7 @@ export const LOCKED_BUSINESS_FIELDS = [
 ];
 
 
-export const LOCKED_PERSONAL_FIELDS = [];
+export const LOCKED_PERSONAL_FIELDS: (keyof SavePersonalInfoRequest)[] = [];
 
 export const LOCKED_FINANCIAL_FIELDS = [
     'monthly_revenue',

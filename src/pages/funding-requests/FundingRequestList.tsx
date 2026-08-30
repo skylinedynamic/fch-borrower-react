@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useBorrowerFundingRequests } from '../../modules/funding-requests/queries'
-import { DataTable } from '../../components/Table/DataTableWrapper'
+// Imports the real PrimeReact type declarations for prop-checking; Vite's alias
+// (see vite.config.js) still substitutes this with DataTableWrapper.jsx at runtime/build.
+import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
 import { Dropdown } from 'primereact/dropdown'
 import StatisticsCardSkeleton from '../../components/Common/StatisticsCardSkeleton'

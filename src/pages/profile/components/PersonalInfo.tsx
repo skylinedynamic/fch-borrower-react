@@ -90,7 +90,9 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
 
   const isFieldLocked = (field: keyof SavePersonalInfoRequest) => {
     const dbValue = (apiData as any)?.[field];
-    return LOCKED_PERSONAL_FIELDS.includes(field) && dbValue !== null && dbValue !== undefined && dbValue !== '';
+    // LOCKED_PERSONAL_FIELDS is declared as an empty array literal (inferred as `never[]`)
+    // in config/profileLockFields.ts; widen it here so `.includes()` accepts a real field key.
+    return (LOCKED_PERSONAL_FIELDS as string[]).includes(field) && dbValue !== null && dbValue !== undefined && dbValue !== '';
   }
 
   // Helper to find country by name or code
@@ -137,7 +139,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
   }
 
   // Helper to get field error
-  const getFieldError = (fieldName: string): string | undefined => {
+  const getFieldError = (fieldName: string): string[] | undefined => {
     return validationErrors[fieldName]
   }
 
