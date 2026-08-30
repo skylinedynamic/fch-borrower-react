@@ -61,7 +61,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
     setErrors({})
     const payload = {
       ...data,
-      business_ein: data.business_ein,
+      business_ein: unformatEIN(data.business_ein),
       business_phone: data.business_phone,
       duns_number: data.duns_number.replace(/\D/g, ''),
     }
