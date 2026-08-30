@@ -34,7 +34,7 @@ import {
 } from '../../config/paymentConfig';
 
 // Inner Stripe Form component for card details
-const StripeCardInputForm = ({
+export const StripeCardInputForm = ({
   selectedProvider,
   submitting,
   setSubmitting,

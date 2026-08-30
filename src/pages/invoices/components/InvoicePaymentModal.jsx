@@ -30,7 +30,7 @@ function resolveLogo(name, logo) {
   return PROVIDER_LOGOS[name] || PROVIDER_LOGOS[Object.keys(PROVIDER_LOGOS).find(k => k.toLowerCase() === (name || '').toLowerCase())] || '';
 }
 
-const isStripeProvider = (provider) => {
+export const isStripeProvider = (provider) => {
   if (!provider) return false;
   const name = (provider.name || '').toLowerCase().trim();
   const slug = (provider.slug || '').toLowerCase().trim();
@@ -38,7 +38,7 @@ const isStripeProvider = (provider) => {
   return name === target || slug === target;
 };
 
-const isBankTransferProvider = (provider) => {
+export const isBankTransferProvider = (provider) => {
   if (!provider) return false;
   const name = (provider.name || '').toLowerCase().trim();
   const slug = (provider.slug || '').toLowerCase().trim();
