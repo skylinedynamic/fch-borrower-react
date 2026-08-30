@@ -1,79 +1,38 @@
-import { apiClient } from '../http'
-import { setAuth, AuthUser } from './auth'
+import { apiClient } from '../http/apiClient'
+import { useAuthStore } from '../../store/auth'
+import { refreshUser as refreshUserService } from '../../modules/auth-profile'
 
-export type LoginSuccess = { token: string; user: AuthUser }
-
-export async function login(email: string, password: string, remember: boolean = true): Promise<LoginSuccess> {
-  try {
-    const res = await apiClient.post('/auth/login', { email, password, remember })
-    const data = res?.data
-
-    if (data?.status === true) {
-      const token: string | undefined = data?.data?.token
-      const user: AuthUser | undefined = data?.data?.user
-      if (!token || !user) {
-        // preserve server message shape in response for UI consumption
-        const error: any = new Error('Login response missing token or user')
-        error.response = { data }
-        throw error
-      }
-      setAuth(token, user, remember)
-      return { token, user }
+// Local helper to perform the same logic as the useAuth hook but in a non-React context
+async function refreshUser() {
+    const { setUserData } = useAuthStore.getState()
+    try {
+        const responseUserData = await refreshUserService()
+        if (responseUserData) {
+            setUserData(responseUserData)
+            return responseUserData
+        }
+    } catch (error) {
+        console.error('Failed to refresh user details in authApi:', error)
     }
-
-    // If API returned 200 with status=false, throw an error carrying server data
-    const error: any = new Error(data?.message ?? 'Login failed')
-    error.response = { data }
-    throw error
-  } catch (err) {
-    // Axios errors already have response; just rethrow
-    throw err
-  }
+    return null
 }
 
-
-export async function logout(): Promise<{ status?: boolean; message?: string; data?: any }> {
-  try {
-    const res = await apiClient.post('/auth/logout')
-    return res?.data ?? { status: true }
-  } catch (err) {
-    throw err
-  }
-}
-
-// Send password reset link
-export async function forgotPassword(email: string): Promise<any> {
-  try {
-    const res = await apiClient.post('/auth/forgot', { email })
-    const data = res?.data
-    if (data?.status === true) {
-      return data
+// Get fresh user details from the backend
+export async function getUserDetails(): Promise<any> {
+    try {
+        const res = await apiClient.get('/borrower/user-details')
+        const data = res?.data
+        if (data?.status === true) {
+            if (data?.data?.user?.is_refresh) {
+                const refreshedUser = await refreshUser();
+                if (refreshedUser) {
+                    return { status: true, data: { user: refreshedUser } };
+                }
+            }
+            return data
+        }
+        return null
+    } catch (err) {
+        return null
     }
-    const error: any = new Error(data?.message ?? 'Unable to process request.')
-    error.response = { data }
-    throw error
-  } catch (err) {
-    throw err
-  }
-}
-
-// Reset password using token + email
-export async function resetPassword(payload: {
-  token: string
-  email: string
-  password: string
-  password_confirmation: string
-}): Promise<any> {
-  try {
-    const res = await apiClient.post('/auth/reset', payload)
-    const data = res?.data
-    if (data?.status === true) {
-      return data
-    }
-    const error: any = new Error(data?.message ?? 'Unable to reset password.')
-    error.response = { data }
-    throw error
-  } catch (err) {
-    throw err
-  }
 }

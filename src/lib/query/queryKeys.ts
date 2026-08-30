@@ -28,4 +28,48 @@ export const queryKeys = {
     // Distinct key for edit pages to avoid reading cached grouped permissions
     permissionsGroupedFresh: () => [...queryKeys.role.all, 'permissions', 'grouped', 'edit'] as const,
   },
+  profile: {
+    all: ['profile'] as const,
+    personalInfo: () => [...queryKeys.profile.all, 'personalInfo'] as const,
+    businessDetails: () => [...queryKeys.profile.all, 'businessDetails'] as const,
+    financialInfo: () => [...queryKeys.profile.all, 'financialInfo'] as const,
+  },
+  preQualification: {
+    all: ['preQualification'] as const,
+  },
+  creditBuilder: {
+    all: ['creditBuilder'] as const,
+    progress: () => [...queryKeys.creditBuilder.all, 'progress'] as const,
+    tierTaskList: () => [...queryKeys.creditBuilder.all, 'tierTaskList'] as const,
+    taskOverview: () => [...queryKeys.creditBuilder.all, 'taskOverview'] as const,
+  },
+  capitalAccess: {
+    all: ['capitalAccess'] as const,
+    overview: () => [...queryKeys.capitalAccess.all, 'overview'] as const,
+    strategies: () => [...queryKeys.capitalAccess.all, 'strategies'] as const,
+    detail: (id: string | number) => [...queryKeys.capitalAccess.all, 'detail', id] as const,
+    detailOverview: (id: string | number) => [...queryKeys.capitalAccess.all, 'detailOverview', id] as const,
+    detailChecklist: (id: string | number) => [...queryKeys.capitalAccess.all, 'detailChecklist', id] as const,
+    detailRoadmap: (id: string | number) => [...queryKeys.capitalAccess.all, 'detailRoadmap', id] as const,
+    detailStep: (strategyId: string | number, sequenceId: string | number) => [...queryKeys.capitalAccess.all, 'detailStep', strategyId, sequenceId] as const,
+  },
+  documents: {
+    all: ['documents'] as const,
+    types: () => [...queryKeys.documents.all, 'types'] as const,
+    list: () => [...queryKeys.documents.all, 'list'] as const,
+  },
+  fundingApplication: {
+    all: ['fundingApplication'] as const,
+    businessInfo: () => [...queryKeys.fundingApplication.all, 'businessInfo'] as const,
+    ownershipInfo: () => [...queryKeys.fundingApplication.all, 'ownershipInfo'] as const,
+    financialInfo: () => [...queryKeys.fundingApplication.all, 'financialInfo'] as const,
+    disclosuresConsent: () => [...queryKeys.fundingApplication.all, 'disclosuresConsent'] as const,
+    fundingRequest: () => [...queryKeys.fundingApplication.all, 'fundingRequest'] as const,
+    federalCompliance: () => [...queryKeys.fundingApplication.all, 'federalCompliance'] as const,
+    documents: (id: number | null) => [...queryKeys.fundingApplication.all, 'documents', id] as const,
+  },
+  agreement: {
+    all: ['agreement'] as const,
+    check: () => [...queryKeys.agreement.all, 'check'] as const,
+  },
 } as const

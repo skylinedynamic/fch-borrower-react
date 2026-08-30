@@ -5,16 +5,20 @@ var start_date = document.getElementById("event-start-date"),
     T_check = null;
 function flatPickrInit() {
     var e = { enableTime: !0, noCalendar: !0 };
-    flatpickr(start_date, {
-        enableTime: !1,
-        mode: "single",
-        minDate: "today",
-        onChange: function () {
-            // Show the time slot UI; keep hidden time inputs
-            document.getElementById("event-time").removeAttribute("hidden");
-        },
-    });
-    flatpickr(timepicker1, e), flatpickr(timepicker2, e);
+    try {
+        if (start_date) {
+            flatpickr(start_date, {
+                enableTime: !1,
+                mode: "single",
+                minDate: "today",
+                onChange: function () {
+                    document.getElementById("event-time")?.removeAttribute("hidden");
+                },
+            });
+        }
+        if (timepicker1) flatpickr(timepicker1, e);
+        if (timepicker2) flatpickr(timepicker2, e);
+    } catch (_) { }
 }
 function flatpicekrValueClear() {
     start_date.flatpickr().clear(), timepicker1.flatpickr().clear(), timepicker2.flatpickr().clear();
@@ -43,16 +47,16 @@ function editEvent(e) {
     var t = e.getAttribute("data-id");
     ("new-event" == t
         ? ((document.getElementById("modal-title").innerHTML = ""),
-          (document.getElementById("modal-title").innerHTML = "Confirm Appointment"),
-          (document.getElementById("btn-save-event").innerHTML = "Confirm Appointment"),
-          eventTyped)
-        : "edit-event" == t
-          ? ((e.innerHTML = "Cancel"),
-            e.setAttribute("data-id", "cancel-event"),
-            (document.getElementById("btn-save-event").innerHTML = "Update Event"),
-            e.removeAttribute("hidden"),
+            (document.getElementById("modal-title").innerHTML = "Confirm Appointment"),
+            (document.getElementById("btn-save-event").innerHTML = "Confirm Appointment"),
             eventTyped)
-          : ((e.innerHTML = "Edit"), e.setAttribute("data-id", "edit-event"), eventClicked))();
+        : "edit-event" == t
+            ? ((e.innerHTML = "Cancel"),
+                e.setAttribute("data-id", "cancel-event"),
+                (document.getElementById("btn-save-event").innerHTML = "Update Event"),
+                e.removeAttribute("hidden"),
+                eventTyped)
+            : ((e.innerHTML = "Edit"), e.setAttribute("data-id", "edit-event"), eventClicked))();
 }
 function eventTyped() {
     document.getElementById("form-event").classList.remove("view-event"),
@@ -82,14 +86,14 @@ function upcomingEvent(e) {
                 "Invalid Date" == n || null == n
                     ? null
                     : ((a = new Date(n).toLocaleDateString("en", {
-                          year: "numeric",
-                          month: "numeric",
-                          day: "numeric",
-                      })),
-                      new Date(a)
-                          .toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
-                          .split(" ")
-                          .join(" "));
+                        year: "numeric",
+                        month: "numeric",
+                        day: "numeric",
+                    })),
+                        new Date(a)
+                            .toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+                            .split(" ")
+                            .join(" "));
             (e.start ? str_dt(e.start) : null) === (l ? str_dt(l) : null) && (n = null);
             var a = e.start,
                 d =
@@ -97,15 +101,15 @@ function upcomingEvent(e) {
                         "Invalid Date" === a || void 0 === a
                             ? null
                             : ((d = new Date(a).toLocaleDateString("en", {
-                                  year: "numeric",
-                                  month: "numeric",
-                                  day: "numeric",
-                              })),
-                              new Date(d)
-                                  .toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
-                                  .split(" ")
-                                  .join(" "))),
-                    n ? " to " + n : ""),
+                                year: "numeric",
+                                month: "numeric",
+                                day: "numeric",
+                            })),
+                                new Date(d)
+                                    .toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+                                    .split(" ")
+                                    .join(" "))),
+                        n ? " to " + n : ""),
                 n = e.className.split("-"),
                 i = e.description || "",
                 e = tConvert(getTime(e.start)),
@@ -159,7 +163,9 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("event-time").removeAttribute("hidden");
         });
     }
-    var g = new bootstrap.Modal(document.getElementById("event-modal"), { keyboard: !1 }),
+    var eventModalEl = document.getElementById("event-modal");
+    if (!eventModalEl) return;
+    var g = new bootstrap.Modal(eventModalEl, { keyboard: !1 }),
         i = (document.getElementById("event-modal"), document.getElementById("modal-title")),
         l = document.getElementById("form-event"),
         v = null,
@@ -292,7 +298,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     };
                 },
             }),
-            document.getElementById("calendar"));
+                document.getElementById("calendar"));
     function o(e) {
         document.getElementById("form-event").reset(),
             document.getElementById("btn-delete-event").setAttribute("hidden", !0),
@@ -305,160 +311,194 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("edit-event-btn").setAttribute("data-id", "new-event"),
             document.getElementById("edit-event-btn").click(),
             document.getElementById("edit-event-btn").setAttribute("hidden", !0);
+
+        try {
+            var startInput = document.getElementById("event-start-date");
+            if (startInput && e && (e.dateStr || e.date)) {
+                var iso = e.dateStr || (e.date && e.date.toISOString().slice(0, 10));
+                startInput.value = iso;
+                document.getElementById("event-time").removeAttribute("hidden");
+            }
+        } catch (_) { }
     }
     function r() {
-        return 768 <= window.innerWidth && window.innerWidth < 1200
-            ? "timeGridWeek"
-            : window.innerWidth <= 768
-              ? "listMonth"
-              : "dayGridMonth";
+        var hasDay = !!(FullCalendar && FullCalendar.dayGridPlugin);
+        var hasTime = !!(FullCalendar && FullCalendar.timeGridPlugin);
+        var hasList = !!(FullCalendar && FullCalendar.listPlugin);
+        if (window.innerWidth <= 768) {
+            return hasList ? "listMonth" : (hasDay ? "dayGridMonth" : "dayGridMonth");
+        }
+        if (window.innerWidth < 1200) {
+            return hasTime ? "timeGridWeek" : (hasDay ? "dayGridMonth" : "dayGridMonth");
+        }
+        return hasDay ? "dayGridMonth" : "dayGridMonth";
     }
-    var c = new Choices("#event-category", { searchEnabled: !1 }),
-        b = new FullCalendar.Calendar(e, {
-            timeZone: "local",
-            editable: !0,
-            droppable: !0,
-            selectable: !0,
-            navLinks: !0,
-            initialView: r(),
-            themeSystem: "bootstrap",
-            headerToolbar: {
-                left: "prev,next today",
-                center: "title",
-                right: "dayGridMonth,timeGridWeek,timeGridDay,listMonth",
-            },
-            windowResize: function (e) {
-                var t = r();
-                b.changeView(t);
-            },
-            eventResize: function (t) {
-                var e = y.findIndex(function (e) {
-                    return e.id == t.event.id;
-                });
-                y[e] &&
-                    ((y[e].title = t.event.title),
+    try {
+        var c = document.querySelector("#event-category");
+        if (c) new Choices(c, { searchEnabled: !1 });
+    } catch (_) { }
+    var plugins = [];
+    try {
+        FullCalendar.interactionPlugin && plugins.push(FullCalendar.interactionPlugin);
+        FullCalendar.dayGridPlugin && plugins.push(FullCalendar.dayGridPlugin);
+        FullCalendar.timeGridPlugin && plugins.push(FullCalendar.timeGridPlugin);
+        FullCalendar.listPlugin && plugins.push(FullCalendar.listPlugin);
+    } catch (_) { }
+    var hasDay = !!(FullCalendar && FullCalendar.dayGridPlugin);
+    var hasTime = !!(FullCalendar && FullCalendar.timeGridPlugin);
+    var hasList = !!(FullCalendar && FullCalendar.listPlugin);
+    var rightViews = [
+        hasDay ? "dayGridMonth" : null,
+        hasTime ? "timeGridWeek" : null,
+        hasTime ? "timeGridDay" : null,
+        hasList ? "listMonth" : null,
+    ].filter(Boolean).join(",");
+    var b = new FullCalendar.Calendar(e, {
+        plugins: plugins,
+        timeZone: "local",
+        editable: !0,
+        droppable: !0,
+        selectable: !0,
+        navLinks: !0,
+        initialView: r(),
+        themeSystem: "standard",
+        headerToolbar: {
+            left: "prev,next today",
+            center: "title",
+            right: rightViews,
+        },
+        windowResize: function (e) {
+            var t = r();
+            b.changeView(t);
+        },
+        eventResize: function (t) {
+            var e = y.findIndex(function (e) {
+                return e.id == t.event.id;
+            });
+            y[e] &&
+                ((y[e].title = t.event.title),
                     (y[e].start = t.event.start),
                     (y[e].end = t.event.end || null),
                     (y[e].allDay = t.event.allDay),
                     (y[e].className = t.event.classNames[0]),
                     (y[e].description = t.event._def.extendedProps.description || ""),
                     (y[e].location = t.event._def.extendedProps.location || "")),
-                    upcomingEvent(y);
-            },
-            eventClick: function (e) {
-                document.getElementById("edit-event-btn").removeAttribute("hidden"),
-                    document.getElementById("btn-save-event").setAttribute("hidden", !0),
-                    document.getElementById("edit-event-btn").setAttribute("data-id", "edit-event"),
-                    (document.getElementById("edit-event-btn").innerHTML = "Edit"),
-                    eventClicked(),
-                    flatPickrInit(),
-                    flatpicekrValueClear(),
-                    g.show(),
-                    l.reset(),
-                    (v = e.event),
-                    (document.getElementById("modal-title").innerHTML = ""),
-                    (document.getElementById("event-location-tag").innerHTML =
-                        void 0 === v.extendedProps.location ? "No Location" : v.extendedProps.location),
-                    (document.getElementById("event-description-tag").innerHTML =
-                        void 0 === v.extendedProps.description ? "No Description" : v.extendedProps.description),
-                    (document.getElementById("event-title").value = v.title),
-                    (document.getElementById("event-location").value =
-                        void 0 === v.extendedProps.location ? "No Location" : v.extendedProps.location),
-                    (document.getElementById("event-description").value =
-                        void 0 === v.extendedProps.description ? "No Description" : v.extendedProps.description),
-                    (document.getElementById("eventid").value = v.id),
-                    v.classNames[0] &&
-                        (c.destroy(),
-                        (c = new Choices("#event-category", { searchEnabled: !1 })).setChoiceByValue(v.classNames[0]));
-                function t(e) {
-                    var t = "" + ((e = new Date(e)).getMonth() + 1),
-                        n = "" + e.getDate();
-                    return [e.getFullYear(), (t = t.length < 2 ? "0" + t : t), (n = n.length < 2 ? "0" + n : n)].join(
-                        "-"
-                    );
-                }
-                var e = v.start,
-                    n = v.end,
-                    a = null,
-                    d =
-                        (null != n && (a = (d = new Date(n)).setDate(d.getDate() - 1)),
+                upcomingEvent(y);
+        },
+        eventClick: function (e) {
+            document.getElementById("edit-event-btn").removeAttribute("hidden"),
+                document.getElementById("btn-save-event").setAttribute("hidden", !0),
+                document.getElementById("edit-event-btn").setAttribute("data-id", "edit-event"),
+                (document.getElementById("edit-event-btn").innerHTML = "Edit"),
+                eventClicked(),
+                flatPickrInit(),
+                flatpicekrValueClear(),
+                g.show(),
+                l.reset(),
+                (v = e.event),
+                (document.getElementById("modal-title").innerHTML = ""),
+                (document.getElementById("event-location-tag").innerHTML =
+                    void 0 === v.extendedProps.location ? "No Location" : v.extendedProps.location),
+                (document.getElementById("event-description-tag").innerHTML =
+                    void 0 === v.extendedProps.description ? "No Description" : v.extendedProps.description),
+                (document.getElementById("event-title").value = v.title),
+                (document.getElementById("event-location").value =
+                    void 0 === v.extendedProps.location ? "No Location" : v.extendedProps.location),
+                (document.getElementById("event-description").value =
+                    void 0 === v.extendedProps.description ? "No Description" : v.extendedProps.description),
+                (document.getElementById("eventid").value = v.id),
+                v.classNames[0] &&
+                (c.destroy(),
+                    (c = new Choices("#event-category", { searchEnabled: !1 })).setChoiceByValue(v.classNames[0]));
+            function t(e) {
+                var t = "" + ((e = new Date(e)).getMonth() + 1),
+                    n = "" + e.getDate();
+                return [e.getFullYear(), (t = t.length < 2 ? "0" + t : t), (n = n.length < 2 ? "0" + n : n)].join(
+                    "-"
+                );
+            }
+            var e = v.start,
+                n = v.end,
+                a = null,
+                d =
+                    (null != n && (a = (d = new Date(n)).setDate(d.getDate() - 1)),
                         null == n ? str_dt(e) : str_dt(e) + " to " + str_dt(a)),
-                    n = null == n ? t(e) : t(e) + " to " + t(a),
-                    e =
-                        (flatpickr(start_date, {
-                            defaultDate: n,
-                            altInput: !0,
-                            altFormat: "j F Y",
-                            dateFormat: "Y-m-d",
-                            mode: "single",
-                            onChange: function () {
-                                // Show the time slot section; keep hidden time inputs
-                                document.getElementById("event-time").removeAttribute("hidden");
-                            },
-                        }),
+                n = null == n ? t(e) : t(e) + " to " + t(a),
+                e =
+                    (flatpickr(start_date, {
+                        defaultDate: n,
+                        altInput: !0,
+                        altFormat: "j F Y",
+                        dateFormat: "Y-m-d",
+                        mode: "single",
+                        onChange: function () {
+                            // Show the time slot section; keep hidden time inputs
+                            document.getElementById("event-time").removeAttribute("hidden");
+                        },
+                    }),
                         (document.getElementById("event-start-date-tag").innerHTML = d),
                         getTime(v.start)),
-                    a = getTime(v.end);
-                e == a
-                    ? (document.getElementById("event-time").setAttribute("hidden", !0),
-                      flatpickr(document.getElementById("timepicker1"), {
-                          enableTime: !0,
-                          noCalendar: !0,
-                          dateFormat: "H:i",
-                      }),
-                      flatpickr(document.getElementById("timepicker2"), {
-                          enableTime: !0,
-                          noCalendar: !0,
-                          dateFormat: "H:i",
-                      }))
-                    : (document.getElementById("event-time").removeAttribute("hidden"),
-                      flatpickr(document.getElementById("timepicker1"), {
-                          enableTime: !0,
-                          noCalendar: !0,
-                          dateFormat: "H:i",
-                          defaultDate: e,
-                      }),
-                      flatpickr(document.getElementById("timepicker2"), {
-                          enableTime: !0,
-                          noCalendar: !0,
-                          dateFormat: "H:i",
-                          defaultDate: a,
-                      }),
-                      (document.getElementById("event-timepicker1-tag").innerHTML = tConvert(e)),
-                      (document.getElementById("event-timepicker2-tag").innerHTML = tConvert(a))),
-                    (newEventData = null),
-                    (i.innerText = v.title),
-                    document.getElementById("btn-delete-event").removeAttribute("hidden");
-            },
-            dateClick: function (e) {
-                o(e);
-            },
-            events: y,
-            eventReceive: function (e) {
-                e = {
-                    id: parseInt(e.event.id),
-                    title: e.event.title,
-                    start: e.event.start,
-                    allDay: e.event.allDay,
-                    className: e.event.classNames[0],
-                };
-                y.push(e), upcomingEvent(y);
-            },
-            eventDrop: function (t) {
-                var e = y.findIndex(function (e) {
-                    return e.id == t.event.id;
-                });
-                y[e] &&
-                    ((y[e].title = t.event.title),
+                a = getTime(v.end);
+            e == a
+                ? (document.getElementById("event-time").setAttribute("hidden", !0),
+                    flatpickr(document.getElementById("timepicker1"), {
+                        enableTime: !0,
+                        noCalendar: !0,
+                        dateFormat: "H:i",
+                    }),
+                    flatpickr(document.getElementById("timepicker2"), {
+                        enableTime: !0,
+                        noCalendar: !0,
+                        dateFormat: "H:i",
+                    }))
+                : (document.getElementById("event-time").removeAttribute("hidden"),
+                    flatpickr(document.getElementById("timepicker1"), {
+                        enableTime: !0,
+                        noCalendar: !0,
+                        dateFormat: "H:i",
+                        defaultDate: e,
+                    }),
+                    flatpickr(document.getElementById("timepicker2"), {
+                        enableTime: !0,
+                        noCalendar: !0,
+                        dateFormat: "H:i",
+                        defaultDate: a,
+                    }),
+                    (document.getElementById("event-timepicker1-tag").innerHTML = tConvert(e)),
+                    (document.getElementById("event-timepicker2-tag").innerHTML = tConvert(a))),
+                (newEventData = null),
+                (i.innerText = v.title),
+                document.getElementById("btn-delete-event").removeAttribute("hidden");
+        },
+        dateClick: function (e) {
+            o(e);
+        },
+        events: y,
+        eventReceive: function (e) {
+            e = {
+                id: parseInt(e.event.id),
+                title: e.event.title,
+                start: e.event.start,
+                allDay: e.event.allDay,
+                className: e.event.classNames[0],
+            };
+            y.push(e), upcomingEvent(y);
+        },
+        eventDrop: function (t) {
+            var e = y.findIndex(function (e) {
+                return e.id == t.event.id;
+            });
+            y[e] &&
+                ((y[e].title = t.event.title),
                     (y[e].start = t.event.start),
                     (y[e].end = t.event.end || null),
                     (y[e].allDay = t.event.allDay),
                     (y[e].className = t.event.classNames[0]),
                     (y[e].description = t.event._def.extendedProps.description || ""),
                     (y[e].location = t.event._def.extendedProps.location || "")),
-                    upcomingEvent(y);
-            },
-        });
+                upcomingEvent(y);
+        },
+    });
     b.render(),
         upcomingEvent(y),
         l.addEventListener("submit", function (e) {
@@ -480,15 +520,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     (1 < d.length
                         ? ((o = new Date(d[1])).setDate(o.getDate() + 1), (d = new Date(d[0])), (m = !0))
                         : ((t = d),
-                          (u = document.getElementById("timepicker1").value.trim()),
-                          (n = document.getElementById("timepicker2").value.trim()),
-                          (d = new Date(d + "T" + u)),
-                          (o = new Date(t + "T" + n))),
-                    y.length + 1);
+                            (u = document.getElementById("timepicker1").value.trim()),
+                            (n = document.getElementById("timepicker2").value.trim()),
+                            (d = new Date(d + "T" + u)),
+                            (o = new Date(t + "T" + n))),
+                        y.length + 1);
             !1 === p[0].checkValidity()
                 ? p[0].classList.add("was-validated")
                 : (v
-                      ? (v.setProp("id", s),
+                    ? (v.setProp("id", s),
                         v.setProp("title", e),
                         v.setProp("classNames", [a]),
                         v.setStart(i),
@@ -500,7 +540,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             return e.id == v.id;
                         })),
                         y[t] &&
-                            ((y[t].title = e),
+                        ((y[t].title = e),
                             (y[t].start = i),
                             (y[t].end = l),
                             (y[t].allDay = m),
@@ -508,21 +548,21 @@ document.addEventListener("DOMContentLoaded", function () {
                             (y[t].description = c),
                             (y[t].location = r)),
                         b.render())
-                      : (b.addEvent(
-                            (n = {
-                                id: u,
-                                title: e,
-                                start: d,
-                                end: o,
-                                allDay: m,
-                                className: a,
-                                description: c,
-                                location: r,
-                            })
-                        ),
+                    : (b.addEvent(
+                        (n = {
+                            id: u,
+                            title: e,
+                            start: d,
+                            end: o,
+                            allDay: m,
+                            className: a,
+                            description: c,
+                            location: r,
+                        })
+                    ),
                         y.push(n)),
-                  g.hide(),
-                  upcomingEvent(y));
+                    g.hide(),
+                    upcomingEvent(y));
         }),
         document.getElementById("btn-delete-event").addEventListener("click", function (e) {
             if (v) {

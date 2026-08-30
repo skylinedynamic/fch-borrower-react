@@ -1,51 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg"
+  data-sidebar-image="none" data-preloader="disable" data-theme="default" data-theme-colors="default">
 
-<!doctype html>
-<html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none" data-preloader="disable" data-theme="default" data-theme-colors="default">
-  <head>
-    <meta charset="utf-8" />
-    <title>Four Corner Holdings | Admin Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="shortcut icon" href="assets/images/Favicon.png" />
+<head>
+  <meta charset="utf-8" />
+  <script>
+    (function () {
+      try {
+        var storeStr = localStorage.getItem('branding');
+        if (storeStr) {
+          var parsed = JSON.parse(storeStr);
+          if (parsed && parsed.state && parsed.state.branding) {
+            var branding = parsed.state.branding;
+            var primary = branding.primary_color;
+            var secondary = branding.secondary_color;
+            if (primary && primary !== 'null') {
+              document.documentElement.style.setProperty('--primary-color', primary);
+            }
+            if (secondary && secondary !== 'null') {
+              document.documentElement.style.setProperty('--secondary-color', secondary);
+            }
+            var fav = branding.favicon_full_url || branding.favicon || branding.website_favicon;
+            if (fav && fav !== 'null') {
+              var existingFav = document.querySelector("link[rel~='icon']");
+              if (existingFav) { existingFav.href = fav; }
+              else {
+                var newFav = document.createElement('link');
+                newFav.rel = 'icon';
+                newFav.href = fav;
+                document.head.appendChild(newFav);
+              }
+            }
+            if (branding.meta_title || branding.site_name) {
+              document.title = branding.meta_title || branding.site_name;
+            }
+            return;
+          }
+        }
+        var publicStr = localStorage.getItem('public_branding');
+        if (publicStr) {
+          var publicConfig = JSON.parse(publicStr);
+          if (publicConfig) {
+            var primary = publicConfig.primary_color;
+            var secondary = publicConfig.secondary_color;
+            if (primary && primary !== 'null') {
+              document.documentElement.style.setProperty('--primary-color', primary);
+            }
+            if (secondary && secondary !== 'null') {
+              document.documentElement.style.setProperty('--secondary-color', secondary);
+            }
+            var pFav = publicConfig.favicon_full_url || publicConfig.favicon || publicConfig.website_favicon;
+            if (pFav && pFav !== 'null') {
+              var pExistingFav = document.querySelector("link[rel~='icon']");
+              if (pExistingFav) { pExistingFav.href = pFav; }
+              else {
+                var pNewFav = document.createElement('link');
+                pNewFav.rel = 'icon';
+                pNewFav.href = pFav;
+                document.head.appendChild(pNewFav);
+              }
+            }
+            if (publicConfig.meta_title || publicConfig.site_name) {
+              document.title = publicConfig.meta_title || publicConfig.site_name;
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Branding initialization error:', e);
+      }
+    })();
+  </script>
+  <title>Four Corner Funding | Borrower Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" href="/assets/images/Favicon.png" />
 
-    <!-- jsvectormap css -->
-    <link href="assets/libs/jsvectormap/jsvectormap.min.css" rel="stylesheet" type="text/css" />
+  <!-- jsvectormap css -->
+  <link href="/assets/libs/jsvectormap/jsvectormap.min.css" rel="stylesheet" type="text/css" />
 
-    <!-- Swiper slider css -->
-    <link href="assets/libs/swiper/swiper-bundle.min.css" rel="stylesheet" type="text/css" />
+  <!-- Swiper slider css -->
+  <link href="/assets/libs/swiper/swiper-bundle.min.css" rel="stylesheet" type="text/css" />
 
-    <!-- Layout config Js (removed to avoid 404 fallback to index.html in dev) -->
-    <!-- <script src="assets/js/layout.js"></script> -->
-    <!-- Bootstrap Css -->
-    <link href="assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-    <!-- Icons Css -->
-    <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css" />
-    <!-- App Css-->
-    <link href="assets/css/app.min.css" rel="stylesheet" type="text/css" />
-    <!-- custom Css-->
-    <link href="assets/css/custom.min.css" rel="stylesheet" type="text/css" />
-    <link href="assets/css/custom-datatable.css" rel="stylesheet" type="text/css" />
-    <!-- Partner Sidebar Overrides -->
-    <link href="assets/css/partner-sidebar.css" rel="stylesheet" type="text/css" />
-  </head>
-  <body>
-    <div id="root"></div>
+  <!-- Layout config Js (removed to avoid 404 fallback to index.html in dev) -->
+  <!-- <script src="assets/js/layout.js"></script> -->
+  <!-- Bootstrap Css -->
+  <link href="/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+  <!-- Icons Css -->
+  <link href="/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+  <!-- App Css-->
+  <link href="/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+  <!-- custom Css-->
+  <link href="/assets/css/custom.min.css" rel="stylesheet" type="text/css" />
+  <link href="/assets/css/custom.css" rel="stylesheet" type="text/css" />
+  <link href="/assets/css/custom-datatable.css" rel="stylesheet" type="text/css" />
+  <!-- Partner Sidebar Overrides -->
+  <link href="/assets/css/partner-sidebar.css" rel="stylesheet" type="text/css" />
+  <link href="/assets/css/responsive.css" rel="stylesheet" type="text/css" />
+</head>
 
-    <!-- JAVASCRIPT (removed vendor script tags to prevent Unexpected token '<' when dev server returns index.html for unknown asset paths) -->
-    <script src="assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/libs/simplebar/simplebar.min.js"></script>
-    <script src="assets/libs/node-waves/waves.min.js"></script>
-    <script src="assets/libs/feather-icons/feather.min.js"></script>
-    <script src="assets/js/pages/plugins/lord-icon-2.1.0.js"></script>
-    <script src="assets/js/plugins.js"></script>
 
-    <!-- Charts and maps (optional; removed init scripts to avoid errors) -->
-    <script src="assets/libs/apexcharts/apexcharts.min.js"></script>
-    <script src="assets/libs/jsvectormap/jsvectormap.min.js"></script>
-    <script src="assets/libs/jsvectormap/maps/world-merc.js"></script>
-    <script src="assets/libs/swiper/swiper-bundle.min.js"></script>
+<body>
+  <div id="root"></div>
 
-    <!-- React entry -->
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
-  
+  <!-- JAVASCRIPT (removed vendor script tags to prevent Unexpected token '<' when dev server returns index.html for unknown asset paths) -->
+  <script src="/assets/libs/bootstrap/js/bootstrap.bundle.min.js" type="module"></script>
+  <script src="/assets/libs/simplebar/simplebar.min.js" type="module"></script>
+  <script src="/assets/libs/node-waves/waves.min.js" type="module"></script>
+  <script src="/assets/libs/feather-icons/feather.min.js" type="module"></script>
+  <script src="/assets/js/pages/plugins/lord-icon-2.1.0.js" type="module"></script>
+  <script src="/assets/js/plugins.js" type="module"></script>
+
+  <!-- Charts and maps (optional; removed init scripts to avoid errors) -->
+  <script src="/assets/libs/apexcharts/apexcharts.min.js" type="module"></script>
+  <script src="/assets/libs/jsvectormap/jsvectormap.min.js" type="module"></script>
+  <script src="/assets/libs/jsvectormap/maps/world-merc.js" type="module"></script>
+  <script src="/assets/libs/swiper/swiper-bundle.min.js" type="module"></script>
+
+
+  <!-- FullCalendar CDN (core + plugins + styles) -->
+  <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.11/index.global.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.11/index.global.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fullcalendar/list@6.1.11/index.global.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js" type="module"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.11/index.global.min.js"
+    type="module"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.11/index.global.min.js" type="module"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.11/index.global.min.js" type="module"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/list@6.1.11/index.global.min.js" type="module"></script> -->
+
+  <!-- flatpickr (date/time picker) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr" type="module"></script>
+
+  <!-- Choices.js (enhanced select for event category) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js@10.2.0/public/assets/styles/choices.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/choices.js@10.2.0/public/assets/scripts/choices.min.js"
+    type="module"></script>
+
+  <!-- Calendar init -->
+  <script src="/assets/js/pages/calendar.init.js" type="module"></script>
+
+  <!-- React entry -->
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
 </html>

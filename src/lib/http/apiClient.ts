@@ -13,10 +13,16 @@ export const apiClient: AxiosInstance = axios.create({
 // Attach Authorization header if token exists
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = getToken()
+  config.headers = config.headers || {}
+  
   if (token) {
-    config.headers = config.headers || {}
     ;(config.headers as Record<string, string>).Authorization = `Bearer ${token}`
   }
+  
+  if (typeof window !== 'undefined') {
+    ;(config.headers as Record<string, string>)['X-Timezone'] = Intl.DateTimeFormat().resolvedOptions().timeZone
+  }
+  
   return config
 })
 
@@ -33,7 +39,7 @@ apiClient.interceptors.response.use(
         const message = offline
           ? 'You appear to be offline. Please reconnect and try again.'
           : 'Network error: Unable to reach the server. Please try again later.'
-        toast(message, { toastId: 'network-error' })
+        toast.error(message, { toastId: 'network-error' })
       }
     }
 
@@ -48,9 +54,12 @@ apiClient.interceptors.response.use(
       }
     } else if (status === 403) {
       // Forbidden: keep auth, show informative toast, do not redirect
-      const serverMessage = (error.response?.data as any)?.message
-      const message = serverMessage || 'You do not have permission to perform this action.'
-      toast.error(message, { toastId: 'forbidden-error' })
+      const skipToast = error.config?.headers?.['X-Skip-Toast'] === 'true' || error.config?.headers?.['x-skip-toast'] === 'true'
+      if (!skipToast) {
+        const serverMessage = (error.response?.data as any)?.message
+        const message = serverMessage || 'You do not have permission to perform this action.'
+        toast.error(message, { toastId: 'forbidden-error' })
+      }
     }
     return Promise.reject(error)
   }

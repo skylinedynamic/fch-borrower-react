@@ -1,0 +1,171 @@
+import { useEffect, useRef } from 'react';
+import $ from 'jquery';
+
+// Ensure jQuery is available globally for Summernote
+if (typeof window !== 'undefined') {
+    window.$ = window.jQuery = $;
+}
+
+import 'summernote/dist/summernote-lite.js';
+import 'summernote/dist/summernote-lite.css';
+
+/**
+ * Custom hook for Summernote editor initialization and management
+ * @param {string} fieldName - The name of the field (e.g., 'notes', 'description')
+ * @param {string} fieldValue - The current value of the field
+ * @param {function} onChange - Callback function to handle content changes
+ * @param {object} options - Optional configuration overrides
+ * @param {boolean} enabled - Whether the editor should be active (useful for tabs/modals)
+ * @returns {object} - Returns editorRef to be attached to textarea or div
+ */
+export const useSummernote = (fieldName, fieldValue, onChange, options = {}, enabled = true) => {
+    const editorRef = useRef(null);
+    const isInternalChange = useRef(false);
+    const lastContentRef = useRef(fieldValue || '');
+    const isInitialized = useRef(false);
+
+    // Helper to normalize HTML for comparison (handles <p><br></p>, etc.)
+    const normalize = (html) => {
+        if (!html) return '';
+        const trimmed = html.trim();
+        const emptyStates = ['<p><br></p>', '<p><br/></p>', '<br>', '<p>&nbsp;</p>', ''];
+        if (emptyStates.includes(trimmed)) return '';
+        return trimmed;
+    };
+
+    const defaultConfig = {
+        height: 200,
+        placeholder: 'Enter text here...',
+        toolbar: [
+            ['style', ['style']],
+            ['font', ['bold', 'underline', 'clear']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['table', ['table']],
+            ['insert', ['link']],
+            ['view', ['help']]
+        ]
+    };
+
+    const config = { ...defaultConfig, ...options };
+
+    // Initialize/Destroy Summernote based on 'enabled' and element presence
+    useEffect(() => {
+        const $ = window.jQuery || window.$;
+
+        if (!enabled || !editorRef.current) {
+            if (isInitialized.current && $ && editorRef.current) {
+                try {
+                    $(editorRef.current).summernote('destroy');
+                } catch (e) { }
+            }
+            isInitialized.current = false;
+            return;
+        }
+
+        if (isInitialized.current) return;
+
+        const handleFocus = (e) => {
+            const target = e.target;
+            if (target && (target.closest('.note-editor, .note-modal, .note-popover, .note-dropdown-menu, .note-children-container'))) {
+                e.stopImmediatePropagation();
+            }
+        };
+
+        const initEditor = () => {
+            const $j = window.jQuery || window.$;
+            if ($j && editorRef.current && $j(editorRef.current).summernote) {
+                const $editor = $j(editorRef.current);
+                const initialCode = fieldValue || '';
+
+                $editor.summernote({
+                    ...config,
+                    callbacks: {
+                        onChange: (contents) => {
+                            const normalized = normalize(contents);
+                            isInternalChange.current = true;
+                            lastContentRef.current = normalized;
+                            onChange({ target: { name: fieldName, value: normalized } });
+                            setTimeout(() => { isInternalChange.current = false; }, 150);
+                        },
+                        onPaste: function (e) {
+                            const bufferText = ((e.originalEvent || e).clipboardData || (window as any).clipboardData).getData('Text');
+                            e.preventDefault();
+
+                            // Trim to remove any accidental leading/trailing spaces or empty lines from the source
+                            const cleanText = (bufferText || '').trim();
+
+                            if (cleanText) {
+                                setTimeout(() => {
+                                    $j(editorRef.current).summernote('insertText', cleanText);
+                                }, 10);
+                            }
+                        },
+                        onInit: function () {
+                            // No-op: Removed overflow: visible as it breaks Bootstrap modal scrolling.
+                            // Summernote dialogs are handled by 'dialogsInBody: true' in config.
+                        }
+                    }
+                });
+
+                document.addEventListener('focusin', handleFocus, true);
+                $editor.summernote('code', initialCode);
+                lastContentRef.current = normalize(initialCode);
+                isInitialized.current = true;
+            } else if ($j && editorRef.current) {
+                setTimeout(initEditor, 100);
+            }
+        };
+
+        initEditor();
+
+        return () => {
+            document.removeEventListener('focusin', handleFocus, true);
+            if (isInitialized.current && $ && editorRef.current) {
+                try {
+                    $(document).off('.summernote');
+                    $(editorRef.current).summernote('destroy');
+                } catch (e) { }
+            }
+            isInitialized.current = false;
+        };
+    }, [enabled, fieldName]); // Re-init if enabled flag or field name changes
+
+    // Sync external updates
+    useEffect(() => {
+        if (isInternalChange.current || !isInitialized.current || !enabled) return;
+
+        const incoming = normalize(fieldValue);
+        const currentRef = normalize(lastContentRef.current);
+
+        if (incoming === currentRef) return;
+
+        const $ = window.jQuery || window.$;
+        if ($ && editorRef.current) {
+            const $editor = $(editorRef.current);
+            if ($editor.summernote) {
+                const currentEditorCode = normalize($editor.summernote('code'));
+                if (currentEditorCode !== incoming) {
+                    $editor.summernote('code', fieldValue || '');
+                    lastContentRef.current = normalize(fieldValue || '');
+                }
+            }
+        }
+    }, [fieldValue, enabled]);
+
+    return { editorRef };
+};
+
+export const SUMMERNOTE_CONFIG = {
+    height: 200,
+    dialogsInBody: true,
+    toolbar: [
+        ['style', ['style']],
+        ['font', ['bold', 'underline', 'clear']],
+        ['para', ['ul', 'ol', 'paragraph']],
+        ['color', ['color']],
+        ['table', ['table']],
+        ['insert', ['link', 'picture']],
+        ['view', ['fullscreen', 'help']]
+    ]
+};

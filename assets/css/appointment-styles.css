@@ -1,0 +1,486 @@
+:root {
+  --primary-color: var(--primary-color);
+  --secondary-color: var(--secondary-color);
+}
+
+.borrower-appointments-wrapper .letter-spacing-1 {
+    letter-spacing: 0.5px;
+}
+
+.borrower-appointments-wrapper .uppercase-label {
+    text-transform: uppercase;
+    font-weight: 800 !important;
+    font-size: 11px !important;
+    color: #878a99 !important;
+    letter-spacing: 0.8px !important;
+    margin-bottom: 2px !important;
+}
+
+.borrower-appointments-wrapper .event-details h4 {
+    font-weight: 800 !important;
+    color: #1f1f1f !important;
+}
+
+.borrower-appointments-wrapper .btn-soft-primary {
+    background-color: #f3f6f9 !important;
+    color: #3b4b7a !important;
+    border: none !important;
+}
+
+.borrower-appointments-wrapper .btn-soft-primary:hover {
+    background-color: #3b4b7a !important;
+    color: #fff !important;
+}
+
+.borrower-appointments-wrapper .btn-soft-danger {
+    background-color: #fef4f2 !important;
+    color: #f06548 !important;
+    border: none !important;
+}
+
+.borrower-appointments-wrapper .btn-soft-danger:hover {
+    background-color: #f06548 !important;
+    color: #fff !important;
+}
+
+.borrower-appointments-wrapper .description-wrapper {
+    background-color: #f8fafd !important;
+    border: 1px solid #eef2f7 !important;
+    border-radius: 6px !important;
+    padding: 20px 24px !important;
+    transition: all 0.2s ease-in-out;
+}
+
+.borrower-appointments-wrapper .description-wrapper:hover {
+    border-color: #d1d9e0 !important;
+}
+
+.borrower-appointments-wrapper .see-more-less-btn {
+    letter-spacing: 0.8px;
+    font-size: 11px !important;
+    color: #3b4b7a !important;
+    border: none;
+    background: transparent;
+    padding: 0;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+}
+
+.borrower-appointments-wrapper .see-more-less-btn:hover {
+    color: #212529 !important;
+}
+
+.borrower-appointments-wrapper .detail-item-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #f3f6f9;
+    color: #3b4b7a;
+    border: none;
+}
+
+.borrower-appointments-wrapper .appointment-with-box-full {
+    background-color: #eef2f7 !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px;
+    padding: 30px !important;
+    display: flex;
+    align-items: center;
+    width: 100% !important;
+    margin-top: 24px;
+}
+
+.borrower-appointments-wrapper .avatar-circle-custom {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: #3b4b7a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #fff;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.borrower-appointments-wrapper .avatar-circle-custom img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.borrower-appointments-wrapper .rich-text-content ul,
+.borrower-appointments-wrapper .rich-text-content ol {
+    padding-left: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+
+/* Premium Flatpickr Overrides - Scoped */
+.borrower-appointments-wrapper .flatpickr-calendar {
+    border: none !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 8px !important;
+    padding: 0 !important;
+    font-family: var(--vz-body-font-family);
+    z-index: 9999 !important;
+}
+
+.borrower-appointments-wrapper .flatpickr-months {
+    background: #405189 !important;
+    border-top-left-radius: 8px !important;
+    border-top-right-radius: 8px !important;
+    padding: 10px 0 !important;
+}
+
+.borrower-appointments-wrapper .flatpickr-month {
+    color: #fff !important;
+}
+
+.borrower-appointments-wrapper .flatpickr-current-month {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    color: #fff !important;
+}
+
+.borrower-appointments-wrapper .flatpickr-current-month .flatpickr-monthDropdown-months {
+    font-weight: 600 !important;
+    color: #fff !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+.borrower-appointments-wrapper .flatpickr-current-month input.cur-year {
+    font-weight: 600 !important;
+    color: #fff !important;
+}
+
+.borrower-appointments-wrapper .flatpickr-monthDropdown-month {
+    color: #495057 !important;
+    background: #fff !important;
+}
+
+.borrower-appointments-wrapper .flatpickr-prev-month,
+.borrower-appointments-wrapper .flatpickr-next-month {
+    color: #fff !important;
+    fill: #fff !important;
+    padding: 10px !important;
+}
+
+.borrower-appointments-wrapper .flatpickr-prev-month:hover,
+.borrower-appointments-wrapper .flatpickr-next-month:hover {
+    color: #fff !important;
+    opacity: 0.8;
+}
+
+.borrower-appointments-wrapper .flatpickr-weekdays {
+    background: #405189 !important;
+    padding: 0 10px 5px 10px !important;
+}
+
+.borrower-appointments-wrapper span.flatpickr-weekday {
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+}
+
+.borrower-appointments-wrapper .flatpickr-days {
+    padding: 10px !important;
+    background-color: #fff !important;
+    border-bottom-left-radius: 8px !important;
+    border-bottom-right-radius: 8px !important;
+}
+
+.borrower-appointments-wrapper .flatpickr-day {
+    border-radius: 4px !important;
+    font-size: 13px !important;
+    color: #495057 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.borrower-appointments-wrapper .flatpickr-day.today {
+    border: 1px solid #405189 !important;
+    color: #405189 !important;
+}
+
+.borrower-appointments-wrapper .flatpickr-day.selected,
+.borrower-appointments-wrapper .flatpickr-day.selected:hover {
+    background: #405189 !important;
+    color: #fff !important;
+    border: none !important;
+}
+
+.borrower-appointments-wrapper .flatpickr-day:hover {
+    background: #f3f6f9 !important;
+    color: #405189 !important;
+}
+
+.borrower-appointments-wrapper .flatpickr-day.flatpickr-disabled,
+.borrower-appointments-wrapper .flatpickr-day.flatpickr-disabled:hover {
+    color: #e2e5ec !important;
+    background: transparent !important;
+}
+
+/* Standardized Form Heights and Accuracy - Scoped */
+.borrower-appointments-wrapper .form-control,
+.borrower-appointments-wrapper .p-dropdown,
+.borrower-appointments-wrapper .input-group-text,
+.borrower-appointments-wrapper .note-editor.note-frame {
+    border-color: #e2e5ec !important;
+    border-radius: 0.3rem !important;
+}
+
+.borrower-appointments-wrapper .fc .fc-list-event-title a {
+    color: #4d67bd !important;
+}
+
+.borrower-appointments-wrapper .modal-content .form-control,
+.borrower-appointments-wrapper .modal-content .p-dropdown {
+    height: 38px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.borrower-appointments-wrapper .p-dropdown .p-dropdown-label {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 14px !important;
+    line-height: 1.25 !important;
+}
+
+.borrower-appointments-wrapper .p-dropdown-panel {
+    border: 1px solid #e2e5ec !important;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 0.3rem !important;
+}
+
+.borrower-appointments-wrapper .p-dropdown-items .p-dropdown-item {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 13px !important;
+}
+
+.borrower-appointments-wrapper .input-group-text {
+    background-color: #f3f6f9 !important;
+    padding: 0 12px !important;
+    border-left: none !important;
+}
+
+.borrower-appointments-wrapper .input-group .form-control {
+    border-right: none !important;
+}
+
+/* Responsive Optimizations - Scoped */
+@media (max-width: 575.98px) {
+    .borrower-appointments-wrapper .modal-body {
+        padding: 1.25rem !important;
+    }
+
+    .borrower-appointments-wrapper .event-details {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .borrower-appointments-wrapper .event-details .hstack .btn {
+        width: 100% !important;
+    }
+
+    .borrower-appointments-wrapper .time-slot-container {
+        flex-direction: row !important;
+        gap: 8px !important;
+    }
+
+    .borrower-appointments-wrapper .time-slot-container .text-muted {
+        display: block !important;
+    }
+
+}
+
+/* Arrow styling - Scoped */
+.borrower-appointments-wrapper .flatpickr-calendar.arrowTop:before,
+.borrower-appointments-wrapper .flatpickr-calendar.arrowTop:after {
+    border-bottom-color: #405189 !important;
+}
+
+.borrower-appointments-wrapper .p-invalid {
+    border: 1px solid #f06548 !important;
+}
+
+.borrower-appointments-wrapper .is-invalid {
+    border: 1px solid #f06548 !important;
+}
+
+.borrower-appointments-wrapper .is-invalid+.input-group-text {
+    border: 1px solid #f06548 !important;
+    border-left: none !important;
+}
+
+.borrower-appointments-wrapper .invalid-feedback {
+    font-size: 11px !important;
+    color: #f06548 !important;
+    margin-top: 4px !important;
+}
+
+.borrower-appointments-wrapper .p-dropdown.p-focus {
+    border-color: #405189 !important;
+    box-shadow: 0 0 0 0.125rem rgba(64, 81, 137, 0.1) !important;
+}
+
+/* Detail Items stacking - Scoped */
+@media (max-width: 767.98px) {
+    .borrower-appointments-wrapper .detail-item-col {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Fix for Summernote modals inside Bootstrap modals */
+.note-modal {
+    z-index: 1061 !important;
+}
+
+.note-modal-backdrop {
+    z-index: 1060 !important;
+}
+
+.note-dropdown-menu {
+    z-index: 1062 !important;
+}
+
+/* Ensure Summernote link popover/dialog is above everything */
+.note-popover {
+    z-index: 1060 !important;
+}
+
+/* Borrower Appointments Wrapper Scoped Styles (Events) */
+
+.borrower-appointments-wrapper .fc-prev-button,
+.borrower-appointments-wrapper .fc-next-button {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: #fff !important;
+    padding: 2px 8px !important;
+    height: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.borrower-appointments-wrapper .fc-prev-button::after {
+    content: "\ea64";
+    font-family: 'remixicon' !important;
+    font-size: 18px !important;
+}
+
+.borrower-appointments-wrapper .fc-next-button::after {
+    content: "\ea6e";
+    font-family: 'remixicon' !important;
+    font-size: 18px !important;
+}
+
+.borrower-appointments-wrapper .fc-prev-button span,
+.borrower-appointments-wrapper .fc-next-button span {
+    display: none !important;
+}
+
+.borrower-appointments-wrapper .fc-today-button {
+    background-color: #7296f8 !important;
+    border-color: #7296f8 !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    padding: 4px 16px !important;
+    text-transform: capitalize !important;
+    opacity: 1 !important;
+}
+
+.borrower-appointments-wrapper .fc-toolbar-title {
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    color: #495057 !important;
+    font-size: 18px !important;
+    letter-spacing: 0.5px !important;
+}
+
+.borrower-appointments-wrapper .fc-col-header-cell-cushion {
+    color: #313a46 !important;
+    font-weight: 700 !important;
+    padding: 12px 0 !important;
+    font-size: 14px !important;
+    text-decoration: none !important;
+}
+
+.borrower-appointments-wrapper .fc-daygrid-day-number {
+    color: #878a99 !important;
+    font-weight: 500 !important;
+    padding: 8px !important;
+    text-decoration: none !important;
+    font-size: 13px !important;
+}
+
+.borrower-appointments-wrapper .fc-button-group .fc-button {
+    background-color: #3b4b7a !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+    padding: 6px 12px !important;
+}
+
+.borrower-appointments-wrapper .fc-button-group .fc-button-active {
+    background-color: #2a3557 !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.borrower-appointments-wrapper .fc-event,
+.borrower-appointments-wrapper .fc-daygrid-event,
+.borrower-appointments-wrapper .fc-daygrid-block-event,
+.borrower-appointments-wrapper .fc-h-event,
+.borrower-appointments-wrapper .fc-v-event {
+    padding: 4px 8px !important;
+    font-size: 16px !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+    margin-top: 2px !important;
+    margin-bottom: 2px !important;
+    min-height: 28px !important;
+    border-width: 1px !important;
+}
+
+.borrower-appointments-wrapper .fc-event-main {
+    padding: 2px 4px !important;
+    color: inherit !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.borrower-appointments-wrapper .fc-event-title,
+.borrower-appointments-wrapper .fc-event-main-frame {
+    font-weight: 500 !important;
+    font-size: 13px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.borrower-appointments-wrapper .fc-daygrid-event-dot {
+    border-color: inherit !important;
+}
+
+.borrower-appointments-wrapper .fc-event:hover {
+    opacity: 0.85 !important;
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+}
+
+.borrower-appointments-wrapper .upcoming-event-card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-2px);
+}
+
+.borrower-appointments-wrapper .cursor-pointer {
+    cursor: pointer !important;
+}

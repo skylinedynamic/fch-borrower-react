@@ -1,0 +1,67 @@
+/* ================================================================
+   Borrower Portal — funding-requests.css
+   All styles for the /funding-requests pages & components.
+   ================================================================ */
+
+/* ── ReviewProgressCard ─────────────────────────────────────── */
+.fr-progress-icon-badge { width: 48px; height: 48px; margin-right: 16px; background: #f8fafc; color: #1e293b; }
+.fr-progress-title { color: #0f172a; }
+.fr-progress-ring-wrap { width: 76px; height: 76px; }
+.fr-progress-ring-svg  { transform: rotate(-90deg); }
+.fr-progress-pct       { font-size: 15px; line-height: 1; }
+.fr-progress-complete-label { font-size: 10px; margin-top: 2px; }
+.fr-timeline-track { min-width: 500px; }
+.fr-step-col       { width: 100px; flex-shrink: 0; }
+.fr-step-subtext   { color: #64748b; font-size: 11px; }
+.fr-step-connector { height: 2px; margin-top: 17px; z-index: 1; margin-left: -36px; margin-right: -36px; }
+
+/* ── FundingRequestDetailPage ───────────────────────────────── */
+.fr-accordion-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s ease; overflow: hidden; }
+.fr-accordion-panel.expanded { grid-template-rows: 1fr; }
+.fr-accordion-panel-inner { overflow: hidden; padding-left: 2px; }
+.fr-doc-item { min-width: 150px; }
+.fr-doc-filename { max-width: 180px; }
+.fr-detail-step-col { width: 100px; flex-shrink: 0; }
+.fr-detail-step-connector { height: 2px; margin-top: 17px; background-color: #f1f5f9; margin-left: -36px; margin-right: -36px; }
+.fr-back-btn { background-color: #022144; border-color: #022144; font-size: 14px; color: #fff; }
+.fr-back-btn:hover { background-color: #033268; border-color: #033268; color: #fff; }
+.fr-doc-link { max-width: 260px; }
+.fr-download-btn { width: 32px; height: 32px; }
+.fr-activity-scroll { max-height: 600px; overflow-y: auto; overflow-x: hidden; }
+.fr-timeline-vline { left: 18px; top: 10px; bottom: 10px; width: 2px; border-left: 2px dashed #e9ecef; z-index: 1; }
+
+/* ── FundingRequestList ─────────────────────────────────────── */
+.fr-filter-dropdown       { height: 38px !important; }
+.fr-filter-dropdown-input { height: 38px !important; }
+.fr-list-actions-col      { min-width: 150px; }
+
+/* ── FundingRequestModal ────────────────────────────────────── */
+.fr-modal-wide    { max-width: 920px; }
+.fr-doc-name-cell { min-width: 0; }
+
+/* ── FundingRequestSkeleton ─────────────────────────────────── */
+.fr-skel-120    { width: 120px;  height: 14px; }
+.fr-skel-200    { width: 200px;  height: 14px; }
+.fr-skel-180    { width: 180px;  height: 14px; }
+.fr-skel-160    { width: 160px;  height: 14px; }
+.fr-skel-140    { width: 140px;  height: 14px; }
+.fr-skel-130    { width: 130px;  height: 14px; }
+.fr-skel-140h16 { width: 140px;  height: 16px; }
+.fr-skel-150    { width: 150px;  height: 14px; }
+.fr-skel-full-40 { width: 100%; height: 40px; }
+.fr-skel-full-30 { width: 100%; height: 30px; }
+.fr-skel-200h16  { width: 200px; height: 16px; }
+  
+.activity-sidebar-sticky { top: 130px; z-index: 10; } 
+
+/* ── Added from inline styles ───────────────────────────────── */
+.fr-accordion-btn { width: 28px; height: 28px; min-width: 28px; min-height: 28px; background: #f1f5f9; border: none; color: #64748b; padding: 0; }
+.fr-category-badge { background-color: #e2e8f0; color: #1e3a8a; }
+.fr-activity-title { line-height: 1.4; }
+.fr-timeline-dot-wrap { z-index: 2; margin-top: 2px; }
+.fr-timeline-dot { width: 36px !important; height: 36px !important; }
+.fr-min-w-0 { min-width: 0; }
+.activity-scroll-container::-webkit-scrollbar { width: 5px; }
+.activity-scroll-container::-webkit-scrollbar-track { background: transparent; border-radius: 10px; }
+.activity-scroll-container::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 10px; }
+.activity-scroll-container::-webkit-scrollbar-thumb:hover { background: #adb5bd; }
