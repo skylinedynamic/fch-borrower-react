@@ -279,7 +279,6 @@ export default function OwnershipInformationStep({
   const handleNext = async () => {
     const success = await handleSave()
     if (success) {
-      toast.success('Ownership information saved successfully')
       onNext()
     }
   }

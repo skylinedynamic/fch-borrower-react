@@ -1,7 +1,7 @@
 import React from 'react'
 import type { BusinessDetails, FinancialSupport } from '../../../modules/pre-qualification'
 import CustomDropdown from '../../../components/Common/CustomDropdown'
-import { entityTypes, industryTypes, yearsInBusinessOptions } from '../../../data/profile'
+import { entityTypes, industryTypes } from '../../../data/profile'
 import { formatCurrency } from '../../../utils/formatters'
 
 interface BusinessDetailsStepProps {
@@ -26,6 +26,22 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
     setBusiness({ ...business, annualRevenue: formatted })
   }
 
+  const dynamicIndustryTypes = React.useMemo(() => {
+    const opts = [...industryTypes]
+    if (business.industryType && !opts.some((o) => o.value.toLowerCase() === business.industryType.toLowerCase())) {
+      opts.unshift({ label: business.industryType, value: business.industryType })
+    }
+    return opts
+  }, [business.industryType])
+
+  const dynamicEntityTypes = React.useMemo(() => {
+    const opts = [...entityTypes]
+    if (business.businessStructure && !opts.some((o) => o.value.toLowerCase() === business.businessStructure.toLowerCase())) {
+      opts.unshift({ label: business.businessStructure, value: business.businessStructure })
+    }
+    return opts
+  }, [business.businessStructure])
+
   return (
     <form className="row g-3" onSubmit={(e) => { e.preventDefault(); onNext(); }}>
       <div className="col-md-6">
@@ -45,7 +61,7 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
         <CustomDropdown
           value={business.industryType}
           onChange={(value) => setBusiness({ ...business, industryType: value })}
-          options={industryTypes}
+          options={dynamicIndustryTypes}
           optionLabel="label"
           optionValue="value"
           placeholder="Select industry type"
@@ -59,7 +75,7 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
         <CustomDropdown
           value={business.businessStructure}
           onChange={(value) => setBusiness({ ...business, businessStructure: value })}
-          options={entityTypes}
+          options={dynamicEntityTypes}
           optionLabel="label"
           optionValue="value"
           placeholder="Select business structure"
@@ -69,15 +85,15 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
       </div>
       <div className="col-md-6">
         <label className="form-label">Time in Business <span className="text-danger">*</span></label>
-        <CustomDropdown
-          value={business.yearsInBusiness}
-          onChange={(value) => setBusiness({ ...business, yearsInBusiness: value })}
-          options={yearsInBusinessOptions}
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Select years in business"
-          className={`w-100 ${errors.yearsInBusiness ? 'is-invalid' : ''}`}
+        <input
+          type="text"
+          className="form-control bg-light"
+          value={business.yearsInBusiness || 'Please set business start date in profile'}
+          disabled
         />
+        <small className="text-muted d-block mt-1">
+          Calculated from your Business Start Date
+        </small>
         {errors.yearsInBusiness && <div className="invalid-feedback d-block">{errors.yearsInBusiness}</div>}
       </div>
       <div className="col-md-6">
