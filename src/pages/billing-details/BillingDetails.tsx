@@ -33,6 +33,10 @@ import {
   PROVIDER_STRIPE,
 } from '../../config/paymentConfig';
 
+// Backend (PartnerPaymentProviderResource) always casts `status` to a real
+// boolean, so this only ever excludes providers explicitly disabled (false).
+export const isProviderEnabled = (provider: PaymentProviderItem): boolean => provider.status !== false;
+
 // Inner Stripe Form component for card details
 export const StripeCardInputForm = ({
   selectedProvider,
@@ -248,7 +252,7 @@ const ChangePaymentMethodModal = ({
     setLoadingProviders(true);
     try {
       const res = await fetchPaymentProviders();
-      const list = Array.isArray(res) ? res.filter((p) => p.status !== false) : [];
+      const list = Array.isArray(res) ? res.filter(isProviderEnabled) : [];
       setProviders(list);
       if (list.length > 0) {
         const matching = list.find(
