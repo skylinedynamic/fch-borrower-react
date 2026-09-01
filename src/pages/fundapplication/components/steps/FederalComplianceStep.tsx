@@ -126,7 +126,6 @@ export default function FederalComplianceStep({
   const handleNext = async () => {
     const success = await handleSave()
     if (success) {
-      toast.success('Federal compliance disclosures saved successfully')
       onNext()
     }
   }
