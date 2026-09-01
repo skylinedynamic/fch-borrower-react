@@ -4,7 +4,7 @@ import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import InvoiceStats from './components/InvoiceStats';
 import InvoiceFilters from './components/InvoiceFilters';
 import InvoiceTable from './components/InvoiceTable';
-import { fetchInvoices, fetchInvoiceStats } from '../../modules/invoice';
+import { fetchInvoices } from '../../modules/invoice';
 
 export default function Invoices() {
     const [loading, setLoading] = useState(true);
@@ -45,6 +45,7 @@ export default function Invoices() {
             customer_name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
             email: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
             status: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+            type: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
             cycle: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
             country: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
             payment_date: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
@@ -56,7 +57,6 @@ export default function Invoices() {
 
     useEffect(() => {
         initFilters();
-        loadStats();
 
         // Add class to body to prevent global scroll
         document.body.classList.add('table-page-fit-active');
@@ -66,20 +66,9 @@ export default function Invoices() {
         };
     }, []);
 
-    const loadStats = async (params = {}) => {
-        try {
-            setStatsLoading(true);
-            const response = await fetchInvoiceStats(params);
-            setStats(response);
-        } catch (error) {
-            console.error('Error fetching stats:', error);
-        } finally {
-            setStatsLoading(false);
-        }
-    };
-
     const loadData = async () => {
         setLoading(true);
+        setStatsLoading(true);
         try {
             // Format date range for backend if present
             let dateFrom = null;
@@ -96,11 +85,13 @@ export default function Invoices() {
                 dateTo = formatDate(appliedDateRange[1]);
             }
 
+            const extractValue = (val) => (val && typeof val === 'object' && 'value' in val ? val.value : val);
+
             const payload = {
                 search: appliedSearchText,
-                status: appliedStatus,
-                payee_id: appliedPayee,
-                cycle: appliedCycle,
+                status: extractValue(appliedStatus),
+                payee_id: extractValue(appliedPayee),
+                cycle: extractValue(appliedCycle),
                 date_from: dateFrom,
                 date_to: dateTo,
                 filters: appliedFilters,
@@ -114,17 +105,18 @@ export default function Invoices() {
             if (response.status) {
                 setInvoices(response.data || []);
                 setTotalRecords(response.meta?.total || 0);
+                if (response.stats) {
+                    setStats(response.stats);
+                }
             } else {
                 toast.error(response.message || 'Failed to fetch invoices');
             }
-
-            // Also load stats with the same payload (excluding pagination/sorting usually, but backend handles it)
-            loadStats(payload);
         } catch (error) {
             console.error('Error fetching invoices:', error);
             toast.error('Failed to load invoices');
         } finally {
             setLoading(false);
+            setStatsLoading(false);
         }
     };
 

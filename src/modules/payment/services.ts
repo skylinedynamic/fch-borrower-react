@@ -1,5 +1,5 @@
 import { apiClient } from '../../lib/http/apiClient';
-import { PaymentResponse, PaymentStatsResponse, PaymentParams } from './types';
+import { PaymentResponse, PaymentParams } from './types';
 
 const BASE_URL = '/borrower/payments';
 
@@ -8,12 +8,17 @@ export const fetchPayments = async (params: PaymentParams = {}): Promise<Payment
     return data;
 };
 
-export const fetchPaymentStats = async (params: any = {}): Promise<PaymentStatsResponse> => {
-    const { data } = await apiClient.post<PaymentStatsResponse>(`${BASE_URL}/stats`, params);
+export const fetchPaymentDetail = async (id: string | number) => {
+    const { data } = await apiClient.get(`${BASE_URL}/${id}`);
     return data;
 };
 
-export const fetchPaymentDetail = async (id: string | number) => {
-    const { data } = await apiClient.get(`${BASE_URL}/${id}`);
+export const approvePayment = async (id: string | number, payload: { note: string }) => {
+    const { data } = await apiClient.post('/common/payments/' + id + '/approve', payload);
+    return data;
+};
+
+export const rejectPayment = async (id: string | number, payload: { reason: string; note?: string }) => {
+    const { data } = await apiClient.post('/common/payments/' + id + '/reject', payload);
     return data;
 };

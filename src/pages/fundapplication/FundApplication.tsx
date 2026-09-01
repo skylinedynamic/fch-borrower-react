@@ -455,9 +455,9 @@ export default function FundApplication() {
         if (activeStep === i && !isStepValid(i)) return false;
       }
 
-      // Document upload shows checkmark ONLY if it has files
+      // Document upload shows checkmark if it has files or user progressed past this step
       if (stepIndex === STEP_INDICES.DOCUMENT_UPLOAD) {
-        return Boolean(documentsData && documentsData.length > 0)
+        return Boolean((documentsData && documentsData.length > 0) || highestVisitedStep > STEP_INDICES.DOCUMENT_UPLOAD || activeStep > STEP_INDICES.DOCUMENT_UPLOAD)
       }
       
       if (!isStepSaved(stepIndex)) return false;
@@ -535,7 +535,12 @@ export default function FundApplication() {
   )
 
   // Render the current step content
-  const renderStep = (stepIndex: number): React.ReactNode => {
+  const renderStep = (stepIndex: number, isActive: boolean): React.ReactNode => {
+    const currentCommonProps = {
+      ...commonStepProps,
+      onRegisterSave: isActive ? registerSave : undefined,
+    }
+
     switch (stepIndex) {
       case STEP_INDICES.BUSINESS_INFO:
         return (
@@ -547,7 +552,7 @@ export default function FundApplication() {
             canProceed={canProceedFromBusinessInfo}
             onNext={() => setActiveStep(STEP_INDICES.OWNERSHIP_INFO)}
             loading={loading}
-            onRegisterSave={registerSave}
+            onRegisterSave={isActive ? registerSave : undefined}
             fundingSequenceId={fundingSequenceId}
             fundingRequestId={fundingRequestId || id}
           />
@@ -569,7 +574,7 @@ export default function FundApplication() {
             isValid={isStepValid(STEP_INDICES.OWNERSHIP_INFO)}
             fundingSequenceId={fundingSequenceId}
             fundingRequestId={fundingRequestId || id}
-            {...commonStepProps}
+            {...currentCommonProps}
           />
         )
 
@@ -580,7 +585,7 @@ export default function FundApplication() {
             setFinancial={setFinancial}
             fundingSequenceId={fundingSequenceId}
             fundingRequestId={fundingRequestId || id}
-            {...commonStepProps}
+            {...currentCommonProps}
           />
         )
 
@@ -591,7 +596,7 @@ export default function FundApplication() {
             setFunding={setFunding}
             fundingSequenceId={fundingSequenceId}
             fundingRequestId={fundingRequestId || id}
-            {...commonStepProps}
+            {...currentCommonProps}
           />
         )
 
@@ -601,7 +606,7 @@ export default function FundApplication() {
             fundingSequenceId={fundingSequenceId}
             fundingRequestId={fundingRequestId || id}
             fundingApplicationId={fundingApplicationId}
-            {...commonStepProps}
+            {...currentCommonProps}
           />
         )
 
@@ -672,14 +677,17 @@ export default function FundApplication() {
         {/* Page Header */}
         <div className="text-center mb-4">
           <h4 className="mb-1">
-            {funding.approvedFunding
-              ? `Complete Your ${funding.approvedFunding} Application`
-              : 'Start Your Business Funding Application'}
+            {completedCount > 0 ? 'Complete' : 'Start'} Your Business Funding Application
+            {funding.approvedFunding && ` (${funding.approvedFunding.replace(/\s+Application$/i, '')})`}
           </h4>
           <div className="text-muted">
             {funding.approvedFunding
-              ? 'Please complete the final steps below to process your approved funding request and finalize your funds.'
-              : 'Apply now to unlock working capital, equipment financing, SBA loans, or credit-building options tailored to your goals.'}
+              ? (completedCount > 0
+                  ? 'Please complete the final steps below to process your approved funding request and finalize your funds.'
+                  : 'Please complete the steps below to start processing your approved funding sequence and finalize your funds.')
+              : (completedCount > 0
+                  ? 'Please complete the remaining steps below to finalize your business funding application.'
+                  : 'Apply now to unlock working capital, equipment financing, SBA loans, or credit-building options tailored to your goals.')}
           </div>
         </div>
 
@@ -727,7 +735,13 @@ export default function FundApplication() {
                   Step {activeStep + 1} of {stepsTotal}: {tabs[activeStep]}
                 </span>
               </div>
-              <div className="card-body">{renderStep(activeStep)}</div>
+              <div className="card-body">
+                {tabs.map((_, idx) => (
+                  <div key={idx} style={{ display: activeStep === idx ? 'block' : 'none' }}>
+                    {renderStep(idx, activeStep === idx)}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -759,7 +773,9 @@ export default function FundApplication() {
                           )}
                           <i className={`ri-arrow-${isOpen ? 'up' : 'down'}-s-line ms-auto`}></i>
                         </button>
-                        {isOpen && <div className="p-3">{renderStep(idx)}</div>}
+                        <div className="p-3" style={{ display: isOpen ? 'block' : 'none' }}>
+                          {renderStep(idx, isOpen)}
+                        </div>
                       </li>
                     )
                   })}

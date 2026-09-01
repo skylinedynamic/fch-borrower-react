@@ -1,7 +1,7 @@
 import React from 'react';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
-import { INVOICE_STATUS_OPTIONS } from '../../../data/invoiceConfig';
+import { INVOICE_STATUS_OPTIONS } from '../../../config/invoiceConfig';
 import FilterLoader from '../../../components/Loader/FilterLoader';
 
 export default function InvoiceFilters({ 
@@ -69,6 +69,8 @@ export default function InvoiceFilters({
                         <Dropdown 
                             value={selectedStatus}
                             options={INVOICE_STATUS_OPTIONS} 
+                            optionLabel="label"
+                            optionValue="value"
                             placeholder="All Status" 
                             className="w-100 bg-light border-light"
                             onChange={(e) => setSelectedStatus(e.value)}

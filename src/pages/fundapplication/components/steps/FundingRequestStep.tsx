@@ -158,7 +158,8 @@ export default function FundingRequestStep({
     }
 
     try {
-      await saveMutation.mutateAsync(payload)
+      const response = await saveMutation.mutateAsync(payload)
+      toast.success(response?.message || 'Funding request information saved successfully!')
       return true
     } catch (error: any) {
       console.error('Error saving funding request:', error)
@@ -234,7 +235,6 @@ export default function FundingRequestStep({
 
     const success = await handleSave()
     if (success) {
-      toast.success('Funding request saved successfully')
       onNext()
     }
   }

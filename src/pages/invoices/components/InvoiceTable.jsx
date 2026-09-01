@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { DataTable } from '../../../components/Table/DataTableWrapper';
 import { Column } from 'primereact/column';
 import { Dropdown } from 'primereact/dropdown';
-import { INVOICE_STATUS_COLORS, INVOICE_STATUS_OPTIONS, STATUS_PAID } from '../../../data/invoiceConfig';
+import { INVOICE_STATUS_COLORS, INVOICE_STATUS_OPTIONS, STATUS_PAID, STATUS_PROCESSING } from '../../../config/invoiceConfig';
 import InvoicePaymentModal from './InvoicePaymentModal';
 import InvoicePreviewModal from './InvoicePreviewModal';
 import { useAuthStore } from '../../../store/auth/authStore';
@@ -38,9 +38,7 @@ export default function InvoiceTable({
         setShowPreviewModal(true);
     };
 
-    const handlePaymentSuccess = (paymentId) => {
-        setShowPaymentModal(false);
-        setSelectedInvoice(null);
+    const handlePaymentSuccess = () => {
         if (onRefresh) {
             onRefresh();
         }
@@ -60,6 +58,10 @@ export default function InvoiceTable({
         return <span>{rowData.displayable_amount || rowData.displayable_payment_amount || '-'}</span>;
     };
 
+    const typeBodyTemplate = (rowData) => {
+        return <span className="fw-medium">{rowData.type || '-'}</span>;
+    };
+
     const statusFilterElement = (options) => {
         return (
             <Dropdown
@@ -77,7 +79,7 @@ export default function InvoiceTable({
     };
 
     const actionBodyTemplate = (rowData) => {
-        const isNotPaid = rowData.status !== STATUS_PAID;
+        const isNotPaid = rowData.status !== STATUS_PAID && rowData.status !== STATUS_PROCESSING;
         return (
             <div className="d-flex align-items-center justify-content-center gap-2">
                 <button
@@ -124,7 +126,7 @@ export default function InvoiceTable({
                 onFilter={onFilter}
                 filters={filters}
                 filterDisplay="menu"
-                globalFilterFields={['invoice_id', 'customer_name', 'email', 'created_at', 'payment_amount', 'status']}
+                globalFilterFields={['created_at', 'invoice_id', 'payment_amount', 'type', 'status']}
                 loading={loading}
                 dataKey="id"
                 scrollable
@@ -135,13 +137,12 @@ export default function InvoiceTable({
                 onRowClick={(e) => navigate(`/invoices/${e.data.id}`)}
                 rowClassName={() => 'cursor-pointer'}
             >
-                <Column field="invoice_id" header="Invoice ID" sortable filter showFilterMatchModes filterPlaceholder="Search by ID" style={{ minWidth: '100px' }}></Column>
-                <Column field="customer_name" header="Customer" sortable filter showFilterMatchModes filterPlaceholder="Search by name" style={{ minWidth: '180px' }}></Column>
-                <Column field="email" header="Email" bodyClassName="text-muted" sortable filter showFilterMatchModes filterPlaceholder="Search by email" style={{ minWidth: '100px' }}></Column>
                 <Column field="created_at" header="Invoice Date" sortable filter showFilterMatchModes filterPlaceholder="Search by date" style={{ minWidth: '120px' }}></Column>
+                <Column field="invoice_id" header="Invoice ID" sortable filter showFilterMatchModes filterPlaceholder="Search by ID" style={{ minWidth: '100px' }}></Column>
                 <Column field="payment_amount" header="Amount" body={amountBodyTemplate} sortable filter showFilterMatchModes filterPlaceholder="Search by amount" style={{ minWidth: '120px' }}></Column>
+                <Column field="type" header="Type" body={typeBodyTemplate} sortable filter showFilterMatchModes filterPlaceholder="Search by type" style={{ minWidth: '120px' }}></Column>
                 <Column field="status" header="Status" body={statusBodyTemplate} sortable filter filterElement={statusFilterElement} showFilterMatchModes={false} style={{ minWidth: '150px' }}></Column>
-                <Column header="Action" body={actionBodyTemplate} style={{ minWidth: '150px' }} alignHeader="center" align="center"></Column>
+                <Column header="Action" body={actionBodyTemplate} style={{ minWidth: '150px' }} alignHeader="center" align="center" headerClassName="text-center" bodyClassName="text-center"></Column>
             </DataTable>
 
             <InvoicePaymentModal

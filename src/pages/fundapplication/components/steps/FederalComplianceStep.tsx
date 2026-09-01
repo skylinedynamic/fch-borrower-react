@@ -70,7 +70,8 @@ export default function FederalComplianceStep({
     }
 
     try {
-      await saveCompliance(payload)
+      const response = await saveCompliance(payload)
+      toast.success(response?.message || 'Federal compliance disclosures saved successfully!')
       return true
     } catch (error: any) {
       console.error('Error saving federal compliance:', error)
@@ -125,7 +126,6 @@ export default function FederalComplianceStep({
   const handleNext = async () => {
     const success = await handleSave()
     if (success) {
-      toast.success('Federal compliance disclosures saved successfully')
       onNext()
     }
   }

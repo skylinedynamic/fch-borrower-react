@@ -12,28 +12,6 @@ export const fetchInvoices = async (params: InvoiceParams = {}): Promise<Invoice
     };
 };
 
-export const fetchInvoiceStats = async (params: InvoiceParams = {}): Promise<InvoiceStatsResponse> => {
-    try {
-        const { data } = await apiClient.post<InvoiceStatsResponse>(`${BASE_URL}/stats`, params);
-        return data;
-    } catch (e) {
-        console.warn('Failed to fetch invoice stats, using placeholders', e);
-        return {
-            status: false,
-            data: {
-                invoices_sent: 0,
-                paid_invoices: 0,
-                unpaid_invoices: 0,
-                collection_rate: 0
-            }
-        };
-    }
-};
-
-export const processInvoicePayment = async (payload: any) => {
-    const response = await apiClient.post('/borrower/process-payment', payload);
-    return response.data;
-};
 
 export const fetchUnpaidInvoices = async (): Promise<UnpaidInvoiceResponse> => {
     const { data } = await apiClient.get<UnpaidInvoiceResponse>('/borrower/invoice/check-unpaid-invoice');
@@ -53,4 +31,14 @@ export const downloadInvoice = async (id: string | number) => {
 export const sendInvoice = async (id: string | number) => {
     const { data } = await apiClient.post(`/common/invoices/${id}/send`);
     return data;
+};
+
+export const fetchPartnerPaymentMethods = async () => {
+    const { data } = await apiClient.get('/payment/get-payment-methods');
+    return data;
+};
+
+export const processUnifiedPayment = async (payload: { payment_token: string; invoice_id: number | string; payment_method_id: number; bank_detail_id?: number | string }) => {
+    const response = await apiClient.post('/borrower/process-payment', payload);
+    return response.data;
 };

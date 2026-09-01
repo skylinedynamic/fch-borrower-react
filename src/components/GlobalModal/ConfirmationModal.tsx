@@ -13,6 +13,11 @@ interface ConfirmationModalProps {
   loading?: boolean
   loadingText?: string
   icon?: string
+  iconColors?: string
+  confirmBtnClass?: string
+  iconClass?: string
+  iconBgClass?: string
+  iconTextClass?: string
 }
 
 export default function ConfirmationModal({
@@ -25,7 +30,12 @@ export default function ConfirmationModal({
   cancelText = 'Cancel',
   loading = false,
   loadingText = 'Processing...',
-  icon = 'https://cdn.lordicon.com/lupuorrc.json'
+  icon = 'https://cdn.lordicon.com/lupuorrc.json',
+  iconColors = 'primary:#121331,secondary:#08a88a',
+  confirmBtnClass = 'btn-primary',
+  iconClass,
+  iconBgClass = 'bg-danger-subtle',
+  iconTextClass = 'text-danger',
 }: ConfirmationModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
   const modalInstanceRef = useRef<Modal | null>(null)
@@ -75,18 +85,27 @@ export default function ConfirmationModal({
       ref={modalRef}
       tabIndex={-1}
       aria-hidden="true"
-      style={{ zIndex: 1056 }}
     >
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">
           <div className="modal-body p-5 text-center">
-            <lord-icon
-              src={icon}
-              trigger="loop"
-              colors="primary:#121331,secondary:#08a88a"
-              style={{ width: '90px', height: '90px' }}
-            ></lord-icon>
-            <div className="mt-4 text-center">
+            {iconClass ? (
+              <div className="avatar-xl mx-auto mb-3">
+                <span className={`avatar-title ${iconBgClass || 'bg-danger-subtle'} ${iconTextClass || 'text-danger'} rounded-circle fs-48`}>
+                  <i className={iconClass}></i>
+                </span>
+              </div>
+            ) : (
+              <div className="mx-auto mb-4">
+                <lord-icon
+                  src={icon}
+                  trigger="loop"
+                  colors={iconColors || 'primary:#121331,secondary:#08a88a'}
+                  style={{ width: '90px', height: '90px' }}
+                ></lord-icon>
+              </div>
+            )}
+            <div className="mt-2 text-center">
               <h4>{title}</h4>
               <p className="text-muted fs-15 mb-4">
                 {message}
@@ -102,7 +121,7 @@ export default function ConfirmationModal({
                 </button>
                 <button
                   type="button"
-                  className="btn btn-primary"
+                  className={`btn ${confirmBtnClass} px-3`}
                   onClick={onConfirm}
                   disabled={loading}
                 >

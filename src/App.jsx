@@ -19,6 +19,7 @@ import Invoices from '../src/pages/invoices/Invoices.jsx'
 import InvoiceDetails from '../src/pages/invoices/InvoiceDetails.jsx'
 import Payments from '../src/pages/payments/Payments.jsx'
 import PaymentDetails from '../src/pages/payments/PaymentDetails.jsx'
+import BillingDetails from '../src/pages/billing-details/BillingDetails.tsx'
 import Appointments from '../src/pages/appointment/Appointments.tsx'
 import ChangePassword from '../src/pages/settings/ChangePassword.jsx'
 import CreditOverview from '../src/pages/credit-builder/creditoverview/CreditOverview.tsx'
@@ -123,6 +124,7 @@ export default function App() {
             <Route path="invoices/:id" element={<InvoiceDetails />} />
             <Route path="payments" element={<Payments />} />
             <Route path="payments/:id" element={<PaymentDetails />} />
+            <Route path="billing-details" element={<BillingDetails />} />
             <Route path="change-password" element={<ChangePassword />} />
 
             <Route path="pre-qualification" element={<PreQualification />} />

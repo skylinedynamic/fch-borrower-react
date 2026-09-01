@@ -18,6 +18,9 @@ const toDate = (d?: string | null) => {
 export function isSubscriptionRestricted(subscription: UserSubscription | null | undefined): boolean {
     if (!subscription) return false;
 
+    // Hosts are never restricted
+    if (subscription.is_host) return false;
+
     // If client is on a free trial, do not restrict access/menus
     if (subscription.is_free_trail) {
         return false;
@@ -39,7 +42,7 @@ export function isSubscriptionRestricted(subscription: UserSubscription | null |
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const nextInstallmentDate = toDate(subscription.next_installment_date);
+    const endDate = toDate(subscription.subscription_end_date);
 
     const subStatus = String(subscription.subscription_status).toLowerCase().trim();
     const activeStatus = (SUBSCRIPTION_STATUS_TYPES.ACTIVE).toLowerCase().trim();
@@ -48,7 +51,13 @@ export function isSubscriptionRestricted(subscription: UserSubscription | null |
         return true;
     }
 
-    if (nextInstallmentDate && nextInstallmentDate < today) {
+    // If subscription_end_date is null, no need to lock
+    if (!endDate) {
+        return false;
+    }
+
+    // Lock profile/menu if current date is past subscription_end_date
+    if (today > endDate) {
         return true;
     }
 

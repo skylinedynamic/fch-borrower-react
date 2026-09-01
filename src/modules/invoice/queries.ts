@@ -1,18 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchInvoices, fetchInvoiceStats, fetchUnpaidInvoices } from './services';
+import { fetchInvoices, fetchUnpaidInvoices } from './services';
 import { InvoiceParams } from './types';
 
 export const useInvoices = (params: InvoiceParams = {}) => {
     return useQuery({
         queryKey: ['invoices', params],
         queryFn: () => fetchInvoices(params),
-    });
-};
-
-export const useInvoiceStats = (params: InvoiceParams = {}) => {
-    return useQuery({
-        queryKey: ['invoice-stats', params],
-        queryFn: () => fetchInvoiceStats(params),
     });
 };
 

@@ -9,9 +9,6 @@ export const PARTNER_TYPES = {
   WHITE_LABEL: "White-Label Partner (WL)",
 };
 
-export const SUBSCRIPTION_STATUS_TYPES = {
-  ACTIVE: "Active",
-  SUSPENDED: "Suspended",
-  DELINQUENT: "Delinquent",
-  CANCELED: "Canceled",
-};
+import { SUBSCRIPTION_STATUS_TYPES } from './subscriptionConfig';
+
+export { SUBSCRIPTION_STATUS_TYPES };

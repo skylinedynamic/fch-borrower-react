@@ -4,7 +4,7 @@ import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import PaymentStats from './components/PaymentStats';
 import PaymentFilters from './components/PaymentFilters';
 import PaymentTable from './components/PaymentTable';
-import { fetchPayments, fetchPaymentStats } from '../../modules/payment';
+import { fetchPayments, approvePayment } from '../../modules/payment';
 
 export default function Payments() {
     const [loading, setLoading] = useState(true);
@@ -25,11 +25,17 @@ export default function Payments() {
     const [filters, setFilters] = useState({});
     const [searchText, setSearchText] = useState('');
     const [selectedStatus, setSelectedStatus] = useState(null);
+    const [selectedEnvironment, setSelectedEnvironment] = useState(null);
+    const [selectedMethod, setSelectedMethod] = useState(null);
+    const [selectedType, setSelectedType] = useState(null);
     const [dateRange, setDateRange] = useState([]);
 
     // Applied filter states (to trigger fetch)
     const [appliedSearchText, setAppliedSearchText] = useState('');
     const [appliedStatus, setAppliedStatus] = useState(null);
+    const [appliedEnvironment, setAppliedEnvironment] = useState(null);
+    const [appliedMethod, setAppliedMethod] = useState(null);
+    const [appliedType, setAppliedType] = useState(null);
     const [appliedDateRange, setAppliedDateRange] = useState(null);
     const [appliedFilters, setAppliedFilters] = useState({});
 
@@ -62,22 +68,9 @@ export default function Payments() {
         };
     }, []);
 
-    const loadStats = async (params = {}) => {
-        try {
-            setStatsLoading(true);
-            const response = await fetchPaymentStats(params);
-            if (response.status) {
-                setStats(response.data);
-            }
-        } catch (error) {
-            console.error('Error fetching payment stats:', error);
-        } finally {
-            setStatsLoading(false);
-        }
-    };
-
     const loadData = async () => {
         setLoading(true);
+        setStatsLoading(true);
         try {
             // Format date range for backend if present
             let dateFrom = null;
@@ -96,6 +89,9 @@ export default function Payments() {
             const payload = {
                 search: appliedSearchText,
                 status: appliedStatus,
+                is_environment: appliedEnvironment,
+                payment_from: appliedMethod,
+                transaction_type: appliedType,
                 date_from: dateFrom,
                 date_to: dateTo,
                 filters: appliedFilters,
@@ -109,21 +105,18 @@ export default function Payments() {
             if (response.status) {
                 setPayments(response.data || []);
                 setTotalRecords(response.meta?.total || 0);
+                if (response.stats) {
+                    setStats(response.stats);
+                }
             } else {
                 toast.error(response.message || 'Failed to fetch payments');
             }
-
-            // Also load stats with the same filter parameters
-            loadStats({
-                date_from: dateFrom,
-                date_to: dateTo,
-                status: appliedStatus
-            });
         } catch (error) {
             console.error('Error fetching payments:', error);
             toast.error('Failed to load payments');
         } finally {
             setLoading(false);
+            setStatsLoading(false);
         }
     };
 
@@ -131,11 +124,14 @@ export default function Payments() {
         if (Object.keys(appliedFilters).length > 0) {
             loadData();
         }
-    }, [appliedSearchText, appliedStatus, appliedDateRange, appliedFilters, page, perPage, sortField, sortOrder]);
+    }, [appliedSearchText, appliedStatus, appliedEnvironment, appliedMethod, appliedType, appliedDateRange, appliedFilters, page, perPage, sortField, sortOrder]);
 
     const handleApplyFilters = () => {
         setAppliedSearchText(searchText);
         setAppliedStatus(selectedStatus);
+        setAppliedEnvironment(selectedEnvironment);
+        setAppliedMethod(selectedMethod);
+        setAppliedType(selectedType);
         setAppliedDateRange(dateRange);
         setAppliedFilters(filters);
         setPage(1);
@@ -144,9 +140,15 @@ export default function Payments() {
     const handleClearFilters = () => {
         setSearchText('');
         setSelectedStatus(null);
+        setSelectedEnvironment(null);
+        setSelectedMethod(null);
+        setSelectedType(null);
         setDateRange([]);
         setAppliedSearchText('');
         setAppliedStatus(null);
+        setAppliedEnvironment(null);
+        setAppliedMethod(null);
+        setAppliedType(null);
         setAppliedDateRange(null);
         initFilters();
         setPage(1);
@@ -166,6 +168,17 @@ export default function Payments() {
         setFilters(e.filters);
         setAppliedFilters(e.filters);
         setPage(1);
+    };
+
+    const handleApprovePayment = async (paymentId) => {
+        try {
+            const response = await approvePayment(paymentId);
+            if (response.status || response.data) {
+                loadData();
+            }
+        } catch (error) {
+            console.error('Error approving payment:', error);
+        }
     };
 
     return (
@@ -202,6 +215,9 @@ export default function Payments() {
                                 <PaymentFilters
                                     searchText={searchText} setSearchText={setSearchText}
                                     selectedStatus={selectedStatus} setSelectedStatus={setSelectedStatus}
+                                    selectedEnvironment={selectedEnvironment} setSelectedEnvironment={setSelectedEnvironment}
+                                    selectedMethod={selectedMethod} setSelectedMethod={setSelectedMethod}
+                                    selectedType={selectedType} setSelectedType={setSelectedType}
                                     dateRange={dateRange} setDateRange={setDateRange}
                                     onApply={handleApplyFilters}
                                     onClear={handleClearFilters}
@@ -220,6 +236,7 @@ export default function Payments() {
                                     filters={filters}
                                     sortField={sortField}
                                     sortOrder={sortOrder}
+                                    onApprove={handleApprovePayment}
                                 />
                             </div>
                         </div>

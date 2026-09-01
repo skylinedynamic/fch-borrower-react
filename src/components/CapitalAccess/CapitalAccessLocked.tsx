@@ -26,7 +26,7 @@ export default function CapitalAccessLocked() {
                 <div className="ca-locked-icon-wrapper">
                   <i className="ri-shield-keyhole-line ca-locked-icon"></i>
                 </div>
-                <h3 className="ca-locked-title">Unlock Your Funding Readiness</h3>
+                <h3 className="ca-locked-title">Unlock Your Capital Access Readiness</h3>
                 <p className="ca-locked-description">
                   To view your personalized **Capital Access Readiness Scores**, explore **Estimated Total Access**, and execute strategic funding plays, your business credit profile needs to be verified and finalized.
                 </p>

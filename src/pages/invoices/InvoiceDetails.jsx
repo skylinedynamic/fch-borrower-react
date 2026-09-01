@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchInvoiceDetails, downloadInvoice } from '../../modules/invoice';
 import { toast } from 'react-toastify';
-import { INVOICE_STATUS_COLORS, STATUS_PAID } from '../../data/invoiceConfig';
+import { INVOICE_STATUS_COLORS, STATUS_PAID, STATUS_PROCESSING } from '../../config/invoiceConfig';
 import { ENTITY_TYPE_PARTNER, ENTITY_TYPE_BORROWER } from '../../config/appConfig';
 import { useAuthStore } from '../../store/auth';
 import InvoicePaymentModal from './components/InvoicePaymentModal';
@@ -75,12 +75,12 @@ export default function InvoiceDetails() {
     };
 
     const handlePaymentSuccess = () => {
-        setShowPaymentModal(false);
-        // Reload details after payment
-        setLoading(true);
         fetchInvoiceDetails(id).then(res => {
-            if (res.status) setInvoice(res.data);
-            setLoading(false);
+            if (res?.status && res.data) {
+                setInvoice(res.data);
+            }
+        }).catch(err => {
+            console.error('Failed to reload invoice details after payment:', err);
         });
     };
 
@@ -132,7 +132,10 @@ export default function InvoiceDetails() {
                                                 </div>
                                                 <div className="flex-grow-1 ms-3">
                                                     <h4 className="card-title text-primary mb-1 fs-18">Invoice #{invoice.invoice_id}</h4>
-                                                    <p className="text-muted mb-0 fs-13">Date: <span className="fw-medium text-body">{invoice.created_at}</span></p>
+                                                    <p className="text-muted mb-0 fs-13">Invoice Date: <span className="fw-medium text-body">{invoice.created_at}</span></p>
+                                                    {invoice.payment_date && (
+                                                        <p className="text-muted mb-0 fs-13">Paid Date: <span className="fw-medium text-body">{invoice.payment_date}</span></p>
+                                                    )}
                                                 </div>
                                                 <div className="flex-shrink-0 text-end">
                                                     <h2 className="text-primary mb-1">{invoice.displayable_amount || '-'}</h2>
@@ -147,6 +150,12 @@ export default function InvoiceDetails() {
                                                 <div className="col-lg-6 col-md-6">
                                                     <h5 className="fs-15 fw-bold mb-3"><i className="ri-file-list-3-line text-muted align-middle me-1"></i> Invoice Details</h5>
                                                     <p className="mb-2 text-muted">Entity Type: <span className="fw-medium text-body">{invoice.entity_type?.includes(ENTITY_TYPE_PARTNER) ? ENTITY_TYPE_PARTNER : invoice.entity_type?.includes(ENTITY_TYPE_BORROWER) ? ENTITY_TYPE_BORROWER : 'Customer'}</span></p>
+                                                    {invoice.type && (
+                                                        <p className="mb-2 text-muted">Invoice Type: <span className="fw-medium text-body">{invoice.type}</span></p>
+                                                    )}
+                                                    {invoice.payment_date && (
+                                                        <p className="mb-2 text-muted">Paid Date: <span className="fw-medium text-body">{invoice.payment_date}</span></p>
+                                                    )}
                                                     {invoice.enrollment_type && (
                                                         <p className="mb-2 text-muted">Enrollment Type: <span className="fw-medium text-body">{invoice.enrollment_type}</span></p>
                                                     )}
@@ -167,7 +176,7 @@ export default function InvoiceDetails() {
                                                 <table className="table table-borderless text-center table-nowrap align-middle mb-0">
                                                     <thead>
                                                         <tr className="table-active">
-                                                            <th scope="col" style={{ width: '50px' }}>#</th>
+                                                            <th scope="col" className="table-col-num">#</th>
                                                             <th scope="col" className="text-start">Item Description</th>
                                                             <th scope="col">Rate</th>
                                                             <th scope="col">Quantity</th>
@@ -175,34 +184,20 @@ export default function InvoiceDetails() {
                                                         </tr>
                                                     </thead>
                                                     <tbody id="products-list">
-                                                        {invoice.items && invoice.items.length > 0 ? (
-                                                            invoice.items.map((item, idx) => (
-                                                                <tr key={idx}>
-                                                                    <th scope="row">{idx + 1}</th>
-                                                                    <td className="text-start">
-                                                                        <span className="fw-medium">{item.description || 'Service'}</span>
-                                                                    </td>
-                                                                    <td>${Number(item.rate || item.amount).toFixed(2)}</td>
-                                                                    <td>{item.quantity || 1}</td>
-                                                                    <td className="text-end">${Number(item.total || item.amount).toFixed(2)}</td>
-                                                                </tr>
-                                                            ))
-                                                        ) : (
-                                                            <tr>
-                                                                <th scope="row">1</th>
-                                                                <td className="text-start">
-                                                                    <span className="fw-medium">General Payment</span>
-                                                                </td>
-                                                                <td>{invoice.displayable_amount || '-'}</td>
-                                                                <td>1</td>
-                                                                <td className="text-end">{invoice.displayable_amount || '-'}</td>
-                                                            </tr>
-                                                        )}
+                                                        <tr>
+                                                            <th scope="row">1</th>
+                                                            <td className="text-start">
+                                                                <span className="fw-medium">{invoice.type || invoice.enrollment_type || 'General Payment'}</span>
+                                                            </td>
+                                                            <td>{invoice.displayable_amount || '-'}</td>
+                                                            <td>1</td>
+                                                            <td className="text-end">{invoice.displayable_amount || '-'}</td>
+                                                        </tr>
                                                     </tbody>
                                                 </table>
                                             </div>
                                             <div className="border-top border-top-dashed mt-2">
-                                                <table className="table table-borderless table-nowrap align-middle mb-0 ms-auto" style={{ width: '250px' }}>
+                                                <table className="table table-borderless table-nowrap align-middle mb-0 ms-auto invoice-summary-table">
                                                     <tbody>
                                                         <tr>
                                                             <td>Sub Total</td>
@@ -216,7 +211,7 @@ export default function InvoiceDetails() {
                                                 </table>
                                             </div>
                                             <div className="mt-4 d-flex justify-content-end gap-2">
-                                                {invoice.status !== STATUS_PAID && (
+                                                {invoice.status !== STATUS_PAID && invoice.status !== STATUS_PROCESSING && (
                                                     <button className="btn btn-primary" onClick={() => setShowPaymentModal(true)}>
                                                         <i className="ri-secure-payment-line align-middle me-1"></i> Pay Now
                                                     </button>

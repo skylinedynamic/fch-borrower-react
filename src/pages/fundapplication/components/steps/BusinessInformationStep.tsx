@@ -73,7 +73,8 @@ export default function BusinessInformationStep({
     }
 
     try {
-      await saveBusinessInfo(payload as any)
+      const response = await saveBusinessInfo(payload as any)
+      toast.success(response?.message || 'Business information saved successfully!')
       return true
     } catch (error: any) {
       const errors = error.response?.data?.errors
@@ -222,7 +223,6 @@ export default function BusinessInformationStep({
   const handleNext = async () => {
     const success = await handleSave()
     if (success) {
-      toast.success('Business information saved successfully')
       onNext()
     }
   }

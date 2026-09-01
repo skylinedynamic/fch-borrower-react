@@ -62,7 +62,8 @@ export default function FinancialInformationStep({
     }
 
     try {
-      await saveFinancialInfo(payload)
+      const response = await saveFinancialInfo(payload)
+      toast.success(response?.message || 'Financial information saved successfully!')
       return true
     } catch (error: any) {
       const errors = error.response?.data?.errors
@@ -116,7 +117,6 @@ export default function FinancialInformationStep({
   const handleNext = async () => {
     const success = await handleSave()
     if (success) {
-      toast.success('Financial information saved successfully')
       onNext()
     }
   }
