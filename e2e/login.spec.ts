@@ -15,6 +15,8 @@ test.describe('Login (live backend)', () => {
   test.describe.configure({ mode: 'serial' })
 
   test.beforeEach(async ({ request }) => {
+    test.setTimeout(60000) // local Passport auth attempts are slow, and can queue behind other specs
+
     const health = await request
       .get('http://127.0.0.1:8000/api/v1/borrower/login')
       .catch(() => null)
@@ -22,6 +24,7 @@ test.describe('Login (live backend)', () => {
   })
 
   test('logs in with valid credentials and reaches the dashboard', async ({ page }) => {
+    test.setTimeout(60000)
     await page.goto('/login')
 
     await page.getByLabel(/^Email/i).fill(TEST_EMAIL)
@@ -35,7 +38,7 @@ test.describe('Login (live backend)', () => {
   })
 
   test('shows an error and stays on the login page with wrong credentials', async ({ page }) => {
-    test.slow() // local Passport auth attempt is slow; extend this test's timeout
+    test.setTimeout(60000)
 
     await page.goto('/login')
 
