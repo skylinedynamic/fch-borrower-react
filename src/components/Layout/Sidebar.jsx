@@ -262,8 +262,8 @@ export default function Sidebar() {
               <i className="ri-vip-crown-2-fill"></i>
             </div>
             <div className="trial-text-wrap">
-              <span className="trial-label">Limited Access</span>
-              <span className="trial-expires">Trial Period Lifetime</span>
+              <span className="trial-label">Free Plan</span>
+              <span className="trial-expires">Lifetime Access</span>
             </div>
             <span className="trial-badge">FREE</span>
           </div>
