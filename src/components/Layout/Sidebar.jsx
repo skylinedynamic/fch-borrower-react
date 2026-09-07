@@ -26,10 +26,14 @@ export default function Sidebar() {
   const isFreeTierModule = isFreeTrialLocked(userSubscription);
 
   // Resolved logos for different sidebar states
-  const primaryLogo = branding?.primary_logo_full_url
-  const secondaryLogo = branding?.secondary_logo_full_url
-  const displayLogo = isMobile ? secondaryLogo : primaryLogo
-  const compactLogo = secondaryLogo
+  // Logos are chosen by the background they sit on. The legacy keys are read as a
+  // fallback so a partner who has not re-uploaded keeps their existing logo.
+  const primaryLogo = branding?.logo_sidebar_full_url || branding?.logo_on_dark_full_url || branding?.primary_logo_full_url
+  const secondaryLogo = branding?.logo_document_full_url || branding?.logo_on_light_full_url || branding?.secondary_logo_full_url
+  const markLogo = branding?.logo_mark_full_url || branding?.favicon_full_url
+  // The mobile brand box now carries the sidebar colour, so it takes the dark-background logo too.
+  const displayLogo = primaryLogo || secondaryLogo
+  const compactLogo = markLogo || secondaryLogo
 
   const { data: dashboardData } = useDashboard()
   const activeApprovedRequest = dashboardData?.data?.active_approved_funding_request

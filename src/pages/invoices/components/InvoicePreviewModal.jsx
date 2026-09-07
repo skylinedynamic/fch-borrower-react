@@ -157,7 +157,8 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
     const invoiceBranding = displayInvoice?.branding || {};
     const displayLogo = globalBranding?.primary_logo_full_url || invoiceBranding.primary_logo_full_url || invoiceLogo;
     const displaySiteName = globalBranding?.site_name || invoiceBranding.site_name || 'Four Corner Holdings LLC';
-    const displayAddress = invoiceBranding.address || globalBranding?.copyright_text || 'California, United States';
+    // Was falling back to the copyright line, which is not an address.
+    const displayAddress = invoiceBranding.address || 'California, United States';
 
     // Calculations - only if displayInvoice exists
     const amount = displayInvoice ? (typeof displayInvoice.payable_amount_sub === 'string'

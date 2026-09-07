@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import formBg from '../../../assets/images/form-bg.png'
 import logoImg from '../../../assets/images/fch-logo-wide.png'
 import { fetchThemeConfigurations } from '../../modules/auth/services'
+import { applyBrandTheme } from '../../utils/brandingTheme'
 
 export default function Auth({ header, children, belowCard, colClass = 'col-xl-5 col-lg-6 col-md-8', bodyClass }) {
   const location = useLocation()
@@ -24,12 +25,9 @@ export default function Auth({ header, children, belowCard, colClass = 'col-xl-5
         if (data) {
           setSettings(data)
           localStorage.setItem('public_branding', JSON.stringify(data))
-          if (data.primary_color) {
-            document.documentElement.style.setProperty('--primary-color', data.primary_color)
-          }
-          if (data.secondary_color) {
-            document.documentElement.style.setProperty('--secondary-color', data.secondary_color)
-          }
+          // One call for every brand variable, so the login page cannot drift
+          // from the rest of the portal the way it did when it set only two.
+          applyBrandTheme(data)
           const faviconUrl = data.favicon_full_url || data.favicon || data.website_favicon
           if (faviconUrl && faviconUrl !== 'null') {
             document.querySelectorAll("link[rel~='icon']").forEach(el => el.remove())

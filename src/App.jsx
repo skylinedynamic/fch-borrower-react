@@ -47,6 +47,7 @@ import DownloadAgreement from './pages/agreement/DownloadAgreement.jsx'
 import ErrorPage from './pages/Utility/ErrorPage.jsx'
 import { fetchBorrowerTheme } from './modules/settings/services'
 import { useBrandingStore } from './store/brandingStore'
+import { applyBrandTheme } from './utils/brandingTheme'
 
 export default function App() {
   const { setBranding } = useBrandingStore()
@@ -72,12 +73,9 @@ export default function App() {
           document.head.appendChild(link);
         }
 
-        if (branding.primary_color) {
-          document.documentElement.style.setProperty('--primary-color', branding.primary_color);
-        }
-        if (branding.secondary_color) {
-          document.documentElement.style.setProperty('--secondary-color', branding.secondary_color);
-        }
+        // Every brand colour, including the derived contrast tokens that keep
+        // text readable on a light brand colour.
+        applyBrandTheme(branding);
       }
     }).catch(console.error);
   }

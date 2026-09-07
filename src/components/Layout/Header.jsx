@@ -94,7 +94,11 @@ export default function Header() {
 
             <div className="navbar-brand-box horizontal-logo ms-2">
               <a href="/" className="logo logo-dark">
-                <img src={branding?.primary_logo_full_url} alt="" height="50" />
+                <img
+                  src={branding?.logo_mobile_full_url || branding?.logo_document_full_url || branding?.logo_on_light_full_url || branding?.secondary_logo_full_url || branding?.logo_sidebar_full_url || branding?.primary_logo_full_url}
+                  alt={branding?.site_name || ''}
+                  height="50"
+                />
               </a>
             </div>
           </div>
