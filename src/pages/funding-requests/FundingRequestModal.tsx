@@ -52,7 +52,7 @@ export default function FundingRequestModal({ show, onHide, review }: FundingReq
     }
 
     const reviewId = displayReview.id ? `FR-2024-${String(displayReview.id).padStart(5, '0')}` : '';
-    const displayLogo = globalBranding?.primary_logo_full_url || globalBranding?.primary_logo || invoiceLogo;
+    const displayLogo = globalBranding?.logo_document_full_url || globalBranding?.logo_sidebar_full_url || invoiceLogo;
 
     return (
         <Modal isOpen={show} toggle={onHide} size="lg" centered contentClassName="border-0 shadow-lg fr-modal-wide">

@@ -27,24 +27,14 @@ export type BrandingConfig = {
   logo_mail_full_url?: string | null
   logo_mobile?: string | null
   logo_mobile_full_url?: string | null
-  logo_mark?: string | null
-  logo_mark_full_url?: string | null
-  // Superseded names, still served while partners migrate
-  logo_on_light?: string | null
-  logo_on_light_full_url?: string | null
-  logo_on_dark?: string | null
-  logo_on_dark_full_url?: string | null
+  favicon?: string | null
   favicon_full_url?: string | null
+  // `website` module - the public marketing site's own settings, not branding.
   meta_title: string | null
   header_logo: string | null
   footer_logo: string | null
-  primary_logo: string | null
-  secondary_logo: string | null
-  favicon: string | null
   website_favicon: string | null
   is_white_label: boolean | null
-  primary_logo_full_url?: string | null
-  secondary_logo_full_url?: string | null
 }
 
 type BrandingState = {

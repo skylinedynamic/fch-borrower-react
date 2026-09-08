@@ -161,18 +161,15 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
     // by request domain - so it can come back as the host's and mask a partner
     // that has a perfectly good logo of its own. Own first prevents that.
     //
-    // Within each: document logo, then the sidebar logo. Paper is white, so
-    // primary_logo (the white-on-transparent one) is never used - it would be
-    // invisible here. No bundled default: an invoice with no logo shows the
-    // company name rather than another tenant's mark.
+    // Within each: the document logo, then the mail one (both are light-surface
+    // logos), then the sidebar logo as a last resort. No bundled default: an
+    // invoice with no logo shows the company name rather than another tenant's mark.
     const displayLogo = globalBranding?.logo_document_full_url
+        || globalBranding?.logo_mail_full_url
         || globalBranding?.logo_sidebar_full_url
         || invoiceBranding.logo_document_full_url
+        || invoiceBranding.logo_mail_full_url
         || invoiceBranding.logo_sidebar_full_url
-        || globalBranding?.logo_on_light_full_url
-        || globalBranding?.secondary_logo_full_url
-        || invoiceBranding.logo_on_light_full_url
-        || invoiceBranding.secondary_logo_full_url
         || null;
     const displaySiteName = globalBranding?.site_name || invoiceBranding.site_name || '';
     // Was falling back to the copyright line, which is not an address.

@@ -52,7 +52,7 @@ export default function Auth({ header, children, belowCard, colClass = 'col-xl-5
       })
   }, [])
 
-  const displayLogo = settings?.primary_logo_full_url
+  const displayLogo = settings?.logo_document_full_url || settings?.logo_sidebar_full_url
   const displaySiteName = settings?.site_name
 
   return (
