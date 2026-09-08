@@ -2,7 +2,7 @@ import React from 'react'
 import { useLocation } from 'react-router-dom'
 import formBg from '../../../assets/images/form-bg.png'
 import logoImg from '../../../assets/images/fch-logo-wide.png'
-import { fetchThemeConfigurations } from '../../modules/auth/services'
+import { fetchBranding } from '../../modules/auth/services'
 import { applyBrandTheme } from '../../utils/brandingTheme'
 
 export default function Auth({ header, children, belowCard, colClass = 'col-xl-5 col-lg-6 col-md-8', bodyClass }) {
@@ -20,14 +20,20 @@ export default function Auth({ header, children, belowCard, colClass = 'col-xl-5
   const cardMarginClass = 'mt-0'
 
   React.useEffect(() => {
-    fetchThemeConfigurations()
-      .then((data) => {
+    // Branding only. The login screen needs nothing from get-theme's email and
+    // payment freshness flags, and waiting on those queries delayed the brand.
+    fetchBranding()
+      .then((payload) => {
+        const data = payload?.branding
         if (data) {
           setSettings(data)
           localStorage.setItem('public_branding', JSON.stringify(data))
           // One call for every brand variable, so the login page cannot drift
           // from the rest of the portal the way it did when it set only two.
-          applyBrandTheme(data)
+          //
+          // The server's precomputed map is passed through so this matches what
+          // /api/branding.css already painted before React mounted.
+          applyBrandTheme(data, payload?.cssVars)
           const faviconUrl = data.favicon_full_url || data.favicon || data.website_favicon
           if (faviconUrl && faviconUrl !== 'null') {
             document.querySelectorAll("link[rel~='icon']").forEach(el => el.remove())
