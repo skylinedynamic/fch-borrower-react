@@ -1,6 +1,7 @@
 import React from 'react'
 import { Modal, ModalBody, ModalHeader, Badge, ModalFooter } from 'reactstrap'
 import { usePreQualificationDetail } from '../../../modules/my-application/queries'
+import { GPT_STATUS, isIncorrectUnderwriting } from '../../../modules/my-application/types'
 import { PreQualificationDetailsLoader } from '../../../components/Loader/PreQualificationDetailsLoader'
 
 interface PreQualificationDetailsModalProps {
@@ -56,6 +57,59 @@ export default function PreQualificationDetailsModal({ isOpen, toggle, requestId
           <PreQualificationDetailsLoader />
         ) : data ? (
           <>
+            {/* Underwriting outcome first — the borrower opens this modal to see
+                where their application stands, not to re-read what they typed.
+                Only the client-safe generation is ever exposed here. */}
+            {data.gpt_status && (
+              <SectionCard title="Underwriting Information" icon="pi pi-verified">
+                <DetailItem
+                  label="Underwriting Review Status"
+                  value={
+                    <Badge
+                      color={data.gpt_status === GPT_STATUS.FAILED ? 'warning' : isIncorrectUnderwriting(data) ? 'danger' : data.gpt_status === GPT_STATUS.COMPLETED ? 'success' : 'secondary'}
+                      pill
+                      className="fs-12 text-uppercase"
+                    >
+                      {data.gpt_status === GPT_STATUS.COMPLETED ? 'Completed' : isIncorrectUnderwriting(data) ? 'Incorrect' : data.gpt_status === GPT_STATUS.FAILED ? 'Failed' : 'In Progress'}
+                    </Badge>
+                  }
+                />
+                <DetailItem label="Submitted Date" value={data.gpt_generated_at} icon="pi pi-calendar" />
+
+                {(data.underwriting_result?.borrower_summary || data.validation_summary) && (
+                  <DetailItem label="Summary" value={data.underwriting_result?.borrower_summary || data.validation_summary} fullWidth />
+                )}
+
+                {!!data.underwriting_result?.qualified_programs?.length && (
+                  <DetailItem
+                    label="Programs You May Qualify For"
+                    fullWidth
+                    value={
+                      <div className="d-flex flex-wrap gap-2">
+                        {data.underwriting_result.qualified_programs.map((program: string, idx: number) => (
+                          <Badge key={idx} color="success" pill className="fs-12 fw-medium">{program}</Badge>
+                        ))}
+                      </div>
+                    }
+                  />
+                )}
+
+                {!!data.underwriting_result?.document_checklist?.length && (
+                  <DetailItem
+                    label="Documents to Prepare"
+                    fullWidth
+                    value={
+                      <ul className="mb-0 ps-3">
+                        {data.underwriting_result.document_checklist.map((doc: string, idx: number) => (
+                          <li key={idx} className="py-1">{doc}</li>
+                        ))}
+                      </ul>
+                    }
+                  />
+                )}
+              </SectionCard>
+            )}
+
             {/* Personal Information */}
             <SectionCard title="Personal Information" icon="pi pi-user">
               <DetailItem label="Full Name" value={`${data.first_name} ${data.last_name}`} fullWidth />
