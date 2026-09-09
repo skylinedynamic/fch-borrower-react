@@ -6,6 +6,13 @@ export const fetchPreQualification = async (): Promise<PreQualificationData> => 
   return data.data
 }
 
+// A submitted application, including its underwriting status and the
+// borrower-safe result. Used by the Underwriting Result step.
+export const getPreQualificationById = async (id: string | number): Promise<any> => {
+  const { data } = await apiClient.get(`/borrower/pre-qualification/${id}`)
+  return data
+}
+
 export const submitPersonalInfo = async (payload: PersonalInfoRequest): Promise<StepSubmissionResponse['data']> => {
   const { data } = await apiClient.post<StepSubmissionResponse>('/borrower/pre-qualification/personal-info', payload)
   return data.data
@@ -23,5 +30,12 @@ export const submitFundingInfo = async (payload: FundingInfoRequest): Promise<St
 
 export const submitPreQualification = async (payload: SubmitPreQualificationRequest): Promise<SubmitPreQualificationResponse> => {
   const { data } = await apiClient.post<SubmitPreQualificationResponse>('/borrower/pre-qualification/submit', payload)
+  return data
+}
+
+// Re-runs an underwriting review that did not complete. Accepted only while the
+// review is in the failed state, so this cannot regenerate a finished result.
+export const retryUnderwriting = async (id: string | number): Promise<any> => {
+  const { data } = await apiClient.post('/borrower/pre-qualification/retry-underwriting', { id })
   return data
 }

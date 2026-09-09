@@ -5,12 +5,15 @@ import PersonalInfoStep from './components/PersonalInfoStep'
 import BusinessDetailsStep from './components/BusinessDetailsStep'
 import FundingNeedsStep from './components/FundingNeedsStep'
 import ReviewStep from './components/ReviewStep'
+import UnderwritingResultStep from './components/UnderwritingResultStep'
 import TabLoader from '../../components/Loader/TabLoader'
 import StepNavigation from './components/StepNavigation'
 import { usePreQualificationForm } from './hooks/usePreQualificationForm'
 
 export default function PreQualification() {
   const [saving, setSaving] = useState(false)
+  // Id of the application submitted in this session; unlocks the result tab.
+  const [submittedId, setSubmittedId] = useState<string | number | null>(null)
   const navigate = useNavigate()
 
   const {
@@ -36,6 +39,7 @@ export default function PreQualification() {
     submitBusinessInfoMutation,
     submitFundingInfoMutation,
     handleFinalSubmit,
+    preQualId,
   } = usePreQualificationForm()
 
   const renderStepSection = (idx: number) => {
@@ -130,10 +134,15 @@ export default function PreQualification() {
               onPrevious={() => { setStep(2); setMobileOpenIdx(2) }}
               onSubmit={async () => {
                 setSaving(true)
+                const idBeingSubmitted = preQualId
                 try {
                   await handleFinalSubmit()
                   toast.success('Pre-qualification submitted successfully')
-                  navigate('/my-applications')
+                  // Stay on the page: unlock and open the underwriting result,
+                  // which polls while the evaluation runs in the background.
+                  setSubmittedId(idBeingSubmitted)
+                  setStep(4)
+                  setMobileOpenIdx(4)
                 } catch (error) {
                   toast.error('Failed to submit pre-qualification')
                 } finally {
@@ -143,6 +152,13 @@ export default function PreQualification() {
               isSaving={saving}
             />
           )}
+        </div>
+      )
+    }
+    if (idx === 4) {
+      return (
+        <div className="step-content">
+          <UnderwritingResultStep preQualId={submittedId} />
         </div>
       )
     }
@@ -172,8 +188,8 @@ export default function PreQualification() {
                   </div>
                 ) : (
                   <>
-                    <h4 className="mb-1">{step === 0 ? 'Personal Info' : step === 1 ? 'Business Details' : step === 2 ? 'Funding Needs' : 'Review'}</h4>
-                    <div className="text-muted">{step === 0 ? "Let's start with your personal information" : step === 1 ? "Tell us about your business" : step === 2 ? "Help us understand your funding needs" : "Confirm your details before submitting"}</div>
+                    <h4 className="mb-1">{step === 0 ? 'Personal Info' : step === 1 ? 'Business Details' : step === 2 ? 'Funding Needs' : step === 3 ? 'Review' : 'Underwriting Result'}</h4>
+                    <div className="text-muted">{step === 0 ? "Let's start with your personal information" : step === 1 ? "Tell us about your business" : step === 2 ? "Help us understand your funding needs" : step === 3 ? "Confirm your details before submitting" : "Your automated pre-qualification outcome"}</div>
                   </>
                 )}
               </div>
@@ -182,6 +198,7 @@ export default function PreQualification() {
                 onTabClick={handleTabClick}
                 mobileOpenIdx={mobileOpenIdx}
                 renderStepSection={renderStepSection}
+                isSubmitted={submittedId !== null}
               />
             </div>
             <div className="card-body checkout-tab d-none d-md-block">

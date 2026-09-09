@@ -75,6 +75,53 @@ export interface PreQualificationDetail {
   // Others
   notes: string | null
   status: string
+  // Underwriting outcome. Only the client-safe generation is exposed to the
+  // borrower — the internal memo, risk flags and lender routing never appear here.
+  validation_status?: string | null
+  validation_summary?: string | null
+  gpt_status?: string | null
+  gpt_generated_at?: string | null
+  underwriting_result?: UnderwritingResult | null
+}
+
+export interface UnderwritingResult {
+  borrower_summary?: string
+  qualified_programs?: string[]
+  document_checklist?: string[]
+  next_steps?: string[]
+}
+
+export const GPT_STATUS = {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  INCORRECT: 'INCORRECT',
+  FAILED: 'FAILED',
+} as const
+
+export type GptStatus = typeof GPT_STATUS[keyof typeof GPT_STATUS]
+
+export const VALIDATION_STATUS = {
+  CORRECT: 'CORRECT',
+  INCORRECT: 'INCORRECT',
+} as const
+
+export type ValidationStatus = typeof VALIDATION_STATUS[keyof typeof VALIDATION_STATUS]
+
+export const isIncorrectUnderwriting = (
+  app?: { gpt_status?: string | null; validation_status?: string | null } | null
+): boolean => {
+  const gpt = (app?.gpt_status || '').toUpperCase()
+  const val = (app?.validation_status || '').toUpperCase()
+
+  return (
+    gpt === GPT_STATUS.INCORRECT ||
+    gpt === 'NEEDS_CORRECTION' ||
+    gpt === 'BLOCKED' ||
+    val === VALIDATION_STATUS.INCORRECT ||
+    val === 'NEEDS_CORRECTION' ||
+    val === 'BLOCKED' ||
+    val === 'INCORRECT INFORMATION'
+  )
 }
 
 export interface PreQualificationDetailResponse {
