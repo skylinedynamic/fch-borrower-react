@@ -90,6 +90,15 @@ export default function UnderwritingResultStep({ preQualId }: UnderwritingResult
   }
 
   useEffect(() => {
+    // Ensure body scroll is unlocked when underwriting result is displayed
+    document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove())
+    document.body.classList.remove('modal-open')
+    document.body.style.overflow = ''
+    document.body.style.paddingRight = ''
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
+
+  useEffect(() => {
     if (!preQualId) {
       setLoading(false)
       return

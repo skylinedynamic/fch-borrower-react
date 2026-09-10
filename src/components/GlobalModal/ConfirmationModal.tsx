@@ -40,6 +40,13 @@ export default function ConfirmationModal({
   const modalRef = useRef<HTMLDivElement>(null)
   const modalInstanceRef = useRef<Modal | null>(null)
 
+  const cleanupModalEffects = () => {
+    document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove())
+    document.body.classList.remove('modal-open')
+    document.body.style.overflow = ''
+    document.body.style.paddingRight = ''
+  }
+
   // Initialize Bootstrap Modal instance once
   useEffect(() => {
     if (!modalRef.current) return
@@ -48,6 +55,27 @@ export default function ConfirmationModal({
         backdrop: 'static',
         keyboard: false,
       })
+    }
+
+    const modalEl = modalRef.current
+    const handleHidden = () => {
+      cleanupModalEffects()
+    }
+    modalEl?.addEventListener('hidden.bs.modal', handleHidden)
+
+    return () => {
+      modalEl?.removeEventListener('hidden.bs.modal', handleHidden)
+      const modal = modalInstanceRef.current
+      if (modal) {
+        try {
+          modal.hide()
+          if (typeof modal.dispose === 'function') modal.dispose()
+        } catch (_) { }
+      }
+      modalInstanceRef.current = null
+      cleanupModalEffects()
+      setTimeout(cleanupModalEffects, 100)
+      setTimeout(cleanupModalEffects, 300)
     }
   }, [])
 
@@ -59,25 +87,10 @@ export default function ConfirmationModal({
       modal.show()
     } else {
       modal.hide()
+      setTimeout(cleanupModalEffects, 150)
+      setTimeout(cleanupModalEffects, 350)
     }
   }, [show])
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      const modal = modalInstanceRef.current
-      if (modal) {
-        try {
-          modal.hide()
-          // Use a small timeout to let the hide animation finish before disposing
-          setTimeout(() => {
-            if (typeof modal.dispose === 'function') modal.dispose()
-          }, 300)
-        } catch (_) { }
-      }
-      modalInstanceRef.current = null
-    }
-  }, [])
 
   const modalContent = (
     <div
