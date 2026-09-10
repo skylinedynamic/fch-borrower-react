@@ -84,11 +84,39 @@ export interface PreQualificationDetail {
   underwriting_result?: UnderwritingResult | null
 }
 
+/**
+ * The FCH_Client_AUE_v4 payload — the borrower-safe half of an evaluation.
+ *
+ * A funding readiness assessment, not an approval: it carries no qualified-program
+ * list and makes no prequalification claim, and the closing disclosure and
+ * disclaimer are fixed strings the schema pins.
+ */
 export interface UnderwritingResult {
-  borrower_summary?: string
-  qualified_programs?: string[]
-  document_checklist?: string[]
-  next_steps?: string[]
+  assessment_title?: string
+  funding_readiness_summary?: string
+  readiness_snapshot?: Array<{
+    area?: string
+    assessment?: string
+    source_status?: string
+  }>
+  estimated_funding_range?: {
+    available?: boolean
+    minimum?: number | null
+    maximum?: number | null
+    basis?: string
+  }
+  strengths?: string[]
+  areas_requiring_attention?: string[]
+  structuring_considerations?: string[]
+  submission_positioning_overview?: string
+  required_next_steps?: {
+    complete_assessment?: string[]
+    underwriting_review?: string[]
+    submission_readiness?: string[]
+  }
+  important_notice?: string
+  final_disclosure?: string
+  disclaimer?: string
 }
 
 export const GPT_STATUS = {

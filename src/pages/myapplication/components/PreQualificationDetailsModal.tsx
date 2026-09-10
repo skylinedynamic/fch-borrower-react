@@ -76,36 +76,56 @@ export default function PreQualificationDetailsModal({ isOpen, toggle, requestId
                 />
                 <DetailItem label="Submitted Date" value={data.gpt_generated_at} icon="pi pi-calendar" />
 
-                {(data.underwriting_result?.borrower_summary || data.validation_summary) && (
-                  <DetailItem label="Summary" value={data.underwriting_result?.borrower_summary || data.validation_summary} fullWidth />
-                )}
-
-                {!!data.underwriting_result?.qualified_programs?.length && (
+                {/* Condensed view of the Client v4 assessment. The full nine
+                    sections live on the Funding Readiness step; this modal shows
+                    the summary and what the borrower still has to act on. */}
+                {(data.underwriting_result?.funding_readiness_summary || data.validation_summary) && (
                   <DetailItem
-                    label="Programs You May Qualify For"
+                    label="Funding Readiness Summary"
+                    value={data.underwriting_result?.funding_readiness_summary || data.validation_summary}
                     fullWidth
-                    value={
-                      <div className="d-flex flex-wrap gap-2">
-                        {data.underwriting_result.qualified_programs.map((program: string, idx: number) => (
-                          <Badge key={idx} color="success" pill className="fs-12 fw-medium">{program}</Badge>
-                        ))}
-                      </div>
-                    }
                   />
                 )}
 
-                {!!data.underwriting_result?.document_checklist?.length && (
+                {!!data.underwriting_result?.strengths?.length && (
                   <DetailItem
-                    label="Documents to Prepare"
+                    label="Strengths"
                     fullWidth
                     value={
                       <ul className="mb-0 ps-3">
-                        {data.underwriting_result.document_checklist.map((doc: string, idx: number) => (
-                          <li key={idx} className="py-1">{doc}</li>
+                        {data.underwriting_result.strengths.map((item: string, idx: number) => (
+                          <li key={idx} className="py-1">{item}</li>
                         ))}
                       </ul>
                     }
                   />
+                )}
+
+                {!!data.underwriting_result?.areas_requiring_attention?.length && (
+                  <DetailItem
+                    label="Areas Requiring Attention"
+                    fullWidth
+                    value={
+                      <ul className="mb-0 ps-3">
+                        {data.underwriting_result.areas_requiring_attention.map((item: string, idx: number) => (
+                          <li key={idx} className="py-1">{item}</li>
+                        ))}
+                      </ul>
+                    }
+                  />
+                )}
+
+                {data.underwriting_result?.important_notice && (
+                  <DetailItem label="Important Notice" value={data.underwriting_result.important_notice} fullWidth />
+                )}
+
+                {/* Fixed compliance text — shown verbatim wherever the assessment is. */}
+                {data.underwriting_result?.final_disclosure && (
+                  <DetailItem label="Final Disclosure" value={data.underwriting_result.final_disclosure} fullWidth />
+                )}
+
+                {data.underwriting_result?.disclaimer && (
+                  <DetailItem label="Disclaimer" value={data.underwriting_result.disclaimer} fullWidth />
                 )}
               </SectionCard>
             )}
