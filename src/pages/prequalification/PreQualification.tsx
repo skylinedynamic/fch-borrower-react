@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 import PersonalInfoStep from './components/PersonalInfoStep'
@@ -41,6 +41,16 @@ export default function PreQualification() {
     handleFinalSubmit,
     preQualId,
   } = usePreQualificationForm()
+
+  useEffect(() => {
+    // When step changes (especially moving from Review to Underwriting Result),
+    // ensure any leftover modal backdrop/classes are completely removed and scroll to top
+    document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove())
+    document.body.classList.remove('modal-open')
+    document.body.style.overflow = ''
+    document.body.style.paddingRight = ''
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [step])
 
   const renderStepSection = (idx: number) => {
     if (idx === 0) {
