@@ -3,11 +3,55 @@ import { getPreQualificationById, retryUnderwriting } from '../../../modules/pre
 import { isIncorrectUnderwriting } from '../../../modules/my-application/types'
 import TabLoader from '../../../components/Loader/TabLoader'
 
+/**
+ * The FCH_Client_AUE_v4 payload, exactly as the borrower-safe schema defines it.
+ *
+ * This is a funding *readiness* assessment, not an approval: there is deliberately
+ * no "qualified programs" list and no prequalification claim to render, and the
+ * final disclosure and disclaimer are fixed strings that must always be shown.
+ */
+interface ReadinessSnapshotItem {
+  area?: string
+  assessment?: string
+  source_status?: string
+}
+
 interface UnderwritingResult {
-  borrower_summary?: string
-  qualified_programs?: string[]
-  document_checklist?: string[]
-  next_steps?: string[]
+  assessment_title?: string
+  funding_readiness_summary?: string
+  readiness_snapshot?: ReadinessSnapshotItem[]
+  estimated_funding_range?: {
+    available?: boolean
+    minimum?: number | null
+    maximum?: number | null
+    basis?: string
+  }
+  strengths?: string[]
+  areas_requiring_attention?: string[]
+  structuring_considerations?: string[]
+  submission_positioning_overview?: string
+  required_next_steps?: {
+    complete_assessment?: string[]
+    underwriting_review?: string[]
+    submission_readiness?: string[]
+  }
+  important_notice?: string
+  final_disclosure?: string
+  disclaimer?: string
+}
+
+/**
+ * Renders whichever bounds the assessment supplied. A missing bound is left out
+ * rather than shown as 0, which would read as a real figure.
+ */
+const formatRange = (min?: number | null, max?: number | null): string => {
+  const money = (value: number) =>
+    value.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
+
+  if (typeof min === 'number' && typeof max === 'number') return `${money(min)} – ${money(max)}`
+  if (typeof min === 'number') return `From ${money(min)}`
+  if (typeof max === 'number') return `Up to ${money(max)}`
+  return 'Not determined'
 }
 
 interface UnderwritingResultStepProps {
@@ -128,7 +172,7 @@ export default function UnderwritingResultStep({ preQualId }: UnderwritingResult
   if (error) {
     return (
       <div className="alert alert-warning d-flex align-items-start gap-2" role="alert">
-        <i className="ri-error-warning-line fs-5 mt-1"></i>
+        <i className="ri-alert-line fs-5 mt-1"></i>
         <div>{error}</div>
       </div>
     )
@@ -171,7 +215,7 @@ export default function UnderwritingResultStep({ preQualId }: UnderwritingResult
                 className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
                 style={{ width: '44px', height: '44px', backgroundColor: '#fef3c7' }}
               >
-                <i className="ri-error-warning-fill text-warning fs-22"></i>
+                <i className="ri-alert-line text-warning fs-22 lh-1"></i>
               </div>
               <div className="flex-grow-1">
                 <h5 className="fw-bold text-warning mb-2 fs-16">We could not complete the automated review</h5>
@@ -190,7 +234,7 @@ export default function UnderwritingResultStep({ preQualId }: UnderwritingResult
 
         {retryError && (
           <div className="alert alert-danger d-flex align-items-start gap-2" role="alert">
-            <i className="ri-error-warning-line fs-5 mt-1"></i>
+            <i className="ri-alert-line fs-5 mt-1"></i>
             <div>{retryError}</div>
           </div>
         )}
@@ -258,14 +302,14 @@ export default function UnderwritingResultStep({ preQualId }: UnderwritingResult
                   backgroundColor: '#fee2e2',
                 }}
               >
-                <i className="ri-error-warning-fill text-danger fs-22"></i>
+                <i className="ri-alert-line text-danger fs-22 lh-1"></i>
               </div>
               <div className="flex-grow-1">
                 <h5 className="fw-bold text-danger mb-2 fs-16">Incorrect Information</h5>
                 {/* Single statement, matching the failed state: what is wrong, followed
                     by what it prevents until it is corrected. */}
                 <p className="mb-0 fs-14" style={{ lineHeight: '1.65', color: '#2d3748' }}>
-                  {validationSummary || result?.borrower_summary || 'The submission contains an inconsistency or missing information that needs attention before underwriting can complete.'}
+                  {validationSummary || 'The submission contains an inconsistency or missing information that needs attention before underwriting can complete.'}
                   {' '}A completed review is required before you can start a funding application,
                   so these details need to be corrected first. Our team is reviewing the file and
                   will contact you if anything further is needed.
@@ -326,70 +370,183 @@ export default function UnderwritingResultStep({ preQualId }: UnderwritingResult
         {evaluatedAt && <span className="text-muted small ms-auto">Evaluated {evaluatedAt}</span>}
       </div>
 
-      {result.borrower_summary && (
-        <div className="alert alert-success d-flex align-items-start gap-2" role="alert">
-          <i className="ri-checkbox-circle-line fs-5 mt-1"></i>
-          <div>{result.borrower_summary}</div>
+      <h5 className="fw-bold mb-3">{result.assessment_title || 'Funding Readiness Assessment'}</h5>
+
+      {/* 1. Funding Readiness Summary */}
+      {result.funding_readiness_summary && (
+        <div className="mb-4">
+          <h6 className="fw-bold mb-2">
+            <i className="ri-file-text-line text-primary me-2"></i>
+            Funding Readiness Summary
+          </h6>
+          <p className="mb-0">{result.funding_readiness_summary}</p>
         </div>
       )}
 
-      {!!result.qualified_programs?.length && (
+      {/* 2. Readiness Snapshot — each area carries how its value was sourced, so
+             a borrower-reported figure is never presented as verified. */}
+      {!!result.readiness_snapshot?.length && (
         <div className="mb-4">
           <h6 className="fw-bold mb-3">
-            <i className="ri-shield-check-line text-success me-2"></i>
-            Programs You May Qualify For
+            <i className="ri-dashboard-3-line text-primary me-2"></i>
+            Readiness Snapshot
           </h6>
-          <div className="row g-3">
-            {result.qualified_programs.map((program, idx) => (
-              <div className="col-md-6 col-lg-4" key={idx}>
-                <div className="card border shadow-none mb-0 h-100">
-                  <div className="card-body p-3 d-flex align-items-center gap-2">
-                    <i className="ri-checkbox-circle-fill text-success"></i>
-                    <span className="fw-medium">{program}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="table-responsive">
+            <table className="table table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  <th scope="col">Area</th>
+                  <th scope="col">Assessment</th>
+                  <th scope="col">Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                {result.readiness_snapshot.map((item, idx) => (
+                  <tr key={idx}>
+                    <td className="fw-medium">{item.area}</td>
+                    <td>{item.assessment}</td>
+                    <td>
+                      <span className="badge bg-light text-muted text-uppercase">
+                        {(item.source_status || '').replace(/_/g, ' ')}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
 
-      {!!result.document_checklist?.length && (
+      {/* Estimated range, shown only when the assessment says one is available —
+          "available: false" means no range could be derived, not zero. */}
+      {result.estimated_funding_range?.available && (
+        <div className="mb-4">
+          <h6 className="fw-bold mb-2">
+            <i className="ri-money-dollar-circle-line text-primary me-2"></i>
+            Estimated Funding Range
+          </h6>
+          <p className="mb-1 fs-5 fw-semibold">
+            {formatRange(result.estimated_funding_range.minimum, result.estimated_funding_range.maximum)}
+          </p>
+          {result.estimated_funding_range.basis && (
+            <p className="text-muted small mb-0">{result.estimated_funding_range.basis}</p>
+          )}
+        </div>
+      )}
+
+      {/* 3. Strengths */}
+      {!!result.strengths?.length && (
         <div className="mb-4">
           <h6 className="fw-bold mb-3">
-            <i className="ri-file-list-3-line text-primary me-2"></i>
-            Documents to Prepare
+            <i className="ri-thumb-up-line text-success me-2"></i>
+            Strengths
           </h6>
           <ul className="list-unstyled mb-0">
-            {result.document_checklist.map((doc, idx) => (
+            {result.strengths.map((item, idx) => (
               <li className="d-flex align-items-start gap-2 py-2 border-bottom" key={idx}>
-                <i className="ri-checkbox-circle-line text-primary mt-1"></i>
-                <span>{doc}</span>
+                <i className="ri-check-line text-success mt-1"></i>
+                <span>{item}</span>
               </li>
             ))}
           </ul>
         </div>
       )}
 
-      {!!result.next_steps?.length && (
-        <div className="mb-0">
+      {/* 4. Areas Requiring Attention */}
+      {!!result.areas_requiring_attention?.length && (
+        <div className="mb-4">
           <h6 className="fw-bold mb-3">
-            <i className="ri-guide-line text-info me-2"></i>
-            Next Steps
+            <i className="ri-error-warning-line text-warning me-2"></i>
+            Areas Requiring Attention
           </h6>
-          <ol className="mb-0 ps-3">
-            {result.next_steps.map((step, idx) => (
-              <li className="py-1" key={idx}>{step}</li>
+          <ul className="list-unstyled mb-0">
+            {result.areas_requiring_attention.map((item, idx) => (
+              <li className="d-flex align-items-start gap-2 py-2 border-bottom" key={idx}>
+                <i className="ri-alert-line text-warning mt-1"></i>
+                <span>{item}</span>
+              </li>
             ))}
-          </ol>
+          </ul>
         </div>
       )}
 
-      {/* An automated pre-qualification is not an offer, so say so explicitly. */}
-      <p className="text-muted small mb-0 mt-4 pt-3 border-top">
-        This is an automated pre-qualification, not a final decision. Our team is reviewing
-        your application and will contact you with the outcome.
-      </p>
+      {/* 5. Structuring Considerations */}
+      {!!result.structuring_considerations?.length && (
+        <div className="mb-4">
+          <h6 className="fw-bold mb-3">
+            <i className="ri-stack-line text-primary me-2"></i>
+            Structuring Considerations
+          </h6>
+          <ul className="list-unstyled mb-0">
+            {result.structuring_considerations.map((item, idx) => (
+              <li className="d-flex align-items-start gap-2 py-2 border-bottom" key={idx}>
+                <i className="ri-arrow-right-s-line text-primary mt-1"></i>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* 6. Submission Positioning Overview */}
+      {result.submission_positioning_overview && (
+        <div className="mb-4">
+          <h6 className="fw-bold mb-2">
+            <i className="ri-compass-3-line text-primary me-2"></i>
+            Submission Positioning Overview
+          </h6>
+          <p className="mb-0">{result.submission_positioning_overview}</p>
+        </div>
+      )}
+
+      {/* 7. Required Next Steps — three named groups, rendered in schema order. */}
+      {!!result.required_next_steps && (
+        <div className="mb-4">
+          <h6 className="fw-bold mb-3">
+            <i className="ri-guide-line text-info me-2"></i>
+            Required Next Steps
+          </h6>
+          {([
+            ['Complete Assessment', result.required_next_steps.complete_assessment],
+            ['Underwriting Review', result.required_next_steps.underwriting_review],
+            ['Submission Readiness', result.required_next_steps.submission_readiness],
+          ] as Array<[string, string[] | undefined]>)
+            .filter(([, items]) => !!items?.length)
+            .map(([label, items]) => (
+              <div className="mb-3" key={label}>
+                <div className="fw-medium mb-2">{label}</div>
+                <ol className="mb-0 ps-3">
+                  {items!.map((step, idx) => (
+                    <li className="py-1" key={idx}>{step}</li>
+                  ))}
+                </ol>
+              </div>
+            ))}
+        </div>
+      )}
+
+      {/* 8. Important Notice */}
+      {result.important_notice && (
+        <div className="alert alert-warning d-flex align-items-start gap-2" role="alert">
+          <i className="ri-information-line fs-5 mt-1"></i>
+          <div>
+            <div className="fw-semibold mb-1">Important Notice</div>
+            <div>{result.important_notice}</div>
+          </div>
+        </div>
+      )}
+
+      {/* 9. The exact disclosure and disclaimer the schema fixes. Rendered
+             verbatim and never paraphrased — they are the compliance text. */}
+      <div className="mt-4 pt-3 border-top">
+        {result.final_disclosure && (
+          <p className="text-muted small mb-2">{result.final_disclosure}</p>
+        )}
+        {result.disclaimer && (
+          <p className="text-muted small mb-0">{result.disclaimer}</p>
+        )}
+      </div>
     </div>
   )
 }
