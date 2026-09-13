@@ -506,6 +506,8 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
           <div className="position-relative">
             <input
               type="text"
+              inputMode="numeric"
+              maxLength={5}
               placeholder="Enter zip code"
               value={data.business_zip_code}
               onChange={(e) => onChange({ ...data, business_zip_code: formatZipCode(e.target.value) })}

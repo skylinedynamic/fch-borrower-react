@@ -881,7 +881,8 @@ export default function CreditProfileTab() {
                 className={`form-control${errors.zip ? ' is-invalid' : ''}`}
                 value={formData.zip}
                 placeholder="10001"
-                maxLength={10}
+                inputMode="numeric"
+                maxLength={5}
                 onChange={e => update('zip', formatZipCode(e.target.value))}
               />
               {errors.zip && <div className="invalid-feedback">{errors.zip}</div>}

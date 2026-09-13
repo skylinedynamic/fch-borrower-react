@@ -529,6 +529,8 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
           <div className="position-relative">
             <input
               type="text"
+              inputMode="numeric"
+              maxLength={5}
               className={`form-control ${hasError('zip_code') ? 'is-invalid' : ''} ${isFieldLocked('zip_code') ? 'bg-light border-dashed locked-field-padding' : ''}`}
               placeholder="Enter zip code"
               value={data.zip_code}

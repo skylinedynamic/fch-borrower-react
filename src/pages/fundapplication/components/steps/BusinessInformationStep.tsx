@@ -6,7 +6,7 @@ import CustomDropdown from '../../../../components/Common/CustomDropdown'
 import { entityTypes, industryTypes, yearsInBusinessOptions } from '../../../../data/profile'
 import { countries as countriesData } from '../../../../modules/location'
 import { useBusinessInfo, useSaveBusinessInfo } from '../../../../modules/funding-application/queries'
-import { formatPhoneNumber, formatNumber } from '../../../../utils/formatters'
+import { formatPhoneNumber, formatNumber, formatZipCode } from '../../../../utils/formatters'
 import { getCountryCodeByName, getPhoneCodeByName, formatCountryDisplay, getCountryCodeFromDisplay } from '../../../../utils/countryHelpers'
 import { toast } from 'react-toastify'
 
@@ -402,10 +402,12 @@ export default function BusinessInformationStep({
         </label>
         <input
           type="text"
+          inputMode="numeric"
+          maxLength={5}
           className={`form-control ${hasError('business_postal_code') ? 'is-invalid' : ''}`}
           placeholder="Enter zip code"
           value={business.zip}
-          onChange={(e) => setBusiness((prev) => ({ ...prev, zip: e.target.value }))}
+          onChange={(e) => setBusiness((prev) => ({ ...prev, zip: formatZipCode(e.target.value) }))}
         />
         {hasError('business_postal_code') && (
           <div className="invalid-feedback">{getFieldError('business_postal_code')}</div>
