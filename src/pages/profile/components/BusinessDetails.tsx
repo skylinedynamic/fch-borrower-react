@@ -1,7 +1,7 @@
 import React from 'react'
 import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { SaveBusinessDetailsRequest, ValidationErrors, BusinessDetailsData } from '../../../modules/profile/types'
-import { countries as countriesData } from '../../../data/countries'
+import { countries as countriesData } from '../../../modules/location'
 import { entityTypes, industryTypes } from '../../../data/profile'
 import { useBusinessDetails, useSaveBusinessDetails, useSubmitChangeRequest } from '../../../modules/profile/queries'
 import { useEffect, useMemo, useState, useRef } from 'react'

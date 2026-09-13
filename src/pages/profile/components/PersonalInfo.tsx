@@ -6,7 +6,7 @@ import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { usePersonalInfo, useSavePersonalInfo } from '../../../modules/profile'
 import type { PersonalInfoData, SavePersonalInfoRequest, ValidationErrors } from '../../../modules/profile'
 import TabLoader from '../../../components/Loader/TabLoader'
-import { countries as countriesData } from '../../../data/countries'
+import { countries as countriesData } from '../../../modules/location'
 
 import { formatPhoneNumber, formatLast4SSN, unformatPhoneNumber, formatZipCode } from '../../../utils/formatters'
 import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'

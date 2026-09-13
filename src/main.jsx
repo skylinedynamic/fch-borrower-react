@@ -8,15 +8,30 @@ import 'primeicons/primeicons.css'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
+import { loadLocations } from './modules/location'
 
 const container = document.getElementById('root')
 const root = createRoot(container)
-root.render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <App />
-      </QueryClientProvider>
-    </BrowserRouter>
-  </React.StrictMode>
-)
+
+const render = () =>
+  root.render(
+    <React.StrictMode>
+      <BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
+      </BrowserRouter>
+    </React.StrictMode>
+  )
+
+// Countries, states and cities come from the API now, and every address field
+// reads them synchronously the way they read the old hardcoded file. Loading
+// before the first render preserves that contract, and avoids dropdowns that
+// populate a moment after they appear.
+//
+// A failure still renders. The response is cached for an hour and this is
+// reference data, so an empty country list is a far better outcome than a blank
+// application; anything that needs it can retry through loadLocations().
+loadLocations()
+  .catch((err) => console.error('Failed to load location data', err))
+  .finally(render)

@@ -4,7 +4,7 @@ import Auth from '../../components/Layout/Auth'
 import { registerBorrower, login } from '../../modules/auth/services'
 import { toast } from 'react-toastify'
 import { Dropdown } from 'primereact/dropdown'
-import { countries as countriesData } from '../../data/countries'
+import { countries as countriesData } from '../../modules/location'
 import { formatPhoneNumber } from '../../utils/formatters'
 import CustomDropdown from '../../components/Common/CustomDropdown'
 

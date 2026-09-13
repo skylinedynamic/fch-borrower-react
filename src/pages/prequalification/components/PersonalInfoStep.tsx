@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 import { PersonalInfo, BusinessDetails } from '../../../modules/pre-qualification/types'
 import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { formatPhoneNumber } from '../../../utils/formatters'
-import { countries } from '../../../data/countries'
+import { countries } from '../../../modules/location'
 
 interface PersonalInfoStepProps {
   personal: PersonalInfo

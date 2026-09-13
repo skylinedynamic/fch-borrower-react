@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { SaveFinancialInfoRequest, ValidationErrors } from '../../../modules/profile/types'
 import CustomDropdown from '../../../components/Common/CustomDropdown'
-import { countries as countriesData } from '../../../data/countries'
+import { countries as countriesData } from '../../../modules/location'
 import { yearsInBusinessOptions } from '../../../data/profile'
 import { useFinancialInfo, useSaveFinancialInfo, useSubmitChangeRequest } from '../../../modules/profile/queries'
 import { toast } from 'react-toastify'
