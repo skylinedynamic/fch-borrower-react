@@ -474,11 +474,14 @@ export default function UnderwritingResultStep({
                 </span>
               </div>
 
-              {/* Evaluated At Date */}
+              {/* Evaluated At Date & Time */}
               {evaluatedAt && (
-                <div className="d-inline-flex align-items-center gap-1.5 px-3 py-1 rounded-pill bg-light border text-muted" style={{ fontSize: '12px', fontWeight: 500 }}>
-                  <i className="ri-calendar-line"></i>
-                  <span>{evaluatedAt}</span>
+                <div className="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-light border">
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Evaluated:</span>
+                  <span className="d-inline-flex align-items-center text-muted" style={{ fontSize: '12px', fontWeight: 500, gap: '6px' }}>
+                    <i className="ri-calendar-line"></i>
+                    <span>{evaluatedAt}</span>
+                  </span>
                 </div>
               )}
             </div>
