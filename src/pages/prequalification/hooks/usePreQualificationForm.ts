@@ -369,13 +369,38 @@ export const usePreQualificationForm = () => {
   }
 
   const handleFinalSubmit = async () => {
-    if (!preQualId) return
+    let currentId = preQualId
+
+    // If no draft exists yet (e.g. fields unchanged from profile), create ON_HOLD draft first
+    if (!currentId) {
+      try {
+        const draftRes = await submitPersonalInfoMutation.mutateAsync({
+          first_name: personal.firstName,
+          last_name: personal.lastName,
+          email: personal.email,
+          phone_number: personal.phoneNumber,
+          business_website: personal.businessWebsite || undefined,
+          state_of_incorporation: personal.stateOfIncorporation,
+        })
+        currentId = draftRes?.id || (draftRes as any)?.data?.id
+        if (currentId) {
+          setPreQualId(currentId)
+        }
+      } catch (err) {
+        console.error('Failed to create initial pre-qualification draft', err)
+        throw err
+      }
+    }
+
+    if (!currentId) {
+      throw new Error('Unable to create or locate pre-qualification draft to submit.')
+    }
 
     try {
-      await submitPreQualificationMutation.mutateAsync({
-        id: preQualId
+      const response = await submitPreQualificationMutation.mutateAsync({
+        id: currentId
       })
-      return true
+      return response
     } catch (error) {
       console.error('Failed to submit pre-qualification', error)
       throw error

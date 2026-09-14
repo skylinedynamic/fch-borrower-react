@@ -14,6 +14,7 @@ export default function PreQualification() {
   const [saving, setSaving] = useState(false)
   // Id of the application submitted in this session; unlocks the result tab.
   const [submittedId, setSubmittedId] = useState<string | number | null>(null)
+  const [underwritingResultData, setUnderwritingResultData] = useState<any>(null)
   const navigate = useNavigate()
 
   const {
@@ -144,17 +145,28 @@ export default function PreQualification() {
               onPrevious={() => { setStep(2); setMobileOpenIdx(2) }}
               onSubmit={async () => {
                 setSaving(true)
-                const idBeingSubmitted = preQualId
                 try {
-                  await handleFinalSubmit()
+                  const submitRes: any = await handleFinalSubmit()
+                  let payload = submitRes
+                  if (payload?.data?.data) {
+                    payload = payload.data.data
+                  } else if (payload?.data) {
+                    payload = payload.data
+                  }
+                  const finalId = payload?.id || preQualId
+                  if (finalId) {
+                    setSubmittedId(finalId)
+                  }
+                  if (payload) {
+                    setUnderwritingResultData(payload)
+                  }
                   toast.success('Pre-qualification submitted successfully')
-                  // Stay on the page: unlock and open the underwriting result,
-                  // which polls while the evaluation runs in the background.
-                  setSubmittedId(idBeingSubmitted)
                   setStep(4)
                   setMobileOpenIdx(4)
-                } catch (error) {
-                  toast.error('Failed to submit pre-qualification')
+                } catch (error: any) {
+                  const message = error?.response?.data?.message || error?.message || 'Failed to submit pre-qualification'
+                  toast.error(message)
+                  throw error
                 } finally {
                   setSaving(false)
                 }
@@ -168,7 +180,11 @@ export default function PreQualification() {
     if (idx === 4) {
       return (
         <div className="step-content">
-          <UnderwritingResultStep preQualId={submittedId} />
+          <UnderwritingResultStep
+            preQualId={submittedId}
+            initialData={underwritingResultData}
+            onDataLoaded={setUnderwritingResultData}
+          />
         </div>
       )
     }
