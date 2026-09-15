@@ -58,6 +58,11 @@ export const usePreQualificationForm = () => {
   const initialBusinessRef = useRef<BusinessDetails | null>(null)
   const initialSupportRef = useRef<FinancialSupport | null>(null)
 
+  // Once the borrower has successfully saved funding info, prevent any background
+  // re-fetch of the pre-qualification query from wiping their entered values.
+  // The GET intentionally returns null for all funding fields (fresh-start by design).
+  const fundingSubmittedRef = useRef(false)
+
   useEffect(() => {
     if (apiData) {
       if (apiData.id) {
@@ -90,17 +95,22 @@ export const usePreQualificationForm = () => {
         monthlyRevenue: apiData.monthly_revenue ? formatCurrency(apiData.monthly_revenue.toString()) : '',
       })
 
-      setSupport({
-        fundingRequestedAmount: apiData.funding_requested_amount ? formatCurrency(apiData.funding_requested_amount.toString()) : '',
-        fundingUrgency: apiData.funding_urgency || '',
-        purposeOfFunding: apiData.purpose_of_funding || '',
-        personalCreditScore: apiData.personal_credit_score || '',
-        estimatedBusinessCreditScore: apiData.estimated_business_credit_score || '',
-        notes: apiData.notes || '',
-        existingBusinessDebt: apiData.existing_business_debt,
-        debtBalance: apiData.debt_balance ? formatCurrency(apiData.debt_balance.toString()) : '',
-        purposeNote: apiData.purpose_note || '',
-      })
+      // Only populate funding fields from API if the borrower has NOT yet submitted
+      // their funding info in this session. After submission the GET returns null for
+      // all funding fields (by design), so re-applying them would wipe the entered values.
+      if (!fundingSubmittedRef.current) {
+        setSupport({
+          fundingRequestedAmount: apiData.funding_requested_amount ? formatCurrency(apiData.funding_requested_amount.toString()) : '',
+          fundingUrgency: apiData.funding_urgency || '',
+          purposeOfFunding: apiData.purpose_of_funding || '',
+          personalCreditScore: apiData.personal_credit_score || '',
+          estimatedBusinessCreditScore: apiData.estimated_business_credit_score || '',
+          notes: apiData.notes || '',
+          existingBusinessDebt: apiData.existing_business_debt,
+          debtBalance: apiData.debt_balance ? formatCurrency(apiData.debt_balance.toString()) : '',
+          purposeNote: apiData.purpose_note || '',
+        })
+      }
 
       setLoading(false)
 
@@ -276,33 +286,36 @@ export const usePreQualificationForm = () => {
   }
 
   const handleFundingInfoSubmit = async (navigateToStep?: number) => {
-    const hasEmptyFields = !support.fundingRequestedAmount.trim() ||
-      !support.fundingUrgency.trim() ||
-      !support.purposeOfFunding.trim() ||
-      !support.personalCreditScore.trim() ||
-      !support.estimatedBusinessCreditScore.trim() ||
-      (support.existingBusinessDebt && !support.debtBalance.trim()) ||
-      (support.purposeOfFunding === FUNDING_PURPOSE_OTHER && !support.purposeNote.trim())
+    // --- Local validation: catch empty required fields before hitting the API ---
+    const validationErrors: Record<string, string> = {}
 
-    const hasChanged = initialSupportRef.current === null ||
-      support.fundingRequestedAmount !== initialSupportRef.current.fundingRequestedAmount ||
-      support.fundingUrgency !== initialSupportRef.current.fundingUrgency ||
-      support.purposeOfFunding !== initialSupportRef.current.purposeOfFunding ||
-      support.personalCreditScore !== initialSupportRef.current.personalCreditScore ||
-      support.estimatedBusinessCreditScore !== initialSupportRef.current.estimatedBusinessCreditScore ||
-      support.existingBusinessDebt !== initialSupportRef.current.existingBusinessDebt ||
-      support.debtBalance !== initialSupportRef.current.debtBalance ||
-      support.purposeNote !== initialSupportRef.current.purposeNote ||
-      support.notes !== initialSupportRef.current.notes
+    if (!support.fundingRequestedAmount.trim()) {
+      validationErrors.fundingRequestedAmount = 'Funding requested amount is required.'
+    }
+    if (!support.fundingUrgency.trim()) {
+      validationErrors.fundingUrgency = 'Funding urgency is required.'
+    }
+    if (!support.purposeOfFunding.trim()) {
+      validationErrors.purposeOfFunding = 'Purpose of funding is required.'
+    }
+    if (!support.personalCreditScore.trim()) {
+      validationErrors.personalCreditScore = 'Personal credit score is required.'
+    }
+    if (!support.estimatedBusinessCreditScore.trim()) {
+      validationErrors.estimatedBusinessCreditScore = 'Estimated business credit score is required.'
+    }
+    if (support.existingBusinessDebt && !support.debtBalance.trim()) {
+      validationErrors.debtBalance = 'Debt balance is required when existing business debt is selected.'
+    }
+    if (support.purposeOfFunding === FUNDING_PURPOSE_OTHER && !support.purposeNote.trim()) {
+      validationErrors.purposeNote = 'Please describe the purpose of funding.'
+    }
 
-    if (!hasEmptyFields && !hasChanged) {
-      setFundingErrors({})
-      setMaxStepReached(Math.max(maxStepReached, 3))
-      const nextStep = navigateToStep !== undefined ? navigateToStep : 3
-      setStep(nextStep)
-      setMobileOpenIdx(nextStep)
+    if (Object.keys(validationErrors).length > 0) {
+      setFundingErrors(validationErrors)
       return
     }
+
     try {
       const fundingAmount = support.fundingRequestedAmount.trim() ? parseFloat(unformatCurrency(support.fundingRequestedAmount)) : null
       const debtBalance = support.debtBalance.trim() ? parseFloat(unformatCurrency(support.debtBalance)) : null
@@ -319,13 +332,16 @@ export const usePreQualificationForm = () => {
         purpose_note: support.purposeOfFunding === FUNDING_PURPOSE_OTHER ? support.purposeNote : null,
         notes: support.notes
       })
+
+      // Mark funding as submitted so the apiData useEffect won't overwrite support state
+      fundingSubmittedRef.current = true
+
       setFundingErrors({})
+      initialSupportRef.current = { ...support }
       setMaxStepReached(Math.max(maxStepReached, 3))
       const nextStep = navigateToStep !== undefined ? navigateToStep : 3
       setStep(nextStep)
       setMobileOpenIdx(nextStep)
-
-      initialSupportRef.current = { ...support }
     } catch (error: any) {
       if (error?.response?.data?.errors) {
         const apiErrors = error.response.data.errors
@@ -346,6 +362,8 @@ export const usePreQualificationForm = () => {
           mappedErrors[mappedKey] = typeof apiErrors[key] === 'string' ? apiErrors[key] : apiErrors[key][0]
         })
         setFundingErrors(mappedErrors)
+      } else {
+        setFundingErrors({ general: 'Failed to save funding info. Please try again.' })
       }
     }
   }
