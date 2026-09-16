@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { FUNDING_PURPOSE_OTHER } from '../../../data/profile'
 import type { PersonalInfo, BusinessDetails, FinancialSupport } from '../../../modules/pre-qualification'
 import ConfirmationModal from '../../../components/GlobalModal/ConfirmationModal'
+import SubmitProgress from './SubmitProgress'
 
 interface ReviewStepProps {
   personal: PersonalInfo
@@ -84,16 +85,19 @@ export default function ReviewStep({ personal, business, support, onEdit, onPrev
         title={isSaving ? 'Evaluating Underwriting Result' : 'Final Review Confirmation'}
         message={
           isSaving
-            ? 'Please wait while we evaluate your Underwriting Result...'
+            ? ''
             : 'Are you sure you want to submit your pre-qualification request? Please ensure all details are correct.'
         }
         confirmText="Yes, Submit"
         cancelText="No, Cancel"
         loading={isSaving}
+        hideIcon={isSaving}
         loadingText="Evaluating..."
         icon={isSaving ? 'https://cdn.lordicon.com/kbtmbyzy.json' : 'https://cdn.lordicon.com/lupuorrc.json'}
         iconColors={isSaving ? 'primary:#405189,secondary:#0ab39c' : 'primary:#121331,secondary:#08a88a'}
-      />
+      >
+        {isSaving && <SubmitProgress />}
+      </ConfirmationModal>
     </div>
   )
 }

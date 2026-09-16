@@ -446,7 +446,7 @@ export default function UnderwritingResultStep({
                   {result.assessment_title || 'Funding Readiness Assessment'}
                 </h5>
                 <p className="text-muted small mb-0">
-                  Pre-qualification underwriting analysis &amp; funding eligibility assessment
+                  Preliminary funding readiness assessment
                 </p>
               </div>
             </div>
