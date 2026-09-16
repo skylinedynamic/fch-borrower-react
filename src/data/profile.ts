@@ -57,7 +57,7 @@ export const FUNDING_PURPOSE_OTHER = 'Other'
 
 // Pre-qualification text limits, matching the API validation (and the columns behind it).
 export const PURPOSE_NOTE_MAX = 255
-export const NOTES_MAX = 1000
+export const NOTES_MAX = 200
 
 export const purposeOfFundingOptions: OptionType[] = [
   { label: 'Accounts Receivable', value: 'Accounts Receivable' },

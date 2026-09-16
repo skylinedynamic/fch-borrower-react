@@ -5,7 +5,7 @@ import { getPreQualificationById } from '../../../modules/pre-qualification/serv
 import type { PersonalInfo, BusinessDetails, FinancialSupport } from '../../../modules/pre-qualification'
 import { countries } from '../../../data/countries'
 import { formatCurrency, unformatCurrency } from '../../../utils/formatters'
-import { FUNDING_PURPOSE_OTHER, PURPOSE_NOTE_MAX, NOTES_MAX } from '../../../data/profile'
+import { FUNDING_PURPOSE_OTHER } from '../../../data/profile'
 
 export const usePreQualificationForm = () => {
   const [step, setStep] = useState<number>(0)
@@ -314,12 +314,6 @@ export const usePreQualificationForm = () => {
     }
     if (support.purposeOfFunding === FUNDING_PURPOSE_OTHER && !support.purposeNote.trim()) {
       validationErrors.purposeNote = 'Please describe the purpose of funding.'
-    }
-    if (support.purposeOfFunding === FUNDING_PURPOSE_OTHER && support.purposeNote.length > PURPOSE_NOTE_MAX) {
-      validationErrors.purposeNote = `Purpose note cannot exceed ${PURPOSE_NOTE_MAX} characters`
-    }
-    if ((support.notes || '').length > NOTES_MAX) {
-      validationErrors.notes = `Notes cannot exceed ${NOTES_MAX} characters`
     }
 
     if (Object.keys(validationErrors).length > 0) {
