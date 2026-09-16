@@ -9,6 +9,7 @@ import UnderwritingResultStep from './components/UnderwritingResultStep'
 import TabLoader from '../../components/Loader/TabLoader'
 import StepNavigation from './components/StepNavigation'
 import { usePreQualificationForm } from './hooks/usePreQualificationForm'
+import { getPreQualificationById } from '../../modules/pre-qualification/services'
 
 export default function PreQualification() {
   const [saving, setSaving] = useState(false)
@@ -58,6 +59,24 @@ export default function PreQualification() {
       return
     }
     handleTabClick(targetStep)
+  }
+
+  // Polls a submitted application until its evaluation settles (completed,
+  // failed or needs correction). A failed poll is retried; after ~10 minutes the
+  // latest record is returned and the result tab keeps checking on its own.
+  const waitForEvaluation = async (id: string | number, current: any) => {
+    let latest = current
+    for (let attempt = 0; attempt < 120; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 5000))
+      try {
+        const response = await getPreQualificationById(id)
+        latest = response?.data ?? response
+        if (latest?.gpt_status !== 'PENDING') return latest
+      } catch {
+        // Transient network error: keep waiting.
+      }
+    }
+    return latest
   }
 
   // Steps are completed and saved in order: a tab opens for a step already
@@ -181,6 +200,12 @@ export default function PreQualification() {
                     payload = payload.data
                   }
                   const finalId = payload?.id || preQualId
+                  // Submit returns as soon as the application is saved and the
+                  // evaluation runs on the server afterwards, so keep the modal
+                  // and its progress bar open until the result is ready.
+                  if (finalId && payload?.gpt_status === 'PENDING') {
+                    payload = await waitForEvaluation(finalId, payload)
+                  }
                   if (finalId) {
                     setSubmittedId(finalId)
                   }
