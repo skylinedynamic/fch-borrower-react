@@ -7,9 +7,11 @@ interface StepNavigationProps {
   renderStepSection: (idx: number) => React.ReactNode
   /** Underwriting only unlocks once the pre-qualification has been submitted. */
   isSubmitted?: boolean
+  /** Whether a step's tab may be opened; steps are completed and saved in order. */
+  canOpen?: (idx: number) => boolean
 }
 
-export default function StepNavigation({ step, onTabClick, mobileOpenIdx, renderStepSection, isSubmitted = false }: StepNavigationProps) {
+export default function StepNavigation({ step, onTabClick, mobileOpenIdx, renderStepSection, isSubmitted = false, canOpen = () => true }: StepNavigationProps) {
   return (
     <ul className="tab-chevrons">
       <li>
@@ -17,6 +19,7 @@ export default function StepNavigation({ step, onTabClick, mobileOpenIdx, render
           type="button"
           className={`tab-btn ${step === 0 ? 'active' : ''}`}
           onClick={() => onTabClick(0)}
+          disabled={!canOpen(0)}
         >
           Personal Info
         </button>
@@ -31,7 +34,7 @@ export default function StepNavigation({ step, onTabClick, mobileOpenIdx, render
           type="button"
           className={`tab-btn ${step === 1 ? 'active' : ''}`}
           onClick={() => onTabClick(1)}
-          disabled={step < 0}
+          disabled={!canOpen(1)}
         >
           Business Details
         </button>
@@ -46,7 +49,7 @@ export default function StepNavigation({ step, onTabClick, mobileOpenIdx, render
           type="button"
           className={`tab-btn ${step === 2 ? 'active' : ''}`}
           onClick={() => onTabClick(2)}
-          disabled={step < 1}
+          disabled={!canOpen(2)}
         >
           Funding Needs
         </button>
@@ -61,7 +64,7 @@ export default function StepNavigation({ step, onTabClick, mobileOpenIdx, render
           type="button"
           className={`tab-btn ${step === 3 ? 'active' : ''}`}
           onClick={() => onTabClick(3)}
-          disabled={step < 2}
+          disabled={!canOpen(3)}
         >
           Review
         </button>
@@ -76,7 +79,7 @@ export default function StepNavigation({ step, onTabClick, mobileOpenIdx, render
           type="button"
           className={`tab-btn ${step === 4 ? 'active' : ''}`}
           onClick={() => onTabClick(4)}
-          disabled={!isSubmitted}
+          disabled={!isSubmitted || !canOpen(4)}
           title={isSubmitted ? undefined : 'Available after you submit your pre-qualification'}
         >
           {!isSubmitted && <i className="ri-lock-line me-1"></i>}

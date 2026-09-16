@@ -21,6 +21,7 @@ export default function PreQualification() {
     step,
     setStep,
     loading,
+    maxStepReached,
     mobileOpenIdx,
     setMobileOpenIdx,
     personal,
@@ -40,8 +41,34 @@ export default function PreQualification() {
     submitBusinessInfoMutation,
     submitFundingInfoMutation,
     handleFinalSubmit,
+    startNewApplication,
     preQualId,
   } = usePreQualificationForm()
+
+  // Leaving a submitted application's result starts a new application, which
+  // always begins at Personal Info and proceeds step by step; the submitted one
+  // stays viewable under My Applications.
+  const onTabClick = (targetStep: number) => {
+    if (step === 4 && targetStep < 4) {
+      startNewApplication()
+      setSubmittedId(null)
+      setUnderwritingResultData(null)
+      setStep(0)
+      setMobileOpenIdx(0)
+      return
+    }
+    handleTabClick(targetStep)
+  }
+
+  // Steps are completed and saved in order: a tab opens for a step already
+  // reached, or the very next one (moving there saves the current step first).
+  // On a submitted application's result only Personal Info opens, which starts
+  // a new application.
+  const canOpenTab = (idx: number) => {
+    if (step === 4) return idx === 0 || idx === 4
+    if (idx === 4) return submittedId !== null
+    return idx <= maxStepReached || idx === step + 1
+  }
 
   useEffect(() => {
     // When step changes (especially moving from Review to Underwriting Result),
@@ -164,7 +191,11 @@ export default function PreQualification() {
                   setStep(4)
                   setMobileOpenIdx(4)
                 } catch (error: any) {
-                  const message = error?.response?.data?.message || error?.message || 'Failed to submit pre-qualification'
+                  const message = error?.response?.data?.message
+                    || (!error?.response && error?.isAxiosError
+                      ? 'Network error: Unable to reach the server. Please try again later.'
+                      : error?.message)
+                    || 'Failed to submit pre-qualification'
                   toast.error(message)
                   throw error
                 } finally {
@@ -221,10 +252,11 @@ export default function PreQualification() {
               </div>
               <StepNavigation
                 step={step}
-                onTabClick={handleTabClick}
+                onTabClick={onTabClick}
                 mobileOpenIdx={mobileOpenIdx}
                 renderStepSection={renderStepSection}
                 isSubmitted={submittedId !== null}
+                canOpen={canOpenTab}
               />
             </div>
             <div className="card-body checkout-tab d-none d-md-block">

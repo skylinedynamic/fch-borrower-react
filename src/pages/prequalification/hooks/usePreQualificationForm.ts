@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
+import { toast } from 'react-toastify'
 import { usePreQualification, useSubmitPersonalInfo, useSubmitBusinessInfo, useSubmitFundingInfo, useSubmitPreQualification } from '../../../modules/pre-qualification'
+import { getPreQualificationById } from '../../../modules/pre-qualification/services'
 import type { PersonalInfo, BusinessDetails, FinancialSupport } from '../../../modules/pre-qualification'
 import { countries } from '../../../data/countries'
 import { formatCurrency, unformatCurrency } from '../../../utils/formatters'
@@ -63,20 +65,56 @@ export const usePreQualificationForm = () => {
   // The GET intentionally returns null for all funding fields (fresh-start by design).
   const fundingSubmittedRef = useRef(false)
 
-  useEffect(() => {
-    if (apiData) {
-      if (apiData.id) {
-        setPreQualId(apiData.id)
+  // Fills the wizard from the GET payload. Funding fields are only applied when
+  // resetFunding is set or the borrower has not saved funding info this session.
+  const populateFromApi = (apiData: any, resetFunding: boolean) => {
+    let countryCode = 'USA (+1)'
+    if (apiData.country) {
+      const country = countries.find(c => c.name === apiData.country)
+      if (country) {
+        countryCode = `${country.code} (${country.phone_code})`
       }
-      let countryCode = 'USA (+1)'
-      if (apiData.country) {
-        const country = countries.find(c => c.name === apiData.country)
-        if (country) {
-          countryCode = `${country.code} (${country.phone_code})`
-        }
-      }
+    }
 
-      setPersonal({
+    setPersonal({
+      firstName: apiData.first_name || '',
+      lastName: apiData.last_name || '',
+      email: apiData.email || '',
+      countryCode: countryCode,
+      phoneNumber: apiData.phone_number || '',
+      businessWebsite: apiData.business_website || '',
+      stateOfIncorporation: apiData.state_of_incorporation || '',
+    })
+
+    setBusiness({
+      businessName: apiData.business_name || '',
+      industryType: apiData.industry_type || '',
+      businessStructure: apiData.business_structure || '',
+      yearsInBusiness: apiData.years_in_business || '',
+      annualRevenue: apiData.annual_revenue ? formatCurrency(apiData.annual_revenue.toString()) : '',
+      monthlyRevenue: apiData.monthly_revenue ? formatCurrency(apiData.monthly_revenue.toString()) : '',
+    })
+
+    // Only populate funding fields from API if the borrower has NOT yet submitted
+    // their funding info in this session. After submission the GET returns null for
+    // all funding fields (by design), so re-applying them would wipe the entered values.
+    if (resetFunding || !fundingSubmittedRef.current) {
+      setSupport({
+        fundingRequestedAmount: apiData.funding_requested_amount ? formatCurrency(apiData.funding_requested_amount.toString()) : '',
+        fundingUrgency: apiData.funding_urgency || '',
+        purposeOfFunding: apiData.purpose_of_funding || '',
+        personalCreditScore: apiData.personal_credit_score || '',
+        estimatedBusinessCreditScore: apiData.estimated_business_credit_score || '',
+        notes: apiData.notes || '',
+        existingBusinessDebt: apiData.existing_business_debt,
+        debtBalance: apiData.debt_balance ? formatCurrency(apiData.debt_balance.toString()) : '',
+        purposeNote: apiData.purpose_note || '',
+      })
+    }
+
+    // Store initial values after data is loaded
+    setTimeout(() => {
+      initialPersonalRef.current = {
         firstName: apiData.first_name || '',
         lastName: apiData.last_name || '',
         email: apiData.email || '',
@@ -84,109 +122,92 @@ export const usePreQualificationForm = () => {
         phoneNumber: apiData.phone_number || '',
         businessWebsite: apiData.business_website || '',
         stateOfIncorporation: apiData.state_of_incorporation || '',
-      })
-
-      setBusiness({
+      }
+      initialBusinessRef.current = {
         businessName: apiData.business_name || '',
         industryType: apiData.industry_type || '',
         businessStructure: apiData.business_structure || '',
         yearsInBusiness: apiData.years_in_business || '',
         annualRevenue: apiData.annual_revenue ? formatCurrency(apiData.annual_revenue.toString()) : '',
         monthlyRevenue: apiData.monthly_revenue ? formatCurrency(apiData.monthly_revenue.toString()) : '',
-      })
-
-      // Only populate funding fields from API if the borrower has NOT yet submitted
-      // their funding info in this session. After submission the GET returns null for
-      // all funding fields (by design), so re-applying them would wipe the entered values.
-      if (!fundingSubmittedRef.current) {
-        setSupport({
-          fundingRequestedAmount: apiData.funding_requested_amount ? formatCurrency(apiData.funding_requested_amount.toString()) : '',
-          fundingUrgency: apiData.funding_urgency || '',
-          purposeOfFunding: apiData.purpose_of_funding || '',
-          personalCreditScore: apiData.personal_credit_score || '',
-          estimatedBusinessCreditScore: apiData.estimated_business_credit_score || '',
-          notes: apiData.notes || '',
-          existingBusinessDebt: apiData.existing_business_debt,
-          debtBalance: apiData.debt_balance ? formatCurrency(apiData.debt_balance.toString()) : '',
-          purposeNote: apiData.purpose_note || '',
-        })
       }
+      initialSupportRef.current = {
+        fundingRequestedAmount: apiData.funding_requested_amount ? formatCurrency(apiData.funding_requested_amount.toString()) : '',
+        fundingUrgency: apiData.funding_urgency || '',
+        purposeOfFunding: apiData.purpose_of_funding || '',
+        personalCreditScore: apiData.personal_credit_score || '',
+        estimatedBusinessCreditScore: apiData.estimated_business_credit_score || '',
+        existingBusinessDebt: apiData.existing_business_debt,
+        debtBalance: apiData.debt_balance ? formatCurrency(apiData.debt_balance.toString()) : '',
+        purposeNote: apiData.purpose_note || '',
+        notes: apiData.notes || '',
+      }
+    }, 100)
+  }
 
+  useEffect(() => {
+    if (apiData) {
+      if (apiData.id) {
+        setPreQualId(apiData.id)
+      }
+      populateFromApi(apiData, false)
       setLoading(false)
-
-      // Store initial values after data is loaded
-      setTimeout(() => {
-        initialPersonalRef.current = {
-          firstName: apiData.first_name || '',
-          lastName: apiData.last_name || '',
-          email: apiData.email || '',
-          countryCode: countryCode,
-          phoneNumber: apiData.phone_number || '',
-          businessWebsite: apiData.business_website || '',
-          stateOfIncorporation: apiData.state_of_incorporation || '',
-        }
-        initialBusinessRef.current = {
-          businessName: apiData.business_name || '',
-          industryType: apiData.industry_type || '',
-          businessStructure: apiData.business_structure || '',
-          yearsInBusiness: apiData.years_in_business || '',
-          annualRevenue: apiData.annual_revenue ? formatCurrency(apiData.annual_revenue.toString()) : '',
-          monthlyRevenue: apiData.monthly_revenue ? formatCurrency(apiData.monthly_revenue.toString()) : '',
-        }
-        initialSupportRef.current = {
-          fundingRequestedAmount: apiData.funding_requested_amount ? formatCurrency(apiData.funding_requested_amount.toString()) : '',
-          fundingUrgency: apiData.funding_urgency || '',
-          purposeOfFunding: apiData.purpose_of_funding || '',
-          personalCreditScore: apiData.personal_credit_score || '',
-          estimatedBusinessCreditScore: apiData.estimated_business_credit_score || '',
-          existingBusinessDebt: apiData.existing_business_debt,
-          debtBalance: apiData.debt_balance ? formatCurrency(apiData.debt_balance.toString()) : '',
-          purposeNote: apiData.purpose_note || '',
-          notes: apiData.notes || '',
-        }
-      }, 100)
     } else if (!isLoading) {
       setLoading(false)
     }
   }, [apiData, isLoading])
 
-  const handlePersonalInfoSubmit = async (navigateToStep?: number) => {
-    // Check if any required field is empty
-    const hasEmptyFields = !personal.firstName.trim() ||
-      !personal.lastName.trim() ||
-      !personal.email.trim() ||
-      !personal.phoneNumber.trim() ||
-      !personal.stateOfIncorporation.trim()
-
-    // Check if any field has changed
-    const hasChanged = initialPersonalRef.current === null ||
-      personal.firstName !== initialPersonalRef.current.firstName ||
-      personal.lastName !== initialPersonalRef.current.lastName ||
-      personal.email !== initialPersonalRef.current.email ||
-      personal.phoneNumber !== initialPersonalRef.current.phoneNumber ||
-      personal.businessWebsite !== initialPersonalRef.current.businessWebsite ||
-      personal.stateOfIncorporation !== initialPersonalRef.current.stateOfIncorporation
-
-    // Only call API if fields are empty OR changed
-    if (!hasEmptyFields && !hasChanged) {
-      setPersonalErrors({})
-      setMaxStepReached(Math.max(maxStepReached, 1))
-      const nextStep = navigateToStep !== undefined ? navigateToStep : 1
-      setStep(nextStep)
-      setMobileOpenIdx(nextStep)
-      return
+  // A submitted application is read-only on the server, so leaving its result
+  // for an earlier tab starts a new application: the submitted id and its
+  // funding answers must not carry over, or every save is rejected as not found.
+  const startNewApplication = () => {
+    setPreQualId(null)
+    fundingSubmittedRef.current = false
+    setPersonalErrors({})
+    setBusinessErrors({})
+    setFundingErrors({})
+    setMaxStepReached(0)
+    if (apiData) {
+      populateFromApi(apiData, true)
     }
+  }
 
+  // A step save that failed for a reason other than field validation. Without
+  // this the tab silently stays put. Network failures are already announced by
+  // the API client, so only server responses are reported here.
+  const notifySaveError = (error: any, section: string) => {
+    if (!error?.response) return
+    toast.error(error.response.data?.message || `We could not save your ${section}. Please try again.`)
+  }
+
+  // A draft id goes stale once that application is submitted, e.g. when a
+  // submit timed out in the browser but completed on the server. The API then
+  // answers 404, and saving again without the id starts a new application.
+  const saveStep = async <T,>(save: (id: string | null) => Promise<T>): Promise<T> => {
     try {
-      const response = await submitPersonalInfoMutation.mutateAsync({
-        id: preQualId,
+      return await save(preQualId)
+    } catch (error: any) {
+      if (preQualId && error?.response?.status === 404) {
+        setPreQualId(null)
+        return await save(null)
+      }
+      throw error
+    }
+  }
+
+  // Every step is saved when the borrower moves on, so each application is
+  // stored step by step from Personal Info onward (no "unchanged, skip" path).
+  const handlePersonalInfoSubmit = async (navigateToStep?: number) => {
+    try {
+      const response = await saveStep((id) => submitPersonalInfoMutation.mutateAsync({
+        id,
         first_name: personal.firstName,
         last_name: personal.lastName,
         email: personal.email,
         phone_number: personal.phoneNumber,
         business_website: personal.businessWebsite || undefined,
         state_of_incorporation: personal.stateOfIncorporation,
-      })
+      }))
 
       if (response?.id) {
         setPreQualId(response.id)
@@ -216,47 +237,29 @@ export const usePreQualificationForm = () => {
           mappedErrors[mappedKey] = typeof apiErrors[key] === 'string' ? apiErrors[key] : apiErrors[key][0]
         })
         setPersonalErrors(mappedErrors)
+      } else {
+        notifySaveError(error, 'personal information')
       }
     }
   }
 
   const handleBusinessInfoSubmit = async (navigateToStep?: number) => {
-    const hasEmptyFields = !business.businessName.trim() ||
-      !business.industryType.trim() ||
-      !business.businessStructure.trim() ||
-      !business.yearsInBusiness.trim() ||
-      !business.monthlyRevenue.trim() ||
-      !business.annualRevenue.trim()
-
-    const hasChanged = initialBusinessRef.current === null ||
-      business.businessName !== initialBusinessRef.current.businessName ||
-      business.industryType !== initialBusinessRef.current.industryType ||
-      business.businessStructure !== initialBusinessRef.current.businessStructure ||
-      business.yearsInBusiness !== initialBusinessRef.current.yearsInBusiness ||
-      business.monthlyRevenue !== initialBusinessRef.current.monthlyRevenue ||
-      business.annualRevenue !== initialBusinessRef.current.annualRevenue
-
-    if (!hasEmptyFields && !hasChanged) {
-      setBusinessErrors({})
-      setMaxStepReached(Math.max(maxStepReached, 2))
-      const nextStep = navigateToStep !== undefined ? navigateToStep : 2
-      setStep(nextStep)
-      setMobileOpenIdx(nextStep)
-      return
-    }
     try {
       const monthlyRevenue = business.monthlyRevenue.trim() ? parseFloat(unformatCurrency(business.monthlyRevenue)) || null : null
       const annualRevenue = business.annualRevenue.trim() ? parseFloat(unformatCurrency(business.annualRevenue)) || null : null
 
-      await submitBusinessInfoMutation.mutateAsync({
-        id: preQualId,
+      const response = await saveStep((id) => submitBusinessInfoMutation.mutateAsync({
+        id,
         business_name: business.businessName,
         industry_type: business.industryType,
         business_structure: business.businessStructure,
         monthly_revenue: monthlyRevenue,
         annual_revenue: annualRevenue,
         years_in_business: business.yearsInBusiness
-      })
+      }))
+      if (response?.id) {
+        setPreQualId(response.id)
+      }
       setBusinessErrors({})
       setMaxStepReached(Math.max(maxStepReached, 2))
       const nextStep = navigateToStep !== undefined ? navigateToStep : 2
@@ -281,6 +284,8 @@ export const usePreQualificationForm = () => {
           mappedErrors[mappedKey] = typeof apiErrors[key] === 'string' ? apiErrors[key] : apiErrors[key][0]
         })
         setBusinessErrors(mappedErrors)
+      } else {
+        notifySaveError(error, 'business details')
       }
     }
   }
@@ -320,8 +325,8 @@ export const usePreQualificationForm = () => {
       const fundingAmount = support.fundingRequestedAmount.trim() ? parseFloat(unformatCurrency(support.fundingRequestedAmount)) : null
       const debtBalance = support.debtBalance.trim() ? parseFloat(unformatCurrency(support.debtBalance)) : null
 
-      await submitFundingInfoMutation.mutateAsync({
-        id: preQualId,
+      const response = await saveStep((id) => submitFundingInfoMutation.mutateAsync({
+        id,
         funding_requested_amount: fundingAmount,
         funding_urgency: support.fundingUrgency,
         purpose_of_funding: support.purposeOfFunding,
@@ -331,7 +336,10 @@ export const usePreQualificationForm = () => {
         debt_balance: debtBalance,
         purpose_note: support.purposeOfFunding === FUNDING_PURPOSE_OTHER ? support.purposeNote : null,
         notes: support.notes
-      })
+      }))
+      if (response?.id) {
+        setPreQualId(response.id)
+      }
 
       // Mark funding as submitted so the apiData useEffect won't overwrite support state
       fundingSubmittedRef.current = true
@@ -364,6 +372,7 @@ export const usePreQualificationForm = () => {
         setFundingErrors(mappedErrors)
       } else {
         setFundingErrors({ general: 'Failed to save funding info. Please try again.' })
+        notifySaveError(error, 'funding needs')
       }
     }
   }
@@ -419,9 +428,32 @@ export const usePreQualificationForm = () => {
         id: currentId
       })
       return response
-    } catch (error) {
+    } catch (error: any) {
+      // The submit can complete on the server while the browser still gets an
+      // error: a gateway timeout arrives as a network error, and clicking Submit
+      // again then finds the application already submitted (404). Check what
+      // the server recorded before reporting a failure. Validation errors (422)
+      // are genuine and are reported as they are.
+      if (error?.response?.status !== 422) {
+        const recorded = await findSubmittedApplication(currentId)
+        if (recorded) {
+          return { data: recorded }
+        }
+      }
       console.error('Failed to submit pre-qualification', error)
       throw error
+    }
+  }
+
+  // The application as the server recorded it, if it has left the draft
+  // (On Hold) state, i.e. it was actually submitted. Null otherwise.
+  const findSubmittedApplication = async (id: string | number) => {
+    try {
+      const response = await getPreQualificationById(id)
+      const record = response?.data ?? response
+      return record?.id && record.status && record.status !== 'On Hold' ? record : null
+    } catch {
+      return null
     }
   }
 
@@ -429,6 +461,7 @@ export const usePreQualificationForm = () => {
     step,
     setStep,
     loading,
+    maxStepReached,
     mobileOpenIdx,
     setMobileOpenIdx,
     personal,
@@ -448,6 +481,7 @@ export const usePreQualificationForm = () => {
     submitBusinessInfoMutation,
     submitFundingInfoMutation,
     handleFinalSubmit,
+    startNewApplication,
     submitPreQualificationMutation,
     preQualId,
   }
