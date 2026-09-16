@@ -4,6 +4,14 @@ import type { PersonalInfo, BusinessDetails, FinancialSupport } from '../../../m
 import ConfirmationModal from '../../../components/GlobalModal/ConfirmationModal'
 import SubmitProgress from './SubmitProgress'
 
+// Long free text is cut to REVIEW_TEXT_LIMIT characters on the review card; the
+// full text stays in the hover title and is what gets submitted.
+const REVIEW_TEXT_LIMIT = 200
+const shorten = (text?: string) => {
+  if (!text) return '—'
+  return text.length > REVIEW_TEXT_LIMIT ? `${text.slice(0, REVIEW_TEXT_LIMIT)}...` : text
+}
+
 interface ReviewStepProps {
   personal: PersonalInfo
   business: BusinessDetails
@@ -52,11 +60,11 @@ export default function ReviewStep({ personal, business, support, onEdit, onPrev
         <div className="kv"><div className="label">Funding Urgency</div><div className="value">{support.fundingUrgency || '—'}</div></div>
         <div className="kv"><div className="label">Purpose of Funding</div><div className="value">{support.purposeOfFunding || '—'}</div></div>
         {support.purposeOfFunding === FUNDING_PURPOSE_OTHER && (
-          <div className="kv"><div className="label">Purpose Note</div><div className="value">{support.purposeNote || '—'}</div></div>
+          <div className="kv"><div className="label">Purpose Note</div><div className="value" title={support.purposeNote} style={{ overflowWrap: 'anywhere' }}>{shorten(support.purposeNote)}</div></div>
         )}
         <div className="kv"><div className="label">Personal Credit Score</div><div className="value">{support.personalCreditScore || '—'}</div></div>
         <div className="kv"><div className="label">Estimate Business Credit Score</div><div className="value">{support.estimatedBusinessCreditScore || '—'}</div></div>
-        <div className="kv"><div className="label">Note</div><div className="value">{support.notes || '—'}</div></div>
+        <div className="kv"><div className="label">Note</div><div className="value" title={support.notes} style={{ overflowWrap: 'anywhere' }}>{shorten(support.notes)}</div></div>
         <div className="kv"><div className="label">Existing Business Debt</div><div className="value">{support.existingBusinessDebt ? 'Yes' : 'No'}</div></div>
       </div>
       <div className="review-card review-card-wide">
