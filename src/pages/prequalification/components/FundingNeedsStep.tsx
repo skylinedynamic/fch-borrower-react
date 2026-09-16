@@ -77,11 +77,10 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
             placeholder="Please specify"
             value={support.purposeNote}
             onChange={(e) => setSupport({ ...support, purposeNote: e.target.value })}
-            maxLength={PURPOSE_NOTE_MAX}
             disabled={isSubmitting}
           />
           {errors.purposeNote && <div className="invalid-feedback">{errors.purposeNote}</div>}
-          <div className="form-text text-end">{support.purposeNote.length} / {PURPOSE_NOTE_MAX}</div>
+          <div className={`form-text text-end ${support.purposeNote.length > PURPOSE_NOTE_MAX ? 'text-danger' : ''}`}>{support.purposeNote.length} / {PURPOSE_NOTE_MAX}</div>
         </div>
       )}
       <div className="col-md-6">
@@ -118,11 +117,10 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
           rows={2}
           value={support.notes}
           onChange={(e) => setSupport({ ...support, notes: e.target.value })}
-          maxLength={NOTES_MAX}
           disabled={isSubmitting}
         />
         {errors.notes && <div className="invalid-feedback">{errors.notes}</div>}
-        <div className="form-text text-end">{(support.notes || '').length} / {NOTES_MAX}</div>
+        <div className={`form-text text-end ${(support.notes || '').length > NOTES_MAX ? 'text-danger' : ''}`}>{(support.notes || '').length} / {NOTES_MAX}</div>
       </div>
       <div className="col-12 d-flex align-items-center gap-3">
         <span className="fw-medium">Existing Business Debt?</span>
