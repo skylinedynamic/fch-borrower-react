@@ -29,7 +29,11 @@ export const submitFundingInfo = async (payload: FundingInfoRequest): Promise<St
 }
 
 export const submitPreQualification = async (payload: SubmitPreQualificationRequest): Promise<SubmitPreQualificationResponse> => {
-  const { data } = await apiClient.post<SubmitPreQualificationResponse>('/borrower/pre-qualification/submit', payload)
+  // The submit can outlive a gateway timeout and still complete on the server,
+  // so the caller checks the recorded outcome before announcing any failure.
+  const { data } = await apiClient.post<SubmitPreQualificationResponse>('/borrower/pre-qualification/submit', payload, {
+    headers: { 'X-Skip-Toast': 'true' },
+  })
   return data
 }
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { getPreQualificationById, retryUnderwriting } from '../../../modules/pre-qualification/services'
 import { isIncorrectUnderwriting } from '../../../modules/my-application/types'
 import TabLoader from '../../../components/Loader/TabLoader'
+import SubmitProgress from './SubmitProgress'
 
 /**
  * The FCH_Client_AUE_v4 payload, exactly as the borrower-safe schema defines it.
@@ -134,6 +135,7 @@ export default function UnderwritingResultStep({
   const [retrying, setRetrying] = useState<boolean>(false)
   const [retryError, setRetryError] = useState<string | null>(null)
   const [reloadToken, setReloadToken] = useState<number>(0)
+  const [pollCount, setPollCount] = useState<number>(0)
 
   const applyData = (raw: any) => {
     const data = extractPayload(raw)
@@ -180,7 +182,9 @@ export default function UnderwritingResultStep({
 
     const load = async () => {
       try {
-        if (!result && !normalized?.underwriting_result) {
+        // Only the first load shows the skeleton; a status re-check while the
+        // evaluation is running keeps the waiting screen in place.
+        if (!result && !normalized?.underwriting_result && status !== 'PENDING') {
           setLoading(true)
         }
         const response = await getPreQualificationById(preQualId)
@@ -203,6 +207,21 @@ export default function UnderwritingResultStep({
     }
   }, [preQualId, reloadToken])
 
+  // The evaluation runs on the server after submit returns, so the result
+  // arrives later: re-check every POLL_INTERVAL_MS until it settles, for at
+  // most POLL_LIMIT checks (~10 minutes) before showing the "taking longer" note.
+  const POLL_INTERVAL_MS = 10000
+  const POLL_LIMIT = 60
+  const isEvaluating = status === 'PENDING' && !result && pollCount < POLL_LIMIT
+  useEffect(() => {
+    if (!preQualId || !isEvaluating) return
+    const timer = setTimeout(() => {
+      setPollCount(c => c + 1)
+      setReloadToken(t => t + 1)
+    }, POLL_INTERVAL_MS)
+    return () => clearTimeout(timer)
+  }, [preQualId, isEvaluating, reloadToken])
+
   // Runs the evaluation again. The API accepts this only while the review is in
   // the failed state, so it can never regenerate a result that already succeeded.
   const handleRetry = async () => {
@@ -213,6 +232,7 @@ export default function UnderwritingResultStep({
 
     try {
       const response = await retryUnderwriting(preQualId)
+      setPollCount(0)
       applyData(response)
     } catch (e: any) {
       setRetryError(
@@ -236,7 +256,7 @@ export default function UnderwritingResultStep({
     )
   }
 
-  if (loading && !result) {
+  if (loading && !result && !isEvaluating) {
     return (
       <TabLoader count={6} colClass="col-md-6" />
     )
@@ -389,6 +409,21 @@ export default function UnderwritingResultStep({
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (isEvaluating) {
+    return (
+      <div className="step-content">
+        <div className="card shadow-none border mb-4 rounded-3">
+          <div className="card-header bg-light border-bottom text-center py-3">
+            <h5 className="mb-0">Evaluating Underwriting Result</h5>
+          </div>
+          <div className="card-body text-center px-4">
+            <SubmitProgress />
           </div>
         </div>
       </div>
