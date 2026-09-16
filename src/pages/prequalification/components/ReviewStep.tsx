@@ -56,29 +56,43 @@ export default function ReviewStep({ personal, business, support, onEdit, onPrev
         <div className="kv"><div className="label">Personal Credit Score</div><div className="value">{support.personalCreditScore || '—'}</div></div>
         <div className="kv"><div className="label">Estimate Business Credit Score</div><div className="value">{support.estimatedBusinessCreditScore || '—'}</div></div>
         <div className="kv"><div className="label">Note</div><div className="value">{support.notes || '—'}</div></div>
-        <div className="kv"><div className="label">Existing Business Debt</div><div className="value">{support.existingBusinessDebt ? (support.existingBusinessDebt ? 'Yes' : 'No') : '—'}</div></div>
+        <div className="kv"><div className="label">Existing Business Debt</div><div className="value">{support.existingBusinessDebt ? 'Yes' : 'No'}</div></div>
       </div>
       <div className="review-card review-card-wide">
         <div className="d-flex justify-content-between align-items-center">
           <div className="text-muted">Review your details then submit</div>
           <div className="d-flex gap-2">
-            <button type="button" className="btn btn-warning" onClick={onPrevious}>Previous</button>
-            <button type="button" className="btn next-btn" onClick={() => setShowConfirm(true)}>{isSaving ? 'Submitting...' : 'Submit'}</button>
+            <button type="button" className="btn btn-warning" onClick={onPrevious} disabled={isSaving}>Previous</button>
+            <button type="button" className="btn next-btn" onClick={() => setShowConfirm(true)} disabled={isSaving}>
+              {isSaving ? 'Submitting...' : 'Submit'}
+            </button>
           </div>
         </div>
       </div>
 
       <ConfirmationModal
         show={showConfirm}
-        onClose={() => setShowConfirm(false)}
-        onConfirm={onSubmit}
-        title="Final Review Confirmation"
-        message="Are you sure you want to submit your pre-qualification request? Please ensure all details are correct."
+        onClose={() => !isSaving && setShowConfirm(false)}
+        onConfirm={async () => {
+          try {
+            await onSubmit()
+            setShowConfirm(false)
+          } catch (_) {
+            setShowConfirm(false)
+          }
+        }}
+        title={isSaving ? 'Evaluating Underwriting Result' : 'Final Review Confirmation'}
+        message={
+          isSaving
+            ? 'Please wait while we evaluate your Underwriting Result...'
+            : 'Are you sure you want to submit your pre-qualification request? Please ensure all details are correct.'
+        }
         confirmText="Yes, Submit"
         cancelText="No, Cancel"
         loading={isSaving}
-        loadingText="Submitting..."
-        icon="https://cdn.lordicon.com/lupuorrc.json"
+        loadingText="Evaluating..."
+        icon={isSaving ? 'https://cdn.lordicon.com/kbtmbyzy.json' : 'https://cdn.lordicon.com/lupuorrc.json'}
+        iconColors={isSaving ? 'primary:#405189,secondary:#0ab39c' : 'primary:#121331,secondary:#08a88a'}
       />
     </div>
   )

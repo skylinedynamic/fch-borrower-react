@@ -5,9 +5,11 @@ interface StepNavigationProps {
   onTabClick: (step: number) => void
   mobileOpenIdx: number | null
   renderStepSection: (idx: number) => React.ReactNode
+  /** Underwriting only unlocks once the pre-qualification has been submitted. */
+  isSubmitted?: boolean
 }
 
-export default function StepNavigation({ step, onTabClick, mobileOpenIdx, renderStepSection }: StepNavigationProps) {
+export default function StepNavigation({ step, onTabClick, mobileOpenIdx, renderStepSection, isSubmitted = false }: StepNavigationProps) {
   return (
     <ul className="tab-chevrons">
       <li>
@@ -66,6 +68,23 @@ export default function StepNavigation({ step, onTabClick, mobileOpenIdx, render
         {mobileOpenIdx === 3 && (
           <div className="d-block d-md-none">
             {renderStepSection(3)}
+          </div>
+        )}
+      </li>
+      <li>
+        <button
+          type="button"
+          className={`tab-btn ${step === 4 ? 'active' : ''}`}
+          onClick={() => onTabClick(4)}
+          disabled={!isSubmitted}
+          title={isSubmitted ? undefined : 'Available after you submit your pre-qualification'}
+        >
+          {!isSubmitted && <i className="ri-lock-line me-1"></i>}
+          Underwriting Result
+        </button>
+        {mobileOpenIdx === 4 && (
+          <div className="d-block d-md-none">
+            {renderStepSection(4)}
           </div>
         )}
       </li>
