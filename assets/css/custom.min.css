@@ -750,10 +750,16 @@
   background: #dadcdf;
   color: #000;
   border: none;
-  padding: 12px 24px;
+  padding: 12px 10px;
+  font-size: 13px;
   text-align: center;
   border-radius: 0px !important;
   transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.prequalification-page .tab-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .prequalification-page .tab-btn.active {

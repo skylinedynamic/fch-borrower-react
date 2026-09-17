@@ -32,41 +32,90 @@ const SectionCardLoader = ({ children }: { children: React.ReactNode }) => (
 export const PreQualificationDetailsLoader: React.FC = () => {
   return (
     <>
-        {/* Personal Info */}
-        <SectionCardLoader>
-            <DetailItemLoader fullWidth />
-            <DetailItemLoader />
-            <DetailItemLoader />
-            <DetailItemLoader fullWidth />
-            <DetailItemLoader />
-        </SectionCardLoader>
+      {/* Underwriting Information */}
+      <SectionCardLoader>
+        <div className="mb-3 col-sm-6">
+          <div className="d-flex align-items-center mb-1">
+            <span className="placeholder col-6 rounded-1" style={{ height: 10 }}></span>
+          </div>
+          <span className="placeholder rounded-pill col-5" style={{ height: 22 }}></span>
+        </div>
+
+        <div className="mb-3 col-sm-6">
+          <div className="d-flex align-items-center mb-1">
+            <span className="placeholder rounded-circle me-2" style={{ width: 12, height: 12 }}></span>
+            <span className="placeholder col-5 rounded-1" style={{ height: 10 }}></span>
+          </div>
+          <span className="placeholder rounded-2 col-7" style={{ height: 16 }}></span>
+        </div>
+
+        <div className="mb-3 col-12">
+          <div className="d-flex align-items-center mb-1">
+            <span className="placeholder col-3 rounded-1" style={{ height: 10 }}></span>
+          </div>
+          <div className="d-flex flex-column gap-1">
+            <span className="placeholder rounded-1 col-12" style={{ height: 14 }}></span>
+            <span className="placeholder rounded-1 col-10" style={{ height: 14 }}></span>
+          </div>
+        </div>
+
+        <div className="mb-3 col-12">
+          <div className="d-flex align-items-center mb-1">
+            <span className="placeholder col-4 rounded-1" style={{ height: 10 }}></span>
+          </div>
+          <div className="d-flex flex-wrap gap-2 pt-1">
+            <span className="placeholder rounded-pill col-4" style={{ height: 24 }}></span>
+            <span className="placeholder rounded-pill col-3" style={{ height: 24 }}></span>
+          </div>
+        </div>
+
+        <div className="mb-3 col-12">
+          <div className="d-flex align-items-center mb-1">
+            <span className="placeholder col-4 rounded-1" style={{ height: 10 }}></span>
+          </div>
+          <div className="d-flex flex-column gap-2 ps-3 pt-1">
+            <span className="placeholder rounded-1 col-11" style={{ height: 14 }}></span>
+            <span className="placeholder rounded-1 col-9" style={{ height: 14 }}></span>
+            <span className="placeholder rounded-1 col-10" style={{ height: 14 }}></span>
+          </div>
+        </div>
+      </SectionCardLoader>
+
+      {/* Personal Info */}
+      <SectionCardLoader>
+        <DetailItemLoader fullWidth />
+        <DetailItemLoader />
+        <DetailItemLoader />
+        <DetailItemLoader fullWidth />
+        <DetailItemLoader />
+      </SectionCardLoader>
 
       {/* Business Info */}
-        <SectionCardLoader>
-            <DetailItemLoader fullWidth />
-            <DetailItemLoader />
-            <DetailItemLoader />
-            <DetailItemLoader />
-            <DetailItemLoader />
-            <DetailItemLoader />
-        </SectionCardLoader>
+      <SectionCardLoader>
+        <DetailItemLoader fullWidth />
+        <DetailItemLoader />
+        <DetailItemLoader />
+        <DetailItemLoader />
+        <DetailItemLoader />
+        <DetailItemLoader />
+      </SectionCardLoader>
 
       {/* Financial Info */}
-        <SectionCardLoader>
-            <DetailItemLoader />
-            <DetailItemLoader />
-            <DetailItemLoader fullWidth />
-            
-            <div className="col-12"><hr className="border-light my-3 opacity-25" /></div>
-            
-            <DetailItemLoader />
-            <DetailItemLoader />
-             
-            <div className="col-12"><hr className="border-light my-3 opacity-25" /></div>
+      <SectionCardLoader>
+        <DetailItemLoader />
+        <DetailItemLoader />
+        <DetailItemLoader fullWidth />
 
-            <DetailItemLoader />
-            <DetailItemLoader />
-        </SectionCardLoader>
+        <div className="col-12"><hr className="border-light my-3 opacity-25" /></div>
+
+        <DetailItemLoader />
+        <DetailItemLoader />
+
+        <div className="col-12"><hr className="border-light my-3 opacity-25" /></div>
+
+        <DetailItemLoader />
+        <DetailItemLoader />
+      </SectionCardLoader>
     </>
   )
 }

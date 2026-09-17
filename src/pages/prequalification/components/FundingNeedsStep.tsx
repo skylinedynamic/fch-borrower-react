@@ -2,7 +2,7 @@ import React from 'react'
 import type { FinancialSupport } from '../../../modules/pre-qualification'
 import { formatCurrency } from '../../../utils/formatters'
 import CustomDropdown from '../../../components/Common/CustomDropdown'
-import { fundingUrgencyOptions, purposeOfFundingOptions, personalCreditScoreOptions, estimatedBusinessCreditScoreOptions, FUNDING_PURPOSE_OTHER } from '../../../data/profile'
+import { fundingUrgencyOptions, purposeOfFundingOptions, personalCreditScoreOptions, estimatedBusinessCreditScoreOptions, FUNDING_PURPOSE_OTHER, PURPOSE_NOTE_MAX, NOTES_MAX } from '../../../data/profile'
 
 interface FundingNeedsStepProps {
   support: FinancialSupport
@@ -80,6 +80,7 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
             disabled={isSubmitting}
           />
           {errors.purposeNote && <div className="invalid-feedback">{errors.purposeNote}</div>}
+          <div className={`form-text text-end ${support.purposeNote.length > PURPOSE_NOTE_MAX ? 'text-danger' : ''}`}>{support.purposeNote.length} / {PURPOSE_NOTE_MAX}</div>
         </div>
       )}
       <div className="col-md-6">
@@ -119,6 +120,7 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
           disabled={isSubmitting}
         />
         {errors.notes && <div className="invalid-feedback">{errors.notes}</div>}
+        <div className={`form-text text-end ${(support.notes || '').length > NOTES_MAX ? 'text-danger' : ''}`}>{(support.notes || '').length} / {NOTES_MAX}</div>
       </div>
       <div className="col-12 d-flex align-items-center gap-3">
         <span className="fw-medium">Existing Business Debt?</span>
