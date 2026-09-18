@@ -5,6 +5,7 @@ import { countries as countriesData } from '../../../modules/location'
 import { entityTypes, industryTypes } from '../../../data/profile'
 import { useBusinessDetails, useSaveBusinessDetails, useSubmitChangeRequest } from '../../../modules/profile/queries'
 import { useEffect, useMemo, useState, useRef } from 'react'
+import { formatCalendarDate } from '../../../utils/dates'
 import { toast } from 'react-toastify'
 import TabLoader from '../../../components/Loader/TabLoader'
 import { formatPhoneNumber, formatDUNS, formatEIN, unformatEIN, unformatPhoneNumber, formatZipCode } from '../../../utils/formatters'
@@ -737,7 +738,9 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               type="text"
               className="form-control bg-light"
               value={updateRequest.key === 'business_start_date' && updateRequest.currentValue
-                ? new Date(updateRequest.currentValue).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                // Not new Date(): that parses a bare calendar date as UTC
+                // midnight, so anywhere behind UTC this showed the previous day.
+                ? formatCalendarDate(String(updateRequest.currentValue))
                 : (updateRequest.key === 'business_ein' ? formatEIN(String(updateRequest.currentValue))
                   : (updateRequest.key === 'duns_number' ? formatDUNS(String(updateRequest.currentValue))
                     : (updateRequest.key === 'business_phone' ? formatPhoneNumber(String(updateRequest.currentValue))

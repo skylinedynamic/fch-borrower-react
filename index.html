@@ -145,6 +145,11 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/flatpickr" type="module"></script>
 
+  <!-- Must come after every stylesheet above that touches flatpickr's internals:
+       it pins the month to seven columns so the days cannot drift out of line
+       with the weekday header. See the file for why. -->
+  <link href="/assets/css/flatpickr-fix.css" rel="stylesheet" type="text/css" />
+
   <!-- Choices.js (enhanced select for event category) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js@10.2.0/public/assets/styles/choices.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/choices.js@10.2.0/public/assets/scripts/choices.min.js"

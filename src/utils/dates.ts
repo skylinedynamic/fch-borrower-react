@@ -64,3 +64,26 @@ export const formatApiDate = (
         ...(showTime ? { hour: 'numeric', minute: '2-digit' } : {}),
     });
 };
+
+/**
+ * A calendar date in day-month-year order: "6 Jun 1981".
+ *
+ * Matches the `altFormat: "j M, Y"` the flatpickr pickers display, so a
+ * read-only copy of a value reads the same as the picker sitting next to it.
+ *
+ * Use this rather than `new Date(value).toLocaleDateString(...)` for a date the
+ * API sent as a bare calendar date. A date of birth or a business start date is
+ * the same date in every timezone; parsing it with `new Date()` makes it UTC
+ * midnight, which renders as the previous day anywhere behind UTC.
+ *
+ * Returns the raw string when unparseable, rather than "Invalid Date".
+ */
+export const formatCalendarDate = (value?: string | null): string => {
+    if (!value) return '';
+
+    const date = parseApiDate(value);
+
+    return date
+        ? date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+        : String(value);
+};

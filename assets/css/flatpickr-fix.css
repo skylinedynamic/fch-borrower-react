@@ -1,0 +1,93 @@
+/*
+ * Pin the date picker to seven columns.
+ *
+ * Flatpickr lays the month out as a plain flex-wrap list and relies on a fixed
+ * arithmetic relationship to get seven per row: `.dayContainer` is exactly
+ * 307.875px and every `.flatpickr-day` is at most 39px, so an eighth day cannot
+ * fit. The weekday header is sized separately, as seven equal shares of that
+ * same width.
+ *
+ * Nothing enforces the two agreeing. Four stylesheets in this app set those
+ * internals independently - app.min.css, custom.css, the unpinned
+ * cdn.jsdelivr.net flatpickr build, and agreement-builder.css, which is a
+ * page-specific file that Vite bundles globally and which shrinks the day to
+ * 38px and forces `.flatpickr-calendar` to 315px. Shave a pixel off the day or
+ * add one to the container and an eighth day fits the row, while the header
+ * still draws seven. Every date then renders one column to the left: 6 June
+ * 1981, a Saturday, appeared under FRI.
+ *
+ * The dates were never wrong - only their position. So rather than re-tune the
+ * arithmetic, which the next stylesheet would break again, both rows are made
+ * real seven-column grids. Seven is then structural and no width can change it.
+ *
+ * Must load after every other flatpickr stylesheet; see index.html.
+ */
+
+/* The month: exactly seven columns, whatever the container is sized to. */
+.flatpickr-calendar .dayContainer {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    justify-content: stretch !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* The header: the same seven columns, so the two line up by construction. */
+.flatpickr-calendar .flatpickr-weekdaycontainer {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    width: 100% !important;
+    flex: 1 1 auto !important;
+}
+
+.flatpickr-calendar span.flatpickr-weekday {
+    width: auto !important;
+    flex: none !important;
+}
+
+/*
+ * The day fills its grid cell instead of setting its own width. The fixed
+ * max-width is what made an eighth day fit, so it has to go; the square aspect
+ * ratio keeps the circular selected/today highlight round without pinning a
+ * pixel size.
+ */
+.flatpickr-calendar .dayContainer .flatpickr-day {
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    flex-basis: auto !important;
+    margin: 0 !important;
+    aspect-ratio: 1 / 1;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    line-height: normal !important;
+    height: auto !important;
+}
+
+/*
+ * The container these sit in must be free to be whatever width the calendar is,
+ * rather than flatpickr's hard-coded 307.875px, or the grid above is laid out
+ * against a width that no longer matches the calendar.
+ */
+.flatpickr-calendar .flatpickr-days,
+.flatpickr-calendar .flatpickr-rContainer {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+}
+
+/*
+ * Week numbers, if ever switched on, are a separate column outside the grid -
+ * left alone deliberately so enabling them does not silently become an eighth
+ * column.
+ */
+.flatpickr-calendar .flatpickr-weekwrapper .flatpickr-weekday,
+.flatpickr-calendar .flatpickr-weekwrapper span.flatpickr-day {
+    width: 100% !important;
+    aspect-ratio: auto;
+}
