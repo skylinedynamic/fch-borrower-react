@@ -15,6 +15,28 @@ afterEach(() => {
 })
 afterAll(() => server.close())
 
+// jsdom's Blob implements arrayBuffer() but not stream(). undici (Node's fetch,
+// which MSW builds its Response objects with) duck-types blob-like values and
+// calls .stream() on them, so a mocked XHR read with responseType 'blob' throws
+// "object.stream is not a function" from inside the interceptor's load handler.
+// That kills the dispatch before the request settles, so the caller's promise
+// hangs forever and the test dies on the timeout instead of the real error.
+if (typeof Blob !== 'undefined' && typeof (Blob.prototype as any).stream !== 'function') {
+  (Blob.prototype as any).stream = function stream(this: Blob) {
+    const arrayBufferPromise = this.arrayBuffer()
+    return new ReadableStream({
+      async start(controller) {
+        try {
+          controller.enqueue(new Uint8Array(await arrayBufferPromise))
+          controller.close()
+        } catch (error) {
+          controller.error(error)
+        }
+      },
+    })
+  }
+}
+
 if (!window.matchMedia) {
   window.matchMedia = (query: string) => ({
     matches: false,

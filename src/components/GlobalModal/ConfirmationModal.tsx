@@ -69,8 +69,11 @@ export default function ConfirmationModal({
       if (modal) {
         try {
           modal.hide()
-          // Use a small timeout to let the hide animation finish before disposing
+          // Use a small timeout to let the hide animation finish before disposing.
+          // It fires after unmount, so the host document can already be gone
+          // (a torn-down test environment) — bail out instead of throwing.
           setTimeout(() => {
+            if (typeof document === 'undefined') return
             if (typeof modal.dispose === 'function') modal.dispose()
           }, 300)
         } catch (_) { }
