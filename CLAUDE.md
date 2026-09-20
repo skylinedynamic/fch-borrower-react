@@ -4,7 +4,7 @@ Client-facing portal. React 18 + Vite + TypeScript config, PrimeReact/Reactstrap
 
 ## Related projects
 Sibling repos under `d:\laragon\www\`, part of the same FCH (Four Corner Funding/Health) system:
-- **`fch-backend-api`** — Laravel 12 API backend shared by this app and the admin panel (Passport auth, Spatie roles/permissions, Stripe, AWS S3). Routes are split by consumer under `routes/{admin,borrower,common,filemanager,website}.php`; this app talks to the `v1/borrower` surface.
+- **`fch-backend-api`** (`fch-api`) — **the base project of the platform.** Laravel 12 API backend shared by this app and the admin panel (Passport auth, Spatie roles/permissions, Stripe, AWS S3). Routes are split by consumer under `routes/{admin,borrower,common,filemanager,website}.php`; this app talks to the `v1/borrower` surface. The data model, API contracts, permissions and compliance controls originate there — this repo is a consumer. For any change that spans both, start in `fch-api` and follow its response shapes rather than adapting the API to this app.
 - **`Fch-admin-frontend-react`** — Admin/back-office panel. Same stack and module conventions as this repo (`services.ts`/`queries.ts`/`types.ts`/`index.ts`, shared `apiClient`/`queryKeys`/auth-guard patterns) but a separate codebase — treat conventions here as shared guidance, not shared code.
 - **`fch-website-react`** — Public marketing site (Next.js 16 + React 19), separate stack from the two portal apps. Consumes only the backend's unauthenticated `v1/website` routes for CMS/blog/lead content; its "Apply"/pre-qualification flows hand off to this app but share no code.
 
