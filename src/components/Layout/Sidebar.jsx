@@ -26,10 +26,14 @@ export default function Sidebar() {
   const isFreeTierModule = isFreeTrialLocked(userSubscription);
 
   // Resolved logos for different sidebar states
-  const primaryLogo = branding?.primary_logo_full_url
-  const secondaryLogo = branding?.secondary_logo_full_url
-  const displayLogo = isMobile ? secondaryLogo : primaryLogo
-  const compactLogo = secondaryLogo
+  // Logos are chosen by the background they sit on. The legacy keys are read as a
+  // fallback so a partner who has not re-uploaded keeps their existing logo.
+  const primaryLogo = branding?.logo_sidebar_full_url
+  const secondaryLogo = branding?.logo_document_full_url
+  const markLogo = branding?.favicon_full_url
+  // The mobile brand box now carries the sidebar colour, so it takes the dark-background logo too.
+  const displayLogo = primaryLogo || secondaryLogo
+  const compactLogo = markLogo || secondaryLogo
 
   const { data: dashboardData } = useDashboard()
   const activeApprovedRequest = dashboardData?.data?.active_approved_funding_request
@@ -262,8 +266,8 @@ export default function Sidebar() {
               <i className="ri-vip-crown-2-fill"></i>
             </div>
             <div className="trial-text-wrap">
-              <span className="trial-label">Limited Access</span>
-              <span className="trial-expires">Trial Period Lifetime</span>
+              <span className="trial-label">Free Plan</span>
+              <span className="trial-expires">Lifetime Access</span>
             </div>
             <span className="trial-badge">FREE</span>
           </div>

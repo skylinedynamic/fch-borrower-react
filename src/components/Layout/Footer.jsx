@@ -6,12 +6,9 @@ export default function Footer() {
   const { branding } = useBrandingStore()
   const user = useAuthStore((state) => state.user)
 
-  const isWhiteLabel = branding?.is_white_label
-
-  const siteName = isWhiteLabel ? (branding?.site_name) : branding?.site_name
-
-  const defaultCopyright = `Copyright © ${new Date().getFullYear()} ${siteName}. All rights reserved.`
-  const copyrightText = isWhiteLabel ? (branding?.copyright_text || defaultCopyright) : defaultCopyright
+  // Generated from the site name rather than stored: one less thing to keep in
+  // step, and it stays correct when a partner renames themselves.
+  const siteName = branding?.site_name || ''
 
   return (
     <footer className="footer">

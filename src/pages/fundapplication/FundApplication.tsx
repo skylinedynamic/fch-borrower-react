@@ -227,15 +227,15 @@ export default function FundApplication() {
     patriotActAck: false,
     fcraAuth: false,
     ecoaAck: false,
-    bankruptcy: '',
-    lawsuit: '',
-    federalLoanDefault: '',
-    federalDebtDelinquent: '',
-    criminalOffense: '',
-    paroleProbation: '',
-    suspendedDebarred: '',
-    judgmentsLiensBusiness: '',
-    judgmentsLiensOwner: '',
+    bankruptcy: 'no',
+    lawsuit: 'no',
+    federalLoanDefault: 'no',
+    federalDebtDelinquent: 'no',
+    criminalOffense: 'no',
+    paroleProbation: 'no',
+    suspendedDebarred: 'no',
+    judgmentsLiensBusiness: 'no',
+    judgmentsLiensOwner: 'no',
     explanation: '',
   })
 
@@ -455,9 +455,9 @@ export default function FundApplication() {
         if (activeStep === i && !isStepValid(i)) return false;
       }
 
-      // Document upload shows checkmark ONLY if it has files
+      // Document upload shows checkmark if it has files or user progressed past this step
       if (stepIndex === STEP_INDICES.DOCUMENT_UPLOAD) {
-        return Boolean(documentsData && documentsData.length > 0)
+        return Boolean((documentsData && documentsData.length > 0) || highestVisitedStep > STEP_INDICES.DOCUMENT_UPLOAD || activeStep > STEP_INDICES.DOCUMENT_UPLOAD)
       }
       
       if (!isStepSaved(stepIndex)) return false;
@@ -677,14 +677,17 @@ export default function FundApplication() {
         {/* Page Header */}
         <div className="text-center mb-4">
           <h4 className="mb-1">
-            {funding.approvedFunding
-              ? `Complete Your ${funding.approvedFunding} Application`
-              : 'Start Your Business Funding Application'}
+            {completedCount > 0 ? 'Complete' : 'Start'} Your Business Funding Application
+            {funding.approvedFunding && ` (${funding.approvedFunding.replace(/\s+Application$/i, '')})`}
           </h4>
           <div className="text-muted">
             {funding.approvedFunding
-              ? 'Please complete the final steps below to process your approved funding request and finalize your funds.'
-              : 'Apply now to unlock working capital, equipment financing, SBA loans, or credit-building options tailored to your goals.'}
+              ? (completedCount > 0
+                  ? 'Please complete the final steps below to process your approved funding request and finalize your funds.'
+                  : 'Please complete the steps below to start processing your approved funding sequence and finalize your funds.')
+              : (completedCount > 0
+                  ? 'Please complete the remaining steps below to finalize your business funding application.'
+                  : 'Apply now to unlock working capital, equipment financing, SBA loans, or credit-building options tailored to your goals.')}
           </div>
         </div>
 

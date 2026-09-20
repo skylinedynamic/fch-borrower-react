@@ -1,7 +1,6 @@
-:root {
-  --primary-color: var(--primary-color);
-  --secondary-color: var(--secondary-color);
-}
+/* These two used to be declared here as `--primary-color: var(--primary-color)`,
+   a self-reference that CSS treats as invalid. They are defined properly in
+   brand-tokens.css, which loads last. */
 
 /*# sourceMappingURL=custom.min.css.map */
 
@@ -58,12 +57,14 @@
   align-items: center;
   gap: 10px;
   padding: 8px 18px;
-  color: #d3d8e5;
+  /* Brand setting; see assets/css/sidebar-theme.css */
+  color: var(--sidebar-text-color, #d3d8e5);
 }
 
 .partner-sidebar .nav-item .menu-link i {
   font-size: 20px;
-  color: var(--secondary-color);
+  /* Brand setting, no longer tied to the secondary colour */
+  color: var(--sidebar-icon-color, #d3d8e5);
 }
 
 .partner-sidebar .nav-item .menu-link .badge {
@@ -74,31 +75,27 @@
 }
 
 .partner-sidebar .nav-item .menu-link:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
+  background: rgba(var(--sidebar-text-color-rgb, 255, 255, 255), 0.06);
+  color: var(--sidebar-text-hover-color, #ffffff);
 }
 
 .partner-sidebar .nav-item .menu-link:hover i {
-  color: #ffffff;
+  color: var(--sidebar-icon-hover-color, #ffffff);
 }
 
-.partner-sidebar .nav-item .menu-link.active {
-  background: var(--secondary-color);
-  color: #ffffff;
-}
-
-.partner-sidebar .nav-item .menu-link.active i {
-  color: #ffffff;
-}
+/* The selected menu item is styled in brand-tokens.css. It used to pin its
+   background to --secondary-color here, which is what made the accent colour
+   silently double as "the selected menu background" with no way to set one
+   without moving the other. */
 
 /* Nested dropdowns (if present) */
 .partner-sidebar .menu-dropdown .nav-link {
   padding: 8px 18px 8px 42px;
-  color: #cbd3e2;
+  color: var(--sidebar-text-color, #cbd3e2);
 }
 
 .partner-sidebar .menu-dropdown .nav-link:hover {
-  color: #ffffff;
+  color: var(--sidebar-text-hover-color, #ffffff);
 }
 
 /* Section spacing tweaks */
@@ -128,7 +125,8 @@
 
 .partner-sidebar .menu-title {
   font-size: 12px;
-  color: #ffffff;
+  /* Brand setting; hardcoded white was invisible on a light sidebar */
+  color: var(--sidebar-text-color, #ffffff);
 }
 
 .company-image {
@@ -752,10 +750,16 @@
   background: #dadcdf;
   color: #000;
   border: none;
-  padding: 12px 24px;
+  padding: 12px 10px;
+  font-size: 13px;
   text-align: center;
   border-radius: 0px !important;
   transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.prequalification-page .tab-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .prequalification-page .tab-btn.active {
@@ -5551,7 +5555,9 @@ span.flatpickr-weekday {
     position: sticky;
     top: 0;
     z-index: 1;
-    background: var(--bs-body-bg);
+    /* Matches the sidebar canvas. It used to be the white body background, which
+       made the light-on-dark logo disappear on mobile. */
+    background: var(--brand-sidebar-bg, var(--primary-color));
     display: block !important
   }
 }
@@ -5591,16 +5597,16 @@ span.flatpickr-weekday {
 }
 
 .partner-sidebar .subitem.active {
-  background: rgba(255, 255, 255, .06);
-  color: #ffffff
+  background: rgba(var(--sidebar-text-color-rgb, 255, 255, 255), .06);
+  color: var(--sidebar-text-hover-color, #ffffff)
 }
 
 .partner-sidebar .subitem.active i {
-  color: #ffffff
+  color: var(--sidebar-icon-hover-color, #ffffff)
 }
 
 .partner-sidebar .nav-item {
-  border-bottom: 1px solid rgba(255, 255, 255, .08)
+  border-bottom: 1px solid rgba(var(--sidebar-text-color-rgb, 255, 255, 255), .08)
 }
 
 .partner-sidebar .nav-item:last-child {
@@ -5608,7 +5614,7 @@ span.flatpickr-weekday {
 }
 
 .partner-sidebar .submenu-collapse .nav-item {
-  border-bottom: 1px solid rgba(255, 255, 255, .08)
+  border-bottom: 1px solid rgba(var(--sidebar-text-color-rgb, 255, 255, 255), .08)
 }
 
 .partner-sidebar .submenu-collapse .nav-item:last-child {
@@ -7915,4 +7921,98 @@ span.flatpickr-weekday {
   background: var(--primary-color);
   color: #fff;
   padding: 12px 0;
+}
+
+/* ==========================================================================
+   TOASTIFY OVERRIDES - primary-color accents, square corners (0px radius)
+   ========================================================================== */
+
+:root {
+  --toastify-font-family: 'Inter', 'Outfit', system-ui, -apple-system, sans-serif !important;
+  --toastify-color-success: var(--primary-color) !important;
+  --toastify-color-warning: var(--secondary-color) !important;
+  --toastify-icon-color-success: var(--primary-color) !important;
+  --toastify-icon-color-warning: var(--secondary-color) !important;
+}
+
+.Toastify__toast-container {
+  padding: 16px !important;
+  width: 380px !important;
+}
+
+@media (max-width: 480px) {
+  .Toastify__toast-container {
+    width: 100% !important;
+    padding: 8px !important;
+  }
+}
+
+.Toastify__toast {
+  background: rgba(255, 255, 255, 0.98) !important;
+  color: #1e293b !important;
+  border-radius: 0px !important;
+  padding: 16px 18px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.06), 0 8px 16px -6px rgba(0, 0, 0, 0.04) !important;
+  border: 1px solid rgba(0, 31, 63, 0.05) !important;
+  font-family: var(--toastify-font-family) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+  margin-bottom: 12px !important;
+  position: relative;
+  overflow: hidden !important;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.Toastify__toast:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px -5px rgba(0, 31, 63, 0.1), 0 10px 20px -6px rgba(0, 0, 0, 0.05) !important;
+}
+
+.Toastify__toast-body {
+  margin: 0 !important;
+  padding: 0 !important;
+  align-items: center !important;
+}
+
+.Toastify__toast-icon {
+  width: 22px !important;
+  height: 22px !important;
+  margin-right: 14px !important;
+  flex-shrink: 0 !important;
+}
+
+.Toastify__close-button {
+  color: #94a3b8 !important;
+  opacity: 0.7 !important;
+  transition: color 0.2s ease, opacity 0.2s ease !important;
+  align-self: center !important;
+  margin-left: 8px !important;
+}
+
+.Toastify__close-button:hover {
+  color: #475569 !important;
+  opacity: 1 !important;
+}
+
+.Toastify__progress-bar {
+  height: 3px !important;
+  border-bottom-left-radius: 0px !important;
+  border-bottom-right-radius: 0px !important;
+}
+
+.Toastify__progress-bar--success {
+  background: var(--primary-color) !important;
+}
+
+.Toastify__progress-bar--error {
+  background: #ef4444 !important;
+}
+
+.Toastify__progress-bar--warning {
+  background: var(--secondary-color) !important;
+}
+
+.Toastify__progress-bar--info {
+  background: #3b82f6 !important;
 }

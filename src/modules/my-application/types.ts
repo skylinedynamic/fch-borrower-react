@@ -75,6 +75,81 @@ export interface PreQualificationDetail {
   // Others
   notes: string | null
   status: string
+  // Underwriting outcome. Only the client-safe generation is exposed to the
+  // borrower — the internal memo, risk flags and lender routing never appear here.
+  validation_status?: string | null
+  validation_summary?: string | null
+  gpt_status?: string | null
+  gpt_generated_at?: string | null
+  underwriting_result?: UnderwritingResult | null
+}
+
+/**
+ * The FCH_Client_AUE_v4 payload — the borrower-safe half of an evaluation.
+ *
+ * A funding readiness assessment, not an approval: it carries no qualified-program
+ * list and makes no prequalification claim, and the closing disclosure and
+ * disclaimer are fixed strings the schema pins.
+ */
+export interface UnderwritingResult {
+  assessment_title?: string
+  funding_readiness_summary?: string
+  readiness_snapshot?: Array<{
+    area?: string
+    assessment?: string
+    source_status?: string
+  }>
+  estimated_funding_range?: {
+    available?: boolean
+    minimum?: number | null
+    maximum?: number | null
+    basis?: string
+  }
+  strengths?: string[]
+  areas_requiring_attention?: string[]
+  structuring_considerations?: string[]
+  submission_positioning_overview?: string
+  required_next_steps?: {
+    complete_assessment?: string[]
+    underwriting_review?: string[]
+    submission_readiness?: string[]
+  }
+  important_notice?: string
+  final_disclosure?: string
+  disclaimer?: string
+}
+
+export const GPT_STATUS = {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  INCORRECT: 'INCORRECT',
+  FAILED: 'FAILED',
+} as const
+
+export type GptStatus = typeof GPT_STATUS[keyof typeof GPT_STATUS]
+
+export const VALIDATION_STATUS = {
+  CORRECT: 'CORRECT',
+  INCORRECT: 'INCORRECT',
+} as const
+
+export type ValidationStatus = typeof VALIDATION_STATUS[keyof typeof VALIDATION_STATUS]
+
+export const isIncorrectUnderwriting = (
+  app?: { gpt_status?: string | null; validation_status?: string | null } | null
+): boolean => {
+  const gpt = (app?.gpt_status || '').toUpperCase()
+  const val = (app?.validation_status || '').toUpperCase()
+
+  return (
+    gpt === GPT_STATUS.INCORRECT ||
+    gpt === 'NEEDS_CORRECTION' ||
+    gpt === 'BLOCKED' ||
+    val === VALIDATION_STATUS.INCORRECT ||
+    val === 'NEEDS_CORRECTION' ||
+    val === 'BLOCKED' ||
+    val === 'INCORRECT INFORMATION'
+  )
 }
 
 export interface PreQualificationDetailResponse {

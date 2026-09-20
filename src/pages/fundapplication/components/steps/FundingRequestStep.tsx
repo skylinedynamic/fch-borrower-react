@@ -235,7 +235,6 @@ export default function FundingRequestStep({
 
     const success = await handleSave()
     if (success) {
-      toast.success('Funding request saved successfully')
       onNext()
     }
   }

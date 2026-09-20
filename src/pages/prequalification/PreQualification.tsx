@@ -1,22 +1,28 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 import PersonalInfoStep from './components/PersonalInfoStep'
 import BusinessDetailsStep from './components/BusinessDetailsStep'
 import FundingNeedsStep from './components/FundingNeedsStep'
 import ReviewStep from './components/ReviewStep'
+import UnderwritingResultStep from './components/UnderwritingResultStep'
 import TabLoader from '../../components/Loader/TabLoader'
 import StepNavigation from './components/StepNavigation'
 import { usePreQualificationForm } from './hooks/usePreQualificationForm'
+import { getPreQualificationById } from '../../modules/pre-qualification/services'
 
 export default function PreQualification() {
   const [saving, setSaving] = useState(false)
+  // Id of the application submitted in this session; unlocks the result tab.
+  const [submittedId, setSubmittedId] = useState<string | number | null>(null)
+  const [underwritingResultData, setUnderwritingResultData] = useState<any>(null)
   const navigate = useNavigate()
 
   const {
     step,
     setStep,
     loading,
+    maxStepReached,
     mobileOpenIdx,
     setMobileOpenIdx,
     personal,
@@ -36,7 +42,62 @@ export default function PreQualification() {
     submitBusinessInfoMutation,
     submitFundingInfoMutation,
     handleFinalSubmit,
+    startNewApplication,
+    preQualId,
   } = usePreQualificationForm()
+
+  // Leaving a submitted application's result starts a new application, which
+  // always begins at Personal Info and proceeds step by step; the submitted one
+  // stays viewable under My Applications.
+  const onTabClick = (targetStep: number) => {
+    if (step === 4 && targetStep < 4) {
+      startNewApplication()
+      setSubmittedId(null)
+      setUnderwritingResultData(null)
+      setStep(0)
+      setMobileOpenIdx(0)
+      return
+    }
+    handleTabClick(targetStep)
+  }
+
+  // Polls a submitted application until its evaluation settles (completed,
+  // failed or needs correction). A failed poll is retried; after ~10 minutes the
+  // latest record is returned and the result tab keeps checking on its own.
+  const waitForEvaluation = async (id: string | number, current: any) => {
+    let latest = current
+    for (let attempt = 0; attempt < 120; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 5000))
+      try {
+        const response = await getPreQualificationById(id)
+        latest = response?.data ?? response
+        if (latest?.gpt_status !== 'PENDING') return latest
+      } catch {
+        // Transient network error: keep waiting.
+      }
+    }
+    return latest
+  }
+
+  // Steps are completed and saved in order: a tab opens for a step already
+  // reached, or the very next one (moving there saves the current step first).
+  // On a submitted application's result only Personal Info opens, which starts
+  // a new application.
+  const canOpenTab = (idx: number) => {
+    if (step === 4) return idx === 0 || idx === 4
+    if (idx === 4) return submittedId !== null
+    return idx <= maxStepReached || idx === step + 1
+  }
+
+  useEffect(() => {
+    // When step changes (especially moving from Review to Underwriting Result),
+    // ensure any leftover modal backdrop/classes are completely removed and scroll to top
+    document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove())
+    document.body.classList.remove('modal-open')
+    document.body.style.overflow = ''
+    document.body.style.paddingRight = ''
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [step])
 
   const renderStepSection = (idx: number) => {
     if (idx === 0) {
@@ -131,11 +192,37 @@ export default function PreQualification() {
               onSubmit={async () => {
                 setSaving(true)
                 try {
-                  await handleFinalSubmit()
+                  const submitRes: any = await handleFinalSubmit()
+                  let payload = submitRes
+                  if (payload?.data?.data) {
+                    payload = payload.data.data
+                  } else if (payload?.data) {
+                    payload = payload.data
+                  }
+                  const finalId = payload?.id || preQualId
+                  // Submit returns as soon as the application is saved and the
+                  // evaluation runs on the server afterwards, so keep the modal
+                  // and its progress bar open until the result is ready.
+                  if (finalId && payload?.gpt_status === 'PENDING') {
+                    payload = await waitForEvaluation(finalId, payload)
+                  }
+                  if (finalId) {
+                    setSubmittedId(finalId)
+                  }
+                  if (payload) {
+                    setUnderwritingResultData(payload)
+                  }
                   toast.success('Pre-qualification submitted successfully')
-                  navigate('/my-applications')
-                } catch (error) {
-                  toast.error('Failed to submit pre-qualification')
+                  setStep(4)
+                  setMobileOpenIdx(4)
+                } catch (error: any) {
+                  const message = error?.response?.data?.message
+                    || (!error?.response && error?.isAxiosError
+                      ? 'Network error: Unable to reach the server. Please try again later.'
+                      : error?.message)
+                    || 'Failed to submit pre-qualification'
+                  toast.error(message)
+                  throw error
                 } finally {
                   setSaving(false)
                 }
@@ -143,6 +230,17 @@ export default function PreQualification() {
               isSaving={saving}
             />
           )}
+        </div>
+      )
+    }
+    if (idx === 4) {
+      return (
+        <div className="step-content">
+          <UnderwritingResultStep
+            preQualId={submittedId}
+            initialData={underwritingResultData}
+            onDataLoaded={setUnderwritingResultData}
+          />
         </div>
       )
     }
@@ -172,16 +270,18 @@ export default function PreQualification() {
                   </div>
                 ) : (
                   <>
-                    <h4 className="mb-1">{step === 0 ? 'Personal Info' : step === 1 ? 'Business Details' : step === 2 ? 'Funding Needs' : 'Review'}</h4>
-                    <div className="text-muted">{step === 0 ? "Let's start with your personal information" : step === 1 ? "Tell us about your business" : step === 2 ? "Help us understand your funding needs" : "Confirm your details before submitting"}</div>
+                    <h4 className="mb-1">{step === 0 ? 'Personal Info' : step === 1 ? 'Business Details' : step === 2 ? 'Funding Needs' : step === 3 ? 'Review' : 'Underwriting Result'}</h4>
+                    <div className="text-muted">{step === 0 ? "Let's start with your personal information" : step === 1 ? "Tell us about your business" : step === 2 ? "Help us understand your funding needs" : step === 3 ? "Confirm your details before submitting" : "Your automated pre-qualification outcome"}</div>
                   </>
                 )}
               </div>
               <StepNavigation
                 step={step}
-                onTabClick={handleTabClick}
+                onTabClick={onTabClick}
                 mobileOpenIdx={mobileOpenIdx}
                 renderStepSection={renderStepSection}
+                isSubmitted={submittedId !== null}
+                canOpen={canOpenTab}
               />
             </div>
             <div className="card-body checkout-tab d-none d-md-block">

@@ -101,3 +101,26 @@ export async function fetchThemeConfigurations(): Promise<any> {
     return null
   }
 }
+
+/**
+ * Branding on its own, for screens that only need to paint the brand.
+ *
+ * get-theme also queries the email configuration and the payment providers to
+ * build its freshness flags, and the brand had to wait behind both. This returns
+ * just the branding - cached server-side - plus `css_vars`, the same precomputed
+ * variable map /api/branding.css paints with, so the two cannot disagree.
+ */
+export async function fetchBranding(): Promise<{ branding: any; cssVars: Record<string, string> | null } | null> {
+  try {
+    const res = await apiClient.get('/common/branding')
+    if (res?.data?.success === true) {
+      return {
+        branding: res.data.data?.branding ?? null,
+        cssVars: res.data.data?.css_vars ?? null,
+      }
+    }
+    return null
+  } catch (err) {
+    return null
+  }
+}

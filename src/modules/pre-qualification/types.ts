@@ -132,5 +132,5 @@ export type SubmitPreQualificationRequest = {
 export type SubmitPreQualificationResponse = {
   status: boolean
   message: string
-  data: Record<string, never>
+  data: any
 }
