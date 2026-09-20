@@ -55,7 +55,8 @@ export default function DocumentUploadStep({
   // Fetch funding request to get ID
   const { data: fundingData } = useFundingRequest(initialRequestId)
   
-  const effectiveAppId = initialAppId || initialRequestId || fundingData?.id || null
+  const rawAppId = initialAppId || initialRequestId || fundingData?.id || null
+  const effectiveAppId: number | null = rawAppId != null ? Number(rawAppId) : null
 
   // Fetch document types and funding documents
   const { data: types, isLoading: typesLoading } = useDocumentTypes()

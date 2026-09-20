@@ -24,6 +24,11 @@ interface AppointmentModalProps {
     onSuccess?: (data?: any) => void;
 }
 
+export interface AppointmentModalHandle {
+    show: (id: string | number) => Promise<void>;
+    create: (dateStr?: string) => void;
+}
+
 interface DisplayData {
     title: string;
     date: string;
@@ -41,7 +46,7 @@ interface DisplayData {
     scheduledById: string | number | null;
 }
 
-const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, ref) => {
+const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProps>(({ onSuccess }, ref) => {
     const eventModalRef = useRef(null);
     const dateInputRef = useRef(null);
     const descriptionEditorRef = useRef(null); // This ref will be passed to the useSummernote hook
@@ -209,21 +214,22 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
     }, [formData.date, formData.timeStart, formData.timeEnd, formData.entity_id, formData.entity_type, viewMode, originalData]);
 
     // Helper functions (tConvert, formatDate, etc.) should be here or imported
-    const tConvert = (timeStr) => {
+    const tConvert = (timeStr: string): string => {
         if (!timeStr) return '';
-        let [h, m] = timeStr.split(':');
+        const [hStr, m] = timeStr.split(':');
+        let h = Number(hStr);
         const ampm = h >= 12 ? 'PM' : 'AM';
         h = h % 12 || 12;
         return `${h}:${m} ${ampm}`;
     };
 
-    const formatDate = (dateObj) => {
+    const formatDate = (dateObj: Date | string): string => {
         const d = new Date(dateObj);
         const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         return `${d.getDate() < 10 ? '0' + d.getDate() : d.getDate()} ${months[d.getMonth()]}, ${d.getFullYear()}`;
     };
 
-    const getShortType = (fullType) => {
+    const getShortType = (fullType: string | null | undefined): string => {
         if (!fullType) return 'partners';
         const segments = fullType.split('\\\\');
         const last = segments[segments.length - 1].toLowerCase();
@@ -233,7 +239,7 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
         return last + 's';
     };
 
-    const isSlotBlocked = (timeValue, isEnd = false) => {
+    const isSlotBlocked = (timeValue: string, isEnd = false): boolean => {
         if (!availabilityConflicts) return false;
         const allConflicts = [
             ...(availabilityConflicts.assignee_conflicts || []),
@@ -282,7 +288,7 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
 
     // Exposure
     useImperativeHandle(ref, () => ({
-        show: async (id) => {
+        show: async (id: string | number) => {
             setIsNewEvent(false);
             setViewMode(true);
             setIsDescriptionExpanded(false);
@@ -292,7 +298,7 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
             if (modalInstance) modalInstance.show();
             await fetchDetails(id);
         },
-        create: (dateStr) => {
+        create: (dateStr?: string) => {
             setIsNewEvent(true);
             setViewMode(false);
             setSelectedEventId(null);
@@ -327,7 +333,7 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
         }
     }));
 
-    const fetchDetails = async (id) => {
+    const fetchDetails = async (id: string | number) => {
         try {
             setLoadingDetails(true);
             const apt = await fetchAppointmentById(id);
@@ -419,12 +425,12 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
         }
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e?: React.FormEvent<HTMLFormElement>) => {
         if (e) e.preventDefault();
         setFormErrors({});
 
-        const toMySQLDate = (date) => {
-            const pad = (num) => (num < 10 ? '0' + num : num);
+        const toMySQLDate = (date: Date): string => {
+            const pad = (num: number): string | number => (num < 10 ? '0' + num : num);
             return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
         };
 
@@ -508,6 +514,7 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
     };
 
     const handleDelete = async () => {
+        if (!selectedEventId) return;
         try {
             setIsDeleting(true);
             const response = await deleteAppointment(selectedEventId);
@@ -519,7 +526,7 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
             } else {
                 toast.error(response?.message || "Failed to delete appointment");
             }
-        } catch (error) {
+        } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to delete appointment");
         } finally {
             setIsDeleting(false);
@@ -905,7 +912,7 @@ const AppointmentModal = forwardRef<any, AppointmentModalProps>(({ onSuccess }, 
 
                                     <div className="col-12 mb-3">
                                         <label className="form-label fs-13 fw-semibold">Description</label>
-                                        <div ref={descriptionRef}></div>
+                                        <div ref={descriptionRef as React.RefObject<HTMLDivElement>}></div>
                                     </div>
                                 </div>
 

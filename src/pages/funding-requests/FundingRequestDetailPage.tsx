@@ -7,7 +7,6 @@ import { downloadBlob, downloadFileFromUrl, handleFileDownload } from '../../uti
 import { getFileConfig, getDocumentStatusBadgeClass } from '../../config/fileTypeConfig'
 import { FUNDING_REVIEW_STATUS, FUNDING_REVIEW_STATUS_COLORS } from '../../config/funding'
 import { toast } from 'react-toastify'
-import FileUploadModal from '../../components/Common/Modal/FileUploadModal'
 import ReviewProgressCard from './components/ReviewProgressCard'
 import '../../components/Common/StatisticsCardSkeleton.css'
 import '../../../assets/css/funding-requests.css'

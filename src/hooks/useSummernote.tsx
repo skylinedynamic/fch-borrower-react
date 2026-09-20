@@ -18,14 +18,22 @@ import 'summernote/dist/summernote-lite.css';
  * @param {boolean} enabled - Whether the editor should be active (useful for tabs/modals)
  * @returns {object} - Returns editorRef to be attached to textarea or div
  */
-export const useSummernote = (fieldName, fieldValue, onChange, options = {}, enabled = true) => {
-    const editorRef = useRef(null);
+type SummernoteChangeEvent = { target: { name: string; value: string } }
+
+export const useSummernote = (
+    fieldName: string,
+    fieldValue: string,
+    onChange: (e: SummernoteChangeEvent) => void,
+    options: Record<string, unknown> = {},
+    enabled = true
+) => {
+    const editorRef = useRef<HTMLElement | null>(null);
     const isInternalChange = useRef(false);
     const lastContentRef = useRef(fieldValue || '');
     const isInitialized = useRef(false);
 
     // Helper to normalize HTML for comparison (handles <p><br></p>, etc.)
-    const normalize = (html) => {
+    const normalize = (html: string) => {
         if (!html) return '';
         const trimmed = html.trim();
         const emptyStates = ['<p><br></p>', '<p><br/></p>', '<br>', '<p>&nbsp;</p>', ''];
@@ -56,7 +64,7 @@ export const useSummernote = (fieldName, fieldValue, onChange, options = {}, ena
         if (!enabled || !editorRef.current) {
             if (isInitialized.current && $ && editorRef.current) {
                 try {
-                    $(editorRef.current).summernote('destroy');
+                    $(editorRef.current).summernote?.('destroy');
                 } catch (e) { }
             }
             isInitialized.current = false;
@@ -65,8 +73,8 @@ export const useSummernote = (fieldName, fieldValue, onChange, options = {}, ena
 
         if (isInitialized.current) return;
 
-        const handleFocus = (e) => {
-            const target = e.target;
+        const handleFocus = (e: FocusEvent) => {
+            const target = e.target as HTMLElement | null;
             if (target && (target.closest('.note-editor, .note-modal, .note-popover, .note-dropdown-menu, .note-children-container'))) {
                 e.stopImmediatePropagation();
             }
@@ -78,17 +86,17 @@ export const useSummernote = (fieldName, fieldValue, onChange, options = {}, ena
                 const $editor = $j(editorRef.current);
                 const initialCode = fieldValue || '';
 
-                $editor.summernote({
+                $editor.summernote?.({
                     ...config,
                     callbacks: {
-                        onChange: (contents) => {
+                        onChange: (contents: string) => {
                             const normalized = normalize(contents);
                             isInternalChange.current = true;
                             lastContentRef.current = normalized;
                             onChange({ target: { name: fieldName, value: normalized } });
                             setTimeout(() => { isInternalChange.current = false; }, 150);
                         },
-                        onPaste: function (e) {
+                        onPaste: function (e: ClipboardEvent & { originalEvent?: ClipboardEvent }) {
                             const bufferText = ((e.originalEvent || e).clipboardData || (window as any).clipboardData).getData('Text');
                             e.preventDefault();
 
@@ -97,7 +105,9 @@ export const useSummernote = (fieldName, fieldValue, onChange, options = {}, ena
 
                             if (cleanText) {
                                 setTimeout(() => {
-                                    $j(editorRef.current).summernote('insertText', cleanText);
+                                    if (editorRef.current) {
+                                        $j(editorRef.current).summernote?.('insertText', cleanText);
+                                    }
                                 }, 10);
                             }
                         },
@@ -109,7 +119,7 @@ export const useSummernote = (fieldName, fieldValue, onChange, options = {}, ena
                 });
 
                 document.addEventListener('focusin', handleFocus, true);
-                $editor.summernote('code', initialCode);
+                $editor.summernote?.('code', initialCode);
                 lastContentRef.current = normalize(initialCode);
                 isInitialized.current = true;
             } else if ($j && editorRef.current) {
@@ -124,7 +134,7 @@ export const useSummernote = (fieldName, fieldValue, onChange, options = {}, ena
             if (isInitialized.current && $ && editorRef.current) {
                 try {
                     $(document).off('.summernote');
-                    $(editorRef.current).summernote('destroy');
+                    $(editorRef.current).summernote?.('destroy');
                 } catch (e) { }
             }
             isInitialized.current = false;
@@ -144,7 +154,7 @@ export const useSummernote = (fieldName, fieldValue, onChange, options = {}, ena
         if ($ && editorRef.current) {
             const $editor = $(editorRef.current);
             if ($editor.summernote) {
-                const currentEditorCode = normalize($editor.summernote('code'));
+                const currentEditorCode = normalize($editor.summernote('code') as string);
                 if (currentEditorCode !== incoming) {
                     $editor.summernote('code', fieldValue || '');
                     lastContentRef.current = normalize(fieldValue || '');

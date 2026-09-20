@@ -19,6 +19,8 @@ export interface BusinessInfoData {
   industry_type: string | null
   years_in_business: string | null
   number_of_employees: string | null
+  funding_sequence_id?: number | string | null
+  funding_request_id?: number | string | null
 }
 
 export interface BusinessInfoResponse {
@@ -101,6 +103,8 @@ export interface DisclosuresConsentResponse {
 }
 export interface FundingRequestData {
   id: number | null
+  funding_request_id?: number | string | null
+  funding_sequence_id?: number | string | null
   requested_amount?: string | null
   purpose_of_funds?: string | null
   approved_funding?: string | null
@@ -110,6 +114,12 @@ export interface FundingRequestData {
   purpose_note?: string | null
   status?: string | null
   is_funding_request_saved?: boolean
+  is_business_info_saved?: boolean
+  is_ownership_info_saved?: boolean
+  is_financial_info_saved?: boolean
+  is_disclosures_saved?: boolean
+  is_federal_compliance_saved?: boolean
+  signature_data?: any
 }
 
 export interface FundingRequestResponse {
@@ -145,7 +155,7 @@ export interface AttestationData {
   signature_data?: any
 }
 
-export interface AttestationPayload {
+export interface AttestationFormPayload {
   id: number | null
   attestation_authorization?: boolean
   signature_name: string

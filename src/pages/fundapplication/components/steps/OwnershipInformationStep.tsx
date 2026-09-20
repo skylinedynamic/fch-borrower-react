@@ -106,8 +106,8 @@ export default function OwnershipInformationStep({
     }
 
     try {
-      const response = await saveOwnershipInfo(payload)
-      toast.success(response?.message || 'Ownership information saved successfully!')
+      await saveOwnershipInfo(payload)
+      toast.success('Ownership information saved successfully!')
       return true
     } catch (error: any) {
       const errors = error.response?.data?.errors
