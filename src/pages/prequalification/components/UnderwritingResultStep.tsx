@@ -643,10 +643,10 @@ export default function UnderwritingResultStep({
           {/* Mobile Stacked Cards (< md screens) */}
           <div className="card-body p-0 d-md-none">
             <div className="d-flex flex-column">
-              {result.readiness_snapshot.map((item, idx) => (
+              {result.readiness_snapshot.map((item, idx, items) => (
                 <div
                   key={idx}
-                  className={`p-3 ${idx < result.readiness_snapshot.length - 1 ? 'border-bottom' : ''}`}
+                  className={`p-3 ${idx < items.length - 1 ? 'border-bottom' : ''}`}
                   style={{ backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc' }}
                 >
                   <div className="d-flex align-items-center justify-content-between gap-2 mb-2">
