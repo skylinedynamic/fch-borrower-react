@@ -84,12 +84,26 @@ describe('usePreQualificationForm', () => {
     expect(result.current.step).toBe(0) // did not advance
   })
 
-  it('handleFinalSubmit is a no-op when there is no pre-qualification id yet', async () => {
+  it('handleFinalSubmit creates a draft first, and fails loudly when it gets no id back', async () => {
     server.use(http.get('*/borrower/pre-qualification', () => HttpResponse.json({ status: true, data: null })))
+
+    // With no draft yet, the final submit creates one. If that call comes back
+    // without an id there is nothing to submit against, and the hook must say
+    // so rather than silently doing nothing.
+    let draftRequested = false
+    server.use(
+      http.post('*/borrower/pre-qualification/personal-info', () => {
+        draftRequested = true
+        return HttpResponse.json({ status: true, data: {} })
+      })
+    )
+
     const { result } = renderPreQualForm()
     await waitFor(() => expect(result.current.loading).toBe(false))
 
-    const outcome = await result.current.handleFinalSubmit()
-    expect(outcome).toBeUndefined()
+    await expect(result.current.handleFinalSubmit()).rejects.toThrow(
+      'Unable to create or locate pre-qualification draft to submit.'
+    )
+    expect(draftRequested).toBe(true)
   })
 })

@@ -27,7 +27,10 @@ describe('usePreQualification', () => {
 })
 
 describe('useSubmitFundingInfo', () => {
-  it('posts the payload and invalidates the pre-qualification cache on success', async () => {
+  // Funding info deliberately does NOT invalidate the pre-qualification query.
+  // The GET returns null funding fields by design, so a re-fetch would wipe the
+  // local `support` state and leave the Review step showing dashes.
+  it('posts the payload and leaves the pre-qualification cache alone', async () => {
     let receivedBody: unknown = null
     server.use(
       http.post('*/borrower/pre-qualification/funding-info', async ({ request }) => {
@@ -50,6 +53,6 @@ describe('useSubmitFundingInfo', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(receivedBody).toEqual({ requested_amount: '10000' })
-    expect(invalidated).toContainEqual(queryKeys.preQualification.all)
+    expect(invalidated).not.toContainEqual(queryKeys.preQualification.all)
   })
 })
