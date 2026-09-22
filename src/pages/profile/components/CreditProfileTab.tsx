@@ -5,7 +5,7 @@ import { toast } from 'react-toastify'
 import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
 import { useAuth } from '../../../hooks/useAuth'
-import { countries } from '../../../data/countries'
+import { countries } from '../../../modules/location'
 import { apiClient } from '../../../lib/http/apiClient'
 import { formatPhoneNumber, formatZipCode, maskSSN, formatDate } from '../../../utils/formatters'
 import TabLoader from '../../../components/Loader/TabLoader'
@@ -875,7 +875,8 @@ export default function CreditProfileTab() {
                 className={`form-control${errors.zip ? ' is-invalid' : ''}`}
                 value={formData.zip}
                 placeholder="10001"
-                maxLength={10}
+                inputMode="numeric"
+                maxLength={5}
                 onChange={e => update('zip', formatZipCode(e.target.value))}
               />
               {errors.zip && <div className="invalid-feedback">{errors.zip}</div>}

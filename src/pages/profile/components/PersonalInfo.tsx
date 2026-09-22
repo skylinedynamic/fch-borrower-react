@@ -6,7 +6,8 @@ import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { usePersonalInfo, useSavePersonalInfo } from '../../../modules/profile'
 import type { PersonalInfoData, SavePersonalInfoRequest, ValidationErrors } from '../../../modules/profile'
 import TabLoader from '../../../components/Loader/TabLoader'
-import { countries as countriesData } from '../../../data/countries'
+import { formatCalendarDate } from '../../../utils/dates'
+import { countries as countriesData } from '../../../modules/location'
 
 import { formatPhoneNumber, formatLast4SSN, unformatPhoneNumber, formatZipCode } from '../../../utils/formatters'
 import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
@@ -531,6 +532,8 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
           <div className="position-relative">
             <input
               type="text"
+              inputMode="numeric"
+              maxLength={5}
               className={`form-control ${hasError('zip_code') ? 'is-invalid' : ''} ${isFieldLocked('zip_code') ? 'bg-light border-dashed locked-field-padding' : ''}`}
               placeholder="Enter zip code"
               value={data.zip_code}
@@ -681,7 +684,10 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
               type="text"
               className="form-control bg-light"
               value={updateRequest.key === 'date_of_birth' && updateRequest.currentValue
-                ? new Date(updateRequest.currentValue).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                // Not new Date(): that parses a bare calendar date as UTC
+                // midnight, so anywhere behind UTC this showed the previous day.
+                // A date of birth is the same date in every timezone.
+                ? formatCalendarDate(String(updateRequest.currentValue))
                 : (updateRequest.key === 'phone_number' ? formatPhoneNumber(String(updateRequest.currentValue))
                   : updateRequest.currentValue)}
               readOnly

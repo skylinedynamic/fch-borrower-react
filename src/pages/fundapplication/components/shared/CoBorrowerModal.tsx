@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import type { CoBorrower } from '../../types'
 import CustomDropdown from '../../../../components/Common/CustomDropdown'
-import { countries } from '../../../../data/countries'
+import { countries } from '../../../../modules/location'
 import { useValidateCoBorrower } from '../../../../modules/funding-application/queries'
 import { getCountryCodeByName, getPhoneCodeByName } from '../../../../utils/countryHelpers'
-import { formatPhoneNumber, formatSSN, unformatSSN } from '../../../../utils/formatters'
+import { formatPhoneNumber, formatSSN, unformatSSN, formatZipCode } from '../../../../utils/formatters'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
 import { yearDropdownPlugin } from '../../../../utils/flatpickrPlugins'
@@ -380,10 +380,12 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit, isEditi
                   </label>
                   <input
                     type="text"
+                    inputMode="numeric"
+                    maxLength={5}
                     className={`form-control ${hasError('zip_code') ? 'is-invalid' : ''}`}
                     placeholder="Enter Zip Code"
                     value={coDraft.zip}
-                    onChange={(e) => setCoDraft({ ...coDraft, zip: e.target.value })}
+                    onChange={(e) => setCoDraft({ ...coDraft, zip: formatZipCode(e.target.value) })}
                   />
                   {hasError('zip_code') && <div className="invalid-feedback">{getError('zip_code')}</div>}
                 </div>
