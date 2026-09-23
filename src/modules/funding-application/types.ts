@@ -32,6 +32,7 @@ export interface BusinessInfoResponse {
 export interface OwnershipInfoData {
   id: number | null
   first_name: string | null
+  middle_name: string | null
   last_name: string | null
   date_of_birth: string | null
   ssn: string | null
@@ -120,6 +121,7 @@ export interface FundingRequestData {
   is_disclosures_saved?: boolean
   is_federal_compliance_saved?: boolean
   signature_data?: any
+  requires_resign?: boolean
 }
 
 export interface FundingRequestResponse {

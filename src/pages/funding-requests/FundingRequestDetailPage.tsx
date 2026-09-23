@@ -5,7 +5,7 @@ import { getBorrowerActivityLogs, downloadActivityAttachment } from '../../modul
 import { downloadBorrowerDocument } from '../../modules/documents/services'
 import { downloadBlob, downloadFileFromUrl, handleFileDownload } from '../../utils/fileDownload'
 import { getFileConfig, getDocumentStatusBadgeClass } from '../../config/fileTypeConfig'
-import { FUNDING_REVIEW_STATUS, FUNDING_REVIEW_STATUS_COLORS } from '../../config/funding'
+import { FUNDING_REVIEW_STATUS, FUNDING_REVIEW_STATUS_COLORS, FUNDING_APPLICATION_STATUS } from '../../config/funding'
 import { toast } from 'react-toastify'
 import ReviewProgressCard from './components/ReviewProgressCard'
 import '../../components/Common/StatisticsCardSkeleton.css'
@@ -709,7 +709,8 @@ export default function FundingRequestDetailPage() {
     const appStatus = String(review.application_status || '').toLowerCase();
     const isNotStarted = isApproved && !review.application_status;
     const isOnHoldOrDraft = isApproved && (appStatus.includes('hold') || appStatus.includes('draft'));
-    const isSubmittedOrComplete = Boolean(review.application_status && !isOnHoldOrDraft);
+    const isPendingReview = review.application_status === FUNDING_APPLICATION_STATUS.PENDING;
+    const isSubmittedOrComplete = Boolean(review.application_status && !isOnHoldOrDraft && !isPendingReview);
 
     return (
         <React.Fragment>
@@ -757,7 +758,16 @@ export default function FundingRequestDetailPage() {
                                             Continue Application <i className="ri-arrow-right-line"></i>
                                         </Link>
                                     )}
-                                    {isSubmittedOrComplete && (
+                                    {isPendingReview && (
+                                        <Link
+                                            to={`/fund-application/${review.id}`}
+                                            className="btn btn-warning fw-medium d-flex align-items-center gap-2 shadow-none px-4"
+                                            title="Editing will require you to resign the application"
+                                        >
+                                            <i className="ri-edit-line me-1"></i> Edit Application
+                                        </Link>
+                                    )}
+                                    {(isSubmittedOrComplete || isPendingReview) && (
                                         <Link
                                             to={review.funding_application_id ? `/my-applications/funding/${review.funding_application_id}` : '/my-applications'}
                                             className="btn btn-info fw-medium d-flex align-items-center gap-2 shadow-none px-4"

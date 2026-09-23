@@ -6,7 +6,7 @@ import { getBorrowerFundingRequest } from '../../modules/funding-requests/servic
 import FundingRequestSkeleton from './FundingRequestSkeleton'
 import { useBrandingStore } from '../../store/brandingStore'
 import { getFileConfig } from '../../config/fileTypeConfig'
-import { FUNDING_REVIEW_STATUS } from '../../config/funding'
+import { FUNDING_REVIEW_STATUS, FUNDING_APPLICATION_STATUS } from '../../config/funding'
 import '../../../assets/css/funding-requests.css'
 interface FundingRequestModalProps {
     show: boolean
@@ -237,8 +237,17 @@ export default function FundingRequestModal({ show, onHide, review }: FundingReq
                                             <button className="btn btn-light border" onClick={onHide}>
                                                 <i className="ri-close-line align-bottom me-1"></i> Close
                                             </button>
+                                            {displayReview.application_status === FUNDING_APPLICATION_STATUS.PENDING && (
+                                                <button
+                                                    className="btn btn-warning shadow-sm"
+                                                    onClick={handleProceed}
+                                                    title="Editing will require you to resign the application"
+                                                >
+                                                    <i className="ri-edit-line align-bottom me-1"></i> Edit Application
+                                                </button>
+                                            )}
                                             {displayReview.application_status && !String(displayReview.application_status).toLowerCase().includes('hold') && !String(displayReview.application_status).toLowerCase().includes('draft') && (
-                                                <button 
+                                                <button
                                                     className="btn btn-info shadow-sm"
                                                     onClick={() => {
                                                         onHide();

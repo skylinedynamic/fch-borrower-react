@@ -8,7 +8,7 @@ import { Column } from 'primereact/column'
 import { Dropdown } from 'primereact/dropdown'
 import StatisticsCardSkeleton from '../../components/Common/StatisticsCardSkeleton'
 import StatisticsCard from '../../components/Common/StatisticsCard'
-import { FUNDING_REVIEW_STATUS, FUNDING_APPLICATION_STATUS_OPTIONS } from '../../config/funding'
+import { FUNDING_REVIEW_STATUS, FUNDING_APPLICATION_STATUS_OPTIONS, FUNDING_APPLICATION_STATUS } from '../../config/funding'
 import '../../../assets/css/funding-requests.css'
 
 export default function FundingRequestList() {
@@ -300,7 +300,8 @@ export default function FundingRequestList() {
                                             const appStatus = (row.application_status || '').toLowerCase();
                                             const isNotStarted = isApproved && !row.application_status;
                                             const isOnHoldOrDraft = isApproved && (appStatus.includes('hold') || appStatus.includes('draft'));
-                                            const isSubmittedOrComplete = Boolean(row.application_status && !isOnHoldOrDraft);
+                                            const isPendingReview = row.application_status === FUNDING_APPLICATION_STATUS.PENDING;
+                                            const isSubmittedOrComplete = Boolean(row.application_status && !isOnHoldOrDraft && !isPendingReview);
 
                                             return (
                                                 <div className="d-flex gap-2 align-items-center flex-nowrap">
@@ -328,7 +329,16 @@ export default function FundingRequestList() {
                                                             Continue Application <i className="ri-arrow-right-line ms-1"></i>
                                                         </Link>
                                                     )}
-                                                    {isSubmittedOrComplete && (
+                                                    {isPendingReview && (
+                                                        <Link
+                                                            to={`/fund-application/${row.id}`}
+                                                            className="btn btn-warning btn-sm text-nowrap d-inline-flex align-items-center"
+                                                            title="Editing will require you to resign the application"
+                                                        >
+                                                            <i className="ri-edit-line me-1"></i> Edit Application
+                                                        </Link>
+                                                    )}
+                                                    {(isSubmittedOrComplete || isPendingReview) && (
                                                         <Link
                                                             to={row.funding_application_id ? `/my-applications/funding/${row.funding_application_id}` : '/my-applications'}
                                                             className="btn btn-info btn-sm text-nowrap d-inline-flex align-items-center"

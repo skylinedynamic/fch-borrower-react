@@ -1,4 +1,4 @@
-import { countries } from '../modules/location'
+import { countries, type Country } from '../modules/location'
 
 /**
  * Get country code by country name
@@ -59,7 +59,23 @@ export const formatCountryDisplay = (code: string, phoneCode: string): string =>
 /**
  * Get default country (United States)
  * @returns Default Country object
+ *
+ * Falls back to a static United States record when `countries` is still
+ * empty - e.g. a step rendering before main.jsx's loadLocations() call has
+ * resolved, or a test that never loads it at all - rather than returning
+ * `countries[0]` from an empty array (undefined), which crashes every caller
+ * that reads `.name` off the result.
  */
-export const getDefaultCountry = () => {
-    return countries.find((country) => country.code === 'USA') || countries[0]
+export const getDefaultCountry = (): Country => {
+    return (
+        countries.find((country) => country.code === 'USA') ||
+        countries[0] || {
+            name: 'United States',
+            code: 'USA',
+            currency: 'USD',
+            phone_code: '+1',
+            flag: '',
+            states: [],
+        }
+    )
 }

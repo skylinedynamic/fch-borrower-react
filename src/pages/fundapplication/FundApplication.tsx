@@ -641,6 +641,7 @@ export default function FundApplication() {
             onBack={() => setActiveStep(STEP_INDICES.FEDERAL_COMPLIANCE)}
             onSubmit={() => toast.success('Application submitted!')}
             loading={loading}
+            isResigning={Boolean(fundingData?.requires_resign)}
           />
         )
 
@@ -690,6 +691,15 @@ export default function FundApplication() {
                   : 'Apply now to unlock working capital, equipment financing, SBA loans, or credit-building options tailored to your goals.')}
           </div>
         </div>
+
+        {isApplicationSubmitted && (
+          <div className="alert alert-warning d-flex align-items-start gap-2 mb-4" role="alert">
+            <i className="ri-alert-line fs-18 mt-1"></i>
+            <div>
+              <strong>This application has already been submitted.</strong> Any change you make to a field will return it to Draft status and invalidate your existing signature. You will be required to review and re-sign the application before it can be resubmitted for review.
+            </div>
+          </div>
+        )}
 
         <div className="row">
           {/* Desktop Sidebar */}

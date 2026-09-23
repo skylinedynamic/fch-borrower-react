@@ -17,6 +17,7 @@ interface AttestationStepProps {
   onBack: () => void
   loading: boolean
   fundingRequestId?: number | string | null
+  isResigning?: boolean
 }
 
 export default function AttestationStep({
@@ -26,6 +27,7 @@ export default function AttestationStep({
   onBack,
   loading,
   fundingRequestId,
+  isResigning,
 }: AttestationStepProps) {
   const navigate = useNavigate()
   const { branding } = useBrandingStore()
@@ -113,7 +115,7 @@ export default function AttestationStep({
     saveAttestation(payload, {
       onSuccess: () => {
         setShowModal(false)
-        toast.success('Application submitted successfully!')
+        toast.success(isResigning ? 'Your application has been re-signed and resubmitted for review.' : 'Application submitted successfully!')
         navigate('/my-applications')
       },
       onError: (error: any) => {
@@ -151,7 +153,19 @@ export default function AttestationStep({
         <div className="col-12">
           <div className="card">
             <div className="card-body">
-              <h5 className="mb-4">Electronic Signature & Consent</h5>
+              <h5 className="mb-4 d-flex align-items-center gap-2">
+                Electronic Signature & Consent
+                {isResigning && (
+                  <span className="badge bg-warning-subtle text-warning border border-warning-subtle fs-12">
+                    <i className="ri-refresh-line align-middle me-1"></i> Re-Signature Required
+                  </span>
+                )}
+              </h5>
+              {isResigning && (
+                <div className="alert alert-warning small mb-4">
+                  This application was previously submitted, but changes made since then require a new signature. Please review your information below and sign again to resubmit it for review.
+                </div>
+              )}
 
               <div className="mb-4">
                 <label htmlFor="signature_name" className="form-label">
@@ -225,11 +239,13 @@ export default function AttestationStep({
         show={showModal}
         onClose={() => setShowModal(false)}
         onConfirm={handleConfirm}
-        title="Confirm Submission"
-        message="Are you sure you want to submit your application? Please strictly review all information before confirming."
-        confirmText="Submit Application"
+        title={isResigning ? 'Confirm Re-Signature' : 'Confirm Submission'}
+        message={isResigning
+          ? 'Are you sure you want to re-sign and resubmit your application? Please review all information carefully before confirming.'
+          : 'Are you sure you want to submit your application? Please strictly review all information before confirming.'}
+        confirmText={isResigning ? 'Re-Sign & Resubmit' : 'Submit Application'}
         loading={isSaving}
-        loadingText="Submitting..."
+        loadingText={isResigning ? 'Resubmitting...' : 'Submitting...'}
         icon="https://cdn.lordicon.com/lupuorrc.json"
       />
 
