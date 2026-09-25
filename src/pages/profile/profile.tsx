@@ -17,6 +17,7 @@ export default function Profile() {
 
   const [personal, setPersonal] = useState<SavePersonalInfoRequest>({
     first_name: '',
+    middle_name: '',
     last_name: '',
     email: '',
     home_address: '',
