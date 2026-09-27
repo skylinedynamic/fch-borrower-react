@@ -1,4 +1,4 @@
-import { countries } from '../data/countries'
+import { countries, type Country } from '../modules/location'
 
 /**
  * Get country code by country name
@@ -58,8 +58,16 @@ export const formatCountryDisplay = (code: string, phoneCode: string): string =>
 
 /**
  * Get default country (United States)
- * @returns Default Country object
+ *
+ * The return type is explicit because it is genuinely optional: `countries` is
+ * filled by loadLocations() at boot, and main.jsx renders the app even when that
+ * request fails, so the list can be empty - `countries[0]` is then undefined too.
+ * Inference alone typed this as `Country`, which let call sites read `.name` off
+ * it unchecked; that threw and took the whole ownership step down instead of
+ * merely leaving the country unset.
+ *
+ * @returns Default Country object, or undefined when no list has loaded
  */
-export const getDefaultCountry = () => {
+export const getDefaultCountry = (): Country | undefined => {
     return countries.find((country) => country.code === 'USA') || countries[0]
 }

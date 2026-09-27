@@ -19,6 +19,7 @@ export default function DeleteConfirmationModal({
 }: DeleteConfirmationModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
   const modalInstanceRef = useRef<Modal | null>(null)
+  const pendingTimersRef = useRef<ReturnType<typeof setTimeout>[]>([])
 
   // Initialize Bootstrap Modal instance once
   useEffect(() => {
@@ -32,11 +33,11 @@ export default function DeleteConfirmationModal({
       // Prevent Bootstrap from adding classes to body that break layout
       modalRef.current.addEventListener('show.bs.modal', () => {
         // Remove body classes that Bootstrap adds which can break layout
-        setTimeout(() => {
+        pendingTimersRef.current.push(setTimeout(() => {
           document.body.classList.remove('modal-open')
           document.body.style.overflow = ''
           document.body.style.paddingRight = ''
-        }, 10)
+        }, 10))
       })
       
       modalRef.current.addEventListener('shown.bs.modal', () => {
@@ -61,19 +62,27 @@ export default function DeleteConfirmationModal({
     
     if (show) {
       modal.show()
-    } else {
-      modal.hide()
-      // Clean up any remaining backdrop
-      setTimeout(() => {
-        const backdrops = document.querySelectorAll('.modal-backdrop')
-        backdrops.forEach(el => el.remove())
-      }, 300)
+      return
     }
+
+    modal.hide()
+    // Clean up any remaining backdrop, but never one belonging to a modal
+    // that is still open - this effect also runs on mount, where `show` starts
+    // false, and it used to strip the globally mounted profile modal overlay.
+    const timer = setTimeout(() => {
+      if (document.querySelector('.modal.show')) return
+      const backdrops = document.querySelectorAll('.modal-backdrop')
+      backdrops.forEach(el => el.remove())
+    }, 300)
+    return () => clearTimeout(timer)
   }, [show])
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      pendingTimersRef.current.forEach(clearTimeout)
+      pendingTimersRef.current = []
+
       const modal = modalInstanceRef.current
       if (modal) {
         try {
@@ -85,6 +94,11 @@ export default function DeleteConfirmationModal({
       
       // Clean up any remaining backdrops and restore body
       setTimeout(() => {
+        // Fires after unmount by design, so the host document can already be
+        // gone (a torn-down test environment) — bail out instead of throwing.
+        if (typeof document === 'undefined') return
+        // Nor one that belongs to a modal still on screen.
+        if (document.querySelector('.modal.show')) return
         const backdrops = document.querySelectorAll('.modal-backdrop')
         backdrops.forEach(el => el.remove())
         document.body.classList.remove('modal-open')

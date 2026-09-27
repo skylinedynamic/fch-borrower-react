@@ -1,6 +1,7 @@
 export type PersonalInfoData = {
   id: number
   first_name: string
+  middle_name?: string | null
   last_name: string
   email: string
   home_address: string
@@ -22,6 +23,7 @@ export type PersonalInfoResponse = {
 
 export type SavePersonalInfoRequest = {
   first_name: string
+  middle_name?: string | null
   last_name: string
   email: string
   home_address: string
@@ -36,8 +38,10 @@ export type SavePersonalInfoRequest = {
   date_of_birth: string
 }
 
+// Laravel's default validation error response shape is `{ field: ["msg1", "msg2"] }`
+// (an array of messages per field), not a single string per field.
 export type ValidationErrors = {
-  [key: string]: string
+  [key: string]: string[]
 }
 
 export type ErrorResponse = {
@@ -121,6 +125,12 @@ export type FinancialInfoData = {
   monthly_revenue: string
   annual_revenue: string
   annual_personal_income: string
+  average_monthly_deposits: number | null
+  monthly_deposit_count: number | null
+  avg_bank_balance: number | null
+  current_business_debt: number | null
+  nsf_count: number | null
+  negative_days: number | null
   bank_accounts: BankAccount[]
 }
 

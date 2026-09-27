@@ -6,7 +6,7 @@ import { useAuthStore } from '../../store/auth'
 import { useBrandingStore } from '../../store/brandingStore'
 import { isSubscriptionRestricted, isFreeTrialLocked } from '../../lib/auth/subscriptionUtils'
 import { PARTNER_TYPES } from '../../config/partnerTypeOptions'
-import logoImg from '../../../assets/images/fch-logo-wide.png'
+import { resolveBrandLogo } from '../../utils/brandLogo'
 import avatarDefault from '../../../assets/images/users/avatar-1.jpg'
 import { useDashboard } from '../../modules/dashboard'
 
@@ -32,8 +32,14 @@ export default function Sidebar() {
   const secondaryLogo = branding?.logo_document_full_url
   const markLogo = branding?.favicon_full_url
   // The mobile brand box now carries the sidebar colour, so it takes the dark-background logo too.
-  const displayLogo = primaryLogo || secondaryLogo
-  const compactLogo = markLogo || secondaryLogo
+  //
+  // Both end at the packaged default rather than at undefined, which is what the
+  // <img> tags below used to be handed - and rendered as a broken-image icon -
+  // whenever a tenant had uploaded nothing. A tenant branded as itself never
+  // reaches that default: the API substitutes a placeholder carrying its own
+  // company name so the host's logo cannot appear in its sidebar.
+  const displayLogo = resolveBrandLogo(primaryLogo, secondaryLogo)
+  const compactLogo = resolveBrandLogo(markLogo, secondaryLogo)
 
   const { data: dashboardData } = useDashboard()
   const activeApprovedRequest = dashboardData?.data?.active_approved_funding_request

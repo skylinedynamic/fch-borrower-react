@@ -25,6 +25,8 @@ export const downloadBlob = (blob: Blob, fileName: string, mimeType?: string) =>
     link.click();
 
     setTimeout(() => {
+        // May fire after a torn-down test environment, where the globals are gone.
+        if (typeof document === 'undefined') return;
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
     }, 100);

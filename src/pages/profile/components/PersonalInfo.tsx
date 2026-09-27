@@ -6,7 +6,8 @@ import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { usePersonalInfo, useSavePersonalInfo } from '../../../modules/profile'
 import type { PersonalInfoData, SavePersonalInfoRequest, ValidationErrors } from '../../../modules/profile'
 import TabLoader from '../../../components/Loader/TabLoader'
-import { countries as countriesData } from '../../../data/countries'
+import { formatCalendarDate } from '../../../utils/dates'
+import { countries as countriesData } from '../../../modules/location'
 
 import { formatPhoneNumber, formatLast4SSN, unformatPhoneNumber, formatZipCode } from '../../../utils/formatters'
 import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
@@ -37,6 +38,7 @@ type CityType = {
 const transformApiToComponent = (apiData: PersonalInfoData): SavePersonalInfoRequest => {
   return {
     first_name: apiData.first_name || '',
+    middle_name: apiData.middle_name || '',
     last_name: apiData.last_name || '',
     email: apiData.email || '',
     phone_number: apiData.phone_number || '',
@@ -90,7 +92,9 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
 
   const isFieldLocked = (field: keyof SavePersonalInfoRequest) => {
     const dbValue = (apiData as any)?.[field];
-    return LOCKED_PERSONAL_FIELDS.includes(field) && dbValue !== null && dbValue !== undefined && dbValue !== '';
+    // LOCKED_PERSONAL_FIELDS is declared as an empty array literal (inferred as `never[]`)
+    // in config/profileLockFields.ts; widen it here so `.includes()` accepts a real field key.
+    return (LOCKED_PERSONAL_FIELDS as string[]).includes(field) && dbValue !== null && dbValue !== undefined && dbValue !== '';
   }
 
   // Helper to find country by name or code
@@ -137,7 +141,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
   }
 
   // Helper to get field error
-  const getFieldError = (fieldName: string): string | undefined => {
+  const getFieldError = (fieldName: string): string[] | undefined => {
     return validationErrors[fieldName]
   }
 
@@ -238,30 +242,59 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
     <div className="fade-panel">
       <form className="row g-3">
         <div className="col-md-6">
-          <label className="form-label">First Name <span className="text-danger">*</span></label>
-          <div className="position-relative">
-            <input
-              type="text"
-              className={`form-control ${hasError('first_name') ? 'is-invalid' : ''} ${isFieldLocked('first_name') ? 'bg-light border-dashed locked-field-padding' : ''}`}
-              placeholder="Enter first name"
-              value={data.first_name}
-              onChange={(e) => onChange({ ...data, first_name: e.target.value })}
-              required
-              readOnly={isFieldLocked('first_name')}
-            />
-            {isFieldLocked('first_name') && (
-              <button
-                className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
-                type="button"
-                onClick={() => handleOpenRequestModal('First Name', 'first_name', data.first_name)}
-              >
-                Change Request
-              </button>
-            )}
+          <div className="row g-2">
+            <div className="col-7">
+              <label className="form-label">First Name <span className="text-danger">*</span></label>
+              <div className="position-relative">
+                <input
+                  type="text"
+                  className={`form-control ${hasError('first_name') ? 'is-invalid' : ''} ${isFieldLocked('first_name') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+                  placeholder="Enter first name"
+                  value={data.first_name}
+                  onChange={(e) => onChange({ ...data, first_name: e.target.value })}
+                  required
+                  readOnly={isFieldLocked('first_name')}
+                />
+                {isFieldLocked('first_name') && (
+                  <button
+                    className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                    type="button"
+                    onClick={() => handleOpenRequestModal('First Name', 'first_name', data.first_name)}
+                  >
+                    Change Request
+                  </button>
+                )}
+              </div>
+              {hasError('first_name') && (
+                <div className="invalid-feedback d-block">{getFieldError('first_name')}</div>
+              )}
+            </div>
+            <div className="col-5">
+              <label className="form-label">Middle Name</label>
+              <div className="position-relative">
+                <input
+                  type="text"
+                  className={`form-control ${hasError('middle_name') ? 'is-invalid' : ''} ${isFieldLocked('middle_name') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+                  placeholder="Optional"
+                  value={data.middle_name || ''}
+                  onChange={(e) => onChange({ ...data, middle_name: e.target.value })}
+                  readOnly={isFieldLocked('middle_name')}
+                />
+                {isFieldLocked('middle_name') && (
+                  <button
+                    className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
+                    type="button"
+                    onClick={() => handleOpenRequestModal('Middle Name', 'middle_name', data.middle_name || '')}
+                  >
+                    Change Request
+                  </button>
+                )}
+              </div>
+              {hasError('middle_name') && (
+                <div className="invalid-feedback d-block">{getFieldError('middle_name')}</div>
+              )}
+            </div>
           </div>
-          {hasError('first_name') && (
-            <div className="invalid-feedback d-block">{getFieldError('first_name')}</div>
-          )}
         </div>
         <div className="col-md-6">
           <label className="form-label">Last Name <span className="text-danger">*</span></label>
@@ -529,6 +562,8 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
           <div className="position-relative">
             <input
               type="text"
+              inputMode="numeric"
+              maxLength={5}
               className={`form-control ${hasError('zip_code') ? 'is-invalid' : ''} ${isFieldLocked('zip_code') ? 'bg-light border-dashed locked-field-padding' : ''}`}
               placeholder="Enter zip code"
               value={data.zip_code}
@@ -679,7 +714,10 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
               type="text"
               className="form-control bg-light"
               value={updateRequest.key === 'date_of_birth' && updateRequest.currentValue
-                ? new Date(updateRequest.currentValue).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                // Not new Date(): that parses a bare calendar date as UTC
+                // midnight, so anywhere behind UTC this showed the previous day.
+                // A date of birth is the same date in every timezone.
+                ? formatCalendarDate(String(updateRequest.currentValue))
                 : (updateRequest.key === 'phone_number' ? formatPhoneNumber(String(updateRequest.currentValue))
                   : updateRequest.currentValue)}
               readOnly

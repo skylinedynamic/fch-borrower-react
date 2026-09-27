@@ -3,7 +3,7 @@ import { toast } from 'react-toastify'
 import { usePreQualification, useSubmitPersonalInfo, useSubmitBusinessInfo, useSubmitFundingInfo, useSubmitPreQualification } from '../../../modules/pre-qualification'
 import { getPreQualificationById } from '../../../modules/pre-qualification/services'
 import type { PersonalInfo, BusinessDetails, FinancialSupport } from '../../../modules/pre-qualification'
-import { countries } from '../../../data/countries'
+import { countries } from '../../../modules/location'
 import { formatCurrency, unformatCurrency } from '../../../utils/formatters'
 import { FUNDING_PURPOSE_OTHER } from '../../../data/profile'
 

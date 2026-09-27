@@ -4,7 +4,7 @@ import { useAuthStore } from '../../store/auth'
 import { useBrandingStore } from '../../store/brandingStore'
 import { logout } from '../../modules/auth/services'
 import avatarDefault from '../../../assets/images/users/avatar-default.jpg'
-import logoImg from '../../../assets/images/logo-dark.png'
+import { resolveBrandLogo } from '../../utils/brandLogo'
 
 import { useNavigate, Link } from 'react-router-dom'
 
@@ -95,7 +95,11 @@ export default function Header() {
             <div className="navbar-brand-box horizontal-logo ms-2">
               <a href="/" className="logo logo-dark">
                 <img
-                  src={branding?.logo_mobile_full_url || branding?.logo_document_full_url || branding?.logo_sidebar_full_url}
+                  src={resolveBrandLogo(
+                    branding?.logo_mobile_full_url,
+                    branding?.logo_document_full_url,
+                    branding?.logo_sidebar_full_url,
+                  )}
                   alt={branding?.site_name || ''}
                   height="50"
                 />

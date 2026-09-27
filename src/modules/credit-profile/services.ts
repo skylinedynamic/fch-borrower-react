@@ -1,12 +1,12 @@
 import { apiClient } from '../../lib/http/apiClient'
-import type { CreditProfile } from './types'
+import type { CreditProfile, CreditProfileRequestData } from './types'
 
 interface CreditProfileResponse {
-  data: CreditProfile | null
+  data: CreditProfile | CreditProfileRequestData | null
   message: string
 }
 
-export const fetchCreditProfile = async (): Promise<CreditProfile | null> => {
+export const fetchCreditProfile = async (): Promise<CreditProfile | CreditProfileRequestData | null> => {
   const res = await apiClient.get<CreditProfileResponse>('/borrower/profile/credit-profile')
   return res.data.data
 }

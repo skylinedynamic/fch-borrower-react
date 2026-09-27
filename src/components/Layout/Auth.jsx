@@ -1,9 +1,9 @@
 import React from 'react'
 import { useLocation } from 'react-router-dom'
 import formBg from '../../../assets/images/form-bg.png'
-import logoImg from '../../../assets/images/fch-logo-wide.png'
 import { fetchBranding } from '../../modules/auth/services'
 import { applyBrandTheme } from '../../utils/brandingTheme'
+import { resolveBrandLogo } from '../../utils/brandLogo'
 
 export default function Auth({ header, children, belowCard, colClass = 'col-xl-5 col-lg-6 col-md-8', bodyClass }) {
   const location = useLocation()
@@ -52,7 +52,21 @@ export default function Auth({ header, children, belowCard, colClass = 'col-xl-5
       })
   }, [])
 
-  const displayLogo = settings?.logo_document_full_url || settings?.logo_sidebar_full_url
+  // Sidebar logo first, then mobile, then document. The login card sits on the
+  // branded background, so the sidebar logo - the one a tenant uploads first and
+  // the only one the settings form requires - is the closest match; the other two
+  // only stand in when it is missing.
+  //
+  // With all three unset the API has already decided what that means: the host
+  // gets nulls and lands on the packaged default, while a tenant branded as
+  // itself gets a placeholder carrying its own company name rather than the
+  // host's logo. So there is always something to render, and the old site-name
+  // text fallback - which only ever appeared because of that gap - is gone.
+  const displayLogo = resolveBrandLogo(
+    settings?.logo_sidebar_full_url,
+    settings?.logo_mobile_full_url,
+    settings?.logo_document_full_url,
+  )
   const displaySiteName = settings?.site_name
 
   return (
@@ -66,7 +80,7 @@ export default function Auth({ header, children, belowCard, colClass = 'col-xl-5
 
               <div className="text-center mb-5">
                 <a href="/" className="d-inline-block auth-logo">
-                  <img src={displayLogo} alt={displaySiteName} className="auth-logo-img" />
+                  <img src={displayLogo} alt={displaySiteName || ''} className="auth-logo-img" />
                 </a>
               </div>
 
