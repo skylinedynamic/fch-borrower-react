@@ -3,6 +3,7 @@ import { getPreQualificationById, retryUnderwriting } from '../../../modules/pre
 import { isIncorrectUnderwriting } from '../../../modules/my-application/types'
 import TabLoader from '../../../components/Loader/TabLoader'
 import SubmitProgress from './SubmitProgress'
+import { clearStrayModalBackdrops } from '../../../utils/modalBackdrop'
 
 /**
  * The FCH_Client_AUE_v4 payload, exactly as the borrower-safe schema defines it.
@@ -157,11 +158,10 @@ export default function UnderwritingResultStep({
   }, [initialData])
 
   useEffect(() => {
-    // Ensure body scroll is unlocked when underwriting result is displayed
-    document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove())
-    document.body.classList.remove('modal-open')
-    document.body.style.overflow = ''
-    document.body.style.paddingRight = ''
+    // Ensure body scroll is unlocked when underwriting result is displayed.
+    // Stray backdrops only - the globally mounted profile modal's overlay is
+    // not ours to remove, and deleting it left that modal over an undimmed page.
+    clearStrayModalBackdrops()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [])
 
