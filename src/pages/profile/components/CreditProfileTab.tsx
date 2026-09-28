@@ -13,6 +13,10 @@ import { fetchCreditProfile } from '../../../modules/credit-profile'
 import type { CreditProfile, CreditProfileRequestData } from '../../../modules/credit-profile'
 import type { AuthUser } from '../../../store/auth'
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
+import CreditAuthorizationConsent, {
+  type CreditAuthorizationValues,
+} from '../../../components/CreditAuthorization/CreditAuthorizationConsent'
+import CreditScoreHero from './CreditScoreHero'
 
 // Fields present on the auth user object that AuthUser's index signature otherwise
 // types as `unknown` (AuthUser has no explicit first_name/last_name/phone_number).
@@ -69,7 +73,6 @@ export default function CreditProfileTab() {
   const [creditProfile, setCreditProfile] = useState<CreditProfile | null>(null)
   const [showSSN, setShowSSN] = useState(false)
   
-  const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [updating, setUpdating] = useState(false)
 
   const [formData, setFormData] = useState<FormState>({
@@ -87,6 +90,21 @@ export default function CreditProfileTab() {
     email: '',
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Both start unticked - a pre-ticked box is not agreement. Consent is per
+  // request, so this resets with every new request rather than being remembered.
+  const [consent, setConsent] = useState<CreditAuthorizationValues>({
+    credit_authorization_accepted: false,
+    e_consent_accepted: false,
+  })
+  const [updateConsent, setUpdateConsent] = useState<CreditAuthorizationValues>({
+    credit_authorization_accepted: false,
+    e_consent_accepted: false,
+  })
+
+  const bothConsentsGiven = consent.credit_authorization_accepted && consent.e_consent_accepted
+  const bothUpdateConsentsGiven =
+    updateConsent.credit_authorization_accepted && updateConsent.e_consent_accepted
 
 
   const usStates = countries.find(c => c.name === 'United States')?.states || []
@@ -210,7 +228,12 @@ export default function CreditProfileTab() {
     setErrors({})
     try {
       setSubmitting(true)
-      const res = await apiClient.post('/borrower/profile/credit-profile-request', formData)
+      // Sent with the form, not implied by it. The API refuses without both and
+      // records the agreement, so this is the client's half of the evidence.
+      const res = await apiClient.post('/borrower/profile/credit-profile-request', {
+        ...formData,
+        ...consent,
+      })
       toast.success(res.data?.message || 'Credit profile request submitted successfully.')
       // On success: fetch the saved record and show details view
       await fetchSubmittedDetails()
@@ -237,9 +260,14 @@ export default function CreditProfileTab() {
     if (!creditProfile) return
     try {
       setUpdating(true)
-      const res = await apiClient.post(`/borrower/profile/credit-profile/update-request/${creditProfile.id}`)
+      // An update is a new pull, so it carries its own authorisation.
+      const res = await apiClient.post(
+        `/borrower/profile/credit-profile/update-request/${creditProfile.id}`,
+        updateConsent
+      )
       toast.success(res.data?.message || 'Request sent successfully.')
-      setShowUpdateModal(false)
+      // Cleared so the next update request starts unticked again.
+      setUpdateConsent({ credit_authorization_accepted: false, e_consent_accepted: false })
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to send update request.')
     } finally {
@@ -260,15 +288,10 @@ export default function CreditProfileTab() {
 
     return (
       <div className="fade-panel">
-        <div className="d-flex align-items-center gap-3 p-3 mb-4 rounded-3 border"
-          style={{ background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', borderColor: '#93c5fd !important' }}>
-          <div className="rounded-circle bg-primary d-flex align-items-center justify-content-center flex-shrink-0"
-            style={{ width: 48, height: 48 }}>
-            <i className="ri-file-list-3-line text-white fs-22"></i>
-          </div>
+        <div className="d-flex align-items-center gap-3 mb-4">
           <div>
-            <div className="fw-bold text-primary-emphasis fs-15">Credit Profile Details</div>
-            <div className="text-primary-emphasis fs-13 opacity-75">
+            <div className="fw-bold text-dark fs-16">Credit Profile</div>
+            <div className="text-muted fs-13">
               Your credit profile has been processed and is available for review.
             </div>
           </div>
@@ -278,6 +301,12 @@ export default function CreditProfileTab() {
             </span>
           </div>
         </div>
+
+        {/* The scores lead the page. They used to sit fifth, as label/value rows
+            indistinguishable from "City" - see CreditScoreHero. The Credit
+            Scores and Account Overview cards below were exactly these figures
+            and have been removed rather than shown twice. */}
+        <CreditScoreHero metrics={creditProfile.metrics} />
 
         <div className="row g-4">
           {/* ── Personal Information ── */}
@@ -411,72 +440,6 @@ export default function CreditProfileTab() {
             </div>
           )}
 
-          {/* ── Credit Scores ── */}
-          <div className="col-lg-6">
-            <div className="card border shadow-sm h-100">
-              <div className="card-header bg-transparent border-bottom py-3">
-                <div className="d-flex align-items-center gap-2">
-                  <div className="rounded bg-danger-subtle p-2">
-                    <i className="ri-funds-line text-danger fs-16"></i>
-                  </div>
-                  <div>
-                    <div className="fw-semibold text-dark fs-14">Credit Scores</div>
-                    <div className="text-muted fs-12">Bureau-level credit scores</div>
-                  </div>
-                </div>
-              </div>
-              <div className="card-body px-4 py-3">
-                <div className="row g-0">
-                  <div className="col-6">
-                    <DetailItem label="FICO Score" icon="ri-bar-chart-2-line" value={creditProfile.metrics?.fico_score ?? '-'} />
-                  </div>
-                  <div className="col-6">
-                    <DetailItem label="Paydex Score" icon="ri-bar-chart-2-line" value={creditProfile.metrics?.paydex_score ?? '-'} />
-                  </div>
-                  <div className="col-6">
-                    <DetailItem label="Experian Intelliscore" icon="ri-bar-chart-2-line" value={creditProfile.metrics?.experian_intelliscore ?? '-'} />
-                  </div>
-                  <div className="col-6">
-                    <DetailItem label="Equifax Score" icon="ri-bar-chart-2-line" value={creditProfile.metrics?.equifax_score ?? '-'} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Account Overview ── */}
-          <div className="col-lg-6">
-            <div className="card border shadow-sm h-100">
-              <div className="card-header bg-transparent border-bottom py-3">
-                <div className="d-flex align-items-center gap-2">
-                  <div className="rounded bg-success-subtle p-2">
-                    <i className="ri-briefcase-4-line text-success fs-16"></i>
-                  </div>
-                  <div>
-                    <div className="fw-semibold text-dark fs-14">Account Overview</div>
-                    <div className="text-muted fs-12">Credit utilization and tradelines</div>
-                  </div>
-                </div>
-              </div>
-              <div className="card-body px-4 py-3">
-                <div className="row g-0">
-                  <div className="col-6">
-                    <DetailItem label="Active Tradelines" icon="ri-archive-line" value={creditProfile.metrics?.active_tradelines ?? '-'} />
-                  </div>
-                  <div className="col-6">
-                    <DetailItem label="Total Credit Limit" icon="ri-money-dollar-circle-line" value={creditProfile.metrics?.total_credit_limit != null ? `$${Number(creditProfile.metrics.total_credit_limit).toLocaleString()}` : '-'} />
-                  </div>
-                  <div className="col-6">
-                    <DetailItem label="Credit Utilization" icon="ri-pie-chart-2-line" value={creditProfile.metrics?.credit_utilization != null ? `${creditProfile.metrics.credit_utilization}%` : '-'} />
-                  </div>
-                  <div className="col-6">
-                    <DetailItem label="Recent Inquiries" icon="ri-search-eye-line" value={creditProfile.metrics?.recent_inquiries ?? '-'} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* ── Account Health ── */}
           <div className="col-lg-6">
             <div className="card border shadow-sm h-100">
@@ -593,14 +556,6 @@ export default function CreditProfileTab() {
                       <div className="text-muted fs-12">Overall assessment</div>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    className="btn px-4 fw-medium text-white"
-                    style={{ backgroundColor: '#021f3c', borderColor: '#021f3c' }}
-                    onClick={() => setShowUpdateModal(true)}
-                  >
-                    Request to update credit profile data
-                  </button>
                 </div>
                 <div className="card-body px-4 py-3">
                   <p className="text-dark fs-14 mb-0">{creditProfile.metrics.summary}</p>
@@ -610,54 +565,55 @@ export default function CreditProfileTab() {
           )}
         </div>
 
-        {/* Update Request Modal */}
-        <Modal isOpen={showUpdateModal} toggle={() => !updating && setShowUpdateModal(false)} centered modalClassName="flip">
-          <div className="modal-body p-5 text-center">
-            <button
-              type="button"
-              className="btn-close position-absolute end-0 top-0 m-3"
-              onClick={() => setShowUpdateModal(false)}
-              aria-label="Close"
-              disabled={updating}
-            ></button>
-            <lord-icon
-              src="https://cdn.lordicon.com/tdrtiskw.json"
-              trigger="loop"
-              colors="primary:#121331,secondary:#08a88a"
-              style={{ width: '90px', height: '90px' }}
-            ></lord-icon>
-            <div className="mt-4 text-center">
-              <h4>Are you sure?</h4>
-              <p className="text-muted fs-15 mb-4">
-                Are you sure you want to request a credit profile update? This will notify the admin to pull your latest iSoftPull data and update your profile.
-              </p>
-              <div className="hstack gap-2 justify-content-center">
-                <button
-                  className="btn btn-light fw-medium"
-                  onClick={() => setShowUpdateModal(false)}
-                  disabled={updating}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="btn px-4 text-white"
-                  style={{ backgroundColor: '#021f3c', borderColor: '#021f3c' }}
-                  onClick={handleRequestUpdate}
-                  disabled={updating}
-                >
-                  {updating ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                      Sending...
-                    </>
-                  ) : (
-                    'Confirm'
-                  )}
-                </button>
+        {/* ── Request an update ──
+            Inline rather than in a modal. An update is a new credit pull, so it
+            needs its own authorisation, and consent belongs on the page next to
+            the button that acts on it - not behind a confirm dialog a client
+            clicks through. */}
+        <div className="card border shadow-sm mt-4">
+          <div className="card-header bg-transparent border-bottom py-3">
+            <div className="d-flex align-items-center gap-2">
+              <div className="rounded bg-primary-subtle p-2">
+                <i className="ri-refresh-line text-primary fs-16"></i>
+              </div>
+              <div>
+                <div className="fw-semibold text-dark fs-14">Request a Credit Profile Update</div>
+                <div className="text-muted fs-12">
+                  This notifies the admin to pull your latest iSoftPull data
+                </div>
               </div>
             </div>
           </div>
-        </Modal>
+          <div className="card-body px-4 py-3">
+            <CreditAuthorizationConsent
+              values={updateConsent}
+              onChange={setUpdateConsent}
+              idPrefix="credit-profile-update"
+              disabled={updating}
+            />
+
+            <div className="d-flex justify-content-end">
+              <button
+                type="button"
+                className="btn px-4 text-white"
+                style={{ backgroundColor: '#021f3c', borderColor: '#021f3c' }}
+                onClick={handleRequestUpdate}
+                disabled={updating || !bothUpdateConsentsGiven}
+              >
+                {updating ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Sending…
+                  </>
+                ) : (
+                  <>
+                    <i className="ri-send-plane-line me-2"></i>Request Update
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -891,20 +847,23 @@ export default function CreditProfileTab() {
           </div>
         )}
 
-        {/* ── Disclaimer + Submit ── */}
-        <div className="alert alert-secondary border fs-13 d-flex align-items-center gap-2 mb-4" role="alert">
-          <i className="ri-shield-line flex-shrink-0 fs-16 text-secondary"></i>
-          <span>
-            By submitting, you authorize a <strong>soft credit inquiry</strong> which will not affect your credit score.
-            Your information is encrypted and stored securely.
-          </span>
-        </div>
+        {/* ── Authorization, immediately above Submit ──
+            Replaces a one-line notice that claimed authorisation by the act of
+            submitting. That proved nothing: no act by the client and no record.
+            See CreditAuthorizationConsent. */}
+        <CreditAuthorizationConsent
+          values={consent}
+          onChange={setConsent}
+          idPrefix="credit-profile"
+          disabled={submitting}
+          error={errors.credit_authorization_accepted || errors.e_consent_accepted}
+        />
 
         <div className="d-flex justify-content-end gap-2">
           <button
             type="submit"
             className="btn btn-primary px-5"
-            disabled={submitting}
+            disabled={submitting || !bothConsentsGiven}
           >
             {submitting ? (
               <>
