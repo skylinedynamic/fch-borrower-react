@@ -988,21 +988,45 @@ File: Custom Css File
    Sidebar Free Trial Panel — Absolute Bottom
    ================================================ */
 
-/* Add bottom padding to scrollbar so items never hide behind trial panel */
-.navbar-menu #scrollbar .simplebar-content,
-.navbar-menu #scrollbar {
-    padding-bottom: 76px !important;
+/* Trial panel: the last row of the sidebar, not a layer on top of it.
+ *
+ * It used to be position:absolute with bottom:0, kept clear of the menu by
+ * padding-bottom on the scroll area. That padding is a guess at the banner's
+ * height, and on a laptop-height screen - where the menu is long enough to fill
+ * the column - the guess was short and the banner sat on top of the last item,
+ * which is Profile.
+ *
+ * So the sidebar becomes a flex column: the scroll area takes whatever space is
+ * left, the banner takes its own. Nothing can end up underneath it at any
+ * height, and no measurement has to be kept in sync. Scoped to
+ * .has-trial-panel, added by Sidebar only when the banner is rendered, so the
+ * theme's own layout is untouched for a paid plan. */
+.navbar-menu.has-trial-panel {
+    display: flex;
+    flex-direction: column;
+    /* The theme reserves calc(70px + 25px) here for the old floating panel. The
+       banner is a real row now, so that reservation would only add a gap. */
+    padding-bottom: 0;
 }
 
-/* Trial panel: always pinned to bottom 0, never scrolls */
+.navbar-menu.has-trial-panel .navbar-brand-box {
+    flex: 0 0 auto;
+}
+
+/* min-height:0 lets a flex child shrink below its content and scroll, which is
+   what makes the banner reachable instead of pushed off the bottom. */
+.navbar-menu.has-trial-panel #scrollbar {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.navbar-menu.has-trial-panel .sidebar-trial-panel {
+    position: static;
+    flex: 0 0 auto;
+}
+
 .sidebar-trial-panel {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
     padding: 0 10px 14px;
-    z-index: 10;
-    /* Match the sidebar background so it covers scrolled content */
     background: transparent;
 }
 
