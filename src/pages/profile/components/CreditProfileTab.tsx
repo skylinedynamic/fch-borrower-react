@@ -7,7 +7,7 @@ import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
 import { useAuth } from '../../../hooks/useAuth'
 import { countries } from '../../../modules/location'
 import { apiClient } from '../../../lib/http/apiClient'
-import { formatPhoneNumber, formatZipCode, maskSSN, formatDate } from '../../../utils/formatters'
+import { formatPhoneNumber, formatZipCode, formatSSN, unformatSSN, maskSSN, formatDate } from '../../../utils/formatters'
 import TabLoader from '../../../components/Loader/TabLoader'
 import { fetchCreditProfile } from '../../../modules/credit-profile'
 import type { CreditProfile, CreditProfileRequestData } from '../../../modules/credit-profile'
@@ -17,6 +17,9 @@ import CreditAuthorizationConsent, {
   type CreditAuthorizationValues,
 } from '../../../components/CreditAuthorization/CreditAuthorizationConsent'
 import CreditScoreHero from './CreditScoreHero'
+import CreditAccountHealth from './CreditAccountHealth'
+import CreditAccountsBreakdown from './CreditAccountsBreakdown'
+import CreditIdentityPanel from './CreditIdentityPanel'
 
 // Fields present on the auth user object that AuthUser's index signature otherwise
 // types as `unknown` (AuthUser has no explicit first_name/last_name/phone_number).
@@ -217,6 +220,42 @@ export default function CreditProfileTab() {
     }
   }
 
+/**
+ * What the server's Ssn rule enforces, repeated here so a borrower hears about
+ * a malformed number while the form is still in front of them rather than as a
+ * 422 for the one field they cannot easily re-read off a screen.
+ *
+ * Nine digits is not enough to be an SSN: the SSA never issues area 000, 666 or
+ * 900-999, group 00, or serial 0000. Kept in step with App\Rules\Ssn - a change
+ * to one belongs in both.
+ */
+const SSN_DIGITS = 9
+const ZIP_DIGITS = 5
+
+function ssnError(value: string): string | null {
+  const digits = unformatSSN(value)
+
+  if (digits.length !== SSN_DIGITS) {
+    return 'Enter a valid 9-digit SSN as XXX-XX-XXXX.'
+  }
+
+  const area = digits.slice(0, 3)
+  const group = digits.slice(3, 5)
+  const serial = digits.slice(5)
+
+  if (area === '000' || area === '666' || Number(area) >= 900 || group === '00' || serial === '0000') {
+    return 'Enter a valid 9-digit SSN as XXX-XX-XXXX.'
+  }
+
+  return null
+}
+
+function zipError(value: string): string | null {
+  return value.replace(/\D/g, '').length === ZIP_DIGITS
+    ? null
+    : 'Enter a 5-digit ZIP code, e.g. 10001.'
+}
+
   const update = (key: keyof FormState, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }))
     // Clear the server error for this field as the user corrects it
@@ -226,30 +265,53 @@ export default function CreditProfileTab() {
   const handleSubmit = async (evt: React.FormEvent) => {
     evt.preventDefault()
     setErrors({})
+
+    // Checked before anything is sent: this request triggers a credit pull, and
+    // the two fields it is keyed on are the two worth being certain of.
+    const clientErrors: Record<string, string> = {}
+    const ssnProblem = ssnError(formData.ssn)
+    const zipProblem = zipError(formData.zip)
+
+    if (ssnProblem) clientErrors.ssn = ssnProblem
+    if (zipProblem) clientErrors.zip = zipProblem
+
+    if (Object.keys(clientErrors).length > 0) {
+      setErrors(clientErrors)
+      return
+    }
+
     try {
       setSubmitting(true)
       // Sent with the form, not implied by it. The API refuses without both and
       // records the agreement, so this is the client's half of the evidence.
       const res = await apiClient.post('/borrower/profile/credit-profile-request', {
         ...formData,
+        // The server normalises too, but sending the written form would mean
+        // the pull is keyed on whichever shape happened to arrive.
+        ssn: unformatSSN(formData.ssn),
         ...consent,
       })
       toast.success(res.data?.message || 'Credit profile request submitted successfully.')
       // On success: fetch the saved record and show details view
       await fetchSubmittedDetails()
     } catch (err: any) {
-      // Map Laravel validation errors to individual field messages
+      // Every failure on this form is reported in the form.
+      //
+      // A toast for a field error is the wrong channel twice over: it covers
+      // part of the form on its way past, and it is gone before the borrower
+      // has finished correcting the field it was about. The message belongs
+      // where the mistake is - which is also where the 422 already puts it.
       if (err.response?.data?.errors) {
         const serverErrors: Record<string, string> = {}
         Object.entries(err.response.data.errors).forEach(([key, val]) => {
           serverErrors[key] = Array.isArray(val) ? val[0] : String(val)
         })
         setErrors(serverErrors)
-        toast.error(err.response?.data?.message || 'Please check the form for errors and try again.')
       } else {
-        // Non-validation error (500, network, etc.) — show a generic field-level message
+        // Not a validation failure (500, network). Still shown in the form, in
+        // the banner above the submit button, rather than as a second copy of
+        // a message the banner is already carrying.
         setErrors({ _form: err.response?.data?.message || 'Something went wrong. Please try again.' })
-        toast.error(err.response?.data?.message || 'Something went wrong. Please try again.')
       }
     } finally {
       setSubmitting(false)
@@ -282,13 +344,9 @@ export default function CreditProfileTab() {
 
   // ─── Credit Profile Details view (from borrower_credit_* tables) ────────────
   if (creditProfile) {
-    const { personal_info, addresses } = creditProfile
-    const currentAddress = addresses?.find(a => a.type === 'CURRENT')
-    const prevAddresses = addresses?.filter(a => a.type !== 'CURRENT')
-
     return (
       <div className="fade-panel">
-        <div className="d-flex align-items-center gap-3 mb-4">
+        <div className="d-flex align-items-center gap-3 mb-3">
           <div>
             <div className="fw-bold text-dark fs-16">Credit Profile</div>
             <div className="text-muted fs-13">
@@ -308,262 +366,41 @@ export default function CreditProfileTab() {
             and have been removed rather than shown twice. */}
         <CreditScoreHero metrics={creditProfile.metrics} />
 
-        <div className="row g-4">
-          {/* ── Personal Information ── */}
-          <div className="col-lg-6">
-            <div className="card border shadow-sm h-100">
-              <div className="card-header bg-transparent border-bottom py-3">
-                <div className="d-flex align-items-center gap-2">
-                  <div className="rounded bg-primary-subtle p-2">
-                    <i className="ri-user-3-line text-primary fs-16"></i>
-                  </div>
-                  <div>
-                    <div className="fw-semibold text-dark fs-14">Personal Information</div>
-                    <div className="text-muted fs-12">Credit report identity data</div>
-                  </div>
+        {/* Negative marks come second, not sixth. They were a card of grey
+            rows between the two accounts-analysis cards, so "Collections: 3"
+            was drawn exactly like "Closed Accounts: 3". */}
+        <CreditAccountHealth metrics={creditProfile.metrics} />
+
+        {/* One card, not the two matching "Open Accounts Analysis" and "All
+            Accounts Analysis" cards that described the same accounts from two
+            angles and made the reader hold one half in their head. */}
+        <CreditAccountsBreakdown metrics={creditProfile.metrics} />
+
+        {creditProfile.metrics?.summary && (
+          <div className="card border shadow-sm mb-3">
+            <div className="card-header bg-transparent border-bottom py-3">
+              <div className="d-flex align-items-center gap-2">
+                <div className="rounded bg-primary-subtle p-2">
+                  <i className="ri-file-text-line text-primary fs-16"></i>
+                </div>
+                <div>
+                  <div className="fw-semibold text-dark fs-14">Credit Profile Summary</div>
+                  <div className="text-muted fs-12">Overall assessment</div>
                 </div>
               </div>
-              <div className="card-body px-4 py-3">
-                <DetailItem label="Full Name" icon="ri-account-circle-line" value={personal_info?.name} />
-                <DetailItem label="Date of Birth" icon="ri-cake-2-line" value={personal_info?.dob ? formatDate(personal_info.dob) : '-'} />
-                <DetailItem
-                  label="Social Security Number"
-                  icon="ri-lock-line"
-                  value={
-                    <div className="d-flex align-items-center gap-2">
-                      <span className="font-monospace fs-14">
-                        {showSSN && personal_info?.ssn ? personal_info.ssn : maskSSN(personal_info?.ssn || '')}
-                      </span>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-soft-secondary py-0 px-2 fs-12"
-                        onClick={() => setShowSSN(s => !s)}
-                      >
-                        <i className={`${showSSN ? 'ri-eye-off-line' : 'ri-eye-line'} align-middle me-1`}></i>
-                        {showSSN ? 'Hide' : 'Reveal'}
-                      </button>
-                    </div>
-                  }
-                />
-              </div>
+            </div>
+            <div className="card-body px-4 py-3">
+              <p className="text-dark fs-14 mb-0">{creditProfile.metrics.summary}</p>
             </div>
           </div>
+        )}
 
-          {/* ── Contact Information ── */}
-          <div className="col-lg-6">
-            <div className="card border shadow-sm h-100">
-              <div className="card-header bg-transparent border-bottom py-3">
-                <div className="d-flex align-items-center gap-2">
-                  <div className="rounded bg-info-subtle p-2">
-                    <i className="ri-contacts-line text-info fs-16"></i>
-                  </div>
-                  <div>
-                    <div className="fw-semibold text-dark fs-14">Contact Information</div>
-                    <div className="text-muted fs-12">Email and phone on file</div>
-                  </div>
-                </div>
-              </div>
-              <div className="card-body px-4 py-3">
-                <DetailItem label="Email Address" icon="ri-mail-line" value={personal_info?.email ? <a href={`mailto:${personal_info.email}`} className="text-primary text-decoration-none">{personal_info.email}</a> : '-'} />
-                <DetailItem label="Phone Number" icon="ri-phone-line" value={personal_info?.phone ? <a href={`tel:${personal_info.phone}`} className="text-dark text-decoration-none">{personal_info.phone}</a> : '-'} />
-              </div>
-            </div>
-          </div>
-
-          {/* ── Current Address ── */}
-          {currentAddress && (
-            <div className="col-lg-6">
-              <div className="card border shadow-sm h-100">
-                <div className="card-header bg-transparent border-bottom py-3">
-                  <div className="d-flex align-items-center gap-2">
-                    <div className="rounded bg-warning-subtle p-2">
-                      <i className="ri-map-pin-2-line text-warning fs-16"></i>
-                    </div>
-                    <div>
-                      <div className="fw-semibold text-dark fs-14">Current Address</div>
-                      <div className="text-muted fs-12">Primary residence on record</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="card-body px-4 py-3">
-                  <div className="row g-0">
-                    <div className="col-md-6">
-                      <DetailItem label="Street Address" icon="ri-road-map-line" value={currentAddress.street} />
-                    </div>
-                    <div className="col-md-2">
-                      <DetailItem label="City" icon="ri-building-2-line" value={currentAddress.city} />
-                    </div>
-                    <div className="col-md-2">
-                      <DetailItem label="State" icon="ri-map-2-line" value={currentAddress.state} />
-                    </div>
-                    <div className="col-md-2">
-                      <DetailItem label="Zip Code" icon="ri-mail-send-line" value={currentAddress.zip} />
-                    </div>
-                  </div>
-                  {currentAddress.date_reported && (
-                    <div className="text-muted fs-12 mt-2">
-                      <i className="ri-calendar-line me-1"></i>Reported: {currentAddress.date_reported}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Previous Addresses ── */}
-          {prevAddresses && prevAddresses.length > 0 && (
-            <div className="col-lg-6">
-              <div className="card border shadow-sm h-100">
-                <div className="card-header bg-transparent border-bottom py-3">
-                  <div className="d-flex align-items-center gap-2">
-                    <div className="rounded bg-secondary-subtle p-2">
-                      <i className="ri-history-line text-secondary fs-16"></i>
-                    </div>
-                    <div>
-                      <div className="fw-semibold text-dark fs-14">Previous Addresses</div>
-                      <div className="text-muted fs-12">{prevAddresses.length} previous address{prevAddresses.length > 1 ? 'es' : ''} on record</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="card-body px-4 py-3">
-                  {prevAddresses.map((addr, i) => (
-                    <div key={i} className={i < prevAddresses.length - 1 ? 'border-bottom pb-2 mb-2' : ''}>
-                      <div className="fs-13 fw-medium text-dark">{addr.street}</div>
-                      <div className="text-muted fs-12">{addr.city}, {addr.state} {addr.zip}</div>
-                      {addr.date_reported && (
-                        <div className="text-muted fs-11 mt-1"><i className="ri-calendar-line me-1"></i>Reported: {addr.date_reported}</div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Account Health ── */}
-          <div className="col-lg-6">
-            <div className="card border shadow-sm h-100">
-              <div className="card-header bg-transparent border-bottom py-3">
-                <div className="d-flex align-items-center gap-2">
-                  <div className="rounded bg-warning-subtle p-2">
-                    <i className="ri-alert-line text-warning fs-16"></i>
-                  </div>
-                  <div>
-                    <div className="fw-semibold text-dark fs-14">Account Health</div>
-                    <div className="text-muted fs-12">Delinquencies and public records</div>
-                  </div>
-                </div>
-              </div>
-              <div className="card-body px-4 py-3">
-                <div className="row g-0">
-                  <div className="col-4">
-                    <DetailItem label="Delinquent" icon="ri-error-warning-line" value={creditProfile.metrics?.delinquent_accounts ?? '-'} />
-                  </div>
-                  <div className="col-4">
-                    <DetailItem label="Public Records" icon="ri-file-text-line" value={creditProfile.metrics?.public_records ?? '-'} />
-                  </div>
-                  <div className="col-4">
-                    <DetailItem label="Collections" icon="ri-bank-line" value={creditProfile.metrics?.collections ?? '-'} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Open Accounts Analysis ── */}
-          <div className="col-lg-6">
-            <div className="card border shadow-sm h-100">
-              <div className="card-header bg-transparent border-bottom py-3">
-                <div className="d-flex align-items-center gap-2">
-                  <div className="rounded bg-info-subtle p-2">
-                    <i className="ri-line-chart-line text-info fs-16"></i>
-                  </div>
-                  <div>
-                    <div className="fw-semibold text-dark fs-14">Open Accounts Analysis</div>
-                    <div className="text-muted fs-12">Current open account details</div>
-                  </div>
-                </div>
-              </div>
-              <div className="card-body px-4 py-3">
-                <div className="row g-0">
-                  <div className="col-6">
-                    <DetailItem label="Monthly Payments" icon="ri-exchange-dollar-line" value={creditProfile.metrics?.open_accounts_analysis?.monthly_payments != null ? `$${Number(creditProfile.metrics.open_accounts_analysis.monthly_payments).toLocaleString()}` : '-'} />
-                  </div>
-                  <div className="col-6">
-                    <DetailItem label="Balance" icon="ri-wallet-3-line" value={creditProfile.metrics?.open_accounts_analysis?.balance != null ? `$${Number(creditProfile.metrics.open_accounts_analysis.balance).toLocaleString()}` : '-'} />
-                  </div>
-                  <div className="col-6">
-                    <DetailItem label="Credit Limit" icon="ri-credit-card-2-line" value={creditProfile.metrics?.open_accounts_analysis?.credit_limit != null ? `$${Number(creditProfile.metrics.open_accounts_analysis.credit_limit).toLocaleString()}` : '-'} />
-                  </div>
-                  <div className="col-6">
-                    <DetailItem label="Available Credit" icon="ri-hand-coin-line" value={creditProfile.metrics?.open_accounts_analysis?.available_credit != null ? `$${Number(creditProfile.metrics.open_accounts_analysis.available_credit).toLocaleString()}` : '-'} />
-                  </div>
-                  <div className="col-6">
-                    <DetailItem label="Utilization Ratio" icon="ri-percent-line" value={creditProfile.metrics?.open_accounts_analysis?.utilization_ratio != null ? `${creditProfile.metrics.open_accounts_analysis.utilization_ratio}%` : '-'} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── All Accounts Analysis ── */}
-          <div className="col-lg-6">
-            <div className="card border shadow-sm h-100">
-              <div className="card-header bg-transparent border-bottom py-3">
-                <div className="d-flex align-items-center gap-2">
-                  <div className="rounded bg-secondary-subtle p-2">
-                    <i className="ri-donut-chart-line text-secondary fs-16"></i>
-                  </div>
-                  <div>
-                    <div className="fw-semibold text-dark fs-14">All Accounts Analysis</div>
-                    <div className="text-muted fs-12">Complete account history</div>
-                  </div>
-                </div>
-              </div>
-              <div className="card-body px-4 py-3">
-                <div className="row g-0">
-                  <div className="col-4">
-                    <DetailItem label="Total Accounts" icon="ri-numbers-line" value={creditProfile.metrics?.all_accounts_analysis?.total_accounts ?? '-'} />
-                  </div>
-                  <div className="col-4">
-                    <DetailItem label="Open Accounts" icon="ri-folder-open-line" value={creditProfile.metrics?.all_accounts_analysis?.open_accounts ?? '-'} />
-                  </div>
-                  <div className="col-4">
-                    <DetailItem label="Closed Accounts" icon="ri-folder-close-line" value={creditProfile.metrics?.all_accounts_analysis?.closed_accounts ?? '-'} />
-                  </div>
-                  <div className="col-6">
-                    <DetailItem label="Newest Open" icon="ri-calendar-check-line" value={creditProfile.metrics?.all_accounts_analysis?.newest_open_date ?? '-'} />
-                  </div>
-                  <div className="col-6">
-                    <DetailItem label="Oldest Open" icon="ri-calendar-line" value={creditProfile.metrics?.all_accounts_analysis?.oldest_open_date ?? '-'} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Summary ── */}
-          {creditProfile.metrics?.summary && (
-            <div className="col-12 mt-4">
-              <div className="card border shadow-sm h-100">
-                <div className="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
-                  <div className="d-flex align-items-center gap-2">
-                    <div className="rounded bg-primary-subtle p-2">
-                      <i className="ri-file-text-line text-primary fs-16"></i>
-                    </div>
-                    <div>
-                      <div className="fw-semibold text-dark fs-14">Credit Profile Summary</div>
-                      <div className="text-muted fs-12">Overall assessment</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="card-body px-4 py-3">
-                  <p className="text-dark fs-14 mb-0">{creditProfile.metrics.summary}</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        {/* Identity last, and closed. It was four cards and half the page above
+            the figures a borrower actually opens this tab to read. */}
+        <CreditIdentityPanel
+          personalInfo={creditProfile.personal_info}
+          addresses={creditProfile.addresses}
+        />
 
         {/* ── Request an update ──
             Inline rather than in a modal. An update is a new credit pull, so it
@@ -625,7 +462,7 @@ export default function CreditProfileTab() {
     <div className="fade-panel">
       {/* ── Success banner (if already submitted) ── */}
       {submittedData && (
-        <div className="d-flex align-items-center gap-3 p-3 mb-4 rounded-3 border"
+        <div className="d-flex align-items-center gap-3 p-3 mb-3 rounded-3 border"
           style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)', borderColor: '#86efac !important' }}>
           <div className="rounded-circle bg-success d-flex align-items-center justify-content-center flex-shrink-0"
             style={{ width: 48, height: 48 }}>
@@ -660,10 +497,31 @@ export default function CreditProfileTab() {
         </div>
       </div> */}
 
+      {/* What the borrower is agreeing to, said once at the top rather than
+          left to be inferred from the consent checkboxes at the bottom. */}
+      <div className="cp-form-intro">
+        <i className="ri-shield-user-line"></i>
+        <div>
+          <div className="cp-form-intro-title">Soft credit check authorization</div>
+          <div className="cp-form-intro-text">
+            This is a <strong>soft inquiry</strong> and will never affect your credit score. Your
+            details are encrypted in transit and at rest, and are used only to locate your credit
+            file.
+          </div>
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit} noValidate>
-        {/* ── Full Name ── */}
-        <div className="mb-4">
-          <div className="row g-3">
+        <div className="cp-section">
+          <div className="cp-section-head">
+            <span className="cp-section-step">1</span>
+            <div>
+              <div className="cp-section-title">Your name</div>
+              <div className="cp-section-hint">As it appears on your government-issued ID</div>
+            </div>
+          </div>
+          <div className="cp-section-body">
+            <div className="row g-2">
             <div className="col-md-4">
               <label className="form-label">First Name <span className="text-danger">*</span></label>
               <input
@@ -697,20 +555,32 @@ export default function CreditProfileTab() {
               {errors.last_name && <div className="invalid-feedback">{errors.last_name}</div>}
             </div>
           </div>
+          </div>
         </div>
 
-        {/* ── Identity ── */}
-        <div className="mb-4">
-          <div className="row g-3">
+        <div className="cp-section">
+          <div className="cp-section-head">
+            <span className="cp-section-step">2</span>
+            <div>
+              <div className="cp-section-title">Identity</div>
+              <div className="cp-section-hint">Used only to locate your credit file</div>
+            </div>
+            <span className="cp-secure-note"><i className="ri-lock-2-line"></i>Encrypted</span>
+          </div>
+          <div className="cp-section-body">
+            <div className="row g-2">
             <div className="col-md-6">
-              <label className="form-label">Social Security Number <span className="text-danger">*</span></label>
+              <label className="form-label" htmlFor="cp-ssn">Social Security Number <span className="text-danger">*</span></label>
               <div className="input-group">
                 <input
+                  id="cp-ssn"
                   type={showSSN ? 'text' : 'password'}
                   className={`form-control${errors.ssn ? ' is-invalid' : ''}`}
                   value={formData.ssn}
                   placeholder="XXX-XX-XXXX"
-                  onChange={e => update('ssn', e.target.value)}
+                  onChange={e => update('ssn', formatSSN(e.target.value))}
+                  inputMode="numeric"
+                  maxLength={11}
                 />
                 <button
                   type="button"
@@ -744,11 +614,19 @@ export default function CreditProfileTab() {
               {errors.date_of_birth && <div className="invalid-feedback d-block">{errors.date_of_birth}</div>}
             </div>
           </div>
+          </div>
         </div>
 
-        {/* ── Contact ── */}
-        <div className="mb-4">
-          <div className="row g-3">
+        <div className="cp-section">
+          <div className="cp-section-head">
+            <span className="cp-section-step">3</span>
+            <div>
+              <div className="cp-section-title">Contact</div>
+              <div className="cp-section-hint">Where we can reach you about this request</div>
+            </div>
+          </div>
+          <div className="cp-section-body">
+            <div className="row g-2">
             <div className="col-md-6">
               <label className="form-label">Phone Number <span className="text-danger">*</span></label>
               <input
@@ -772,11 +650,19 @@ export default function CreditProfileTab() {
               {errors.email && <div className="invalid-feedback">{errors.email}</div>}
             </div>
           </div>
+          </div>
         </div>
 
-        {/* ── Address ── */}
-        <div className="mb-4">
-          <div className="row g-3">
+        <div className="cp-section">
+          <div className="cp-section-head">
+            <span className="cp-section-step">4</span>
+            <div>
+              <div className="cp-section-title">Home address</div>
+              <div className="cp-section-hint">Your current residential address</div>
+            </div>
+          </div>
+          <div className="cp-section-body">
+            <div className="row g-2">
             <div className="col-md-6">
               <label className="form-label">Street Address <span className="text-danger">*</span></label>
               <input
@@ -825,8 +711,9 @@ export default function CreditProfileTab() {
               {errors.state && <div className="text-danger fs-12 mt-1">{errors.state}</div>}
             </div>
             <div className="col-md-4">
-              <label className="form-label">Zip Code <span className="text-danger">*</span></label>
+              <label className="form-label" htmlFor="cp-zip">Zip Code <span className="text-danger">*</span></label>
               <input
+                id="cp-zip"
                 type="text"
                 className={`form-control${errors.zip ? ' is-invalid' : ''}`}
                 value={formData.zip}
@@ -837,6 +724,7 @@ export default function CreditProfileTab() {
               />
               {errors.zip && <div className="invalid-feedback">{errors.zip}</div>}
             </div>
+          </div>
           </div>
         </div>
 

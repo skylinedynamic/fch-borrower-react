@@ -5754,3 +5754,420 @@ File: Custom Css File
 .bank-copy-btn:active {
     transform: scale(0.95);
 }
+/* ─── Credit profile ──────────────────────────────────────────
+   Built on the --ca-* tokens and the metric-card / slider-wrapper
+   patterns above rather than a palette of its own, so this tab reads
+   as part of the same product as Capital Access.
+
+   The band colours are the one deliberate exception to brand theming:
+   "Poor" has to read as poor on every tenant, and a white-label brand
+   whose primary happens to be red must not make an exceptional score
+   look like a warning.
+   ───────────────────────────────────────────────────────────── */
+
+.cp-hero {
+    background: #ffffff;
+    padding: 16px;
+    border-radius: var(--ca-radius);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 4px 15px -2px rgba(0, 0, 0, 0.02);
+}
+
+.cp-hero-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.cp-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.cp-score-value {
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-top: 10px;
+}
+
+.cp-score-max {
+    font-size: 14px;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-left: 4px;
+}
+
+.cp-band-pill {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.cp-note {
+    font-size: 13px;
+    color: #64748b;
+    margin: 8px 0 0;
+    max-width: 62ch;
+}
+
+/* ─── The scale, with its bands named underneath ──────────── */
+
+.cp-scale {
+    width: 100%;
+    margin-top: 10px;
+    background: #f8fafc;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(241, 245, 249, 0.8);
+}
+
+.cp-scale-ends {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+.cp-track {
+    position: relative;
+    height: 6px;
+    border-radius: 3px;
+    display: flex;
+    overflow: hidden;
+}
+
+.cp-track-seg {
+    height: 100%;
+}
+
+.cp-marker {
+    position: absolute;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 3px solid #1e293b;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+    transition: left 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cp-scale-bands {
+    display: flex;
+    margin-top: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #94a3b8;
+    text-transform: uppercase;
+}
+
+.cp-scale-band {
+    text-align: center;
+}
+
+.cp-scale-band.is-current {
+    color: #1e293b;
+}
+
+/* ─── Band colours (fixed, see note above) ────────────────── */
+
+.cp-band-exceptional { color: #059669; }
+.cp-band-very-good   { color: #10b981; }
+.cp-band-good        { color: #65a30d; }
+.cp-band-fair        { color: #e49b0f; }
+.cp-band-poor        { color: #f06548; }
+.cp-band-unknown     { color: #94a3b8; }
+
+.cp-pill-exceptional { color: #065f46; background: #d1fae5; }
+.cp-pill-very-good   { color: #065f46; background: #d1fae5; }
+.cp-pill-good        { color: #3f6212; background: #ecfccb; }
+.cp-pill-fair        { color: #854d0e; background: #fef3c7; }
+.cp-pill-poor        { color: #991b1b; background: #fee2e2; }
+.cp-pill-unknown     { color: #475569; background: #f1f5f9; }
+
+/* ─── The figures strip under the score ───────────────────── */
+
+.cp-figures {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--ca-border);
+    border: 1px solid var(--ca-border);
+    border-radius: var(--ca-radius);
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.cp-figure {
+    background: #ffffff;
+    padding: 10px 14px;
+}
+
+.cp-figure-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-top: 4px;
+    letter-spacing: -0.01em;
+}
+
+/* ─── The self-reported business figure ───────────────────── */
+
+.cp-selfreport {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #ffffff;
+    padding: 10px 14px;
+    border-radius: var(--ca-radius);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 4px 15px -2px rgba(0, 0, 0, 0.02);
+    margin-top: 8px;
+}
+
+.cp-selfreport-value {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+    color: #1e293b;
+    letter-spacing: -0.02em;
+    margin-top: 4px;
+}
+
+.cp-selfreport-meter {
+    flex: 1;
+    min-width: 80px;
+    height: 6px;
+    border-radius: 3px;
+    background: #e2e8f0;
+    overflow: hidden;
+}
+
+.cp-selfreport-meter span {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #94a3b8, #64748b);
+}
+
+.cp-unverified {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    background: #f1f5f9;
+    border: 1px solid var(--ca-border);
+    border-radius: 20px;
+    padding: 4px 10px;
+    white-space: nowrap;
+}
+
+/* ─── Account health ──────────────────────────────────────── */
+
+.cp-health {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--ca-border);
+    border: 1px solid var(--ca-border);
+    border-radius: var(--ca-radius);
+    overflow: hidden;
+}
+
+.cp-health-mark {
+    background: #ffffff;
+    padding: 10px 14px;
+}
+
+.cp-health-value {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+    margin-top: 6px;
+    letter-spacing: -0.02em;
+}
+
+.cp-health-value.is-flagged { color: #f06548; }
+.cp-health-value.is-clear   { color: #1e293b; }
+.cp-health-value.is-unknown { color: #94a3b8; }
+
+.cp-clean-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #065f46;
+    background: var(--ca-success-light);
+    border-radius: var(--ca-radius);
+    padding: 8px 12px;
+    margin-bottom: 12px;
+}
+
+/* ─── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+    .cp-figures {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cp-score-value {
+        font-size: 28px;
+    }
+
+    .cp-selfreport {
+        flex-wrap: wrap;
+    }
+
+    .cp-scale-bands {
+        font-size: 9px;
+    }
+}
+
+@media (max-width: 576px) {
+    .cp-health {
+        grid-template-columns: 1fr;
+    }
+
+    .cp-hero-top {
+        flex-direction: column;
+    }
+}
+
+/* ─── Credit profile request form ─────────────────────────────
+   A numbered, sectioned form rather than four unlabelled bands of
+   inputs. Same --ca-* vocabulary as the rest of the tab.
+   ───────────────────────────────────────────────────────────── */
+
+.cp-form-intro {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #f8fafc;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: var(--ca-radius);
+    padding: 12px 14px;
+    margin-bottom: 12px;
+}
+
+.cp-form-intro i {
+    font-size: 20px;
+    color: var(--ca-primary);
+    line-height: 1.2;
+}
+
+.cp-form-intro-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 2px;
+}
+
+.cp-form-intro-text {
+    font-size: 13px;
+    color: #64748b;
+    max-width: 78ch;
+}
+
+.cp-section {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: var(--ca-radius);
+    box-shadow: 0 4px 15px -2px rgba(0, 0, 0, 0.02);
+    margin-bottom: 12px;
+}
+
+.cp-section-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--ca-border);
+}
+
+.cp-section-step {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--ca-primary-light);
+    color: var(--ca-primary);
+    font-size: 12px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cp-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.2;
+}
+
+.cp-section-hint {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 1px;
+}
+
+.cp-section-body {
+    padding: 14px 16px;
+}
+
+.cp-field-hint {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+.cp-secure-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #065f46;
+    background: var(--ca-success-light);
+    border-radius: 20px;
+    padding: 3px 9px;
+    margin-left: auto;
+}
+
+.cp-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 4px;
+}
+
+@media (max-width: 576px) {
+    .cp-section-head {
+        padding: 12px 14px;
+    }
+
+    .cp-section-body {
+        padding: 14px;
+    }
+
+    .cp-form-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+}

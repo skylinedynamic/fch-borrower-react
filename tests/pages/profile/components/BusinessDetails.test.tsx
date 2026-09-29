@@ -53,7 +53,7 @@ const renderComponent = () => {
   return { ...utils, onSaveClick }
 }
 
-describe('BusinessDetails — EIN submission format', () => {
+describe('Profile — Business Details tab', () => {
   afterEach(() => {
     server.resetHandlers()
     vi.restoreAllMocks()
@@ -74,7 +74,7 @@ describe('BusinessDetails — EIN submission format', () => {
     const user = userEvent.setup()
     renderComponent()
 
-    const einInput = await screen.findByPlaceholderText('9 digit EIN')
+    const einInput = await screen.findByPlaceholderText('12-3456789')
     await user.type(einInput, '123456789')
     expect((einInput as HTMLInputElement).value).toBe('12-3456789')
 
@@ -82,5 +82,67 @@ describe('BusinessDetails — EIN submission format', () => {
 
     await waitFor(() => expect(receivedBody).not.toBeNull())
     expect(receivedBody.business_ein).toBe('123456789')
+  })
+
+  it('shows the borrower how an EIN is written', async () => {
+    // "9 digit EIN" described the number but not the shape the field produces,
+    // so a borrower typing nine digits saw a hyphen appear they had not asked
+    // for and could not tell whether it counted.
+    server.use(
+      http.get('*/borrower/profile/business-info', () =>
+        HttpResponse.json({ status: true, data: {} })
+      )
+    )
+
+    renderComponent()
+
+    expect(await screen.findByPlaceholderText('12-3456789')).toBeInTheDocument()
+  })
+
+  it('refuses a short EIN without asking the server', async () => {
+    // An EIN is nine digits. Finding that out after a round trip meant the
+    // borrower lost the rest of the form to a 422 they could have been told
+    // about while typing.
+    let posted = false
+    server.use(
+      http.get('*/borrower/profile/business-info', () =>
+        HttpResponse.json({ status: true, data: {} })
+      ),
+      http.post('*/borrower/profile/business-info', () => {
+        posted = true
+        return HttpResponse.json({ status: true, message: 'Saved' })
+      })
+    )
+
+    const user = userEvent.setup()
+    renderComponent()
+
+    await user.type(await screen.findByPlaceholderText('12-3456789'), '12345678')
+    await user.click(screen.getByRole('button', { name: /save|update|next/i }))
+
+    expect(await screen.findByText(/EIN must be 9 digits/i)).toBeInTheDocument()
+    expect(posted).toBe(false)
+  })
+
+  it('lets a complete EIN through', async () => {
+    let posted = false
+    server.use(
+      http.get('*/borrower/profile/business-info', () =>
+        HttpResponse.json({ status: true, data: {} })
+      ),
+      http.post('*/borrower/profile/business-info', () => {
+        posted = true
+        return HttpResponse.json({ status: true, message: 'Saved' })
+      })
+    )
+
+    const user = userEvent.setup()
+    renderComponent()
+
+    await user.type(await screen.findByPlaceholderText('12-3456789'), '123456789')
+    await user.click(screen.getByRole('button', { name: /save|update|next/i }))
+
+    await waitFor(() => expect(posted).toBe(true))
+    expect(screen.queryByText(/EIN must be 9 digits/i)).not.toBeInTheDocument()
   })
 })
