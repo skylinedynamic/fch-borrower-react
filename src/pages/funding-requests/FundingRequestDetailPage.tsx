@@ -417,8 +417,6 @@ export default function FundingRequestDetailPage() {
     const [actLoadingMore, setActLoadingMore] = useState(false)
     const [totalActivities, setTotalActivities] = useState(0)
 
-    // Filtering Tabs state
-    const [filterTab, setFilterTab] = useState<'all' | 'funding' | 'updates'>('all')
     const activityRef = useRef<HTMLDivElement>(null)
 
     // Load request details
@@ -470,21 +468,6 @@ export default function FundingRequestDetailPage() {
         const next = actPage + 1
         setActPage(next)
         loadActivities(next, true)
-    }
-
-    // Filter activities list based on tab
-    const getFilteredActivities = () => {
-        return activities.filter(act => {
-            const raw = String(act.log_type_raw || '').toLowerCase()
-            const name = String(act.event_label || act.log_type || '').toLowerCase()
-            if (filterTab === 'funding') {
-                return raw.includes('funding_request') || name.includes('funding')
-            }
-            if (filterTab === 'updates') {
-                return raw.includes('update') || name.includes('update') || raw.includes('status')
-            }
-            return true
-        })
     }
 
     if (loading) {
@@ -693,12 +676,8 @@ export default function FundingRequestDetailPage() {
         )
     }
 
-    const filtered = getFilteredActivities()
+    const filtered = activities
     const pageTitle = 'Funding Request Details'
-
-    // Compute dynamic tab counts
-    const countFunding = activities.filter(a => String(a.log_type_raw || '').includes('funding_request') || String(a.event_label || '').toLowerCase().includes('funding')).length
-    const countUpdates = activities.filter(a => String(a.log_type_raw || '').includes('update') || String(a.log_type_raw || '').includes('status')).length
 
     // Application Status Logic
     const isApproved = review.status === FUNDING_REVIEW_STATUS.APPROVED;
@@ -1010,25 +989,6 @@ export default function FundingRequestDetailPage() {
                                         <h5 className="mb-0 fw-bold text-dark fs-16">Activity</h5>
                                     </div>
                                 </div>
-
-                                {/* Sub-header Filter Tabs */}
-                                <ul className="nav nav-tabs nav-tabs-custom px-3 pt-2 fs-13">
-                                    {([
-                                        ['all', 'All'],
-                                        ['funding', `Funding (${countFunding})`],
-                                        ['updates', `Updates (${countUpdates})`],
-                                    ] as const).map(([key, label]) => (
-                                        <li className="nav-item" key={key}>
-                                            <button
-                                                type="button"
-                                                className={`nav-link ${filterTab === key ? 'active' : ''}`}
-                                                onClick={() => setFilterTab(key)}
-                                            >
-                                                {label}
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
 
                                 <div className="card-body px-3 pt-3 pb-3 activity-scroll-container fr-activity-scroll" style={{ maxHeight: '600px', overflowY: 'auto', overflowX: 'hidden' }}>
 
