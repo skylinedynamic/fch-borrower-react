@@ -162,3 +162,56 @@ describe('OwnershipInformationStep — SSN handling (PII, FCRA-relevant)', () =>
     await waitFor(() => expect((ssnInput as HTMLInputElement).value).toBe('987-65-4321'))
   })
 })
+
+/**
+ * The country list is fetched at boot, and main.jsx renders the app even when
+ * that request fails - reference data is not worth a blank application. So an
+ * empty list is a state this step has to survive: getDefaultCountry() has
+ * nothing to return, and the pre-fill effect used to read `.name` straight off
+ * it, which threw inside the state updater and took the whole step down with it.
+ * An applicant then saw nothing at all rather than a form with no country picked.
+ */
+describe('OwnershipInformationStep — when the country list never loaded', () => {
+  afterEach(() => {
+    clearLocationCache()
+    server.resetHandlers()
+    vi.restoreAllMocks()
+  })
+
+  it('still renders and pre-fills, leaving the country unset', async () => {
+    clearLocationCache()
+    server.use(
+      http.get('*/borrower/funding-application/ownership-info', () =>
+        HttpResponse.json({ status: true, data: { ssn: '987654321', first_name: 'Jane' } })
+      )
+    )
+
+    renderStep()
+
+    const ssnInput = await screen.findByPlaceholderText('xxx-xx-xxxx')
+    await waitFor(() => expect((ssnInput as HTMLInputElement).value).toBe('987-65-4321'))
+  })
+
+  it('defaults the country to the US once the list is there', async () => {
+    countries.splice(0, countries.length, {
+      name: 'United States',
+      code: 'USA',
+      currency: 'USD',
+      phone_code: '+1',
+      flag: '🇺🇸',
+      states: [],
+    })
+    server.use(
+      http.get('*/borrower/funding-application/ownership-info', () =>
+        HttpResponse.json({ status: true, data: { first_name: 'Jane' } })
+      )
+    )
+
+    renderStep()
+
+    // The API sent no country, so the default fills it in. The picker is a
+    // CustomDropdown, which renders the selected option as its label text
+    // rather than as an input value.
+    expect(await screen.findByText('United States')).toBeInTheDocument()
+  })
+})
