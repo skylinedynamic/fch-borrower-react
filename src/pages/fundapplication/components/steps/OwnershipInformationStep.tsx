@@ -145,8 +145,6 @@ export default function OwnershipInformationStep({
         ssn: apiData.ssn ? formatSSN(apiData.ssn) : '',
         citizenship: apiData.citizenship_status || citizenshipOptions[0].value,
         streetAddress: apiData.street_address || '',
-        // Left unset when no country list loaded - the picker is empty anyway,
-        // and an unset country beats throwing out of this updater.
         country: apiData.country || getDefaultCountry()?.name || '',
         city: apiData.city || '',
         state: apiData.state || '',
@@ -337,23 +335,23 @@ export default function OwnershipInformationStep({
           <label className="form-label">
             Date of Birth <span className="text-danger">*</span>
           </label>
-          <Flatpickr
-            className={`form-control ${hasError('date_of_birth') ? 'is-invalid' : ''}`}
-            value={owner.dob}
-            onChange={(dates, dateStr) => {
-              setOwner({ ...owner, dob: dateStr })
-            }}
-            options={{
-              dateFormat: 'Y-m-d',
-              altInput: true,
-              altFormat: 'j M, Y',
-              maxDate: 'today',
-              yearRange: '1900:' + new Date().getFullYear(),
-              monthSelectorType: 'dropdown',
-              plugins: [yearDropdownPlugin(1900)],
-            } as any}
-            placeholder="Select date of birth"
-          />
+          <div className="position-relative">
+            <Flatpickr
+              className={`form-control ${hasError('date_of_birth') ? 'is-invalid' : ''}`}
+              value={owner.dob}
+              onChange={(dates, dateStr) => {
+                setOwner({ ...owner, dob: dateStr })
+              }}
+              options={{
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'j M, Y',
+                maxDate: 'today',
+                monthSelectorType: 'dropdown',
+              }}
+              placeholder="Select date of birth"
+            />
+          </div>
           {hasError('date_of_birth') && <div className="invalid-feedback d-block">{getFieldError('date_of_birth')}</div>}
         </div>
         <div className="col-md-6">

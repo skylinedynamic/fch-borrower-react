@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useState } from 'react'
 import { http, HttpResponse } from 'msw'
 import { render, screen, waitFor } from '@testing-library/react'
@@ -6,9 +6,9 @@ import userEvent from '@testing-library/user-event'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { server } from '../../../../mocks/server'
 import { createTestQueryClient } from '../../../../test-utils'
-import { clearLocationCache, countries } from '../../../../../src/modules/location'
 import OwnershipInformationStep from '../../../../../src/pages/fundapplication/components/steps/OwnershipInformationStep'
 import type { OwnerInfo, CoBorrower } from '../../../../../src/pages/fundapplication/types'
+import { countries, clearLocationCache } from '../../../../../src/modules/location'
 
 vi.mock('react-toastify', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 
@@ -82,9 +82,21 @@ const renderStep = () => {
 }
 
 describe('OwnershipInformationStep — SSN handling (PII, FCRA-relevant)', () => {
+  // `countries` (src/modules/location) starts empty and is normally filled by
+  // loadLocations(), which main.jsx awaits before the app ever mounts — a
+  // guarantee this render-in-isolation test doesn't get for free. Without a
+  // seeded entry, getDefaultCountry() (called whenever the fetched
+  // ownership-info payload has no country of its own, as every fixture here
+  // does) reads .name off undefined and throws.
+  beforeEach(() => {
+    clearLocationCache()
+    countries.push({ name: 'United States', code: 'USA', currency: 'USD', phone_code: '+1', flag: '', states: [] })
+  })
+
   afterEach(() => {
     server.resetHandlers()
     vi.restoreAllMocks()
+    clearLocationCache()
   })
 
   it('displays the SSN formatted as user types, but sends only unformatted digits on save', async () => {
