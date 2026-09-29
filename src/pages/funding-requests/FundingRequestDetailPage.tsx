@@ -8,7 +8,6 @@ import { getFileConfig, getDocumentStatusBadgeClass } from '../../config/fileTyp
 import { FUNDING_REVIEW_STATUS, FUNDING_REVIEW_STATUS_COLORS } from '../../config/funding'
 import { toast } from 'react-toastify'
 import ReviewProgressCard from './components/ReviewProgressCard'
-import CommentPanel from '../../components/Common/CommentPanel/CommentPanel'
 import '../../components/Common/StatisticsCardSkeleton.css'
 import '../../../assets/css/funding-requests.css'
 
@@ -419,7 +418,7 @@ export default function FundingRequestDetailPage() {
     const [totalActivities, setTotalActivities] = useState(0)
 
     // Filtering Tabs state
-    const [filterTab, setFilterTab] = useState<'all' | 'funding' | 'comments' | 'updates'>('all')
+    const [filterTab, setFilterTab] = useState<'all' | 'funding' | 'updates'>('all')
     const activityRef = useRef<HTMLDivElement>(null)
 
     // Load request details
@@ -480,9 +479,6 @@ export default function FundingRequestDetailPage() {
             const name = String(act.event_label || act.log_type || '').toLowerCase()
             if (filterTab === 'funding') {
                 return raw.includes('funding_request') || name.includes('funding')
-            }
-            if (filterTab === 'comments') {
-                return raw.includes('comment') || name.includes('comment')
             }
             if (filterTab === 'updates') {
                 return raw.includes('update') || name.includes('update') || raw.includes('status')
@@ -702,7 +698,6 @@ export default function FundingRequestDetailPage() {
 
     // Compute dynamic tab counts
     const countFunding = activities.filter(a => String(a.log_type_raw || '').includes('funding_request') || String(a.event_label || '').toLowerCase().includes('funding')).length
-    const countComments = activities.filter(a => String(a.log_type_raw || '').includes('comment')).length
     const countUpdates = activities.filter(a => String(a.log_type_raw || '').includes('update') || String(a.log_type_raw || '').includes('status')).length
 
     // Application Status Logic
@@ -1021,7 +1016,6 @@ export default function FundingRequestDetailPage() {
                                     {([
                                         ['all', 'All'],
                                         ['funding', `Funding (${countFunding})`],
-                                        ['comments', 'Comments'],
                                         ['updates', `Updates (${countUpdates})`],
                                     ] as const).map(([key, label]) => (
                                         <li className="nav-item" key={key}>
@@ -1038,12 +1032,9 @@ export default function FundingRequestDetailPage() {
 
                                 <div className="card-body px-3 pt-3 pb-3 activity-scroll-container fr-activity-scroll" style={{ maxHeight: '600px', overflowY: 'auto', overflowX: 'hidden' }}>
 
-                                    {filterTab === 'comments' ? (
-                                        <CommentPanel entityType="funding_request" entityId={id} />
-                                    ) : (
-                                        <>
-                                            {/* Activity Logs Timeline */}
-                                            <div className="timeline-container position-relative px-0" ref={activityRef}>
+                                    <>
+                                        {/* Activity Logs Timeline */}
+                                        <div className="timeline-container position-relative px-0" ref={activityRef}>
                                                 {/* Vertical connecting line */}
                                                 <div
                                                     className="timeline-vertical-line position-absolute fr-timeline-vline"
@@ -1098,8 +1089,7 @@ export default function FundingRequestDetailPage() {
                                                     </button>
                                                 </div>
                                             )}
-                                        </>
-                                    )}
+                                    </>
                                 </div>
                             </div>
                         </div>
