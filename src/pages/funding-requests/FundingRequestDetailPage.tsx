@@ -8,6 +8,7 @@ import { getFileConfig, getDocumentStatusBadgeClass } from '../../config/fileTyp
 import { FUNDING_REVIEW_STATUS, FUNDING_REVIEW_STATUS_COLORS } from '../../config/funding'
 import { toast } from 'react-toastify'
 import ReviewProgressCard from './components/ReviewProgressCard'
+import CommentPanel from '../../components/Common/CommentPanel/CommentPanel'
 import '../../components/Common/StatisticsCardSkeleton.css'
 import '../../../assets/css/funding-requests.css'
 
@@ -1016,63 +1017,88 @@ export default function FundingRequestDetailPage() {
                                 </div>
 
                                 {/* Sub-header Filter Tabs */}
+                                <ul className="nav nav-tabs nav-tabs-custom px-3 pt-2 fs-13">
+                                    {([
+                                        ['all', 'All'],
+                                        ['funding', `Funding (${countFunding})`],
+                                        ['comments', 'Comments'],
+                                        ['updates', `Updates (${countUpdates})`],
+                                    ] as const).map(([key, label]) => (
+                                        <li className="nav-item" key={key}>
+                                            <button
+                                                type="button"
+                                                className={`nav-link ${filterTab === key ? 'active' : ''}`}
+                                                onClick={() => setFilterTab(key)}
+                                            >
+                                                {label}
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+
                                 <div className="card-body px-3 pt-3 pb-3 activity-scroll-container fr-activity-scroll" style={{ maxHeight: '600px', overflowY: 'auto', overflowX: 'hidden' }}>
 
-                                    {/* Activity Logs Timeline */}
-                                    <div className="timeline-container position-relative px-0" ref={activityRef}>
-                                        {/* Vertical connecting line */}
-                                        <div
-                                            className="timeline-vertical-line position-absolute fr-timeline-vline"
-                                        />
+                                    {filterTab === 'comments' ? (
+                                        <CommentPanel entityType="funding_request" entityId={id} />
+                                    ) : (
+                                        <>
+                                            {/* Activity Logs Timeline */}
+                                            <div className="timeline-container position-relative px-0" ref={activityRef}>
+                                                {/* Vertical connecting line */}
+                                                <div
+                                                    className="timeline-vertical-line position-absolute fr-timeline-vline"
+                                                />
 
-                                        {actLoading ? (
-                                            <div className="py-2">
-                                                {[1, 2, 3].map(i => (
-                                                    <div key={i} className="d-flex align-items-start p-2 mb-2">
-                                                        <div className="me-3 flex-shrink-0">
-                                                            <Skeleton w={36} h={36} rounded />
-                                                        </div>
-                                                        <div className="flex-grow-1">
-                                                            <div className="mb-2"><Skeleton w="45%" h={14} /></div>
-                                                            <div><Skeleton w="75%" h={12} /></div>
-                                                        </div>
+                                                {actLoading ? (
+                                                    <div className="py-2">
+                                                        {[1, 2, 3].map(i => (
+                                                            <div key={i} className="d-flex align-items-start p-2 mb-2">
+                                                                <div className="me-3 flex-shrink-0">
+                                                                    <Skeleton w={36} h={36} rounded />
+                                                                </div>
+                                                                <div className="flex-grow-1">
+                                                                    <div className="mb-2"><Skeleton w="45%" h={14} /></div>
+                                                                    <div><Skeleton w="75%" h={12} /></div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
                                                     </div>
-                                                ))}
-                                            </div>
-                                        ) : filtered.length === 0 ? (
-                                            <div className="text-center py-4 text-muted">
-                                                <i className="ri-history-line fs-24 d-block mb-1 text-muted opacity-50"></i>
-                                                <p className="mb-0 fs-12 fw-semibold">No activities found.</p>
-                                            </div>
-                                        ) : (
-                                            <div className="timeline-list">
-                                                {filtered.map((act, index) => (
-                                                    <ActivityItem
-                                                        key={act.id}
-                                                        activity={act}
-                                                        review={review}
-                                                        isFirst={index === filtered.length - 1} // Submit event is first (last in array)
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Pagination / Load More Footer */}
-                                    {actHasMore && filtered.length > 0 && (
-                                        <div className="text-center mt-4 mb-2">
-                                            <button
-                                                className="btn btn-soft-primary btn-sm rounded-pill px-4"
-                                                onClick={loadMore}
-                                                disabled={actLoadingMore}
-                                            >
-                                                {actLoadingMore ? (
-                                                    <><span className="spinner-border spinner-border-sm align-middle me-2"></span>Loading...</>
+                                                ) : filtered.length === 0 ? (
+                                                    <div className="text-center py-4 text-muted">
+                                                        <i className="ri-history-line fs-24 d-block mb-1 text-muted opacity-50"></i>
+                                                        <p className="mb-0 fs-12 fw-semibold">No activities found.</p>
+                                                    </div>
                                                 ) : (
-                                                    <><i className="ri-arrow-down-line align-middle me-1"></i> Load More Activity</>
+                                                    <div className="timeline-list">
+                                                        {filtered.map((act, index) => (
+                                                            <ActivityItem
+                                                                key={act.id}
+                                                                activity={act}
+                                                                review={review}
+                                                                isFirst={index === filtered.length - 1} // Submit event is first (last in array)
+                                                            />
+                                                        ))}
+                                                    </div>
                                                 )}
-                                            </button>
-                                        </div>
+                                            </div>
+
+                                            {/* Pagination / Load More Footer */}
+                                            {actHasMore && filtered.length > 0 && (
+                                                <div className="text-center mt-4 mb-2">
+                                                    <button
+                                                        className="btn btn-soft-primary btn-sm rounded-pill px-4"
+                                                        onClick={loadMore}
+                                                        disabled={actLoadingMore}
+                                                    >
+                                                        {actLoadingMore ? (
+                                                            <><span className="spinner-border spinner-border-sm align-middle me-2"></span>Loading...</>
+                                                        ) : (
+                                                            <><i className="ri-arrow-down-line align-middle me-1"></i> Load More Activity</>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             </div>
