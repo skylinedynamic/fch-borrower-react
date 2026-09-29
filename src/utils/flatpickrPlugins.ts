@@ -2,16 +2,22 @@ export const yearDropdownPlugin = (minYear = 1900, maxYear?: number) => {
   const max = maxYear ?? new Date().getFullYear()
 
   return (fp: any) => {
-    const cal = fp.calendarContainer as HTMLElement
     let dropdown: HTMLElement | null = null
     let trigger: HTMLElement | null = null
+
+    // Read live rather than capturing once: flatpickr calls this plugin factory
+    // during parseConfig(), before calendarContainer is built, and deletes
+    // calendarContainer again on destroy() — a stale reference would be undefined
+    // both at first use and after unmount.
+    const getCal = (): HTMLElement | null => fp.calendarContainer ?? null
 
     const isOpen = () => dropdown?.style.display === 'block'
 
     const close = () => { if (dropdown) dropdown.style.display = 'none' }
 
     const positionDropdown = () => {
-      if (!dropdown || !trigger) return
+      const cal = getCal()
+      if (!dropdown || !trigger || !cal) return
       const tRect = trigger.getBoundingClientRect()
       const cRect = cal.getBoundingClientRect()
       dropdown.style.left = (tRect.left - cRect.left) + 'px'
@@ -35,6 +41,9 @@ export const yearDropdownPlugin = (minYear = 1900, maxYear?: number) => {
     }
 
     const build = () => {
+      const cal = getCal()
+      if (!cal) return
+
       const wrapper = cal.querySelector('.numInputWrapper') as HTMLElement | null
       if (!wrapper) return
 
@@ -80,7 +89,8 @@ export const yearDropdownPlugin = (minYear = 1900, maxYear?: number) => {
       onReady: () => setTimeout(build, 0),
       onOpen: () => setTimeout(build, 0),
       onYearChange: () => {
-        const t = cal.querySelector('.fp-yd-trigger') as HTMLElement | null
+        const cal = getCal()
+        const t = cal?.querySelector('.fp-yd-trigger') as HTMLElement | null
         if (t) t.textContent = String(fp.currentYear)
         close()
       },
