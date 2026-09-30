@@ -255,7 +255,8 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit, isEditi
                         maxDate: "today",
                         monthSelectorType: "dropdown",
                         static: true,
-                      }}
+                        plugins: [yearDropdownPlugin(1900)],
+                      } as any}
                       placeholder="Select date of birth"
                     />
                   </div>
