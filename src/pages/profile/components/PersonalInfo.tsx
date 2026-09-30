@@ -633,7 +633,8 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
                   maxDate: "today",
                   monthSelectorType: "dropdown",
                   clickOpens: !isFieldLocked('date_of_birth'),
-                }}
+                  plugins: [yearDropdownPlugin(1900)],
+                } as any}
               placeholder="Select date of birth"
               disabled={isFieldLocked('date_of_birth')}
             />
@@ -735,7 +736,8 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
                   maxDate: "today",
                   monthSelectorType: "dropdown",
                   static: true,
-                }}
+                  plugins: [yearDropdownPlugin(1900)],
+                } as any}
                 placeholder="Select date of birth"
               />
             ) : updateRequest.key === 'country' ? (

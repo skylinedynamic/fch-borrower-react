@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
+import { yearDropdownPlugin } from '../../../../utils/flatpickrPlugins'
 import type { FinancialInfo } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
@@ -206,7 +207,8 @@ export default function FinancialInformationStep({
             altInput: true,
             altFormat: 'j M, Y',
             maxDate: 'today',
-          }}
+            plugins: [yearDropdownPlugin(1900)],
+          } as any}
           placeholder="Select start date"
         />
         {hasError('business_checking_start_date') && (

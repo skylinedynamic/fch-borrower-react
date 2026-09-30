@@ -24,7 +24,7 @@ const configWith = (welcome_subtitle: string, quick_suggestions: string[]) =>
     )
 
 const open = async () => {
-    await userEvent.click(screen.getByRole('button', { name: /open support assistant/i }))
+    await userEvent.click(screen.getByRole('button', { name: /open ask support/i }))
     await screen.findByPlaceholderText(/type a message/i)
 }
 
@@ -39,7 +39,7 @@ describe('SupportChatWidget (borrower)', () => {
 
         renderWithProviders(<SupportChatWidget />)
 
-        expect(screen.queryByText(/support assistant/i)).not.toBeInTheDocument()
+        expect(screen.queryByText(/ask support/i)).not.toBeInTheDocument()
 
         await open()
 
@@ -85,8 +85,8 @@ describe('SupportChatWidget (borrower)', () => {
         await open()
         expect(await screen.findByText(/ask about the old prompt topic\./i)).toBeInTheDocument()
 
-        await userEvent.click(screen.getByRole('button', { name: /minimize support assistant/i }))
-        await userEvent.click(screen.getByRole('button', { name: /open support assistant/i }))
+        await userEvent.click(screen.getByRole('button', { name: /minimize ask support/i }))
+        await userEvent.click(screen.getByRole('button', { name: /open ask support/i }))
 
         expect(await screen.findByText(/ask about the new prompt topic\./i)).toBeInTheDocument()
         expect(screen.getByText('New prompt question?')).toBeInTheDocument()
@@ -229,7 +229,7 @@ describe('SupportChatWidget (borrower)', () => {
         await sendMessage('Hi')
         await screen.findByText('Sure thing.')
 
-        await userEvent.click(screen.getByRole('button', { name: /minimize support assistant/i }))
+        await userEvent.click(screen.getByRole('button', { name: /minimize ask support/i }))
         expect(screen.queryByText('Sure thing.')).not.toBeInTheDocument()
 
         // History/session restore must not refetch on reopen — historyLoadedRef
@@ -238,7 +238,7 @@ describe('SupportChatWidget (borrower)', () => {
         // as an unhandled-request error here. (Config IS refetched on every
         // open — see the dedicated suggestions-refresh test above — but that
         // handler tolerates repeat calls.)
-        await userEvent.click(screen.getByRole('button', { name: /open support assistant/i }))
+        await userEvent.click(screen.getByRole('button', { name: /open ask support/i }))
         await waitFor(() => expect(screen.getByText('Sure thing.')).toBeInTheDocument())
     })
 
@@ -312,7 +312,7 @@ describe('SupportChatWidget (borrower)', () => {
         await userEvent.click(screen.getByRole('button', { name: /send message/i }))
 
         // Minimize while the reply is still deliberately held back.
-        await userEvent.click(screen.getByRole('button', { name: /minimize support assistant/i }))
+        await userEvent.click(screen.getByRole('button', { name: /minimize ask support/i }))
 
         // Only now does the response settle — openRef.current is guaranteed
         // to already be false by this point.
@@ -320,7 +320,7 @@ describe('SupportChatWidget (borrower)', () => {
 
         await waitFor(() => expect(screen.getByText('1')).toBeInTheDocument())
 
-        await userEvent.click(screen.getByRole('button', { name: /open support assistant/i }))
+        await userEvent.click(screen.getByRole('button', { name: /open ask support/i }))
         expect(screen.queryByText('1')).not.toBeInTheDocument()
         expect(await screen.findByText('Delayed reply.')).toBeInTheDocument()
     })
