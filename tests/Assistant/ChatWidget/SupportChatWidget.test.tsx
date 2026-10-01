@@ -10,12 +10,11 @@ afterEach(() => server.resetHandlers())
 const noSessions = () =>
     http.get('*/borrower/assistant/sessions', () => HttpResponse.json({ status: true, message: '', data: [] }))
 
-// is_ready: false, no welcome_subtitle/quick_suggestions — the widget must
-// fall back to its own generic defaults, never a hardcoded domain-specific
-// guess, when the assistant hasn't been configured with a prompt yet.
-const notReadyConfig = () =>
+// Enabled, with no welcome line or suggested questions in the agent's
+// instructions — the widget shows only its greeting.
+const enabledConfig = () =>
     http.get('*/borrower/assistant/config', () =>
-        HttpResponse.json({ status: true, message: '', data: { is_ready: false, welcome_subtitle: null, quick_suggestions: [] } })
+        HttpResponse.json({ status: true, message: '', data: { is_ready: true, welcome_subtitle: null, quick_suggestions: [] } })
     )
 
 const configWith = (welcome_subtitle: string, quick_suggestions: string[]) =>
@@ -24,7 +23,7 @@ const configWith = (welcome_subtitle: string, quick_suggestions: string[]) =>
     )
 
 const open = async () => {
-    await userEvent.click(screen.getByRole('button', { name: /open ask support/i }))
+    await userEvent.click(await screen.findByRole('button', { name: /open ask support/i }))
     await screen.findByPlaceholderText(/type a message/i)
 }
 
@@ -35,7 +34,7 @@ const sendMessage = async (text: string) => {
 
 describe('SupportChatWidget (borrower)', () => {
     it('is closed until the floating button is clicked, then shows the empty-state prompt once history loads', async () => {
-        server.use(noSessions(), notReadyConfig())
+        server.use(noSessions(), enabledConfig())
 
         renderWithProviders(<SupportChatWidget />)
 
@@ -43,9 +42,10 @@ describe('SupportChatWidget (borrower)', () => {
 
         await open()
 
-        // The generic fallback subtitle — no config saved yet, and nothing
-        // hardcoded to a specific domain like "account or funding journey".
-        expect(await screen.findByText(/ask a question and i will do my best to help/i)).toBeInTheDocument()
+        // Nothing is built in: with no copy from the backend the welcome card
+        // shows only its greeting — no subtitle and no suggested questions.
+        expect(await screen.findByText(/welcome to our live chat/i)).toBeInTheDocument()
+        expect(screen.queryByText(/suggested questions/i)).not.toBeInTheDocument()
     })
 
     it('renders the live-derived welcome subtitle and suggestion chips from the config endpoint', async () => {
@@ -74,7 +74,8 @@ describe('SupportChatWidget (borrower)', () => {
                 return HttpResponse.json({
                     status: true,
                     message: '',
-                    data: callCount === 1
+                    // Calls 1 (page-load check) and 2 (first open) see the old copy; the reopen sees the new.
+                    data: callCount <= 2
                         ? { is_ready: true, welcome_subtitle: 'Ask about the old prompt topic.', quick_suggestions: ['Old prompt question?'] }
                         : { is_ready: true, welcome_subtitle: 'Ask about the new prompt topic.', quick_suggestions: ['New prompt question?'] },
                 })
@@ -125,23 +126,90 @@ describe('SupportChatWidget (borrower)', () => {
         expect(await screen.findByText('Here is your status.')).toBeInTheDocument()
     })
 
-    it('falls back to the generic defaults when the config fetch fails, without crashing', async () => {
+    it('is not shown at all when the assistant is disabled', async () => {
+        let configCalls = 0
         server.use(
             noSessions(),
-            http.get('*/borrower/assistant/config', () => HttpResponse.error())
+            http.get('*/borrower/assistant/config', () => {
+                configCalls++
+                return HttpResponse.json({ status: true, message: '', data: { is_ready: false, welcome_subtitle: null, quick_suggestions: [] } })
+            })
+        )
+
+        const { container } = renderWithProviders(<SupportChatWidget />)
+
+        await waitFor(() => expect(configCalls).toBeGreaterThan(0))
+        expect(screen.queryByRole('button', { name: /open ask support/i })).not.toBeInTheDocument()
+        expect(container.querySelector('.support-chat-fab, [class*="support-chat"]')).toBeNull()
+    })
+
+    it('is not shown when the enabled check fails', async () => {
+        let configCalls = 0
+        server.use(
+            noSessions(),
+            http.get('*/borrower/assistant/config', () => {
+                configCalls++
+                return HttpResponse.error()
+            })
         )
 
         renderWithProviders(<SupportChatWidget />)
+
+        await waitFor(() => expect(configCalls).toBeGreaterThan(0))
+        expect(screen.queryByRole('button', { name: /open ask support/i })).not.toBeInTheDocument()
+    })
+
+    it('appears and disappears without a reload when the host switches the assistant on or off', async () => {
+        let enabled = false
+        server.use(
+            noSessions(),
+            http.get('*/borrower/assistant/config', () =>
+                HttpResponse.json({ status: true, message: '', data: { is_ready: enabled, welcome_subtitle: null, quick_suggestions: [] } })
+            )
+        )
+
+        renderWithProviders(<SupportChatWidget />)
+        await waitFor(() => expect(screen.queryByRole('button', { name: /open ask support/i })).not.toBeInTheDocument())
+
+        // The host enables it elsewhere; this page re-checks (here: on returning to the tab).
+        enabled = true
+        window.dispatchEvent(new Event('focus'))
+        expect(await screen.findByRole('button', { name: /open ask support/i })).toBeInTheDocument()
+
+        // ...and disables it again while the panel is open: the whole chat goes away.
+        await open()
+        enabled = false
+        window.dispatchEvent(new Event('focus'))
+
+        await waitFor(() => expect(screen.queryByPlaceholderText(/type a message/i)).not.toBeInTheDocument())
+        expect(screen.queryByRole('button', { name: /open ask support/i })).not.toBeInTheDocument()
+    })
+
+    it('asks for the welcome copy only when the panel is opened', async () => {
+        const asked: Array<string | null> = []
+        server.use(
+            noSessions(),
+            http.get('*/borrower/assistant/config', ({ request }) => {
+                asked.push(new URL(request.url).searchParams.get('intro'))
+                return HttpResponse.json({ status: true, message: '', data: { is_ready: true, welcome_subtitle: null, quick_suggestions: [] } })
+            })
+        )
+
+        renderWithProviders(<SupportChatWidget />)
+        await screen.findByRole('button', { name: /open ask support/i })
+
+        // The page-load check is the cheap one: no intro requested.
+        expect(asked).toEqual([null])
+
         await open()
 
-        expect(await screen.findByText('How can you help me?')).toBeInTheDocument()
-        expect(screen.getByText(/ask a question and i will do my best to help/i)).toBeInTheDocument()
+        await waitFor(() => expect(asked).toEqual([null, '1']))
     })
 
     it('sends a message and renders the bold-formatted answer', async () => {
         server.use(
             noSessions(),
-            notReadyConfig(),
+            enabledConfig(),
             http.post('*/borrower/assistant/messages', async ({ request }) => {
                 const body = (await request.json()) as { session_id: string | null; message: string }
                 expect(body.message).toBe('How do I check my application status?')
@@ -174,7 +242,7 @@ describe('SupportChatWidget (borrower)', () => {
     it('does not render a button for an action id that is not locally allowlisted', async () => {
         server.use(
             noSessions(),
-            notReadyConfig(),
+            enabledConfig(),
             http.post('*/borrower/assistant/messages', () =>
                 HttpResponse.json({
                     status: true,
@@ -206,7 +274,7 @@ describe('SupportChatWidget (borrower)', () => {
     it('minimizing hides the panel without losing the in-memory conversation', async () => {
         server.use(
             noSessions(),
-            notReadyConfig(),
+            enabledConfig(),
             http.post('*/borrower/assistant/messages', () =>
                 HttpResponse.json({
                     status: true,
@@ -245,7 +313,7 @@ describe('SupportChatWidget (borrower)', () => {
     it('renders the server-provided timestamp under an assistant reply', async () => {
         server.use(
             noSessions(),
-            notReadyConfig(),
+            enabledConfig(),
             http.post('*/borrower/assistant/messages', () =>
                 HttpResponse.json({
                     status: true,
@@ -286,7 +354,7 @@ describe('SupportChatWidget (borrower)', () => {
 
         server.use(
             noSessions(),
-            notReadyConfig(),
+            enabledConfig(),
             http.post('*/borrower/assistant/messages', async () => {
                 await replyGate;
                 return HttpResponse.json({
@@ -327,7 +395,7 @@ describe('SupportChatWidget (borrower)', () => {
 
     it('starts a new session and clears the conversation when clicking the New Session button', async () => {
         server.use(
-            notReadyConfig(),
+            enabledConfig(),
             http.get('*/borrower/assistant/sessions', () =>
                 HttpResponse.json({
                     status: true,
@@ -368,7 +436,10 @@ describe('SupportChatWidget (borrower)', () => {
 
         await waitFor(() => {
             expect(screen.queryByText('Previous question')).not.toBeInTheDocument()
-            expect(screen.getByText(/ask a question and i will do my best to help/i)).toBeInTheDocument()
+            // Nothing is built in: with no copy from the backend the welcome card
+            // shows only its greeting — no subtitle and no suggested questions.
+            expect(screen.getByText(/welcome to our live chat/i)).toBeInTheDocument()
+            expect(screen.queryByText(/suggested questions/i)).not.toBeInTheDocument()
         })
     })
 })

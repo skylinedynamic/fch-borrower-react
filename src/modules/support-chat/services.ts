@@ -1,8 +1,8 @@
 import { apiClient } from '../../lib/http/apiClient';
 import type { SendMessagePayload, SendMessageResponse, HistoryResponse, SessionsResponse } from './types';
 
-// Borrower support assistant — knowledge-only, white-label boundary enforced
-// server-side in SupportAssistantService.
+// Borrower support assistant — answers come from the borrower Agent on the
+// OpenAI platform, via the backend's SupportAssistantService.
 export const sendAssistantMessage = async (payload: SendMessagePayload): Promise<SendMessageResponse> => {
     const { data } = await apiClient.post('/borrower/assistant/messages', payload);
     return data;
@@ -33,11 +33,14 @@ export const startNewAssistantSession = async (): Promise<{ status: boolean; mes
 // every call (see SupportAssistantService::deriveWidgetIntro()) — nothing
 // here is stored, so editing the prompt changes what this returns on the
 // very next fetch, with no separate save step.
-export const fetchAssistantConfig = async (): Promise<{
+// Called on every page load to learn whether the assistant is enabled (cheap),
+// and again with withIntro when the panel opens, to also get the welcome line
+// and suggested questions from the agent's instructions.
+export const fetchAssistantConfig = async (withIntro = false): Promise<{
     status: boolean;
     message: string;
     data: { is_ready: boolean; welcome_subtitle: string | null; quick_suggestions: string[]; navigation?: Record<string, string> };
 }> => {
-    const { data } = await apiClient.get('/borrower/assistant/config');
+    const { data } = await apiClient.get('/borrower/assistant/config', { params: withIntro ? { intro: 1 } : undefined });
     return data;
 };
