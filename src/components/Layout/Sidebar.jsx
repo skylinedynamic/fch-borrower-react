@@ -9,6 +9,8 @@ import { PARTNER_TYPES } from '../../config/partnerTypeOptions'
 import { resolveBrandLogo } from '../../utils/brandLogo'
 import avatarDefault from '../../../assets/images/users/avatar-1.jpg'
 import { useDashboard } from '../../modules/dashboard'
+import { useUnreadNotificationCount, formatUnreadCount } from '../../modules/notifications'
+import { NOTIFICATIONS_ROUTE } from '../../config/notifications'
 
 export default function Sidebar() {
   const navigate = useNavigate()
@@ -44,6 +46,8 @@ export default function Sidebar() {
   const { data: dashboardData } = useDashboard()
   const activeApprovedRequest = dashboardData?.data?.active_approved_funding_request
   const activeApprovedRequestCount = dashboardData?.data?.active_approved_funding_request_count || 0
+  // Same cached query as the header bell, so this adds no extra request.
+  const { data: unreadNotificationCount = 0 } = useUnreadNotificationCount()
 
   // Cleaned up unused context
   const [creditOpen, setCreditOpen] = useState(() => {
@@ -259,6 +263,14 @@ export default function Sidebar() {
                 </li>
               </ul>
             </li>
+
+            {/* Notification — never locked: the header bell works on every plan */}
+            <LinkItem
+              to={NOTIFICATIONS_ROUTE}
+              label="Notification"
+              icon="ri-notification-3-line"
+              badge={unreadNotificationCount > 0 ? formatUnreadCount(unreadNotificationCount) : undefined}
+            />
 
             <LinkItem to="/profile" label="Profile" icon="ri-account-circle-line" restricted={isRestricted} />
 
