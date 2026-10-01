@@ -3,6 +3,11 @@
 // Optional: strongly type your custom env vars
 interface ImportMetaEnv {
   readonly VITE_API_BASE_URL?: string
+  // Laravel Reverb (real-time notifications); leave the key empty to disable.
+  readonly VITE_REVERB_APP_KEY?: string
+  readonly VITE_REVERB_HOST?: string
+  readonly VITE_REVERB_PORT?: string
+  readonly VITE_REVERB_SCHEME?: string
 }
 
 interface ImportMeta {
