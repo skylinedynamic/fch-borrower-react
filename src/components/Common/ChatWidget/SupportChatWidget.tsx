@@ -21,8 +21,12 @@ import '../../../../assets/css/support-chat-widget.css';
  */
 const NO_ROUTES: Record<string, string> = {};
 
-/** How often an open page re-asks whether the assistant is still enabled. */
-const AVAILABILITY_RECHECK_MS = 10000;
+/**
+ * How long the opened panel stays up before an "assistant not available"
+ * answer closes it: long enough to paint instead of flickering, short enough
+ * that nobody starts typing into a chat that is about to disappear.
+ */
+const HIDE_AFTER_CHECK_MS = 50;
 
 const ACTION_ID_PREFIX = 'navigate_';
 
@@ -228,10 +232,11 @@ export default function SupportChatWidget() {
     // Approved route_key -> path map served by the backend; empty until it loads.
     const [routes, setRoutes] = useState<Record<string, string>>(NO_ROUTES);
     const [open, setOpen] = useState(false);
-    // Whether the host has this assistant enabled (with an agent to run). The
-    // whole widget — floating button included — stays hidden until the backend
-    // says so, and when it is disabled or the check fails.
-    const [available, setAvailable] = useState(false);
+    // Whether the host has this assistant enabled (with an agent to run).
+    // Assumed available so the floating button costs nothing to show: the
+    // check happens when the panel is opened, and a "no" hides the whole
+    // widget — button included — from that point on.
+    const [available, setAvailable] = useState(true);
     const [expanded, setExpanded] = useState(false);
     const [messages, setMessages] = useState<ChatBubble[]>([]);
     // Both come from the backend, which writes them from the agent's current
@@ -268,60 +273,65 @@ export default function SupportChatWidget() {
         messagesEndRef.current?.scrollIntoView({ block: 'end' });
     }, [open, messages, loadingHistory]);
 
+    // The only availability check, and it runs on open — never while the chat
+    // sits closed. A borrower who never opens the chat costs no request at all,
+    // which is the whole reason the page-load check and its background poll
+    // were dropped.
+    //
     // Re-fetched on every open, not just the first — the backend live-derives
-    // both fields from the agent's current instructions on the OpenAI platform
-    // (see SupportAssistantService::widgetIntro()), so an edit to the agent
-    // shows up here without a page reload and without any separate save step.
-    useEffect(() => {
-        let cancelled = false;
-
-        const check = () => {
-            // No point asking while the tab is in the background.
-            if (document.visibilityState === 'hidden') return;
-
-            fetchAssistantConfig()
-                .then((response) => {
-                    if (cancelled) return;
-                    setAvailable(!!response.data.is_ready);
-                    // Switched off while the panel was open: close it too.
-                    if (!response.data.is_ready) setOpen(false);
-                })
-                .catch(() => {
-                    if (!cancelled) setAvailable(false);
-                });
-        };
-
-        check();
-
-        // A host can switch the assistant on or off at any time, from another
-        // browser. Keep asking (the check is cheap and never calls OpenAI) so
-        // the chat appears or disappears here without a page reload: on a
-        // short timer, and at once when the user comes back to the tab.
-        const timer = window.setInterval(check, AVAILABILITY_RECHECK_MS);
-        window.addEventListener('focus', check);
-        document.addEventListener('visibilitychange', check);
-
-        return () => {
-            cancelled = true;
-            window.clearInterval(timer);
-            window.removeEventListener('focus', check);
-            document.removeEventListener('visibilitychange', check);
-        };
-    }, []);
-
+    // the welcome line and suggestions from the agent's current instructions on
+    // the OpenAI platform (see SupportAssistantService::widgetIntro()), so an
+    // edit to the agent shows up here without a page reload and without any
+    // separate save step.
     useEffect(() => {
         if (!open) return;
 
-        fetchAssistantConfig(true)
+        let cancelled = false;
+
+        // Given a beat rather than applied inline: the panel the click just
+        // opened gets to paint, then goes. Hiding it the instant the answer
+        // lands would cancel the open before it ever reached the screen.
+        const hide = () => window.setTimeout(() => {
+            if (cancelled) return;
+
+            setAvailable(false);
+            setOpen(false);
+        }, HIDE_AFTER_CHECK_MS);
+
+        // Asked after the opening panel has been committed, not inside the
+        // same flush that opens it: the panel paints first, then the answer
+        // either fills it in or takes it away.
+        const started = window.setTimeout(() => fetchAssistantConfig(true)
             .then((response) => {
-                setAvailable(!!response.data.is_ready);
+                if (cancelled) return;
+
+                // Switched off, or this user may not have it: hide the whole
+                // widget — floating button included — and close the panel
+                // rather than leave a chat that can only answer placeholders.
+                if (!response.data.is_ready) {
+                    hide();
+
+                    return;
+                }
+
+                setAvailable(true);
                 setRoutes(response.data.navigation && !Array.isArray(response.data.navigation) ? response.data.navigation : NO_ROUTES);
                 setWelcomeSubtitle(response.data.welcome_subtitle || '');
                 setSuggestions(response.data.quick_suggestions || []);
             })
             .catch(() => {
-                // Nothing to show: the welcome card stays without a subtitle or suggestions.
-            });
+                // The check itself failed, so whether the assistant is there is
+                // unknown. Treated as "not available": better a missing button
+                // than a chat that errors on every message.
+                if (cancelled) return;
+
+                hide();
+            }), 0);
+
+        return () => {
+            cancelled = true;
+            window.clearTimeout(started);
+        };
     }, [open]);
 
     // Restores the borrower's own most recent session (server-scoped, not

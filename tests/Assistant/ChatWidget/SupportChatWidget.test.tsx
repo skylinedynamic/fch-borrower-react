@@ -74,8 +74,8 @@ describe('SupportChatWidget (borrower)', () => {
                 return HttpResponse.json({
                     status: true,
                     message: '',
-                    // Calls 1 (page-load check) and 2 (first open) see the old copy; the reopen sees the new.
-                    data: callCount <= 2
+                    // Call 1 (first open) sees the old copy; the reopen (call 2) sees the new.
+                    data: callCount <= 1
                         ? { is_ready: true, welcome_subtitle: 'Ask about the old prompt topic.', quick_suggestions: ['Old prompt question?'] }
                         : { is_ready: true, welcome_subtitle: 'Ask about the new prompt topic.', quick_suggestions: ['New prompt question?'] },
                 })
@@ -126,7 +126,7 @@ describe('SupportChatWidget (borrower)', () => {
         expect(await screen.findByText('Here is your status.')).toBeInTheDocument()
     })
 
-    it('is not shown at all when the assistant is disabled', async () => {
+    it('closes and hides when the assistant is not ready upon open', async () => {
         let configCalls = 0
         server.use(
             noSessions(),
@@ -136,56 +136,25 @@ describe('SupportChatWidget (borrower)', () => {
             })
         )
 
-        const { container } = renderWithProviders(<SupportChatWidget />)
-
-        await waitFor(() => expect(configCalls).toBeGreaterThan(0))
-        expect(screen.queryByRole('button', { name: /open ask support/i })).not.toBeInTheDocument()
-        expect(container.querySelector('.support-chat-fab, [class*="support-chat"]')).toBeNull()
-    })
-
-    it('is not shown when the enabled check fails', async () => {
-        let configCalls = 0
-        server.use(
-            noSessions(),
-            http.get('*/borrower/assistant/config', () => {
-                configCalls++
-                return HttpResponse.error()
-            })
-        )
-
         renderWithProviders(<SupportChatWidget />)
 
-        await waitFor(() => expect(configCalls).toBeGreaterThan(0))
-        expect(screen.queryByRole('button', { name: /open ask support/i })).not.toBeInTheDocument()
-    })
+        // No API calls made while closed
+        expect(configCalls).toBe(0)
 
-    it('appears and disappears without a reload when the host switches the assistant on or off', async () => {
-        let enabled = false
-        server.use(
-            noSessions(),
-            http.get('*/borrower/assistant/config', () =>
-                HttpResponse.json({ status: true, message: '', data: { is_ready: enabled, welcome_subtitle: null, quick_suggestions: [] } })
-            )
-        )
-
-        renderWithProviders(<SupportChatWidget />)
-        await waitFor(() => expect(screen.queryByRole('button', { name: /open ask support/i })).not.toBeInTheDocument())
-
-        // The host enables it elsewhere; this page re-checks (here: on returning to the tab).
-        enabled = true
-        window.dispatchEvent(new Event('focus'))
-        expect(await screen.findByRole('button', { name: /open ask support/i })).toBeInTheDocument()
-
-        // ...and disables it again while the panel is open: the whole chat goes away.
+        // Open chat modal
         await open()
-        enabled = false
-        window.dispatchEvent(new Event('focus'))
 
+        await waitFor(() => expect(configCalls).toBe(1))
+
+        // The panel opens before the answer arrives, so the chat going away is
+        // waited for rather than asserted on the same tick the request was
+        // counted — the request is counted when it is sent, and the widget can
+        // only react once it has come back.
         await waitFor(() => expect(screen.queryByPlaceholderText(/type a message/i)).not.toBeInTheDocument())
         expect(screen.queryByRole('button', { name: /open ask support/i })).not.toBeInTheDocument()
     })
 
-    it('asks for the welcome copy only when the panel is opened', async () => {
+    it('does not call the config api when closed and calls it when the panel is opened', async () => {
         const asked: Array<string | null> = []
         server.use(
             noSessions(),
@@ -198,12 +167,12 @@ describe('SupportChatWidget (borrower)', () => {
         renderWithProviders(<SupportChatWidget />)
         await screen.findByRole('button', { name: /open ask support/i })
 
-        // The page-load check is the cheap one: no intro requested.
-        expect(asked).toEqual([null])
+        // No API calls made while closed!
+        expect(asked).toEqual([])
 
         await open()
 
-        await waitFor(() => expect(asked).toEqual([null, '1']))
+        await waitFor(() => expect(asked).toEqual(['1']))
     })
 
     it('sends a message and renders the bold-formatted answer', async () => {
