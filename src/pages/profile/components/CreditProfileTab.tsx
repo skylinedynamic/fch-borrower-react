@@ -20,6 +20,7 @@ import CreditScoreHero from './CreditScoreHero'
 import CreditAccountHealth from './CreditAccountHealth'
 import CreditAccountsBreakdown from './CreditAccountsBreakdown'
 import CreditIdentityPanel from './CreditIdentityPanel'
+import CreditPullStatus from './CreditPullStatus'
 
 // Fields present on the auth user object that AuthUser's index signature otherwise
 // types as `unknown` (AuthUser has no explicit first_name/last_name/phone_number).
@@ -67,6 +68,8 @@ const DetailItem = ({ label, value, icon }: DetailItemProps) => (
   </div>
 )
 
+const CITY_NOT_LISTED = '__not_listed__'
+
 export default function CreditProfileTab() {
   const { user, refreshUser } = useAuth()
   const [loading, setLoading] = useState(false)
@@ -75,6 +78,8 @@ export default function CreditProfileTab() {
   const [submittedData, setSubmittedData] = useState<CreditProfileRequestData | null>(null)
   const [creditProfile, setCreditProfile] = useState<CreditProfile | null>(null)
   const [showSSN, setShowSSN] = useState(false)
+  // Set when the borrower picks "my city isn't listed" and types it instead.
+  const [cityOther, setCityOther] = useState(false)
   
   const [updating, setUpdating] = useState(false)
 
@@ -111,6 +116,17 @@ export default function CreditProfileTab() {
 
 
   const usStates = countries.find(c => c.name === 'United States')?.states || []
+  const stateCities = usStates.find(s => s.name === formData.state)?.cities ?? []
+  // A typed city is only offered when the list cannot answer: the borrower asked
+  // for it, the state has no list, or a prefilled city is not on it.
+  const cityIsTyped =
+    cityOther ||
+    (!!formData.state && stateCities.length === 0) ||
+    (!!formData.city && stateCities.length > 0 && !stateCities.includes(formData.city))
+  const cityOptions = [
+    ...stateCities.map(name => ({ name, value: name })),
+    { name: "My city isn't listed", value: CITY_NOT_LISTED },
+  ]
 
   // Prefill from user personal info
   useEffect(() => {
@@ -262,6 +278,22 @@ function zipError(value: string): string | null {
     if (errors[key]) setErrors(prev => ({ ...prev, [key]: '' }))
   }
 
+  // A city belongs to a state, so changing the state clears it.
+  const handleStateChange = (val: string) => {
+    setFormData(prev => ({ ...prev, state: val, city: '' }))
+    setCityOther(false)
+    if (errors.state || errors.city) setErrors(prev => ({ ...prev, state: '', city: '' }))
+  }
+
+  const handleCityPick = (val: string) => {
+    if (val === CITY_NOT_LISTED) {
+      setCityOther(true)
+      update('city', '')
+      return
+    }
+    update('city', val)
+  }
+
   const handleSubmit = async (evt: React.FormEvent) => {
     evt.preventDefault()
     setErrors({})
@@ -346,7 +378,7 @@ function zipError(value: string): string | null {
   if (creditProfile) {
     return (
       <div className="fade-panel">
-        <div className="d-flex align-items-center gap-3 mb-3">
+        <div className="d-flex align-items-center gap-3 mb-2">
           <div>
             <div className="fw-bold text-dark fs-16">Credit Profile</div>
             <div className="text-muted fs-13">
@@ -364,6 +396,8 @@ function zipError(value: string): string | null {
             indistinguishable from "City" - see CreditScoreHero. The Credit
             Scores and Account Overview cards below were exactly these figures
             and have been removed rather than shown twice. */}
+        <CreditPullStatus status={creditProfile.pull_status} />
+
         <CreditScoreHero metrics={creditProfile.metrics} />
 
         {/* Negative marks come second, not sixth. They were a card of grey
@@ -377,7 +411,7 @@ function zipError(value: string): string | null {
         <CreditAccountsBreakdown metrics={creditProfile.metrics} />
 
         {creditProfile.metrics?.summary && (
-          <div className="card border shadow-sm mb-3">
+          <div className="card border shadow-sm mb-2">
             <div className="card-header bg-transparent border-bottom py-3">
               <div className="d-flex align-items-center gap-2">
                 <div className="rounded bg-primary-subtle p-2">
@@ -407,7 +441,7 @@ function zipError(value: string): string | null {
             needs its own authorisation, and consent belongs on the page next to
             the button that acts on it - not behind a confirm dialog a client
             clicks through. */}
-        <div className="card border shadow-sm mt-4">
+        <div className="card border shadow-sm mt-3">
           <div className="card-header bg-transparent border-bottom py-3">
             <div className="d-flex align-items-center gap-2">
               <div className="rounded bg-primary-subtle p-2">
@@ -511,39 +545,34 @@ function zipError(value: string): string | null {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} noValidate>
-        <div className="cp-section">
-          <div className="cp-section-head">
-            <span className="cp-section-step">1</span>
-            <div>
-              <div className="cp-section-title">Your name</div>
-              <div className="cp-section-hint">As it appears on your government-issued ID</div>
+      <form onSubmit={handleSubmit} noValidate className="cp-form">
+        <div className="row g-3">
+            <div className="col-md-6">
+              <div className="row g-3">
+                <div className="col-6">
+                  <label className="form-label">First Name <span className="text-danger">*</span></label>
+                  <input
+                    type="text"
+                    className={`form-control${errors.first_name ? ' is-invalid' : ''}`}
+                    value={formData.first_name}
+                    placeholder="e.g. John"
+                    onChange={e => update('first_name', e.target.value)}
+                  />
+                  {errors.first_name && <div className="invalid-feedback">{errors.first_name}</div>}
+                </div>
+                <div className="col-6">
+                  <label className="form-label">Middle Name <span className="text-muted fs-12">(optional)</span></label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="e.g. Michael"
+                    value={formData.middle_name}
+                    onChange={e => update('middle_name', e.target.value)}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="cp-section-body">
-            <div className="row g-2">
-            <div className="col-md-4">
-              <label className="form-label">First Name <span className="text-danger">*</span></label>
-              <input
-                type="text"
-                className={`form-control${errors.first_name ? ' is-invalid' : ''}`}
-                value={formData.first_name}
-                placeholder="e.g. John"
-                onChange={e => update('first_name', e.target.value)}
-              />
-              {errors.first_name && <div className="invalid-feedback">{errors.first_name}</div>}
-            </div>
-            <div className="col-md-4">
-              <label className="form-label">Middle Name <span className="text-muted fs-12">(optional)</span></label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="e.g. Michael"
-                value={formData.middle_name}
-                onChange={e => update('middle_name', e.target.value)}
-              />
-            </div>
-            <div className="col-md-4">
+            <div className="col-md-6">
               <label className="form-label">Last Name <span className="text-danger">*</span></label>
               <input
                 type="text"
@@ -554,21 +583,28 @@ function zipError(value: string): string | null {
               />
               {errors.last_name && <div className="invalid-feedback">{errors.last_name}</div>}
             </div>
-          </div>
-          </div>
-        </div>
-
-        <div className="cp-section">
-          <div className="cp-section-head">
-            <span className="cp-section-step">2</span>
-            <div>
-              <div className="cp-section-title">Identity</div>
-              <div className="cp-section-hint">Used only to locate your credit file</div>
+            <div className="col-md-6">
+              <label className="form-label">Phone Number <span className="text-danger">*</span></label>
+              <input
+                type="tel"
+                className={`form-control${errors.phone ? ' is-invalid' : ''}`}
+                value={formData.phone}
+                placeholder="(555) 555-5555"
+                onChange={e => update('phone', formatPhoneNumber(e.target.value))}
+              />
+              {errors.phone && <div className="invalid-feedback">{errors.phone}</div>}
             </div>
-            <span className="cp-secure-note"><i className="ri-lock-2-line"></i>Encrypted</span>
-          </div>
-          <div className="cp-section-body">
-            <div className="row g-2">
+            <div className="col-md-6">
+              <label className="form-label">Email Address <span className="text-danger">*</span></label>
+              <input
+                type="email"
+                className={`form-control${errors.email ? ' is-invalid' : ''}`}
+                value={formData.email}
+                placeholder="you@example.com"
+                onChange={e => update('email', e.target.value)}
+              />
+              {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+            </div>
             <div className="col-md-6">
               <label className="form-label" htmlFor="cp-ssn">Social Security Number <span className="text-danger">*</span></label>
               <div className="input-group">
@@ -613,56 +649,6 @@ function zipError(value: string): string | null {
               />
               {errors.date_of_birth && <div className="invalid-feedback d-block">{errors.date_of_birth}</div>}
             </div>
-          </div>
-          </div>
-        </div>
-
-        <div className="cp-section">
-          <div className="cp-section-head">
-            <span className="cp-section-step">3</span>
-            <div>
-              <div className="cp-section-title">Contact</div>
-              <div className="cp-section-hint">Where we can reach you about this request</div>
-            </div>
-          </div>
-          <div className="cp-section-body">
-            <div className="row g-2">
-            <div className="col-md-6">
-              <label className="form-label">Phone Number <span className="text-danger">*</span></label>
-              <input
-                type="tel"
-                className={`form-control${errors.phone ? ' is-invalid' : ''}`}
-                value={formData.phone}
-                placeholder="(555) 555-5555"
-                onChange={e => update('phone', formatPhoneNumber(e.target.value))}
-              />
-              {errors.phone && <div className="invalid-feedback">{errors.phone}</div>}
-            </div>
-            <div className="col-md-6">
-              <label className="form-label">Email Address <span className="text-danger">*</span></label>
-              <input
-                type="email"
-                className={`form-control${errors.email ? ' is-invalid' : ''}`}
-                value={formData.email}
-                placeholder="you@example.com"
-                onChange={e => update('email', e.target.value)}
-              />
-              {errors.email && <div className="invalid-feedback">{errors.email}</div>}
-            </div>
-          </div>
-          </div>
-        </div>
-
-        <div className="cp-section">
-          <div className="cp-section-head">
-            <span className="cp-section-step">4</span>
-            <div>
-              <div className="cp-section-title">Home address</div>
-              <div className="cp-section-hint">Your current residential address</div>
-            </div>
-          </div>
-          <div className="cp-section-body">
-            <div className="row g-2">
             <div className="col-md-6">
               <label className="form-label">Street Address <span className="text-danger">*</span></label>
               <input
@@ -684,23 +670,11 @@ function zipError(value: string): string | null {
                 onChange={e => update('apt_suite_other', e.target.value)}
               />
             </div>
-
-            <div className="col-md-4">
-              <label className="form-label">City <span className="text-danger">*</span></label>
-              <input
-                type="text"
-                className={`form-control${errors.city ? ' is-invalid' : ''}`}
-                value={formData.city}
-                placeholder="New York"
-                onChange={e => update('city', e.target.value)}
-              />
-              {errors.city && <div className="invalid-feedback">{errors.city}</div>}
-            </div>
-            <div className="col-md-4">
+            <div className="col-md-6">
               <label className="form-label">State <span className="text-danger">*</span></label>
               <CustomDropdown
                 value={formData.state}
-                onChange={val => update('state', val)}
+                onChange={handleStateChange}
                 options={usStates}
                 optionLabel="name"
                 optionValue="name"
@@ -710,7 +684,49 @@ function zipError(value: string): string | null {
               />
               {errors.state && <div className="text-danger fs-12 mt-1">{errors.state}</div>}
             </div>
-            <div className="col-md-4">
+            <div className="col-md-6">
+              <label className="form-label">City <span className="text-danger">*</span></label>
+              {cityIsTyped ? (
+                <>
+                  <input
+                    type="text"
+                    className={`form-control${errors.city ? ' is-invalid' : ''}`}
+                    value={formData.city}
+                    placeholder="Enter your city"
+                    onChange={e => update('city', e.target.value)}
+                  />
+                  {errors.city && <div className="invalid-feedback">{errors.city}</div>}
+                  {stateCities.length > 0 && (
+                    <button
+                      type="button"
+                      className="btn btn-link p-0 fs-12 mt-1"
+                      onClick={() => {
+                        setCityOther(false)
+                        update('city', '')
+                      }}
+                    >
+                      Choose from list
+                    </button>
+                  )}
+                </>
+              ) : (
+                <>
+                  <CustomDropdown
+                    value={formData.city}
+                    onChange={handleCityPick}
+                    options={cityOptions}
+                    optionLabel="name"
+                    optionValue="value"
+                    placeholder="Select City"
+                    searchable={true}
+                    disabled={!formData.state}
+                    className={`w-100${errors.city ? ' is-invalid' : ''}`}
+                  />
+                  {errors.city && <div className="text-danger fs-12 mt-1">{errors.city}</div>}
+                </>
+              )}
+            </div>
+            <div className="col-md-6">
               <label className="form-label" htmlFor="cp-zip">Zip Code <span className="text-danger">*</span></label>
               <input
                 id="cp-zip"
@@ -724,8 +740,6 @@ function zipError(value: string): string | null {
               />
               {errors.zip && <div className="invalid-feedback">{errors.zip}</div>}
             </div>
-          </div>
-          </div>
         </div>
 
         {/* ── Generic form-level error ── */}

@@ -7,11 +7,13 @@ import { server } from '../../../mocks/server'
 import { createTestQueryClient, renderWithProviders } from '../../../test-utils'
 import { toast } from 'react-toastify'
 import { useAuthStore } from '../../../../src/store/auth'
+import { countries, clearLocationCache } from '../../../../src/modules/location'
 import CreditProfileTab from '../../../../src/pages/profile/components/CreditProfileTab'
 import CreditScoreHero from '../../../../src/pages/profile/components/CreditScoreHero'
 import CreditAccountHealth from '../../../../src/pages/profile/components/CreditAccountHealth'
 import CreditAccountsBreakdown from '../../../../src/pages/profile/components/CreditAccountsBreakdown'
 import CreditIdentityPanel from '../../../../src/pages/profile/components/CreditIdentityPanel'
+import CreditPullStatus from '../../../../src/pages/profile/components/CreditPullStatus'
 
 vi.mock('react-toastify', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
@@ -656,6 +658,83 @@ describe('Profile — Credit Profile tab', () => {
    * Both checks now match the server's Ssn and UsPostalCode rules, including
    * the SSA exclusions, so the two cannot drift apart without a test saying so.
    */
+  describe('pull status', () => {
+    afterEach(() => {
+      server.resetHandlers()
+      useAuthStore.setState({ token: undefined, user: null, userSubscription: null, rememberMe: true })
+    })
+
+    it('shows when the credit was last pulled', () => {
+      render(
+        <CreditPullStatus
+          status={{
+            last_pulled_at: 'Sep 22, 2026 02:30 AM',
+            last_request: { status: 'completed', requested_at: 'Sep 20, 2026 04:00 PM', pulled_at: 'Sep 22, 2026 02:30 AM' },
+          }}
+        />,
+      )
+
+      expect(screen.getByTestId('last-pulled')).toHaveTextContent('Sep 22, 2026 02:30 AM')
+    })
+
+    it('shows a request that is still waiting as pending, with when it was made', () => {
+      render(
+        <CreditPullStatus
+          status={{
+            last_pulled_at: null,
+            last_request: { status: 'pending', requested_at: 'Sep 25, 2026 04:00 PM', pulled_at: null },
+          }}
+        />,
+      )
+
+      expect(screen.getByTestId('last-request')).toHaveTextContent(/pending/i)
+      expect(screen.getByTestId('last-request')).toHaveTextContent('Sep 25, 2026 04:00 PM')
+      expect(screen.getByTestId('last-pulled')).toHaveTextContent(/not pulled yet/i)
+    })
+
+    it('shows a completed request as completed', () => {
+      render(
+        <CreditPullStatus
+          status={{
+            last_pulled_at: 'Sep 22, 2026 02:30 AM',
+            last_request: { status: 'completed', requested_at: 'Sep 20, 2026 04:00 PM', pulled_at: 'Sep 22, 2026 02:30 AM' },
+          }}
+        />,
+      )
+
+      expect(screen.getByTestId('last-request')).toHaveTextContent(/completed/i)
+    })
+
+    it('says there is no request when there is no record', () => {
+      render(<CreditPullStatus status={{ last_pulled_at: null, last_request: null }} />)
+
+      expect(screen.getByTestId('last-request')).toHaveTextContent(/no request/i)
+    })
+
+    it('is shown on the credit profile page from the API response', async () => {
+      resetAuth()
+      server.use(
+        http.get('*/borrower/profile/credit-profile', () =>
+          HttpResponse.json({
+            status: true,
+            data: {
+              ...bureauProfile,
+              pull_status: {
+                last_pulled_at: 'Sep 22, 2026 02:30 AM',
+                last_request: { status: 'pending', requested_at: 'Sep 25, 2026 04:00 PM', pulled_at: null },
+              },
+            },
+          }),
+        ),
+      )
+
+      renderTab()
+
+      expect(await screen.findByTestId('last-pulled')).toHaveTextContent('Sep 22, 2026 02:30 AM')
+      expect(screen.getByTestId('last-request')).toHaveTextContent(/pending/i)
+    })
+  })
+
   describe('the request form', () => {
     afterEach(() => {
       server.resetHandlers()
@@ -689,6 +768,50 @@ describe('Profile — Credit Profile tab', () => {
       }
       await user.click(screen.getByRole('button', { name: /submit credit profile/i }))
     }
+
+    describe('city', () => {
+      const seedTexas = () =>
+        countries.splice(0, countries.length, {
+          name: 'United States',
+          code: 'US',
+          currency: 'USD',
+          phone_code: '+1',
+          flag: '',
+          states: [{ name: 'Texas', code: 'TX', cities: ['Austin', 'Dallas'] }],
+        })
+
+      afterEach(() => clearLocationCache())
+
+      it('is a dropdown of the cities of the chosen state, not free text', async () => {
+        seedTexas()
+        await openForm()
+        const user = userEvent.setup()
+
+        expect(screen.queryByPlaceholderText('New York')).not.toBeInTheDocument()
+
+        await user.click(screen.getByRole('button', { name: /select state/i }))
+        await user.click(await screen.findByRole('button', { name: 'Texas' }))
+
+        await user.click(screen.getByRole('button', { name: /select city/i }))
+        expect(await screen.findByRole('button', { name: 'Austin' })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Dallas' })).toBeInTheDocument()
+      })
+
+      it('falls back to a text box when the city is not listed', async () => {
+        seedTexas()
+        await openForm()
+        const user = userEvent.setup()
+
+        await user.click(screen.getByRole('button', { name: /select state/i }))
+        await user.click(await screen.findByRole('button', { name: 'Texas' }))
+        await user.click(screen.getByRole('button', { name: /select city/i }))
+        await user.click(await screen.findByRole('button', { name: /my city isn.t listed/i }))
+
+        const input = await screen.findByPlaceholderText(/enter your city/i)
+        await user.type(input, 'Leander')
+        expect(input).toHaveValue('Leander')
+      })
+    })
 
     const openForm = async () => {
       resetAuth()
