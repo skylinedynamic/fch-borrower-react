@@ -1,13 +1,9 @@
 import type { CreditPullStatus as CreditPullStatusData } from '../../../modules/credit-profile'
+import { CREDIT_REQUEST_STATUS, CREDIT_REQUEST_STATUS_DISPLAY } from '../../../config/creditPullStatus'
 
 interface Props {
   status?: CreditPullStatusData | null
 }
-
-const REQUEST_STATUS = {
-  pending: { label: 'Pending', hint: 'Waiting for your credit to be pulled', tone: 'is-pending', icon: 'ri-time-line' },
-  completed: { label: 'Completed', hint: 'Your credit was pulled', tone: 'is-completed', icon: 'ri-checkbox-circle-line' },
-} as const
 
 /**
  * When the credit was last pulled, and where the latest update request stands.
@@ -19,7 +15,7 @@ export default function CreditPullStatus({ status }: Props) {
   if (!status) return null
 
   const request = status.last_request
-  const requestState = request ? REQUEST_STATUS[request.status] : null
+  const requestState = request ? CREDIT_REQUEST_STATUS_DISPLAY[request.status] : null
 
   return (
     <div className="cp-pull-status">
@@ -56,7 +52,7 @@ export default function CreditPullStatus({ status }: Props) {
         </div>
         {request && requestState && (
           <span className={`cp-request-pill ${requestState.tone}`}>
-            {request.status === 'pending' && <span className="cp-request-dot"></span>}
+            {request.status === CREDIT_REQUEST_STATUS.PENDING && <span className="cp-request-dot"></span>}
             {requestState.label}
           </span>
         )}

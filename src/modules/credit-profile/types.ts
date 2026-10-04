@@ -1,3 +1,5 @@
+import type { CreditRequestStatus } from '../../config/creditPullStatus'
+
 export interface CreditProfilePersonalInfo {
   name: string
   dob: string | null
@@ -59,7 +61,7 @@ export interface CreditPullStatus {
   last_pulled_at: string | null
   /** The latest update request: pending until a pull is attached, then completed. */
   last_request: {
-    status: 'pending' | 'completed'
+    status: CreditRequestStatus
     requested_at: string | null
     pulled_at: string | null
   } | null
