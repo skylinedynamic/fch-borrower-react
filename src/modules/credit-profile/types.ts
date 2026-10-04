@@ -1,3 +1,5 @@
+import type { CreditRequestStatus } from '../../config/creditPullStatus'
+
 export interface CreditProfilePersonalInfo {
   name: string
   dob: string | null
@@ -51,8 +53,23 @@ export interface CreditProfileMetrics {
   open_accounts_analysis: OpenAccountsAnalysis
 }
 
+/**
+ * Where the client's credit pulls stand. Times are already formatted in their
+ * own time zone by the API (e.g. "Sep 22, 2026 02:30 AM").
+ */
+export interface CreditPullStatus {
+  last_pulled_at: string | null
+  /** The latest update request: pending until a pull is attached, then completed. */
+  last_request: {
+    status: CreditRequestStatus
+    requested_at: string | null
+    pulled_at: string | null
+  } | null
+}
+
 export interface CreditProfile {
   id: number
+  pull_status?: CreditPullStatus
   personal_info: CreditProfilePersonalInfo
   addresses: CreditProfileAddress[]
   metrics: CreditProfileMetrics

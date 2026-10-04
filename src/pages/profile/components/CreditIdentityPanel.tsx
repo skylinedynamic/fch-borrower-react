@@ -82,10 +82,10 @@ export default function CreditIdentityPanel({ personalInfo, addresses }: Props) 
   const previous = addresses?.filter((a) => a.type !== 'CURRENT') ?? []
 
   return (
-    <div className="card border shadow-sm mb-3">
+    <div className="card border shadow-sm mb-2">
       <button
         type="button"
-        className="card-header bg-transparent border-0 py-3 w-100 text-start d-flex align-items-center gap-2"
+        className="card-header bg-transparent border-0 py-2 w-100 text-start d-flex align-items-center gap-2"
         onClick={() => setOpen((wasOpen) => !wasOpen)}
         aria-expanded={open}
       >
@@ -100,7 +100,7 @@ export default function CreditIdentityPanel({ personalInfo, addresses }: Props) 
       </button>
 
       {open && (
-        <div className="card-body px-4 pt-0 pb-3 border-top">
+        <div className="card-body px-3 pt-0 pb-2 border-top">
           <div className="row g-0 mb-2">
             <Detail label="Full name" value={personalInfo?.name} />
             <Detail

@@ -64,8 +64,8 @@ export default function CreditAccountsBreakdown({ metrics }: Props) {
   const all = metrics?.all_accounts_analysis
 
   return (
-    <div className="card border shadow-sm mb-3">
-      <div className="card-header bg-transparent border-bottom py-3">
+    <div className="card border shadow-sm mb-2">
+      <div className="card-header bg-transparent border-bottom py-2">
         <div className="d-flex align-items-center gap-2">
           <div className="rounded bg-primary-subtle p-2">
             <i className="ri-stack-line text-primary fs-16"></i>
@@ -77,7 +77,7 @@ export default function CreditAccountsBreakdown({ metrics }: Props) {
         </div>
       </div>
 
-      <div className="card-body px-4 py-3">
+      <div className="card-body px-3 py-2">
         <div className="row g-3">
           <Column title="Open accounts" hint="Currently reporting">
             <Row label="Monthly payments" value={money(open?.monthly_payments)} />
