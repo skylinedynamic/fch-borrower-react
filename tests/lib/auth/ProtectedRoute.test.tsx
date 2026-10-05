@@ -54,6 +54,28 @@ describe('ProtectedRoute', () => {
     expect(screen.getByText('Protected Content')).toBeInTheDocument()
   })
 
+  it('lets a restricted (payment pending) subscription reach the notifications page', () => {
+    // The header bell works on every plan, so its "View all" link must not
+    // bounce the borrower back to the dashboard.
+    useAuthStore.setState({
+      token: 'abc',
+      user: { id: 1 },
+      userSubscription: { partner_type: 'White-Label Partner (WL)', partner_payment_for_me: false },
+    })
+    renderAt('/notifications')
+    expect(screen.getByText('Protected Content')).toBeInTheDocument()
+  })
+
+  it('lets a free-trial user reach the notifications page', () => {
+    useAuthStore.setState({
+      token: 'abc',
+      user: { id: 1 },
+      userSubscription: { is_free_trail: true },
+    })
+    renderAt('/notifications')
+    expect(screen.getByText('Protected Content')).toBeInTheDocument()
+  })
+
   it('redirects a free-trial user away from a locked module path', () => {
     useAuthStore.setState({
       token: 'abc',
