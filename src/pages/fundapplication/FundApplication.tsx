@@ -12,11 +12,13 @@ import DisclosuresStep from './components/steps/DisclosuresStep'
 import FederalComplianceStep from './components/steps/FederalComplianceStep'
 import AttestationStep from './components/steps/AttestationStep'
 import CoBorrowerModal from './components/shared/CoBorrowerModal'
+import EditConfirmationModal from './components/shared/EditConfirmationModal'
 
 // Hooks
 import { useCoBorrowers } from './hooks/useCoBorrowers'
 import { FUNDING_PURPOSE_OTHER, purposeOfFundingOptions, timeframeOptions } from '../../data/profile'
 import { useFundingRequest, useFundingApplicationDocuments } from '../../modules/funding-application/queries'
+import { setEditRequiresConfirmation } from '../../store/fundApplication/editConfirmationStore'
 import { formatCurrency } from '../../utils/formatters'
 
 // Types & Utils
@@ -418,6 +420,16 @@ export default function FundApplication() {
   )
 
 
+  // Whether an edit currently costs the borrower their signature is the API's
+  // call, not a status list held here - the server decides it and enforces it.
+  // Feed it to the gate the step saves wait on, and clear the gate on unmount so
+  // a stale flag cannot follow the borrower to another screen.
+  useEffect(() => {
+    setEditRequiresConfirmation(Boolean(fundingData?.edit_requires_resign))
+  }, [fundingData?.edit_requires_resign])
+
+  useEffect(() => () => setEditRequiresConfirmation(false), [])
+
   const initializedRef = React.useRef(false)
   useEffect(() => {
     if (fundingData && !loading && !initializedRef.current) {
@@ -801,6 +813,8 @@ export default function FundApplication() {
         onSubmit={submitCoBorrower}
         isEditing={isEditing}
       />
+      {/* Rendered once for the whole wizard: every step's save waits on it. */}
+      <EditConfirmationModal />
     </div>
   )
 }

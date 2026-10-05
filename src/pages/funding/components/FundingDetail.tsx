@@ -267,6 +267,7 @@ const FundingDetail = () => {
         latest_review_status,
         latest_review_id = null,
         has_funding_application = false,
+        can_start_new_funding_request = false,
     } = data;
 
     const colors = getFundingColorStyles(icon_color);
@@ -292,7 +293,16 @@ const FundingDetail = () => {
         return s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED || s === FACTOR_STATUS_VALUES.WEAK;
     });
     const isPending = latest_review_status === FUNDING_REVIEW_STATUS.PENDING;
-    const isApproved = latest_review_status === FUNDING_REVIEW_STATUS.APPROVED;
+
+    // The approved request and the application it produced both still exist in
+    // the data once a round is over, which is why this card used to go on
+    // offering "View Application" for a file that had already been sent to a
+    // lender, funded, closed or denied. The server decides when a round is
+    // settled and says so here, so the card can go back to offering a fresh
+    // request instead of parking the borrower on something they cannot act on.
+    const previousRoundSettled = can_start_new_funding_request;
+    const hasLiveApplication = has_funding_application && !previousRoundSettled;
+    const isApproved = latest_review_status === FUNDING_REVIEW_STATUS.APPROVED && !previousRoundSettled;
 
     return (
         <div className="page-content">
@@ -471,7 +481,7 @@ const FundingDetail = () => {
                             </p>
                         </div>
                         <span id="btn-start-funding-request-wrapper" className="funding-detail-btn-wrapper">
-                            {has_funding_application ? (
+                            {hasLiveApplication ? (
                                 <Link
                                     to="/my-applications"
                                     className="btn btn-info d-flex align-items-center justify-content-center gap-2 fw-medium px-4"
