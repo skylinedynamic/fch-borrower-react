@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Routes, Route, Outlet } from 'react-router-dom'
+import { Routes, Route, Outlet, Navigate } from 'react-router-dom'
 import Layout from '../src/components/Layout/Layout.jsx'
 import Dashboard from '../src/pages/dashboard/Dashboard.jsx'
 import SignIn from '../src/pages/singin/SignIn.jsx'
@@ -134,6 +134,8 @@ export default function App() {
             <Route path="funding/:id" element={<FundingDetail />} />
             <Route path="funding/:id/review" element={<FundingRequestWizard />} />
             <Route path="funding-requests" element={<FundingRequestList />} />
+            {/* Approved assistant navigation target "Funding Request" (singular) -> the funding request list. */}
+            <Route path="funding-request" element={<Navigate to="/funding-requests" replace />} />
             <Route path="funding-requests/:id" element={<FundingRequestDetailPage />} />
             <Route path="notifications" element={<NotificationList />} />
 
