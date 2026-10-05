@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Routes, Route, Outlet } from 'react-router-dom'
+import { Routes, Route, Outlet, Navigate } from 'react-router-dom'
 import Layout from '../src/components/Layout/Layout.jsx'
 import Dashboard from '../src/pages/dashboard/Dashboard.jsx'
 import SignIn from '../src/pages/singin/SignIn.jsx'
@@ -24,7 +24,6 @@ import Appointments from '../src/pages/appointment/Appointments.tsx'
 import ChangePassword from '../src/pages/settings/ChangePassword.jsx'
 import CreditOverview from '../src/pages/credit-builder/creditoverview/CreditOverview.tsx'
 import VendorApplication from '../src/pages/credit-builder/creditvendorapplication/CreditAccounts.tsx'
-import ProgressTracker from '../src/pages/credit-builder/creditprogresstracker/ProgressTracker.tsx'
 import CreditResources from '../src/pages/credit-builder/creditresources/CreditResources.tsx'
 import CapitalAccess from '../src/pages/capital-access/CapitalAccess.tsx'
 import StrategySelection from '../src/pages/capital-access/StrategySelection.tsx'
@@ -40,6 +39,7 @@ import FundingDetail from '../src/pages/funding/components/FundingDetail.tsx'
 import FundingRequestWizard from '../src/pages/funding/FundingRequestWizard.tsx'
 import FundingRequestList from '../src/pages/funding-requests/FundingRequestList.tsx'
 import FundingRequestDetailPage from '../src/pages/funding-requests/FundingRequestDetailPage.tsx'
+import NotificationList from './pages/notifications/NotificationList.tsx'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import GlobalModals from './components/Common/Modals/GlobalModals'
@@ -134,14 +134,16 @@ export default function App() {
             <Route path="funding/:id" element={<FundingDetail />} />
             <Route path="funding/:id/review" element={<FundingRequestWizard />} />
             <Route path="funding-requests" element={<FundingRequestList />} />
+            {/* Approved assistant navigation target "Funding Request" (singular) -> the funding request list. */}
+            <Route path="funding-request" element={<Navigate to="/funding-requests" replace />} />
             <Route path="funding-requests/:id" element={<FundingRequestDetailPage />} />
+            <Route path="notifications" element={<NotificationList />} />
 
             <Route path="credit-builder">
               <Route index element={<CreditOverview />} />
               <Route path="overview" element={<CreditOverview />} />
               <Route path="guide" element={<CreditGuide />} />
               <Route path="credit-accounts" element={<VendorApplication />} />
-              <Route path="progress-tracker" element={<ProgressTracker />} />
               <Route path="resources" element={<CreditResources />} />
             </Route>
 

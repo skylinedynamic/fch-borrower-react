@@ -10,6 +10,7 @@ import TabLoader from '../../components/Loader/TabLoader'
 import StepNavigation from './components/StepNavigation'
 import { usePreQualificationForm } from './hooks/usePreQualificationForm'
 import { getPreQualificationById } from '../../modules/pre-qualification/services'
+import { clearStrayModalBackdrops } from '../../utils/modalBackdrop'
 
 export default function PreQualification() {
   const [saving, setSaving] = useState(false)
@@ -91,11 +92,11 @@ export default function PreQualification() {
 
   useEffect(() => {
     // When step changes (especially moving from Review to Underwriting Result),
-    // ensure any leftover modal backdrop/classes are completely removed and scroll to top
-    document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove())
-    document.body.classList.remove('modal-open')
-    document.body.style.overflow = ''
-    document.body.style.paddingRight = ''
+    // ensure any leftover modal backdrop/classes are completely removed and
+    // scroll to top. Only the leftovers: this used to remove every backdrop in
+    // the document, including the globally mounted profile modal's, which left
+    // that modal sitting over an undimmed page.
+    clearStrayModalBackdrops()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [step])
 

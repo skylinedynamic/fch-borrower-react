@@ -417,8 +417,6 @@ export default function FundingRequestDetailPage() {
     const [actLoadingMore, setActLoadingMore] = useState(false)
     const [totalActivities, setTotalActivities] = useState(0)
 
-    // Filtering Tabs state
-    const [filterTab, setFilterTab] = useState<'all' | 'funding' | 'comments' | 'updates'>('all')
     const activityRef = useRef<HTMLDivElement>(null)
 
     // Load request details
@@ -470,24 +468,6 @@ export default function FundingRequestDetailPage() {
         const next = actPage + 1
         setActPage(next)
         loadActivities(next, true)
-    }
-
-    // Filter activities list based on tab
-    const getFilteredActivities = () => {
-        return activities.filter(act => {
-            const raw = String(act.log_type_raw || '').toLowerCase()
-            const name = String(act.event_label || act.log_type || '').toLowerCase()
-            if (filterTab === 'funding') {
-                return raw.includes('funding_request') || name.includes('funding')
-            }
-            if (filterTab === 'comments') {
-                return raw.includes('comment') || name.includes('comment')
-            }
-            if (filterTab === 'updates') {
-                return raw.includes('update') || name.includes('update') || raw.includes('status')
-            }
-            return true
-        })
     }
 
     if (loading) {
@@ -696,13 +676,8 @@ export default function FundingRequestDetailPage() {
         )
     }
 
-    const filtered = getFilteredActivities()
+    const filtered = activities
     const pageTitle = 'Funding Request Details'
-
-    // Compute dynamic tab counts
-    const countFunding = activities.filter(a => String(a.log_type_raw || '').includes('funding_request') || String(a.event_label || '').toLowerCase().includes('funding')).length
-    const countComments = activities.filter(a => String(a.log_type_raw || '').includes('comment')).length
-    const countUpdates = activities.filter(a => String(a.log_type_raw || '').includes('update') || String(a.log_type_raw || '').includes('status')).length
 
     // Application Status Logic
     const isApproved = review.status === FUNDING_REVIEW_STATUS.APPROVED;
@@ -1025,65 +1000,66 @@ export default function FundingRequestDetailPage() {
                                     </div>
                                 </div>
 
-                                {/* Sub-header Filter Tabs */}
                                 <div className="card-body px-3 pt-3 pb-3 activity-scroll-container fr-activity-scroll" style={{ maxHeight: '600px', overflowY: 'auto', overflowX: 'hidden' }}>
 
-                                    {/* Activity Logs Timeline */}
-                                    <div className="timeline-container position-relative px-0" ref={activityRef}>
-                                        {/* Vertical connecting line */}
-                                        <div
-                                            className="timeline-vertical-line position-absolute fr-timeline-vline"
-                                        />
+                                    <>
+                                        {/* Activity Logs Timeline */}
+                                        <div className="timeline-container position-relative px-0" ref={activityRef}>
+                                                {/* Vertical connecting line */}
+                                                <div
+                                                    className="timeline-vertical-line position-absolute fr-timeline-vline"
+                                                />
 
-                                        {actLoading ? (
-                                            <div className="py-2">
-                                                {[1, 2, 3].map(i => (
-                                                    <div key={i} className="d-flex align-items-start p-2 mb-2">
-                                                        <div className="me-3 flex-shrink-0">
-                                                            <Skeleton w={36} h={36} rounded />
-                                                        </div>
-                                                        <div className="flex-grow-1">
-                                                            <div className="mb-2"><Skeleton w="45%" h={14} /></div>
-                                                            <div><Skeleton w="75%" h={12} /></div>
-                                                        </div>
+                                                {actLoading ? (
+                                                    <div className="py-2">
+                                                        {[1, 2, 3].map(i => (
+                                                            <div key={i} className="d-flex align-items-start p-2 mb-2">
+                                                                <div className="me-3 flex-shrink-0">
+                                                                    <Skeleton w={36} h={36} rounded />
+                                                                </div>
+                                                                <div className="flex-grow-1">
+                                                                    <div className="mb-2"><Skeleton w="45%" h={14} /></div>
+                                                                    <div><Skeleton w="75%" h={12} /></div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
                                                     </div>
-                                                ))}
-                                            </div>
-                                        ) : filtered.length === 0 ? (
-                                            <div className="text-center py-4 text-muted">
-                                                <i className="ri-history-line fs-24 d-block mb-1 text-muted opacity-50"></i>
-                                                <p className="mb-0 fs-12 fw-semibold">No activities found.</p>
-                                            </div>
-                                        ) : (
-                                            <div className="timeline-list">
-                                                {filtered.map((act, index) => (
-                                                    <ActivityItem
-                                                        key={act.id}
-                                                        activity={act}
-                                                        review={review}
-                                                        isFirst={index === filtered.length - 1} // Submit event is first (last in array)
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Pagination / Load More Footer */}
-                                    {actHasMore && filtered.length > 0 && (
-                                        <div className="text-center mt-4 mb-2">
-                                            <button
-                                                className="btn btn-soft-primary btn-sm rounded-pill px-4"
-                                                onClick={loadMore}
-                                                disabled={actLoadingMore}
-                                            >
-                                                {actLoadingMore ? (
-                                                    <><span className="spinner-border spinner-border-sm align-middle me-2"></span>Loading...</>
+                                                ) : filtered.length === 0 ? (
+                                                    <div className="text-center py-4 text-muted">
+                                                        <i className="ri-history-line fs-24 d-block mb-1 text-muted opacity-50"></i>
+                                                        <p className="mb-0 fs-12 fw-semibold">No activities found.</p>
+                                                    </div>
                                                 ) : (
-                                                    <><i className="ri-arrow-down-line align-middle me-1"></i> Load More Activity</>
+                                                    <div className="timeline-list">
+                                                        {filtered.map((act, index) => (
+                                                            <ActivityItem
+                                                                key={act.id}
+                                                                activity={act}
+                                                                review={review}
+                                                                isFirst={index === filtered.length - 1} // Submit event is first (last in array)
+                                                            />
+                                                        ))}
+                                                    </div>
                                                 )}
-                                            </button>
-                                        </div>
-                                    )}
+                                            </div>
+
+                                            {/* Pagination / Load More Footer */}
+                                            {actHasMore && filtered.length > 0 && (
+                                                <div className="text-center mt-4 mb-2">
+                                                    <button
+                                                        className="btn btn-soft-primary btn-sm rounded-pill px-4"
+                                                        onClick={loadMore}
+                                                        disabled={actLoadingMore}
+                                                    >
+                                                        {actLoadingMore ? (
+                                                            <><span className="spinner-border spinner-border-sm align-middle me-2"></span>Loading...</>
+                                                        ) : (
+                                                            <><i className="ri-arrow-down-line align-middle me-1"></i> Load More Activity</>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            )}
+                                    </>
                                 </div>
                             </div>
                         </div>
