@@ -6,11 +6,16 @@ import SubmitProgress from './SubmitProgress'
 import { clearStrayModalBackdrops } from '../../../utils/modalBackdrop'
 
 /**
- * The FCH_Client_AUE_v4 payload, exactly as the borrower-safe schema defines it.
+ * The borrower-safe assessment, as the agent returned it.
  *
  * This is a funding *readiness* assessment, not an approval: there is deliberately
- * no "qualified programs" list and no prequalification claim to render, and the
- * final disclosure and disclaimer are fixed strings that must always be shown.
+ * no "qualified programs" list and no prequalification claim to render.
+ *
+ * The named fields below are the ones with a section designed for them. They are
+ * not the whole contract: the schema lives on the OpenAI agent, so a field added
+ * or renamed there would otherwise simply vanish from this screen. Anything the
+ * agent returns that is not named here is rendered by renderExtraSection() in the
+ * same styles, so the borrower sees the assessment that was actually produced.
  */
 interface ReadinessSnapshotItem {
   area?: string
@@ -18,7 +23,15 @@ interface ReadinessSnapshotItem {
   source_status?: string
 }
 
+/** One blocking finding, worded for the borrower by the validator agent. */
+interface ValidationCorrection {
+  field?: string | null
+  message?: string
+}
+
 interface UnderwritingResult {
+  /** Whatever else the agent's schema defines — see renderExtraSection(). */
+  [key: string]: unknown
   assessment_title?: string
   funding_readiness_summary?: string
   readiness_snapshot?: ReadinessSnapshotItem[]
@@ -98,6 +111,203 @@ function renderSourceBadge(status?: string) {
   )
 }
 
+/**
+ * The fields that have a section of their own above. Everything else the agent
+ * returns falls through to renderExtraSection().
+ */
+const SECTIONED_RESULT_KEYS = new Set([
+  'assessment_title',
+  'funding_readiness_summary',
+  'readiness_snapshot',
+  'estimated_funding_range',
+  'strengths',
+  'areas_requiring_attention',
+  'structuring_considerations',
+  'submission_positioning_overview',
+  'required_next_steps',
+  'important_notice',
+  'final_disclosure',
+  'disclaimer',
+  // Provenance the agent states about itself. It describes the run, not the
+  // borrower's funding readiness, so it is not shown to them.
+  'prompt_version',
+  'submission_id',
+  'schema_version',
+  'generated_at',
+])
+
+/** "submission_positioning" -> "Submission Positioning". */
+const humanizeKey = (key: string): string =>
+  key
+    .replace(/[_-]+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, c => c.toUpperCase())
+
+const isFilledString = (value: unknown): value is string => typeof value === 'string' && value.trim() !== ''
+
+/** A plain scalar the agent can state as a value: shown as written. */
+const asScalarText = (value: unknown): string | null => {
+  if (isFilledString(value)) return value.trim()
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value)
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+  return null
+}
+
+/** A bullet list in the same style the designed sections use. */
+function renderBullets(items: string[], key: string) {
+  return (
+    <div className="d-flex flex-column" style={{ gap: '12px' }} key={`${key}-items`}>
+      {items.map((item, idx) => (
+        <div
+          className="d-flex align-items-start rounded-3"
+          style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', padding: '12px 14px', gap: '12px' }}
+          key={idx}
+        >
+          <i className="ri-arrow-right-circle-fill text-primary fs-17 flex-shrink-0" style={{ marginTop: '2px', lineHeight: 1 }}></i>
+          <span style={{ fontSize: '13px', lineHeight: '1.55', color: '#334155', fontWeight: 500, flex: 1, minWidth: 0 }}>
+            {item}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/**
+ * One field the agent returned that has no section designed for it.
+ *
+ * The shape decides how it reads, not the name: text becomes a paragraph, a
+ * list of strings becomes bullets, a list of objects becomes a table, and an
+ * object becomes its own labelled rows. A field whose value is empty renders
+ * nothing at all rather than an empty card — "the agent had nothing to say
+ * here" and "there is a heading with nothing under it" are different things to
+ * put in front of a borrower.
+ */
+function renderExtraSection(key: string, value: unknown): React.ReactNode {
+  const scalar = asScalarText(value)
+
+  if (scalar !== null) {
+    return (
+      <div className="card shadow-sm mb-4 rounded-3 border" key={key}>
+        <div className="card-header bg-light py-3 px-3 px-md-4 border-bottom d-flex align-items-center gap-2">
+          <i className="ri-file-text-line text-primary fs-18"></i>
+          <h6 className="fw-bold mb-0 text-dark fs-15">{humanizeKey(key)}</h6>
+        </div>
+        <div className="card-body p-3 p-md-4">
+          <p className="mb-0 fs-14" style={{ lineHeight: '1.7', color: '#334155' }}>{scalar}</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (Array.isArray(value)) {
+    const bullets = value.map(asScalarText).filter(isFilledString)
+
+    if (bullets.length === value.length && bullets.length > 0) {
+      return (
+        <div className="card shadow-sm mb-4 rounded-3 border" key={key}>
+          <div className="card-header bg-light py-3 px-3 px-md-4 border-bottom d-flex align-items-center justify-content-between">
+            <div className="d-flex align-items-center gap-2">
+              <i className="ri-stack-line text-primary fs-18"></i>
+              <h6 className="fw-bold mb-0 text-dark fs-15">{humanizeKey(key)}</h6>
+            </div>
+            <span className="badge bg-white text-primary border fs-12 fw-semibold px-2 py-1 rounded-pill">
+              {bullets.length} {bullets.length === 1 ? 'Item' : 'Items'}
+            </span>
+          </div>
+          <div className="card-body p-3 p-md-4">{renderBullets(bullets, key)}</div>
+        </div>
+      )
+    }
+
+    // A list of records: the union of their keys becomes the columns, so a row
+    // that omits one is blank there rather than shifting the table.
+    const rows = value.filter((row): row is Record<string, unknown> => !!row && typeof row === 'object' && !Array.isArray(row))
+
+    if (rows.length === 0) return null
+
+    const columns = Array.from(new Set(rows.flatMap(row => Object.keys(row))))
+    if (columns.length === 0) return null
+
+    return (
+      <div className="card shadow-sm mb-4 rounded-3 border" key={key}>
+        <div className="card-header bg-light py-3 px-3 px-md-4 border-bottom d-flex align-items-center gap-2">
+          <i className="ri-table-line text-primary fs-18"></i>
+          <h6 className="fw-bold mb-0 text-dark fs-15">{humanizeKey(key)}</h6>
+        </div>
+        <div className="card-body p-0">
+          <div className="table-responsive">
+            <table className="table table-hover align-middle mb-0">
+              <thead className="table-light">
+                <tr>
+                  {columns.map(column => (
+                    <th scope="col" className="py-3 px-4 text-muted text-uppercase fs-11 fw-bold" key={column}>
+                      {humanizeKey(column)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, idx) => (
+                  <tr key={idx}>
+                    {columns.map(column => {
+                      const cell = asScalarText(row[column])
+
+                      return (
+                        <td className="py-3 px-4 fs-13" style={{ lineHeight: '1.5', color: '#334155' }} key={column}>
+                          {cell ?? (Array.isArray(row[column]) ? (row[column] as unknown[]).map(asScalarText).filter(isFilledString).join(', ') : '')}
+                        </td>
+                      )
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (value && typeof value === 'object') {
+    const groups = Object.entries(value as Record<string, unknown>)
+      .map(([childKey, childValue]) => {
+        const scalarChild = asScalarText(childValue)
+        const listChild = Array.isArray(childValue) ? childValue.map(asScalarText).filter(isFilledString) : []
+
+        return { childKey, scalarChild, listChild }
+      })
+      .filter(group => group.scalarChild !== null || group.listChild.length > 0)
+
+    if (groups.length === 0) return null
+
+    return (
+      <div className="card shadow-sm mb-4 rounded-3 border" key={key}>
+        <div className="card-header bg-light py-3 px-3 px-md-4 border-bottom d-flex align-items-center gap-2">
+          <i className="ri-list-check-2 text-primary fs-18"></i>
+          <h6 className="fw-bold mb-0 text-dark fs-15">{humanizeKey(key)}</h6>
+        </div>
+        <div className="card-body p-3 p-md-4">
+          <div className="d-flex flex-column gap-3">
+            {groups.map(({ childKey, scalarChild, listChild }) => (
+              <div key={childKey}>
+                <div className="fw-bold text-dark fs-13 mb-2">{humanizeKey(childKey)}</div>
+                {scalarChild !== null ? (
+                  <p className="mb-0 fs-13" style={{ lineHeight: '1.6', color: '#334155' }}>{scalarChild}</p>
+                ) : (
+                  renderBullets(listChild, `${key}-${childKey}`)
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return null
+}
+
 interface UnderwritingResultStepProps {
   /** Id of the submitted pre-qualification. */
   preQualId: string | number | null
@@ -129,6 +339,9 @@ export default function UnderwritingResultStep({
   const [result, setResult] = useState<UnderwritingResult | null>(initialPayload?.underwriting_result || null)
   const [validationStatus, setValidationStatus] = useState<string | null>(initialPayload?.validation_status || null)
   const [validationSummary, setValidationSummary] = useState<string | null>(initialPayload?.validation_summary || null)
+  // What the validator agent wrote for the borrower about each blocking
+  // finding. These are the corrections to make, in the agent's own words.
+  const [corrections, setCorrections] = useState<ValidationCorrection[]>(initialPayload?.validation_corrections || [])
   const [loading, setLoading] = useState<boolean>(!initialPayload?.underwriting_result)
   const [error, setError] = useState<string | null>(null)
   // True while a retry is running, which takes as long as the original
@@ -146,6 +359,7 @@ export default function UnderwritingResultStep({
     setResult(data?.underwriting_result || null)
     setValidationStatus(data?.validation_status || null)
     setValidationSummary(data?.validation_summary || null)
+    setCorrections(Array.isArray(data?.validation_corrections) ? data.validation_corrections : [])
     onDataLoaded?.(data)
   }
 
@@ -399,11 +613,40 @@ export default function UnderwritingResultStep({
               </div>
               <div className="flex-grow-1">
                 <h5 className="fw-bold text-danger mb-2 fs-16">Incorrect Information</h5>
-                {/* Single statement, matching the failed state: what is wrong, followed
-                    by what it prevents until it is corrected. */}
+                {/* What is wrong comes from the validator agent, in the words it
+                    wrote for the borrower — the summary it gave, then each
+                    blocking finding. Nothing is paraphrased here, and the
+                    standing sentence below only says what it prevents. */}
+                {(validationSummary || corrections.length === 0) && (
+                  <p className={`fs-14 ${corrections.length ? 'mb-3' : 'mb-0'}`} style={{ lineHeight: '1.65', color: '#2d3748' }}>
+                    {validationSummary || 'The submission contains an inconsistency or missing information that needs attention before underwriting can complete.'}
+                  </p>
+                )}
+
+                {corrections.length > 0 && (
+                  <div className="d-flex flex-column mb-3" style={{ gap: '10px' }}>
+                    {corrections.map((correction, idx) => (
+                      <div
+                        className="d-flex align-items-start rounded-3"
+                        style={{ backgroundColor: '#ffffff', border: '1px solid #fecaca', padding: '12px 14px', gap: '12px' }}
+                        key={idx}
+                      >
+                        <i className="ri-error-warning-fill text-danger fs-17 flex-shrink-0" style={{ marginTop: '2px', lineHeight: 1 }}></i>
+                        <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                          {correction.field && (
+                            <div className="fw-bold text-dark fs-13 mb-1">{humanizeKey(correction.field)}</div>
+                          )}
+                          <span style={{ fontSize: '13px', lineHeight: '1.55', color: '#2d3748', fontWeight: 500 }}>
+                            {correction.message}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <p className="mb-0 fs-14" style={{ lineHeight: '1.65', color: '#2d3748' }}>
-                  {validationSummary || 'The submission contains an inconsistency or missing information that needs attention before underwriting can complete.'}
-                  {' '}A completed review is required before you can start a funding application,
+                  A completed review is required before you can start a funding application,
                   so these details need to be corrected first. Our team is reviewing the file and
                   will contact you if anything further is needed.
                 </p>
@@ -948,6 +1191,15 @@ export default function UnderwritingResultStep({
           </div>
         </div>
       )}
+
+      {/* 8b. Anything else this agent's schema defines.
+          The sections above are designed for the fields they name; the schema
+          itself lives on the OpenAI agent, so a field added or renamed there
+          would otherwise be dropped silently and the borrower would be shown a
+          partial assessment with no sign that anything was missing. */}
+      {Object.entries(result)
+        .filter(([key]) => !SECTIONED_RESULT_KEYS.has(key))
+        .map(([key, value]) => renderExtraSection(key, value))}
 
       {/* 9. Disclosures & Disclaimers */}
       {(result.final_disclosure || result.disclaimer) && (
