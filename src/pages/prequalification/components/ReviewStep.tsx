@@ -3,6 +3,7 @@ import { FUNDING_PURPOSE_OTHER } from '../../../data/profile'
 import type { PersonalInfo, BusinessDetails, FinancialSupport } from '../../../modules/pre-qualification'
 import ConfirmationModal from '../../../components/GlobalModal/ConfirmationModal'
 import SubmitProgress from './SubmitProgress'
+import '../../../../assets/css/underwriting-result.css'
 
 // Long free text is cut to REVIEW_TEXT_LIMIT characters on the review card; the
 // full text stays in the hover title and is what gets submitted.
@@ -60,11 +61,11 @@ export default function ReviewStep({ personal, business, support, onEdit, onPrev
         <div className="kv"><div className="label">Funding Urgency</div><div className="value">{support.fundingUrgency || '—'}</div></div>
         <div className="kv"><div className="label">Purpose of Funding</div><div className="value">{support.purposeOfFunding || '—'}</div></div>
         {support.purposeOfFunding === FUNDING_PURPOSE_OTHER && (
-          <div className="kv"><div className="label">Purpose Note</div><div className="value" title={support.purposeNote} style={{ overflowWrap: 'anywhere' }}>{shorten(support.purposeNote)}</div></div>
+          <div className="kv"><div className="label">Purpose Note</div><div className="value uw-wrap-anywhere" title={support.purposeNote}>{shorten(support.purposeNote)}</div></div>
         )}
         <div className="kv"><div className="label">Personal Credit Score</div><div className="value">{support.personalCreditScore || '—'}</div></div>
         <div className="kv"><div className="label">Estimate Business Credit Score</div><div className="value">{support.estimatedBusinessCreditScore || '—'}</div></div>
-        <div className="kv"><div className="label">Note</div><div className="value" title={support.notes} style={{ overflowWrap: 'anywhere' }}>{shorten(support.notes)}</div></div>
+        <div className="kv"><div className="label">Note</div><div className="value uw-wrap-anywhere" title={support.notes}>{shorten(support.notes)}</div></div>
         <div className="kv"><div className="label">Existing Business Debt</div><div className="value">{support.existingBusinessDebt ? 'Yes' : 'No'}</div></div>
       </div>
       <div className="review-card review-card-wide">
