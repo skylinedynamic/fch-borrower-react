@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import StepNavigation from '../shared/StepNavigation'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 import { useSaveAttestation, useAttestation } from '../../../../modules/funding-application/queries'
+import type { PreviousSignature } from '../../../../modules/funding-application/types'
 import { toast } from 'react-toastify'
 import { useBrandingStore } from '../../../../store/brandingStore'
 import ConfirmationModal from '../../../../components/GlobalModal/ConfirmationModal'
@@ -52,19 +53,25 @@ export default function AttestationStep({
   useEffect(() => {
     if (isSuccess && apiData && !hasPrefilled) {
       setAttestationId(apiData.id || null)
-      if (apiData.signature_data) {
-        setAttestation({
-          ...attestation,
-          signature_name: apiData.signature_data.signature_name || '',
-          esign_consent: apiData.signature_data.esign_consent || false,
-          terms_consent: apiData.signature_data.terms_consent || false,
-          credit_consent: apiData.signature_data.credit_consent || false,
-          legal_binding_consent: apiData.signature_data.legal_binding_consent || false,
-        })
-      }
+      // A signature already on the application is shown beside the form, never
+      // loaded into it: signing again has to be a fresh act, so the name and
+      // the consents always start empty.
       setHasPrefilled(true)
     }
-  }, [isSuccess, apiData, hasPrefilled, setAttestation, attestation])
+  }, [isSuccess, apiData, hasPrefilled])
+
+  // The signature to show for reference: the one an edit cleared while a new
+  // one is owed, otherwise the one currently on file.
+  const signatureOnFile: PreviousSignature | null = apiData?.signature_data?.signature_name
+    ? {
+        signature_name: apiData.signature_data.signature_name,
+        signed_at: apiData.signature_data.signed_at ?? null,
+        timezone: apiData.signature_data.timezone ?? null,
+      }
+    : null
+  const previousSignature = isResigning ? apiData?.previous_signature ?? null : signatureOnFile
+  // Signing an application that has been signed before, whichever way it got here.
+  const isSigningAgain = Boolean(isResigning || signatureOnFile)
 
   const handleChange = (field: keyof Attestation, value: any) => {
     if (typeof value === 'boolean' && ['esign_consent', 'terms_consent', 'privacy_consent', 'credit_consent', 'legal_binding_consent'].includes(field)) {
@@ -115,7 +122,7 @@ export default function AttestationStep({
     saveAttestation(payload, {
       onSuccess: () => {
         setShowModal(false)
-        toast.success(isResigning ? 'Your application has been re-signed and resubmitted for review.' : 'Application submitted successfully!')
+        toast.success(isSigningAgain ? 'Your application has been re-signed and resubmitted for review.' : 'Application submitted successfully!')
         navigate('/my-applications')
       },
       onError: (error: any) => {
@@ -167,9 +174,41 @@ export default function AttestationStep({
                 </div>
               )}
 
+              {previousSignature?.signature_name && (
+                <div className="mb-4">
+                  <label htmlFor="previous_signature_name" className="form-label">
+                    Previous Signature{' '}
+                    {isResigning ? (
+                      <span className="badge bg-danger-subtle text-danger ms-1">No longer valid</span>
+                    ) : (
+                      <span className="badge bg-success-subtle text-success ms-1">Currently on file</span>
+                    )}
+                  </label>
+                  <input
+                    type="text"
+                    id="previous_signature_name"
+                    className={`form-control bg-light ${isResigning ? 'text-decoration-line-through' : ''}`}
+                    value={previousSignature.signature_name}
+                    readOnly
+                    disabled
+                  />
+                  {previousSignature.signed_at && (
+                    <small className="text-muted d-block mt-1">
+                      Signed on {previousSignature.signed_at}
+                      {previousSignature.timezone ? ` (${previousSignature.timezone})` : ''}
+                    </small>
+                  )}
+                  {!isResigning && (
+                    <small className="text-muted d-block mt-1">
+                      This application is already signed. Sign below only if you need to submit it again.
+                    </small>
+                  )}
+                </div>
+              )}
+
               <div className="mb-4">
                 <label htmlFor="signature_name" className="form-label">
-                  Electronic Signature (Full Legal Name) <span className="text-danger">*</span>
+                  {previousSignature?.signature_name ? 'New Electronic Signature (Full Legal Name)' : 'Electronic Signature (Full Legal Name)'} <span className="text-danger">*</span>
                 </label>
                 <input
                   type="text"
@@ -239,14 +278,15 @@ export default function AttestationStep({
         show={showModal}
         onClose={() => setShowModal(false)}
         onConfirm={handleConfirm}
-        title={isResigning ? 'Confirm Re-Signature' : 'Confirm Submission'}
-        message={isResigning
+        title={isSigningAgain ? 'Confirm Re-Signature' : 'Confirm Submission'}
+        message={isSigningAgain
           ? 'Are you sure you want to re-sign and resubmit your application? Please review all information carefully before confirming.'
           : 'Are you sure you want to submit your application? Please strictly review all information before confirming.'}
-        confirmText={isResigning ? 'Re-Sign & Resubmit' : 'Submit Application'}
+        confirmText={isSigningAgain ? 'Re-Sign & Resubmit' : 'Submit Application'}
         loading={isSaving}
-        loadingText={isResigning ? 'Resubmitting...' : 'Submitting...'}
+        loadingText={isSigningAgain ? 'Resubmitting...' : 'Submitting...'}
         icon="https://cdn.lordicon.com/lupuorrc.json"
+        {...(isSigningAgain ? { iconClass: 'ri-quill-pen-line', iconBgClass: 'bg-warning-subtle', iconTextClass: 'text-warning' } : {})}
       />
 
       <DisclosureModal

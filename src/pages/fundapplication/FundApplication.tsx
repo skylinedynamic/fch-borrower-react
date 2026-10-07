@@ -18,7 +18,7 @@ import EditConfirmationModal from './components/shared/EditConfirmationModal'
 import { useCoBorrowers } from './hooks/useCoBorrowers'
 import { FUNDING_PURPOSE_OTHER, purposeOfFundingOptions, timeframeOptions } from '../../data/profile'
 import { useFundingRequest, useFundingApplicationDocuments } from '../../modules/funding-application/queries'
-import { setEditRequiresConfirmation } from '../../store/fundApplication/editConfirmationStore'
+import { setEditRequiresConfirmation, setEditConfirmationResolving, resetEditConfirmation } from '../../store/fundApplication/editConfirmationStore'
 import { formatCurrency } from '../../utils/formatters'
 
 // Types & Utils
@@ -261,7 +261,7 @@ export default function FundApplication() {
 
   // Fetch funding request and documents (tab-wise lazy loading)
   const currentReqId = fundingRequestId || id || null
-  const { data: fundingData } = useFundingRequest(currentReqId)
+  const { data: fundingData, isLoading: isFundingDataLoading } = useFundingRequest(currentReqId)
   const fundingApplicationId = fundingData?.id ?? null
   const { data: documentsData } = useFundingApplicationDocuments(fundingApplicationId, {
     enabled: !!fundingApplicationId,
@@ -424,11 +424,39 @@ export default function FundApplication() {
   // call, not a status list held here - the server decides it and enforces it.
   // Feed it to the gate the step saves wait on, and clear the gate on unmount so
   // a stale flag cannot follow the borrower to another screen.
+  //
+  // Only a loaded application can answer. The request id changes type once the
+  // application arrives, which refetches it; treating that gap as "not signed"
+  // let saves through unasked and dismissed a dialog that had just opened.
   useEffect(() => {
-    setEditRequiresConfirmation(Boolean(fundingData?.edit_requires_resign))
-  }, [fundingData?.edit_requires_resign])
+    if (!fundingData) return
+    setEditRequiresConfirmation(Boolean(fundingData.edit_requires_resign))
+  }, [fundingData])
 
-  useEffect(() => () => setEditRequiresConfirmation(false), [])
+  // A new signature is owed. Whatever the signing step still holds is the old
+  // one - typed or prefilled before the edit - and re-signing has to be a fresh
+  // act, so the name and every consent start empty.
+  useEffect(() => {
+    if (!fundingData?.requires_resign) return
+
+    setAttestation({
+      certify: false,
+      signature_name: '',
+      esign_consent: false,
+      terms_consent: false,
+      privacy_consent: false,
+      credit_consent: false,
+      legal_binding_consent: false,
+    })
+  }, [fundingData?.requires_resign])
+
+  // Until the application has loaded, the flag above is only a default. Saves
+  // wait on this, so one fired early still gets the dialog.
+  useEffect(() => {
+    setEditConfirmationResolving(isFundingDataLoading)
+  }, [isFundingDataLoading])
+
+  useEffect(() => () => resetEditConfirmation(), [])
 
   const initializedRef = React.useRef(false)
   useEffect(() => {
@@ -473,7 +501,10 @@ export default function FundApplication() {
       }
       
       if (!isStepSaved(stepIndex)) return false;
-      if (activeStep === stepIndex && !isStepValid(stepIndex)) return false;
+      // A signed application stays complete while its signing step is open:
+      // that form starts empty for a new signature, which is not a missing one.
+      const alreadySigned = stepIndex === STEP_INDICES.ATTESTATION && Boolean(fundingData?.signature_data);
+      if (activeStep === stepIndex && !alreadySigned && !isStepValid(stepIndex)) return false;
 
       return true;
     },
@@ -481,7 +512,6 @@ export default function FundApplication() {
   )
 
   // Progress calculations
-  const isApplicationSubmitted = fundingData?.status && !['Draft', 'On Hold', 'Pending'].includes(fundingData.status) ? true : false;
   const stepsTotal = tabs.length
   const completedCount = tabs.reduce((acc, _, index) => acc + (isStepComplete(index) ? 1 : 0), 0)
   const progressPct = Math.round((completedCount / stepsTotal) * 100)
@@ -704,11 +734,11 @@ export default function FundApplication() {
           </div>
         </div>
 
-        {isApplicationSubmitted && (
+        {fundingData?.edit_requires_resign && (
           <div className="alert alert-warning d-flex align-items-start gap-2 mb-4" role="alert">
             <i className="ri-alert-line fs-18 mt-1"></i>
             <div>
-              <strong>This application has already been submitted.</strong> Any change you make to a field will return it to Draft status and invalidate your existing signature. You will be required to review and re-sign the application before it can be resubmitted for review.
+              <strong>This application has already been submitted.</strong> Any change you make to a field will invalidate your existing signature. You will be required to review and re-sign the application, after which it returns to Submitted status for our team to verify.
             </div>
           </div>
         )}

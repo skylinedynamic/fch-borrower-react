@@ -164,10 +164,20 @@ export interface FederalComplianceResponse {
   data: FederalComplianceData
 }
 
+export interface PreviousSignature {
+  signature_name: string | null
+  signed_at: string | null
+  timezone: string | null
+}
+
 export interface AttestationData {
   id: number | null
   attestation_authorization: boolean
   signature_data?: any
+  /** An edit cleared the signature; a new one is owed. */
+  requires_resign?: boolean
+  /** The signature that edit cleared - shown for reference, never prefilled. */
+  previous_signature?: PreviousSignature | null
 }
 
 export interface AttestationFormPayload {

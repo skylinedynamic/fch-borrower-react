@@ -129,4 +129,104 @@ describe('AttestationStep', () => {
     expect(screen.getByRole('button', { name: /Re-Sign & Resubmit/i })).toBeInTheDocument()
     expect(screen.queryByText('Confirm Submission')).not.toBeInTheDocument()
   })
+
+  it('shows the previous signature for reference and leaves the new one empty', async () => {
+    server.use(
+      http.get('*/borrower/funding-application/attestation-authorization', () =>
+        HttpResponse.json({
+          status: true,
+          data: {
+            id: 3,
+            attestation_authorization: false,
+            signature_data: null,
+            requires_resign: true,
+            previous_signature: { signature_name: 'Michael Chen', signed_at: '2026-10-06 11:06:18', timezone: 'Asia/Dhaka' },
+          },
+        })
+      )
+    )
+
+    renderStep(true)
+
+    const previous = await screen.findByLabelText(/Previous Signature/i)
+    expect(previous).toHaveValue('Michael Chen')
+    expect(previous).toBeDisabled()
+    expect(screen.getByText(/No longer valid/i)).toBeInTheDocument()
+    expect(screen.getByText('Signed on 2026-10-06 11:06:18 (Asia/Dhaka)')).toBeInTheDocument()
+
+    // Re-signing is a fresh act: nothing carried over from the old signature.
+    expect(screen.getByLabelText(/New Electronic Signature \(Full Legal Name\)/i)).toHaveValue('')
+    for (const checkbox of screen.getAllByRole('checkbox')) {
+      expect(checkbox).not.toBeChecked()
+    }
+    expect(screen.getByRole('button', { name: /^Submit$/i })).toBeDisabled()
+  })
+
+  it('shows the signature on file of a submitted application and asks for a new one to sign again', async () => {
+    server.use(
+      http.get('*/borrower/funding-application/attestation-authorization', () =>
+        HttpResponse.json({
+          status: true,
+          data: {
+            id: 3,
+            attestation_authorization: true,
+            signature_data: {
+              signature_name: 'Michael Chen',
+              signed_at: '2026-10-06 11:06:18',
+              timezone: 'Asia/Dhaka',
+              esign_consent: true,
+              terms_consent: true,
+              credit_consent: true,
+              legal_binding_consent: true,
+            },
+            requires_resign: false,
+            previous_signature: null,
+          },
+        })
+      )
+    )
+
+    const user = userEvent.setup()
+    renderStep(false)
+
+    const previous = await screen.findByLabelText(/Previous Signature/i)
+    expect(previous).toHaveValue('Michael Chen')
+    expect(previous).toBeDisabled()
+    expect(screen.getByText(/Currently on file/i)).toBeInTheDocument()
+
+    // The signature on file is never loaded into the new one.
+    const fresh = screen.getByLabelText(/New Electronic Signature \(Full Legal Name\)/i)
+    expect(fresh).toHaveValue('')
+    for (const checkbox of screen.getAllByRole('checkbox')) {
+      expect(checkbox).not.toBeChecked()
+    }
+
+    // Signing an already-signed application is confirmed as a re-signature.
+    await user.type(fresh, 'Michael Chen')
+    for (const checkbox of screen.getAllByRole('checkbox')) {
+      await user.click(checkbox)
+    }
+    await user.click(screen.getByRole('button', { name: /^Submit$/i }))
+
+    await waitFor(() => expect(screen.getByText('Confirm Re-Signature')).toBeInTheDocument())
+    expect(screen.getByRole('button', { name: /Re-Sign & Resubmit/i })).toBeInTheDocument()
+    expect(screen.queryByText('Confirm Submission')).not.toBeInTheDocument()
+  })
+
+  it('shows no previous signature on a first-time signing', async () => {
+    server.use(
+      http.get('*/borrower/funding-application/attestation-authorization', () =>
+        HttpResponse.json({
+          status: true,
+          data: { id: 3, attestation_authorization: false, signature_data: null, requires_resign: false, previous_signature: null },
+        })
+      )
+    )
+
+    renderStep(false)
+    await screen.findByText(/Electronic Signature & Consent/i)
+
+    expect(screen.queryByLabelText(/Previous Signature/i)).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/^Electronic Signature \(Full Legal Name\)/i)).toBeInTheDocument()
+  })
 })

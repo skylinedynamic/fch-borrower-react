@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders, screen, waitFor } from '../../../../test-utils'
@@ -11,20 +11,54 @@ import {
   setEditRequiresConfirmation,
 } from '../../../../../src/store/fundApplication/editConfirmationStore'
 
+// The shared ConfirmationModal drives Bootstrap's real Modal class, whose
+// transition callbacks fire after the test's component has unmounted and throw
+// against a ref that is already gone. A synchronous fake avoids depending on
+// transition events at all.
+vi.mock('bootstrap/js/dist/modal', () => {
+  class FakeModal {
+    private el: HTMLElement
+    constructor(el: HTMLElement) {
+      this.el = el
+    }
+    show() {
+      this.el.classList.add('show')
+      this.el.style.display = 'block'
+      this.el.removeAttribute('aria-hidden')
+      this.el.setAttribute('aria-modal', 'true')
+    }
+    hide() {
+      this.el.classList.remove('show')
+      this.el.style.display = 'none'
+      this.el.setAttribute('aria-hidden', 'true')
+      this.el.removeAttribute('aria-modal')
+    }
+    dispose() {}
+  }
+  return { default: FakeModal }
+})
+
 /**
  * The borrower-facing half of the re-signature rule.
  *
- * While the application is still being filled in for the first time there is no
- * signature to lose, so saving must be silent - a confirmation on every step of
- * a first pass would be noise. Once it has been signed and submitted, every
- * subsequent save asks first, because it withdraws that signature.
+ * While nothing has been signed, saving must be silent. Once the application
+ * has been signed and submitted, opening it asks first - before any typing -
+ * because a saved change clears the signature and takes the application out of
+ * review until it is signed again. Accepting covers the rest of that visit.
+ *
+ * The dialog is the portal's shared flip confirmation, which keeps its markup
+ * mounted while closed, so "is it open" is read from the store that drives it
+ * and its buttons are found with `hidden: true`.
  *
  * Driven through the real mutation hook and the real apiClient against MSW, so
- * what is actually exercised is "does a request reach the server", which is the
- * only version of this that matters.
+ * what is exercised is "does a request reach the server".
  */
 
 const BUSINESS_INFO_URL = '*/borrower/funding-application/business-info'
+
+const isOpen = () => useEditConfirmationStore.getState().isOpen
+const confirmButton = () => screen.getByRole('button', { name: /yes, edit application/i, hidden: true })
+const cancelButton = () => screen.getByRole('button', { name: /cancel/i, hidden: true })
 
 /** A step's Save button, standing in for any of the six that save this way. */
 function SaveHarness() {
@@ -49,7 +83,7 @@ function SaveHarness() {
   )
 }
 
-describe('EditConfirmationModal', () => {
+describe('EditConfirmationModal (borrower)', () => {
   let requests: number
 
   beforeEach(() => {
@@ -63,76 +97,96 @@ describe('EditConfirmationModal', () => {
   })
 
   afterEach(() => {
-    useEditConfirmationStore.setState({ requiresConfirmation: false, isOpen: false, resolver: null })
+    useEditConfirmationStore.setState({
+      requiresConfirmation: false,
+      isResolving: false,
+      promptOnOpen: null,
+      hasConfirmed: false,
+      isOpen: false,
+      resolver: null,
+    })
   })
 
-  it('stays out of the way while the application is being filled in for the first time', async () => {
-    // Nothing signed yet: On Hold / Draft, so the API reports no resign cost.
+  it('stays out of the way while nothing has been signed', async () => {
+    // On Hold / Draft: the API reports no cost.
     setEditRequiresConfirmation(false)
 
     renderWithProviders(<SaveHarness />)
+    expect(isOpen()).toBe(false)
+
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     await waitFor(() => expect(requests).toBe(1))
-    expect(screen.queryByText(/needs a new signature/i)).not.toBeInTheDocument()
+    expect(isOpen()).toBe(false)
   })
 
-  it('asks before changing an application that has already been submitted', async () => {
+  it('asks as soon as an already-submitted application is opened', async () => {
     setEditRequiresConfirmation(true)
 
     renderWithProviders(<SaveHarness />)
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
-    expect(await screen.findByText(/needs a new signature/i)).toBeInTheDocument()
+    await waitFor(() => expect(isOpen()).toBe(true))
     expect(requests).toBe(0)
   })
 
-  it('spells out what the borrower loses, not just that they are about to change something', async () => {
+  it('spells out that a change costs the signature and needs a re-signature', async () => {
     setEditRequiresConfirmation(true)
 
     renderWithProviders(<SaveHarness />)
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await waitFor(() => expect(isOpen()).toBe(true))
 
-    expect(await screen.findByText(/withdraws that signature/i)).toBeInTheDocument()
-    expect(screen.getByText(/will not continue through review until you sign it again/i)).toBeInTheDocument()
+    expect(screen.getByText('Edit Submitted Application?')).toBeInTheDocument()
+    expect(screen.getByText(/already been signed and submitted/i)).toBeInTheDocument()
+    expect(screen.getByText(/Re-signature required/i)).toBeInTheDocument()
+    expect(screen.getByText(/Editing any field on this application will require/i)).toBeInTheDocument()
+    expect(screen.getByText(/returns to Submitted status/i)).toBeInTheDocument()
+    expect(screen.getByText(/verify (your|the) updated application and make a decision/i)).toBeInTheDocument()
+    expect(screen.getByText(/You must review and re-sign the application on the final step/i)).toBeInTheDocument()
   })
 
-  it('sends the save once the borrower accepts the consequence', async () => {
+  it('lets saves through for the rest of the visit once the warning is accepted', async () => {
     setEditRequiresConfirmation(true)
 
     renderWithProviders(<SaveHarness />)
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
-    await userEvent.click(await screen.findByRole('button', { name: /save and sign again/i }))
+    await waitFor(() => expect(isOpen()).toBe(true))
+    await userEvent.click(confirmButton())
+    expect(isOpen()).toBe(false)
+    expect(requests).toBe(0)
 
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => expect(requests).toBe(1))
-    await waitFor(() => expect(screen.queryByText(/needs a new signature/i)).not.toBeInTheDocument())
+
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await waitFor(() => expect(requests).toBe(2))
+    expect(isOpen()).toBe(false)
   })
 
-  it('sends nothing when the borrower keeps the application as submitted', async () => {
+  it('sends nothing when the warning is declined', async () => {
     setEditRequiresConfirmation(true)
 
     renderWithProviders(<SaveHarness />)
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
-    await userEvent.click(await screen.findByRole('button', { name: /keep it as submitted/i }))
+    await waitFor(() => expect(isOpen()).toBe(true))
+    await userEvent.click(cancelButton())
 
-    await waitFor(() => expect(screen.queryByText(/needs a new signature/i)).not.toBeInTheDocument())
+    expect(isOpen()).toBe(false)
     expect(requests).toBe(0)
   })
 
-  it('asks again on the next edit, not just the first one', async () => {
-    // A borrower correcting two things in a row is the common case; the second
-    // correction costs a signature exactly as much as the first.
-    setEditRequiresConfirmation(true)
-
+  it('asks on save when the application only became signed during the visit', async () => {
+    // Opened unsigned, so no dialog on open...
+    setEditRequiresConfirmation(false)
     renderWithProviders(<SaveHarness />)
+    expect(isOpen()).toBe(false)
+
+    // ...then it was submitted with the wizard still on screen.
+    setEditRequiresConfirmation(true)
+    expect(isOpen()).toBe(false)
 
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
-    await userEvent.click(await screen.findByRole('button', { name: /save and sign again/i }))
+    await waitFor(() => expect(isOpen()).toBe(true))
+    expect(requests).toBe(0)
+
+    await userEvent.click(confirmButton())
     await waitFor(() => expect(requests).toBe(1))
-
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
-
-    expect(await screen.findByText(/needs a new signature/i)).toBeInTheDocument()
-    expect(requests).toBe(1)
   })
 })
