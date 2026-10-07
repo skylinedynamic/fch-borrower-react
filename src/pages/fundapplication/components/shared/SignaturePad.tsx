@@ -294,7 +294,22 @@ export default function SignaturePad({ value, onChange, invalid, block, showDate
                     },
                   })}
             />
-            {!hasInk && (
+            {/* Waiting on the server to check and return the picked file: a
+                skeleton over the signature area, the same shimmer the rest of
+                the portal loads with, rather than a box that looks idle. */}
+            {isLoadingFile && (
+              <div
+                className="position-absolute top-0 start-0 w-100 h-100 bg-white d-flex flex-column align-items-center justify-content-center gap-2 placeholder-glow px-4"
+                role="status"
+                aria-live="polite"
+              >
+                <span className="placeholder rounded w-75" style={{ height: 14 }}></span>
+                <span className="placeholder rounded w-50" style={{ height: 14 }}></span>
+                <span className="placeholder rounded w-25" style={{ height: 10 }}></span>
+                <span className="visually-hidden">Checking your signature image...</span>
+              </div>
+            )}
+            {!hasInk && !isLoadingFile && (
               <div
                 className="position-absolute top-50 start-50 translate-middle text-center w-100 px-2"
                 style={{ pointerEvents: 'none' }}
