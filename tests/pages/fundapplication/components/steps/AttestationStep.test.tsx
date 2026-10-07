@@ -4,7 +4,7 @@ import { http, HttpResponse } from 'msw'
 import userEvent from '@testing-library/user-event'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
-import { render, screen, waitFor, createTestQueryClient } from '../../../../test-utils'
+import { render, screen, waitFor, within, createTestQueryClient } from '../../../../test-utils'
 import { server } from '../../../../mocks/server'
 import AttestationStep from '../../../../../src/pages/fundapplication/components/steps/AttestationStep'
 import type { Attestation } from '../../../../../src/pages/fundapplication/types'
@@ -116,7 +116,7 @@ describe('AttestationStep', () => {
     expect(screen.getByText(/previously submitted, but changes made since then require a new signature/i)).toBeInTheDocument()
 
     // Fill out the form so the Submit button is enabled.
-    await user.type(screen.getByLabelText(/Electronic Signature \(Full Legal Name\)/i), 'Michael Chen')
+    await user.type(screen.getByLabelText(/^Electronic Signature/i), 'Michael Chen')
     for (const checkbox of screen.getAllByRole('checkbox')) {
       await user.click(checkbox)
     }
@@ -140,7 +140,7 @@ describe('AttestationStep', () => {
             attestation_authorization: false,
             signature_data: null,
             requires_resign: true,
-            previous_signature: { signature_name: 'Michael Chen', signed_at: '2026-10-06 11:06:18', timezone: 'Asia/Dhaka' },
+            previous_signature: { signature_name: 'Michael Chen', signed_at: 'Oct 06, 2026 5:06 PM', timezone: 'Asia/Dhaka' },
           },
         })
       )
@@ -148,14 +148,20 @@ describe('AttestationStep', () => {
 
     renderStep(true)
 
-    const previous = await screen.findByLabelText(/Previous Signature/i)
-    expect(previous).toHaveValue('Michael Chen')
-    expect(previous).toBeDisabled()
+    // Shown only - a panel, not a field - with the date exactly as the API
+    // formatted it (already in the borrower's timezone, so no timezone label).
+    const previous = await screen.findByRole('group', { name: /Previous signature/i })
+    expect(within(previous).getByText('Michael Chen')).toBeInTheDocument()
+    expect(within(previous).queryByRole('textbox')).not.toBeInTheDocument()
+    expect(within(previous).getByText('Oct 06, 2026 5:06 PM')).toBeInTheDocument()
+    expect(within(previous).getByText(/Signed On/i)).toBeInTheDocument()
+    expect(screen.queryByText(/Asia\/Dhaka/)).not.toBeInTheDocument()
     expect(screen.getByText(/No longer valid/i)).toBeInTheDocument()
-    expect(screen.getByText('Signed on 2026-10-06 11:06:18 (Asia/Dhaka)')).toBeInTheDocument()
+    // The re-sign notice sits with the signature it is about.
+    expect(within(previous).getByText(/previously submitted, but changes made since then require a new signature/i)).toBeInTheDocument()
 
     // Re-signing is a fresh act: nothing carried over from the old signature.
-    expect(screen.getByLabelText(/New Electronic Signature \(Full Legal Name\)/i)).toHaveValue('')
+    expect(screen.getByLabelText(/^New Electronic Signature/i)).toHaveValue('')
     for (const checkbox of screen.getAllByRole('checkbox')) {
       expect(checkbox).not.toBeChecked()
     }
@@ -189,13 +195,13 @@ describe('AttestationStep', () => {
     const user = userEvent.setup()
     renderStep(false)
 
-    const previous = await screen.findByLabelText(/Previous Signature/i)
-    expect(previous).toHaveValue('Michael Chen')
-    expect(previous).toBeDisabled()
+    const previous = await screen.findByRole('group', { name: /Previous signature/i })
+    expect(within(previous).getByText('Michael Chen')).toBeInTheDocument()
+    expect(within(previous).queryByRole('textbox')).not.toBeInTheDocument()
     expect(screen.getByText(/Currently on file/i)).toBeInTheDocument()
 
     // The signature on file is never loaded into the new one.
-    const fresh = screen.getByLabelText(/New Electronic Signature \(Full Legal Name\)/i)
+    const fresh = screen.getByLabelText(/^New Electronic Signature/i)
     expect(fresh).toHaveValue('')
     for (const checkbox of screen.getAllByRole('checkbox')) {
       expect(checkbox).not.toBeChecked()
@@ -226,7 +232,93 @@ describe('AttestationStep', () => {
     renderStep(false)
     await screen.findByText(/Electronic Signature & Consent/i)
 
-    expect(screen.queryByLabelText(/Previous Signature/i)).not.toBeInTheDocument()
-    expect(screen.getByLabelText(/^Electronic Signature \(Full Legal Name\)/i)).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: /Previous signature/i })).not.toBeInTheDocument()
+    expect(screen.queryByText(/Previous Signature/i)).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/^Electronic Signature/i)).toBeInTheDocument()
+  })
+
+  it('lets the borrower choose between typing a name and an e-signature, requiring only the one chosen', async () => {
+    server.use(
+      http.get('*/borrower/funding-application/attestation-authorization', () =>
+        HttpResponse.json({
+          status: true,
+          data: {
+            id: 3,
+            attestation_authorization: false,
+            signature_data: null,
+            requires_resign: false,
+            previous_signature: null,
+            signature_rules: { max_file_kb: 1024, mime_types: ['image/*'] },
+          },
+        })
+      )
+    )
+
+    const user = userEvent.setup()
+    renderStep(false)
+    await screen.findByText(/Electronic Signature & Consent/i)
+
+    // Typing a name is the default: the input form, and no signature box.
+    expect(screen.getByRole('button', { name: /Type Name/i })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByPlaceholderText(/Enter your full legal name/i)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^File Manager$/i })).not.toBeInTheDocument()
+
+    // E-signature swaps the input form for the signature box - never both.
+    await user.click(screen.getByRole('button', { name: /E-Signature/i }))
+
+    expect(screen.getByRole('button', { name: /E-Signature/i })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.queryByPlaceholderText(/Enter your full legal name/i)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^File Manager$/i })).toBeInTheDocument()
+    // The hint states the server's own limit.
+    expect(screen.getByText(/JPG, JPEG, PNG.*Max 1 MB/i)).toBeInTheDocument()
+    expect(screen.getByText(/the signature I provided above constitutes/i)).toBeInTheDocument()
+
+    // Every consent ticked but no signature chosen: it cannot be submitted.
+    for (const checkbox of screen.getAllByRole('checkbox')) {
+      await user.click(checkbox)
+    }
+    expect(screen.getByRole('button', { name: /^Submit$/i })).toBeDisabled()
+
+    // Back to typing: the name alone is enough.
+    await user.click(screen.getByRole('button', { name: /Type Name/i }))
+    await user.type(screen.getByPlaceholderText(/Enter your full legal name/i), 'Michael Chen')
+    expect(screen.getByRole('button', { name: /^Submit$/i })).toBeEnabled()
+  })
+
+  it('accepts any text as the typed name and stops the input at 255 characters', async () => {
+    server.use(
+      http.get('*/borrower/funding-application/attestation-authorization', () =>
+        HttpResponse.json({
+          status: true,
+          data: { id: 3, attestation_authorization: false, signature_data: null, requires_resign: false, previous_signature: null },
+        })
+      )
+    )
+
+    const user = userEvent.setup()
+    renderStep(false)
+    await screen.findByText(/Electronic Signature & Consent/i)
+
+    const name = screen.getByPlaceholderText(/Enter your full legal name/i)
+    const submit = screen.getByRole('button', { name: /^Submit$/i })
+    for (const checkbox of screen.getAllByRole('checkbox')) {
+      await user.click(checkbox)
+    }
+
+    // The browser itself stops the field at 255 characters.
+    expect(name).toHaveAttribute('maxLength', '255')
+
+    // No rule about which characters: digits and symbols are accepted, and
+    // nothing is flagged as the borrower types.
+    await user.type(name, 'Arafat 123 (CEO) @ Alpha')
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(name).not.toHaveClass('is-invalid')
+    expect(submit).toBeEnabled()
+
+    // Typing past the limit goes nowhere.
+    await user.clear(name)
+    await user.click(name)
+    await user.paste('x'.repeat(300))
+    expect((name as HTMLInputElement).value.length).toBeLessThanOrEqual(255)
   })
 })

@@ -12,6 +12,10 @@ import DisclosureModal from '../shared/DisclosureModal'
 import SignaturePad, { toYmd, SIGNATURE_PANEL_STYLE } from '../shared/SignaturePad'
 import { signatureTextStyle, useSignatureBlockFont } from '../shared/signatureBlock'
 
+// The most a typed signature may hold. The input stops here, so the borrower
+// cannot go over it and the server's own 255 limit is never reached.
+const SIGNATURE_NAME_MAX = 255
+
 const RESIGN_NOTICE = 'This application was previously submitted, but changes made since then require a new signature. Please review your information below and sign again to resubmit it for review.'
 import { TERMS_OF_SERVICE_DATA, PRIVACY_POLICY_DATA, AUTHORIZATION_DATA, ATTESTATION_ITEMS } from '../../../../config/disclosureConfig'
 
@@ -109,6 +113,12 @@ export default function AttestationStep({
     } else {
       setAttestation({ ...attestation, [field]: value })
     }
+
+    // A message the server gave for this field is about the old value. Drop it
+    // as soon as the borrower changes it, so the live check takes over.
+    if (validationErrors[field]) {
+      setValidationErrors(({ [field]: _cleared, ...rest }) => rest)
+    }
   }
 
   const handleConfirm = () => {
@@ -158,8 +168,19 @@ export default function AttestationStep({
         console.error('Error submitting application:', error)
         const errors = error.response?.data?.errors
         if (errors) {
+          // Field errors are shown on the fields themselves - under the name,
+          // under the signature box, on the consent it concerns. No pop-up
+          // repeating that something is wrong.
           setValidationErrors(errors)
-          toast.error('Please resolve validation errors')
+
+          // The exception is an error with no field on this step to sit under
+          // (the application itself could not be identified, say). That one
+          // would otherwise vanish, so it alone is shown as a message.
+          const shownInline = ['signature_name', 'signature_image', 'signature_date', ...ATTESTATION_ITEMS.map(item => item.key)]
+          const orphan = Object.keys(errors).find(field => !shownInline.includes(field))
+          if (orphan) {
+            toast.error(String(errors[orphan]))
+          }
         } else {
           toast.error(error.response?.data?.message || 'Failed to submit application')
         }
@@ -168,6 +189,7 @@ export default function AttestationStep({
   }
 
   const getApiError = (field: string): string | undefined => validationErrors[field]
+  const nameError = getApiError('signature_name')
 
   const isFormValid = Boolean(
     (isEsign
@@ -218,7 +240,12 @@ export default function AttestationStep({
                       )}
                     </div>
 
-                    <div className="flex-grow-1 d-flex flex-column overflow-hidden" style={SIGNATURE_PANEL_STYLE}>
+                    <div
+                      className="flex-grow-1 d-flex flex-column overflow-hidden"
+                      style={SIGNATURE_PANEL_STYLE}
+                      role="group"
+                      aria-label="Previous signature"
+                    >
                       <div className="row g-0 flex-grow-1">
                         <div className="col-sm-7">
                           <div className="h-100 d-flex align-items-center justify-content-center text-center p-3" style={{ minHeight: 110 }}>
@@ -316,13 +343,15 @@ export default function AttestationStep({
                       {/* The same panel as the e-signature, holding the input form. */}
                       <div
                         className="flex-grow-1 d-flex flex-column overflow-hidden"
-                        style={{ ...SIGNATURE_PANEL_STYLE, ...(getApiError('signature_name') ? { borderColor: '#f06548' } : {}) }}
+                        style={{ ...SIGNATURE_PANEL_STYLE, ...(nameError ? { borderColor: '#f06548' } : {}) }}
                       >
                         <div className="flex-grow-1 d-flex align-items-center p-3" style={{ minHeight: 110 }}>
                           <input
                             type="text"
                             id="signature_name"
-                            className={`form-control ${getApiError('signature_name') ? 'is-invalid' : ''}`}
+                            className={`form-control ${nameError ? 'is-invalid' : ''}`}
+                            aria-invalid={Boolean(nameError)}
+                            maxLength={SIGNATURE_NAME_MAX}
                             placeholder="Enter your full legal name"
                             // Typed in the font, size, weight, alignment and colour the
                             // agreement builder gives the Signature block.
@@ -338,8 +367,8 @@ export default function AttestationStep({
                           </small>
                         </div>
                       </div>
-                      {getApiError('signature_name') && (
-                        <div className="invalid-feedback d-block mt-1">{getApiError('signature_name')}</div>
+                      {nameError && (
+                        <div className="invalid-feedback d-block mt-1" role="alert">{nameError}</div>
                       )}
                     </>
                   )}

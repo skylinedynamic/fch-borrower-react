@@ -360,16 +360,14 @@ export default function SignaturePad({ value, onChange, invalid, block, showDate
           <button
             type="button"
             className={`btn btn-sm ${drawable || hasInk ? 'btn-light border' : 'btn-primary'}`}
+            // The button never changes while a picked file is loading - that is
+            // shown inside the signature area only. (openFileManager ignores
+            // a click made during the load.)
             onClick={openFileManager}
-            disabled={isLoadingFile}
           >
-            {isLoadingFile ? (
-              <><span className="spinner-border spinner-border-sm align-middle me-1" aria-hidden="true"></span> Loading...</>
-            ) : (
-              <><i className="ri-folder-open-line align-bottom me-1"></i> File Manager</>
-            )}
+            <i className="ri-folder-open-line align-bottom me-1"></i> File Manager
           </button>
-          <button type="button" className="btn btn-sm btn-light border text-danger" onClick={handleClear} disabled={!hasInk || isLoadingFile}>
+          <button type="button" className="btn btn-sm btn-light border text-danger" onClick={handleClear} disabled={!hasInk}>
             <i className="ri-eraser-line align-bottom me-1"></i> Clear
           </button>
         </div>
