@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useFundingApplicationDetail, downloadFundingApplicationDocument } from '../../modules/my-application'
 import BorrowerActivitySidebar from '../../components/Common/BorrowerActivitySidebar'
-import { FUNDING_APPLICATION_STATUS_CLASS_MAP } from '../../config/funding'
+import { FUNDING_APPLICATION_STATUS_CLASS_MAP, FUNDING_REVIEW_STATUS } from '../../config/funding'
 import { getFileConfig, getDocumentStatusBadgeClass } from '../../config/fileTypeConfig'
 import { downloadFileFromUrl, handleFileDownload } from '../../utils/fileDownload'
 import FundingApplicationDetailLoader from './components/FundingApplicationDetailLoader'
@@ -82,6 +82,14 @@ export default function FundingApplicationDetailPage() {
       )
   }
 
+  // Same rule as the partner portal's Funding Application details page: the
+  // request is approved and the application is at status key 9 or below. The
+  // server works that out from the lifecycle key and sends it as is_editable.
+  const canEditApplication =
+      application.funding_request_status === FUNDING_REVIEW_STATUS.APPROVED &&
+      !!application.funding_request_id &&
+      !!application.is_editable
+
   return (
     <div className="page-content">
       <div className="container-fluid">
@@ -98,7 +106,16 @@ export default function FundingApplicationDetailPage() {
                             </ol>
                         </nav>
                     </div>
-                    <div className="mt-0">
+                    <div className="mt-0 d-flex align-items-center gap-2">
+                        {canEditApplication && (
+                            <Link
+                                to={`/fund-application/${application.funding_request_id}`}
+                                className="btn btn-warning fw-medium d-flex align-items-center gap-2 shadow-none px-4"
+                                title="Editing will require you to resign the application"
+                            >
+                                <i className="ri-edit-line me-1"></i> Edit Application
+                            </Link>
+                        )}
                         <Link to="/my-applications" className="btn fr-back-btn px-3 shadow-none">
                             &larr; Back
                         </Link>
