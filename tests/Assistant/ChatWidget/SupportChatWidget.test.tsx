@@ -208,6 +208,86 @@ describe('SupportChatWidget (borrower)', () => {
         expect(screen.getByText(/for the latest status\./)).toBeInTheDocument()
     })
 
+    it('shows a quoted passage and a heading as formatted text, never as raw ">" or "#" characters', async () => {
+        server.use(
+            noSessions(),
+            enabledConfig(),
+            http.post('*/borrower/assistant/messages', () =>
+                HttpResponse.json({
+                    status: true,
+                    message: '',
+                    data: {
+                        session_id: 'session-123',
+                        message_id: 'message-456',
+                        answer: '## How to describe it\n\nYou can tell your client:\n\n> "This is **revenue-based financing**.\n> It is not a loan."\n\nKeep it simple.',
+                        actions: [],
+                        sources: [],
+                        escalation: { required: false, reason: null, route: null },
+                        policy: { live_data_used: false, restricted_content_blocked: false, sensitive_input_detected: false },
+                    },
+                })
+            )
+        )
+
+        renderWithProviders(<SupportChatWidget />)
+        await open()
+        await sendMessage('How should I describe revenue-based financing?')
+
+        const quote = (await screen.findByText(/It is not a loan\./)).closest('.support-chat-quote')
+        expect(quote).not.toBeNull()
+        // Both quoted lines sit in the one block, with the bold inside still rendered.
+        expect(quote).toHaveTextContent('"This is revenue-based financing. It is not a loan."')
+        expect(quote!.querySelector('strong')).toHaveTextContent('revenue-based financing')
+
+        expect(screen.getByText('How to describe it').tagName.toLowerCase()).toBe('strong')
+
+        const bubble = quote!.closest('.support-chat-bubble')
+        expect(bubble).not.toBeNull()
+        expect(bubble!.textContent).not.toMatch(/[>#]/)
+    })
+
+    it('renders a Take Me There button for an action in the served route map and follows it on click', async () => {
+        server.use(
+            noSessions(),
+            // No destinations are built into the widget: the allowlist is the map the backend serves.
+            http.get('*/borrower/assistant/config', () =>
+                HttpResponse.json({
+                    status: true,
+                    message: '',
+                    data: { is_ready: true, welcome_subtitle: null, quick_suggestions: [], navigation: { documents: '/documents' } },
+                })
+            ),
+            http.post('*/borrower/assistant/messages', () =>
+                HttpResponse.json({
+                    status: true,
+                    message: '',
+                    data: {
+                        session_id: 'session-123',
+                        message_id: 'message-456',
+                        answer: 'Open **Documents** from the left menu.\n\n[[ACTION:navigate_documents]]',
+                        actions: [{ type: 'navigate', id: 'navigate_documents', label: 'Take Me There', path: '/documents', route_key: 'documents' }],
+                        sources: [],
+                        escalation: { required: false, reason: null, route: null },
+                        policy: { live_data_used: false, restricted_content_blocked: false, sensitive_input_detected: false },
+                    },
+                })
+            )
+        )
+
+        renderWithProviders(<SupportChatWidget />)
+        await open()
+        await sendMessage('Where do I upload the documents requested for my funding application?')
+
+        const ctaButton = await screen.findByRole('button', { name: 'Take Me There' })
+        // The placeholder itself is never shown.
+        expect(screen.queryByText(/\[\[ACTION/)).not.toBeInTheDocument()
+
+        await userEvent.click(ctaButton)
+
+        // Following the button leaves the chat: the panel closes on the way to the page.
+        await waitFor(() => expect(screen.queryByPlaceholderText(/type a message/i)).not.toBeInTheDocument())
+    })
+
     it('does not render a button for an action id that is not locally allowlisted', async () => {
         server.use(
             noSessions(),
