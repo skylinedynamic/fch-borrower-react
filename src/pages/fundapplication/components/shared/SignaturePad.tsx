@@ -226,8 +226,9 @@ export default function SignaturePad({ value, onChange, invalid, block, showDate
       const ctx = canvas?.getContext('2d')
       if (!canvas || !ctx) return
 
-      // Fit the whole image inside the pad, centred, keeping its proportions.
-      const scale = Math.min(canvas.width / image.width, canvas.height / image.height)
+      // Fit the whole image inside the pad, centred, keeping its proportions,
+      // with a margin so it does not touch the edges of the box.
+      const scale = Math.min((canvas.width * 0.9) / image.width, (canvas.height * 0.84) / image.height)
       const width = image.width * scale
       const height = image.height * scale
 
@@ -295,18 +296,15 @@ export default function SignaturePad({ value, onChange, invalid, block, showDate
                   })}
             />
             {/* Waiting on the server to check and return the picked file: a
-                skeleton over the signature area, the same shimmer the rest of
-                the portal loads with, rather than a box that looks idle. */}
+                plain "Loading..." in the signature area - no skeleton. */}
             {isLoadingFile && (
               <div
-                className="position-absolute top-0 start-0 w-100 h-100 bg-white d-flex flex-column align-items-center justify-content-center gap-2 placeholder-glow px-4"
+                className="position-absolute top-0 start-0 w-100 h-100 bg-white d-flex align-items-center justify-content-center gap-2 text-muted"
                 role="status"
                 aria-live="polite"
               >
-                <span className="placeholder rounded w-75" style={{ height: 14 }}></span>
-                <span className="placeholder rounded w-50" style={{ height: 14 }}></span>
-                <span className="placeholder rounded w-25" style={{ height: 10 }}></span>
-                <span className="visually-hidden">Checking your signature image...</span>
+                <span className="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                <span className="fw-medium">Loading...</span>
               </div>
             )}
             {!hasInk && !isLoadingFile && (
