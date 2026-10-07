@@ -8,7 +8,7 @@ import { Column } from 'primereact/column'
 import { Dropdown } from 'primereact/dropdown'
 import StatisticsCardSkeleton from '../../components/Common/StatisticsCardSkeleton'
 import StatisticsCard from '../../components/Common/StatisticsCard'
-import { FUNDING_REVIEW_STATUS, FUNDING_APPLICATION_STATUS_OPTIONS, FUNDING_APPLICATION_STATUS } from '../../config/funding'
+import { FUNDING_REVIEW_STATUS, FUNDING_APPLICATION_STATUS_OPTIONS } from '../../config/funding'
 import '../../../assets/css/funding-requests.css'
 
 export default function FundingRequestList() {
@@ -300,7 +300,8 @@ export default function FundingRequestList() {
                                             const appStatus = (row.application_status || '').toLowerCase();
                                             const isNotStarted = isApproved && !row.application_status;
                                             const isOnHoldOrDraft = isApproved && (appStatus.includes('hold') || appStatus.includes('draft'));
-                                            const isPendingReview = row.application_status === FUNDING_APPLICATION_STATUS.PENDING;
+                                            // Submitted and still editable: status key 3-9 (the server decides).
+                                            const isPendingReview = Boolean(row.application_status && row.application_is_editable && !appStatus.includes('hold') && !appStatus.includes('draft'));
                                             const isSubmittedOrComplete = Boolean(row.application_status && !isOnHoldOrDraft && !isPendingReview);
 
                                             return (

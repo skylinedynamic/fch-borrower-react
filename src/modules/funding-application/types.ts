@@ -133,6 +133,7 @@ export interface FundingRequestData {
   is_editable?: boolean
   /** Editable, but a change would cost the signature - what the dialog warns about. */
   edit_requires_resign?: boolean
+  edit_needs_confirmation?: boolean
   can_start_new_funding_request?: boolean
   locked_reason?: string | null
 }
@@ -166,14 +167,45 @@ export interface FederalComplianceResponse {
 
 export interface PreviousSignature {
   signature_name: string | null
+  signature_type?: 'typed' | 'esign' | null
+  /** The drawn / uploaded signature, as an image data URL. E-signatures only. */
+  signature_image?: string | null
   signed_at: string | null
   timezone: string | null
+}
+
+/**
+ * The Signature block of the Borrower Agreement template, as set in the
+ * agreement builder's Block Properties panel.
+ */
+export interface SignatureBlockSettings {
+  fieldLabel?: string | null
+  fieldRequired?: boolean
+  fontFamily?: string | null
+  fontSize?: number
+  fontWeight?: string | number
+  fontStyle?: string | null
+  textAlign?: string | null
+  textDecoration?: string | null
+  lineHeight?: number
+  letterSpacing?: number
+  color?: string | null
+  bgColor?: string | null
+  bgOpacity?: number
+  borderRadius?: number
+  padding?: number
+  marginTop?: number
+  marginBottom?: number
 }
 
 export interface AttestationData {
   id: number | null
   attestation_authorization: boolean
   signature_data?: any
+  /** The server's limits for a signature image (type and size). */
+  signature_rules?: { max_file_kb?: number; mime_types?: string[] } | null
+  /** Null when no Borrower Agreement template has a Signature block. */
+  signature_block?: SignatureBlockSettings | null
   /** An edit cleared the signature; a new one is owed. */
   requires_resign?: boolean
   /** The signature that edit cleared - shown for reference, never prefilled. */
@@ -183,7 +215,10 @@ export interface AttestationData {
 export interface AttestationFormPayload {
   id: number | null
   attestation_authorization?: boolean
+  signature_type?: 'typed' | 'esign'
   signature_name: string
+  signature_image?: string | null
+  signature_date?: string | null
   esign_consent: boolean
   terms_consent: boolean
   privacy_consent: boolean

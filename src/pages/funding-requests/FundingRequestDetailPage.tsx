@@ -5,7 +5,7 @@ import { getBorrowerActivityLogs, downloadActivityAttachment } from '../../modul
 import { downloadBorrowerDocument } from '../../modules/documents/services'
 import { downloadBlob, downloadFileFromUrl, handleFileDownload } from '../../utils/fileDownload'
 import { getFileConfig, getDocumentStatusBadgeClass } from '../../config/fileTypeConfig'
-import { FUNDING_REVIEW_STATUS, FUNDING_REVIEW_STATUS_COLORS, FUNDING_APPLICATION_STATUS } from '../../config/funding'
+import { FUNDING_REVIEW_STATUS, FUNDING_REVIEW_STATUS_COLORS } from '../../config/funding'
 import { toast } from 'react-toastify'
 import ReviewProgressCard from './components/ReviewProgressCard'
 import '../../components/Common/StatisticsCardSkeleton.css'
@@ -684,7 +684,8 @@ export default function FundingRequestDetailPage() {
     const appStatus = String(review.application_status || '').toLowerCase();
     const isNotStarted = isApproved && !review.application_status;
     const isOnHoldOrDraft = isApproved && (appStatus.includes('hold') || appStatus.includes('draft'));
-    const isPendingReview = review.application_status === FUNDING_APPLICATION_STATUS.PENDING;
+    // Submitted and still editable: status key 3-9 (the server decides).
+    const isPendingReview = Boolean(review.application_status && review.application_is_editable && !appStatus.includes('hold') && !appStatus.includes('draft'));
     const isSubmittedOrComplete = Boolean(review.application_status && !isOnHoldOrDraft && !isPendingReview);
 
     return (

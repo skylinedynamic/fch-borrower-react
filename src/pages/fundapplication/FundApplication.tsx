@@ -403,8 +403,9 @@ export default function FundApplication() {
 
         case STEP_INDICES.ATTESTATION:
           return Boolean(
-            attestation.signature_name &&
-            attestation.signature_name.trim().length >= 3 &&
+            (attestation.signature_type === 'esign'
+              ? attestation.signature_image
+              : attestation.signature_name && attestation.signature_name.trim().length >= 3) &&
             attestation.esign_consent &&
             attestation.terms_consent &&
             attestation.privacy_consent &&
@@ -430,7 +431,7 @@ export default function FundApplication() {
   // let saves through unasked and dismissed a dialog that had just opened.
   useEffect(() => {
     if (!fundingData) return
-    setEditRequiresConfirmation(Boolean(fundingData.edit_requires_resign))
+    setEditRequiresConfirmation(Boolean(fundingData.edit_needs_confirmation ?? fundingData.edit_requires_resign), fundingData.id)
   }, [fundingData])
 
   // A new signature is owed. Whatever the signing step still holds is the old
@@ -442,6 +443,8 @@ export default function FundApplication() {
     setAttestation({
       certify: false,
       signature_name: '',
+      signature_type: 'typed',
+      signature_image: '',
       esign_consent: false,
       terms_consent: false,
       privacy_consent: false,
@@ -844,7 +847,7 @@ export default function FundApplication() {
         isEditing={isEditing}
       />
       {/* Rendered once for the whole wizard: every step's save waits on it. */}
-      <EditConfirmationModal />
+      <EditConfirmationModal status={fundingData?.status} awaitingResign={Boolean(fundingData?.requires_resign)} />
     </div>
   )
 }
