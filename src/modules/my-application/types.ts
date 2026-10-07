@@ -278,6 +278,10 @@ export interface FundingApplicationCoBorrower {
 // which is a superset of the list resource's fields.
 export interface FundingApplicationDetail extends FundingApplication {
   partner_id: number | null
+  // The request the edit form opens on, and whether the application's
+  // lifecycle key still allows an edit (the server decides).
+  funding_request_id?: number | null
+  is_editable?: boolean
   funding_sequence_amount_range: string | null
   funding_request_status: string | null
   status_note: string | null
