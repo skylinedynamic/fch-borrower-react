@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/auth'
 import { isSubscriptionRestricted, isFreeTrialLocked } from './subscriptionUtils'
+import { NOTIFICATIONS_ROUTE } from '../../config/notifications'
 
 
 // Paths that are blocked while on the Limited Free Edition (free trial)
@@ -29,7 +30,8 @@ export default function ProtectedRoute() {
   const isRestricted = isSubscriptionRestricted(userSubscription)
 
   if (isRestricted) {
-    const allowedPaths = ['/dashboard', '/invoices', '/payments']
+    // Notifications stay open on every plan: the header bell is always shown.
+    const allowedPaths = ['/dashboard', '/invoices', '/payments', NOTIFICATIONS_ROUTE]
     const isAllowed = location.pathname === '/' || allowedPaths.some(path => location.pathname.startsWith(path))
     
     if (!isAllowed) {

@@ -88,8 +88,8 @@ export default function CreditAccountHealth({ metrics }: Props) {
   const delinquencies = metrics?.delinquencies_30_60_90
 
   return (
-    <div className="card border shadow-sm mb-3">
-      <div className="card-header bg-transparent border-bottom py-3">
+    <div className="card border shadow-sm mb-2">
+      <div className="card-header bg-transparent border-bottom py-2">
         <div className="d-flex align-items-center gap-2">
           <div className={`rounded p-2 ${flagged.length ? 'bg-danger-subtle' : 'bg-success-subtle'}`}>
             <i
@@ -105,7 +105,7 @@ export default function CreditAccountHealth({ metrics }: Props) {
         </div>
       </div>
 
-      <div className="card-body px-4 py-3">
+      <div className="card-body px-3 py-2">
         {clean && (
           <div className="cp-clean-banner">
             <i className="ri-checkbox-circle-fill"></i>
