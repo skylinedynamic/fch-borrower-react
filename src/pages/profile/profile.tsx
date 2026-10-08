@@ -1,17 +1,52 @@
 import React, { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { SavePersonalInfoRequest, SaveBusinessDetailsRequest, SaveFinancialInfoRequest } from '../../modules/profile/types'
 import PersonalInfo from './components/PersonalInfo'
 import BusinessDetails from './components/BusinessDetails'
 import FinancialSupport from './components/FinancialSupport'
 import CreditProfileTab from './components/CreditProfileTab'
+import { clearStrayModalBackdrops } from '../../utils/modalBackdrop'
+import { useAuthStore } from '../../store/auth'
+import { AFTER_CREDIT_PROFILE_ROUTE } from '../../config/onboardingSteps'
+import { useFetchProfileCompletion } from '../../modules/profile'
+import { isCreditProfileDone, nextProfileTab, PROFILE_TAB, type ProfileTab } from './nextProfileTab'
+
+/** Longer than a Bootstrap/Reactstrap modal fade-out, so a closing popup is gone by then. */
+const STRAY_LOCK_RECHECK_MS = 600
 
 export default function Profile() {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const tabParam = searchParams.get('tab')
   const initialStep = tabParam ? parseInt(tabParam, 10) : 0
 
   const [step, setStep] = useState<number>(initialStep)
+  const navigate = useNavigate()
+  // Where the borrower lands once their credit profile is in (it is submitted
+  // once, so this happens once): paid borrowers go on to complete Tier 0 on the
+  // Step-By-Step Guide; limited-access (free-trial) borrowers, whose
+  // walkthrough ends here and who have no Credit Builder, go to Funding.
+  const freeTrial = useAuthStore((state) => !!state.user?.is_free_trail)
+  const afterCreditProfile = () => {
+    navigate(freeTrial ? AFTER_CREDIT_PROFILE_ROUTE.FREE_TRIAL : AFTER_CREDIT_PROFILE_ROUTE.PAID)
+  }
+
+  // A link to /profile?tab=N while already here (e.g. from the Getting Started
+  // "what's next" modal) only changes the query, so follow it.
+  useEffect(() => {
+    if (tabParam !== null) setStep(parseInt(tabParam, 10))
+  }, [tabParam])
+
+  // A modal closed mid-way (e.g. the Complete Your Profile popup that brought
+  // the borrower here) can leave <body> locked with nothing on screen, and the
+  // longer tabs then can't scroll. Give the scroll back on every tab change,
+  // and once more after modal fade-outs (~300ms) are over, in case the popup
+  // was still closing when the tab opened. It does nothing while a modal
+  // really is open.
+  useEffect(() => {
+    clearStrayModalBackdrops()
+    const afterFadeOut = setTimeout(clearStrayModalBackdrops, STRAY_LOCK_RECHECK_MS)
+    return () => clearTimeout(afterFadeOut)
+  }, [step])
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -63,8 +98,23 @@ export default function Profile() {
     return () => clearTimeout(t)
   }, [])
 
-  const onSave = async () => {
-    // Parent onSave logic if any (e.g. tracking or general notifications)
+  // After a section is saved, on to the next one still to complete -
+  // Business, Financial, then the credit profile - once this one is complete.
+  const fetchCompletion = useFetchProfileCompletion()
+  const creditProfileUpdated = useAuthStore((state) => !!state.user?.credit_profile_updated)
+  const afterSave = (saved: ProfileTab) => async () => {
+    try {
+      const completion = await fetchCompletion()
+      const next = nextProfileTab(saved, {
+        personal: completion.personal.is_complete,
+        business: completion.business.is_complete,
+        financial: completion.financial.is_complete,
+        creditProfile: isCreditProfileDone(completion.onboarding?.current_step, creditProfileUpdated),
+      })
+      if (next !== null) setSearchParams({ tab: String(next) })
+    } catch {
+      // Can't tell what is left: stay on the section just saved.
+    }
   }
 
   return (
@@ -137,7 +187,7 @@ export default function Profile() {
                   <PersonalInfo
                     data={personal}
                     onChange={setPersonal}
-                    onSave={onSave}
+                    onSave={afterSave(PROFILE_TAB.PERSONAL)}
                   />
                 )}
 
@@ -145,7 +195,7 @@ export default function Profile() {
                   <BusinessDetails
                     data={business}
                     onChange={setBusiness}
-                    onSave={onSave}
+                    onSave={afterSave(PROFILE_TAB.BUSINESS)}
                     onBack={() => setStep(0)}
                   />
                 )}
@@ -154,14 +204,14 @@ export default function Profile() {
                   <FinancialSupport
                     data={support}
                     onChange={setSupport}
-                    onSave={onSave}
+                    onSave={afterSave(PROFILE_TAB.FINANCIAL)}
                     onBack={() => setStep(1)}
                     saving={saving}
                   />
                 )}
 
                 {step === 3 && (
-                  <CreditProfileTab />
+                  <CreditProfileTab onSubmitted={afterCreditProfile} />
                 )}
               </div>
             </div>

@@ -1,20 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { render, screen } from '@testing-library/react'
+import { Route, Routes } from 'react-router-dom'
+import { renderWithProviders, screen } from '../../test-utils'
 import { useAuthStore } from '../../../src/store/auth'
 import CapitalAccessGuard from '../../../src/lib/auth/CapitalAccessGuard'
 
 const reset = () => useAuthStore.setState({ token: undefined, user: null, userSubscription: null, rememberMe: true })
 
 const renderAt = () =>
-  render(
-    <MemoryRouter initialEntries={['/capital-access']}>
-      <Routes>
-        <Route element={<CapitalAccessGuard />}>
-          <Route path="/capital-access" element={<div>Capital Access Content</div>} />
-        </Route>
-      </Routes>
-    </MemoryRouter>
+  renderWithProviders(
+    <Routes>
+      <Route element={<CapitalAccessGuard />}>
+        <Route path="/credit-card-stacking" element={<div>Capital Access Content</div>} />
+      </Route>
+    </Routes>,
+    { route: '/credit-card-stacking' }
   )
 
 describe('CapitalAccessGuard', () => {

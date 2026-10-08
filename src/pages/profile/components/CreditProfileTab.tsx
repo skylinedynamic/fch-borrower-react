@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
 import { toast } from 'react-toastify'
 import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
 import { useAuth } from '../../../hooks/useAuth'
+import { usePersonalInfo } from '../../../modules/profile'
 import { countries } from '../../../modules/location'
 import { apiClient } from '../../../lib/http/apiClient'
+import { queryKeys } from '../../../lib/query'
 import { formatPhoneNumber, formatZipCode, formatSSN, unformatSSN, maskSSN, formatDate } from '../../../utils/formatters'
 import TabLoader from '../../../components/Loader/TabLoader'
 import { fetchCreditProfile } from '../../../modules/credit-profile'
@@ -67,16 +70,38 @@ const DetailItem = ({ label, value, icon }: DetailItemProps) => (
   </div>
 )
 
-export default function CreditProfileTab() {
+interface CreditProfileTabProps {
+  /** Called once a credit profile request has been accepted, so the page can move the borrower on. */
+  onSubmitted?: () => void
+}
+
+/** "Oct 8, 2026" from the API's timestamp; nothing when it is missing or unreadable. */
+const formatSubmittedDate = (value?: string): string | null => {
+  if (!value) return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+export default function CreditProfileTab({ onSubmitted }: CreditProfileTabProps = {}) {
   const { user, refreshUser } = useAuth()
+  const queryClient = useQueryClient()
   const [loading, setLoading] = useState(false)
   const [initialized, setInitialized] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submittedData, setSubmittedData] = useState<CreditProfileRequestData | null>(null)
   const [creditProfile, setCreditProfile] = useState<CreditProfile | null>(null)
+  // A request is on file but its credit pull has not come back yet.
+  const [pendingRequest, setPendingRequest] = useState(false)
   const [showSSN, setShowSSN] = useState(false)
-  
+  // Set when the borrower resubmits: the form is long, so the notice at its
+  // top is brought into view once it is back on screen.
+  const [revealNotice, setRevealNotice] = useState(false)
+  const noticeRef = useRef<HTMLDivElement>(null)
+
   const [updating, setUpdating] = useState(false)
+
+  const { data: personalInfo } = usePersonalInfo()
 
   const [formData, setFormData] = useState<FormState>({
     first_name: '',
@@ -111,6 +136,29 @@ export default function CreditProfileTab() {
 
 
   const usStates = countries.find(c => c.name === 'United States')?.states || []
+
+  // Prefill from the profile the borrower has already filled in (Personal Info
+  // tab), so they only check it and submit. Fills what is still empty, so it
+  // never overwrites something typed, or the details of an earlier request that
+  // arrive from the effects below. The full SSN isn't held, only its last four,
+  // so that one is left for the borrower.
+  useEffect(() => {
+    const profile = personalInfo
+    if (!profile) return
+    setFormData(prev => ({
+      ...prev,
+      first_name: prev.first_name || profile.first_name || '',
+      middle_name: prev.middle_name || profile.middle_name || '',
+      last_name: prev.last_name || profile.last_name || '',
+      address: prev.address || profile.home_address || '',
+      city: prev.city || profile.city || '',
+      state: prev.state || profile.state || '',
+      zip: prev.zip || formatZipCode(profile.zip_code || ''),
+      date_of_birth: prev.date_of_birth || (profile.date_of_birth ? profile.date_of_birth.substring(0, 10) : ''),
+      phone: prev.phone || formatPhoneNumber(profile.phone_number || ''),
+      email: prev.email || profile.email || '',
+    }))
+  }, [personalInfo])
 
   // Prefill from user personal info
   useEffect(() => {
@@ -148,13 +196,14 @@ export default function CreditProfileTab() {
   }, [submittedData])
 
   // If credit_profile_updated flag is set, fetch credit profile data.
-  // If not set, mark as initialized immediately so the form shows right away.
+  // If not, look for a request already submitted and awaiting its results, so
+  // coming back to the tab shows it rather than an empty form.
   useEffect(() => {
-    if (user === undefined) return // still loading auth
-    if (user?.credit_profile_updated) {
+    if (!user) return // still loading auth, or signed out: nothing to look up
+    if (user.credit_profile_updated) {
       fetchCreditProfileOnly()
     } else {
-      setInitialized(true)
+      fetchSubmittedDetails({ quiet: true })
     }
   }, [user?.credit_profile_updated])
 
@@ -181,6 +230,7 @@ export default function CreditProfileTab() {
           phone: data.phone || prev.phone,
           email: data.email || prev.email,
         }))
+        setPendingRequest(true)
         setCreditProfile(null)
       } else {
         setCreditProfile(data)
@@ -193,7 +243,8 @@ export default function CreditProfileTab() {
     }
   }
 
-  const fetchSubmittedDetails = async () => {
+  /** `quiet`: on opening the tab, a failed lookup just leaves the form to fill in. */
+  const fetchSubmittedDetails = async ({ quiet = false }: { quiet?: boolean } = {}) => {
     try {
       setLoading(true)
       const { data } = await apiClient.get('/borrower/profile/credit-profile-request')
@@ -211,7 +262,7 @@ export default function CreditProfileTab() {
     } catch (err: any) {
       console.error('Failed to fetch credit profile request details', err)
       setSubmittedData(null)
-      toast.error(
+      if (!quiet) toast.error(
         err.response?.data?.message || 'Failed to load your credit profile details. Please try again.'
       )
     } finally {
@@ -220,41 +271,41 @@ export default function CreditProfileTab() {
     }
   }
 
-/**
- * What the server's Ssn rule enforces, repeated here so a borrower hears about
- * a malformed number while the form is still in front of them rather than as a
- * 422 for the one field they cannot easily re-read off a screen.
- *
- * Nine digits is not enough to be an SSN: the SSA never issues area 000, 666 or
- * 900-999, group 00, or serial 0000. Kept in step with App\Rules\Ssn - a change
- * to one belongs in both.
- */
-const SSN_DIGITS = 9
-const ZIP_DIGITS = 5
+  /**
+   * What the server's Ssn rule enforces, repeated here so a borrower hears about
+   * a malformed number while the form is still in front of them rather than as a
+   * 422 for the one field they cannot easily re-read off a screen.
+   *
+   * Nine digits is not enough to be an SSN: the SSA never issues area 000, 666 or
+   * 900-999, group 00, or serial 0000. Kept in step with App\Rules\Ssn - a change
+   * to one belongs in both.
+   */
+  const SSN_DIGITS = 9
+  const ZIP_DIGITS = 5
 
-function ssnError(value: string): string | null {
-  const digits = unformatSSN(value)
+  function ssnError(value: string): string | null {
+    const digits = unformatSSN(value)
 
-  if (digits.length !== SSN_DIGITS) {
-    return 'Enter a valid 9-digit SSN as XXX-XX-XXXX.'
+    if (digits.length !== SSN_DIGITS) {
+      return 'Enter a valid 9-digit SSN as XXX-XX-XXXX.'
+    }
+
+    const area = digits.slice(0, 3)
+    const group = digits.slice(3, 5)
+    const serial = digits.slice(5)
+
+    if (area === '000' || area === '666' || Number(area) >= 900 || group === '00' || serial === '0000') {
+      return 'Enter a valid 9-digit SSN as XXX-XX-XXXX.'
+    }
+
+    return null
   }
 
-  const area = digits.slice(0, 3)
-  const group = digits.slice(3, 5)
-  const serial = digits.slice(5)
-
-  if (area === '000' || area === '666' || Number(area) >= 900 || group === '00' || serial === '0000') {
-    return 'Enter a valid 9-digit SSN as XXX-XX-XXXX.'
+  function zipError(value: string): string | null {
+    return value.replace(/\D/g, '').length === ZIP_DIGITS
+      ? null
+      : 'Enter a 5-digit ZIP code, e.g. 10001.'
   }
-
-  return null
-}
-
-function zipError(value: string): string | null {
-  return value.replace(/\D/g, '').length === ZIP_DIGITS
-    ? null
-    : 'Enter a 5-digit ZIP code, e.g. 10001.'
-}
 
   const update = (key: keyof FormState, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }))
@@ -280,6 +331,10 @@ function zipError(value: string): string | null {
       return
     }
 
+    // Moving the borrower on (to the Step-By-Step Guide) is for the first
+    // submission; editing and resubmitting a request already in stays here.
+    const firstSubmission = !submittedData && !pendingRequest
+
     try {
       setSubmitting(true)
       // Sent with the form, not implied by it. The API refuses without both and
@@ -292,8 +347,12 @@ function zipError(value: string): string | null {
         ...consent,
       })
       toast.success(res.data?.message || 'Credit profile request submitted successfully.')
+      // Moves the Getting Started walkthrough on to "waiting for verification".
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.completion() })
       // On success: fetch the saved record and show details view
       await fetchSubmittedDetails()
+      if (firstSubmission) onSubmitted?.()
+      else setRevealNotice(true)
     } catch (err: any) {
       // Every failure on this form is reported in the form.
       //
@@ -337,6 +396,12 @@ function zipError(value: string): string | null {
     }
   }
 
+  useEffect(() => {
+    if (!revealNotice || !noticeRef.current) return
+    noticeRef.current.scrollIntoView?.({ behavior: 'smooth', block: 'center' })
+    setRevealNotice(false)
+  })
+
   // ─── Loading / not yet initialized ─────────────────────────────────────────
   if (loading || !initialized) {
     return <TabLoader count={12} colClass="col-md-6" />
@@ -345,19 +410,20 @@ function zipError(value: string): string | null {
   // ─── Credit Profile Details view (from borrower_credit_* tables) ────────────
   if (creditProfile) {
     return (
-      <div className="fade-panel">
-        <div className="d-flex align-items-center gap-3 mb-3">
-          <div>
-            <div className="fw-bold text-dark fs-16">Credit Profile</div>
-            <div className="text-muted fs-13">
+      <div className="fade-panel cp-page">
+        <div className="cp-page-head">
+          <span className="cp-page-icon" aria-hidden="true">
+            <i className="ri-bar-chart-box-line"></i>
+          </span>
+          <div className="cp-page-heading">
+            <h5 className="cp-page-title">Credit Profile</h5>
+            <p className="cp-page-text">
               Your credit profile has been processed and is available for review.
-            </div>
+            </p>
           </div>
-          <div className="ms-auto flex-shrink-0">
-            <span className="badge bg-primary-subtle text-primary border border-primary-subtle fs-12 px-3 py-2">
-              <i className="ri-checkbox-circle-fill me-1"></i>Active
-            </span>
-          </div>
+          <span className="cp-status is-active">
+            <i className="ri-checkbox-circle-fill" aria-hidden="true"></i>Active
+          </span>
         </div>
 
         {/* The scores lead the page. They used to sit fifth, as label/value rows
@@ -429,11 +495,17 @@ function zipError(value: string): string | null {
               disabled={updating}
             />
 
-            <div className="d-flex justify-content-end">
+            <div className="cp-form-actions is-flush">
+              <span className="cp-actions-hint">
+                {bothUpdateConsentsGiven ? (
+                  <><i className="ri-checkbox-circle-line text-success" aria-hidden="true"></i>Ready to send</>
+                ) : (
+                  <><i className="ri-information-line" aria-hidden="true"></i>Tick both authorizations to request an update</>
+                )}
+              </span>
               <button
                 type="button"
-                className="btn px-4 text-white"
-                style={{ backgroundColor: '#021f3c', borderColor: '#021f3c' }}
+                className="btn btn-primary cp-submit"
                 onClick={handleRequestUpdate}
                 disabled={updating || !bothUpdateConsentsGiven}
               >
@@ -458,117 +530,91 @@ function zipError(value: string): string | null {
 
 
   // ─── Form view ──────────────────────────────────────────────────────────────
+  // Where the request stands, said once at the top. A request that was sent but
+  // has not been pulled yet arrives as the request itself (see
+  // fetchCreditProfileOnly), and used to look exactly like a blank form.
+  const requestSent = !!submittedData || pendingRequest
+  const submittedOn = formatSubmittedDate(submittedData?.created_at)
+
   return (
-    <div className="fade-panel">
-      {/* ── Success banner (if already submitted) ── */}
-      {submittedData && (
-        <div className="d-flex align-items-center gap-3 p-3 mb-3 rounded-3 border"
-          style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)', borderColor: '#86efac !important' }}>
-          <div className="rounded-circle bg-success d-flex align-items-center justify-content-center flex-shrink-0"
-            style={{ width: 48, height: 48 }}>
-            <i className="ri-shield-check-fill text-white fs-22"></i>
+    <div className="fade-panel cp-page">
+      <form onSubmit={handleSubmit} noValidate className="cp-panel">
+        <div className="cp-panel-head">
+          <span className="cp-page-icon" aria-hidden="true">
+            <i className="ri-shield-user-line"></i>
+          </span>
+          <div className="cp-page-heading">
+            <h5 className="cp-page-title">Soft credit check authorization</h5>
+            <p className="cp-page-text">
+              This is a <strong>soft inquiry</strong> and will never affect your credit score. Your
+              details are encrypted in transit and at rest, and are used only to locate your credit
+              file.
+            </p>
           </div>
-          <div>
-            <div className="fw-bold text-success-emphasis fs-15">Credit Profile Submitted</div>
-            <div className="text-success-emphasis fs-13 opacity-75">
-              Your soft credit check request has been securely saved. You can edit your details below if needed.
-            </div>
-          </div>
-          <div className="ms-auto flex-shrink-0">
-            <span className="badge bg-success-subtle text-success border border-success-subtle fs-12 px-3 py-2">
-              <i className="ri-checkbox-circle-fill me-1"></i>Active
-            </span>
-          </div>
+          <span
+            className={`cp-status ${requestSent ? 'is-submitted' : 'is-draft'}`}
+            data-testid="cp-request-status"
+          >
+            <i className={requestSent ? 'ri-time-line' : 'ri-draft-line'} aria-hidden="true"></i>
+            {requestSent ? 'Submitted · awaiting results' : 'Not submitted'}
+          </span>
         </div>
-      )}
-      {/* Info notice */}
-      {/* <div className="rounded-3 border border-primary-subtle bg-primary-subtle px-4 py-3 mb-4 d-flex align-items-start gap-3">
-        <div className="flex-shrink-0 rounded-circle bg-primary d-flex align-items-center justify-content-center"
-          style={{ width: 38, height: 38, minWidth: 38 }}>
-          <i className="ri-shield-user-line text-white fs-18"></i>
-        </div>
-        <div>
-          <div className="fw-semibold text-primary-emphasis fs-14 mb-1">Soft Credit Check Authorization</div>
-          <div className="text-primary-emphasis fs-13 opacity-75">
-            Please complete the form below to authorize a <strong>soft credit inquiry</strong>. This is a read-only
-            check — it will <strong>never</strong> impact your credit score. All submitted data is
-            <strong> encrypted</strong> and stored securely in compliance with financial regulations.
-          </div>
-        </div>
-      </div> */}
 
-      {/* What the borrower is agreeing to, said once at the top rather than
-          left to be inferred from the consent checkboxes at the bottom. */}
-      <div className="cp-form-intro">
-        <i className="ri-shield-user-line"></i>
-        <div>
-          <div className="cp-form-intro-title">Soft credit check authorization</div>
-          <div className="cp-form-intro-text">
-            This is a <strong>soft inquiry</strong> and will never affect your credit score. Your
-            details are encrypted in transit and at rest, and are used only to locate your credit
-            file.
-          </div>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit} noValidate>
-        <div className="cp-section">
-          <div className="cp-section-head">
-            <span className="cp-section-step">1</span>
-            <div>
-              <div className="cp-section-title">Your name</div>
-              <div className="cp-section-hint">As it appears on your government-issued ID</div>
+        <div className="cp-panel-body">
+          {/* ── Submitted: said whenever a request is on file, with the way to update it ── */}
+          {requestSent && (
+            <div className="cp-alert is-success" role="status" aria-labelledby="cp-submitted-title" ref={noticeRef}>
+              <i className="ri-shield-check-fill" aria-hidden="true"></i>
+              <div>
+                <div id="cp-submitted-title" className="cp-alert-title">Credit Profile Submitted</div>
+                <div className="cp-alert-text">
+                  Our team is verifying it. You can still update your details below and submit again.
+                </div>
+                {submittedOn && <div className="cp-alert-meta">Submitted on {submittedOn}</div>}
+              </div>
             </div>
-          </div>
-          <div className="cp-section-body">
-            <div className="row g-2">
-            <div className="col-md-4">
-              <label className="form-label">First Name <span className="text-danger">*</span></label>
+          )}
+
+          <div className="row g-3">
+            <div className="col-md-3">
+              <label className="form-label" htmlFor="cp-first-name">First Name <span className="text-danger">*</span></label>
               <input
+                id="cp-first-name"
                 type="text"
                 className={`form-control${errors.first_name ? ' is-invalid' : ''}`}
                 value={formData.first_name}
                 placeholder="e.g. John"
+                autoComplete="given-name"
                 onChange={e => update('first_name', e.target.value)}
               />
               {errors.first_name && <div className="invalid-feedback">{errors.first_name}</div>}
             </div>
-            <div className="col-md-4">
-              <label className="form-label">Middle Name <span className="text-muted fs-12">(optional)</span></label>
+            <div className="col-md-3">
+              <label className="form-label" htmlFor="cp-middle-name">Middle Name <span className="text-muted fs-12">(optional)</span></label>
               <input
+                id="cp-middle-name"
                 type="text"
                 className="form-control"
                 placeholder="e.g. Michael"
+                autoComplete="additional-name"
                 value={formData.middle_name}
                 onChange={e => update('middle_name', e.target.value)}
               />
             </div>
-            <div className="col-md-4">
-              <label className="form-label">Last Name <span className="text-danger">*</span></label>
+            <div className="col-md-6">
+              <label className="form-label" htmlFor="cp-last-name">Last Name <span className="text-danger">*</span></label>
               <input
+                id="cp-last-name"
                 type="text"
                 className={`form-control${errors.last_name ? ' is-invalid' : ''}`}
                 value={formData.last_name}
                 placeholder="e.g. Smith"
+                autoComplete="family-name"
                 onChange={e => update('last_name', e.target.value)}
               />
               {errors.last_name && <div className="invalid-feedback">{errors.last_name}</div>}
             </div>
-          </div>
-          </div>
-        </div>
 
-        <div className="cp-section">
-          <div className="cp-section-head">
-            <span className="cp-section-step">2</span>
-            <div>
-              <div className="cp-section-title">Identity</div>
-              <div className="cp-section-hint">Used only to locate your credit file</div>
-            </div>
-            <span className="cp-secure-note"><i className="ri-lock-2-line"></i>Encrypted</span>
-          </div>
-          <div className="cp-section-body">
-            <div className="row g-2">
             <div className="col-md-6">
               <label className="form-label" htmlFor="cp-ssn">Social Security Number <span className="text-danger">*</span></label>
               <div className="input-group">
@@ -580,12 +626,12 @@ function zipError(value: string): string | null {
                   placeholder="XXX-XX-XXXX"
                   onChange={e => update('ssn', formatSSN(e.target.value))}
                   inputMode="numeric"
+                  autoComplete="off"
                   maxLength={11}
                 />
                 <button
                   type="button"
-                  className="btn"
-                  style={{ border: '1px solid #ced4da', background: '#fff', color: '#6c757d', boxShadow: 'none' }}
+                  className="btn cp-ssn-toggle"
                   onClick={() => setShowSSN(s => !s)}
                   tabIndex={-1}
                   title={showSSN ? 'Hide SSN' : 'Show SSN'}
@@ -593,10 +639,15 @@ function zipError(value: string): string | null {
                   <i className={showSSN ? 'ri-eye-close-line' : 'ri-eye-2-line'}></i>
                 </button>
               </div>
+              {personalInfo?.last_4_ssn && !formData.ssn && (
+                <div className="cp-field-hint">
+                  Enter your full SSN. We have one ending in {personalInfo.last_4_ssn} on file.
+                </div>
+              )}
               {errors.ssn && <div className="text-danger fs-12 mt-1">{errors.ssn}</div>}
             </div>
             <div className="col-md-6">
-              <label className="form-label">Date of Birth <span className="text-danger">*</span></label>
+              <label className="form-label" htmlFor="cp-dob">Date of Birth <span className="text-danger">*</span></label>
               <Flatpickr
                 className={`form-control${errors.date_of_birth ? ' is-invalid' : ''}`}
                 value={formData.date_of_birth}
@@ -608,95 +659,84 @@ function zipError(value: string): string | null {
                   maxDate: 'today',
                   monthSelectorType: 'dropdown',
                   plugins: [yearDropdownPlugin(1900)],
+                  // The label has to point at the input the borrower sees: with
+                  // altInput, flatpickr hides the original and shows a copy.
+                  onReady: (_dates: Date[], _str: string, fp: { input: HTMLInputElement; altInput?: HTMLInputElement }) => {
+                    (fp.altInput ?? fp.input).id = 'cp-dob'
+                  },
                 } as any}
                 placeholder="Select your date of birth"
               />
               {errors.date_of_birth && <div className="invalid-feedback d-block">{errors.date_of_birth}</div>}
             </div>
-          </div>
-          </div>
-        </div>
 
-        <div className="cp-section">
-          <div className="cp-section-head">
-            <span className="cp-section-step">3</span>
-            <div>
-              <div className="cp-section-title">Contact</div>
-              <div className="cp-section-hint">Where we can reach you about this request</div>
-            </div>
-          </div>
-          <div className="cp-section-body">
-            <div className="row g-2">
             <div className="col-md-6">
-              <label className="form-label">Phone Number <span className="text-danger">*</span></label>
+              <label className="form-label" htmlFor="cp-phone">Phone Number <span className="text-danger">*</span></label>
               <input
+                id="cp-phone"
                 type="tel"
                 className={`form-control${errors.phone ? ' is-invalid' : ''}`}
                 value={formData.phone}
                 placeholder="(555) 555-5555"
+                autoComplete="tel-national"
                 onChange={e => update('phone', formatPhoneNumber(e.target.value))}
               />
               {errors.phone && <div className="invalid-feedback">{errors.phone}</div>}
             </div>
             <div className="col-md-6">
-              <label className="form-label">Email Address <span className="text-danger">*</span></label>
+              <label className="form-label" htmlFor="cp-email">Email Address <span className="text-danger">*</span></label>
               <input
+                id="cp-email"
                 type="email"
                 className={`form-control${errors.email ? ' is-invalid' : ''}`}
                 value={formData.email}
                 placeholder="you@example.com"
+                autoComplete="email"
                 onChange={e => update('email', e.target.value)}
               />
               {errors.email && <div className="invalid-feedback">{errors.email}</div>}
             </div>
-          </div>
-          </div>
-        </div>
 
-        <div className="cp-section">
-          <div className="cp-section-head">
-            <span className="cp-section-step">4</span>
-            <div>
-              <div className="cp-section-title">Home address</div>
-              <div className="cp-section-hint">Your current residential address</div>
-            </div>
-          </div>
-          <div className="cp-section-body">
-            <div className="row g-2">
             <div className="col-md-6">
-              <label className="form-label">Street Address <span className="text-danger">*</span></label>
+              <label className="form-label" htmlFor="cp-address">Street Address <span className="text-danger">*</span></label>
               <input
+                id="cp-address"
                 type="text"
                 className={`form-control${errors.address ? ' is-invalid' : ''}`}
                 value={formData.address}
                 placeholder="123 Main Street"
+                autoComplete="address-line1"
                 onChange={e => update('address', e.target.value)}
               />
               {errors.address && <div className="invalid-feedback">{errors.address}</div>}
             </div>
             <div className="col-md-6">
-              <label className="form-label">Apt / Suite / Unit <span className="text-muted fs-12">(optional)</span></label>
+              <label className="form-label" htmlFor="cp-apt">Apt / Suite / Unit <span className="text-muted fs-12">(optional)</span></label>
               <input
+                id="cp-apt"
                 type="text"
                 className="form-control"
                 placeholder="Apt 4B"
+                autoComplete="address-line2"
                 value={formData.apt_suite_other}
                 onChange={e => update('apt_suite_other', e.target.value)}
               />
             </div>
 
-            <div className="col-md-4">
-              <label className="form-label">City <span className="text-danger">*</span></label>
+            <div className="col-md-6">
+              <label className="form-label" htmlFor="cp-city">City <span className="text-danger">*</span></label>
               <input
+                id="cp-city"
                 type="text"
                 className={`form-control${errors.city ? ' is-invalid' : ''}`}
                 value={formData.city}
                 placeholder="New York"
+                autoComplete="address-level2"
                 onChange={e => update('city', e.target.value)}
               />
               {errors.city && <div className="invalid-feedback">{errors.city}</div>}
             </div>
-            <div className="col-md-4">
+            <div className="col-md-6">
               <label className="form-label">State <span className="text-danger">*</span></label>
               <CustomDropdown
                 value={formData.state}
@@ -710,7 +750,7 @@ function zipError(value: string): string | null {
               />
               {errors.state && <div className="text-danger fs-12 mt-1">{errors.state}</div>}
             </div>
-            <div className="col-md-4">
+            <div className="col-md-6">
               <label className="form-label" htmlFor="cp-zip">Zip Code <span className="text-danger">*</span></label>
               <input
                 id="cp-zip"
@@ -719,38 +759,48 @@ function zipError(value: string): string | null {
                 value={formData.zip}
                 placeholder="10001"
                 inputMode="numeric"
+                autoComplete="postal-code"
                 maxLength={5}
                 onChange={e => update('zip', formatZipCode(e.target.value))}
               />
               {errors.zip && <div className="invalid-feedback">{errors.zip}</div>}
             </div>
           </div>
+
+          {/* ── Authorization, immediately above Submit ──
+              Replaces a one-line notice that claimed authorisation by the act of
+              submitting. That proved nothing: no act by the client and no record.
+              See CreditAuthorizationConsent. */}
+          <div className="cp-consent">
+            <CreditAuthorizationConsent
+              values={consent}
+              onChange={setConsent}
+              idPrefix="credit-profile"
+              disabled={submitting}
+              error={errors.credit_authorization_accepted || errors.e_consent_accepted}
+            />
           </div>
+
+          {/* ── Generic form-level error ── */}
+          {errors._form && (
+            <div className="cp-alert is-danger" role="alert">
+              <i className="ri-error-warning-line" aria-hidden="true"></i>
+              <div className="cp-alert-text">{errors._form}</div>
+            </div>
+          )}
         </div>
 
-        {/* ── Generic form-level error ── */}
-        {errors._form && (
-          <div className="alert alert-danger border-0 fs-13 py-2 px-3 mb-3">
-            <i className="ri-error-warning-line me-2"></i>{errors._form}
-          </div>
-        )}
-
-        {/* ── Authorization, immediately above Submit ──
-            Replaces a one-line notice that claimed authorisation by the act of
-            submitting. That proved nothing: no act by the client and no record.
-            See CreditAuthorizationConsent. */}
-        <CreditAuthorizationConsent
-          values={consent}
-          onChange={setConsent}
-          idPrefix="credit-profile"
-          disabled={submitting}
-          error={errors.credit_authorization_accepted || errors.e_consent_accepted}
-        />
-
-        <div className="d-flex justify-content-end gap-2">
+        <div className="cp-form-actions">
+          <span className="cp-actions-hint">
+            {bothConsentsGiven ? (
+              <><i className="ri-checkbox-circle-line text-success" aria-hidden="true"></i>Ready to submit</>
+            ) : (
+              <><i className="ri-information-line" aria-hidden="true"></i>Check both authorizations to submit</>
+            )}
+          </span>
           <button
             type="submit"
-            className="btn btn-primary px-5"
+            className="btn btn-primary cp-submit"
             disabled={submitting || !bothConsentsGiven}
           >
             {submitting ? (
@@ -760,7 +810,8 @@ function zipError(value: string): string | null {
               </>
             ) : (
               <>
-                <i className="ri-send-plane-line me-2"></i>Submit Credit Profile
+                <i className="ri-send-plane-line me-2"></i>
+                {requestSent ? 'Resubmit Credit Profile' : 'Submit Credit Profile'}
               </>
             )}
           </button>

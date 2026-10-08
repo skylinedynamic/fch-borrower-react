@@ -96,7 +96,8 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
       onSuccess: (response) => {
         if (response.status) {
           toast.success(response.message)
-          //onSave()
+          // On to the next section still to complete.
+          onSave()
         } else {
           toast.error(response.message)
           if (response.errors) {
@@ -575,7 +576,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
           </div>
           {errors.business_entity_type && <div className="invalid-feedback d-block">{errors.business_entity_type}</div>}
         </div>
-        
+
         {data.business_entity_type === (entityTypes.find(e => e.label === 'Other')?.value || 'Other') && (
           <div className="col-md-6">
             <label className="form-label">Entity Type Details <span className="text-danger">*</span></label>
@@ -720,7 +721,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
           </div>
           {errors.business_industry_type && <div className="invalid-feedback d-block">{errors.business_industry_type}</div>}
         </div>
-        
+
         {data.business_industry_type === (industryTypes.find(i => i.label === 'Other')?.value || 'Other') && (
           <div className="col-md-6">
             <label className="form-label">Industry Type Details <span className="text-danger">*</span></label>
@@ -740,7 +741,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
         <div className="col-12 d-flex justify-content-between mt-4">
           <button type="button" className="btn btn-warning" onClick={onBack}>Previous</button>
           <button type="button" className="btn primary-btn" onClick={handleSave} disabled={isPending}>
-            {isPending ? 'Saving...' : 'Save Changes'}
+            {isPending ? 'Saving Changes...' : 'Save Changes'}
           </button>
         </div>
       </form>

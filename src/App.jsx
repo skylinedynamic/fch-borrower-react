@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { Routes, Route, Outlet } from 'react-router-dom'
 import Layout from '../src/components/Layout/Layout.jsx'
-import Dashboard from '../src/pages/dashboard/Dashboard.jsx'
+import Dashboard from '../src/pages/dashboard/Dashboard'
 import SignIn from '../src/pages/singin/SignIn.jsx'
 import ForgotPassword from '../src/pages/singin/ForgotPassword.jsx'
 import ResetPassword from '../src/pages/singin/ResetPassword.jsx'
@@ -25,6 +25,7 @@ import ChangePassword from '../src/pages/settings/ChangePassword.jsx'
 import CreditOverview from '../src/pages/credit-builder/creditoverview/CreditOverview.tsx'
 import VendorApplication from '../src/pages/credit-builder/creditvendorapplication/CreditAccounts.tsx'
 import CreditResources from '../src/pages/credit-builder/creditresources/CreditResources.tsx'
+import PrefixRedirect from './components/Common/PrefixRedirect'
 import CapitalAccess from '../src/pages/capital-access/CapitalAccess.tsx'
 import StrategySelection from '../src/pages/capital-access/StrategySelection.tsx'
 import PlayOverview from '../src/pages/capital-access/PlayOverview.tsx'
@@ -143,7 +144,9 @@ export default function App() {
               <Route path="resources" element={<CreditResources />} />
             </Route>
 
-            <Route path="capital-access" element={<CapitalAccessGuard />}>
+            {/* Capital Access was renamed; keep its old links working. */}
+            <Route path="capital-access/*" element={<PrefixRedirect to="/credit-card-stacking" />} />
+            <Route path="credit-card-stacking" element={<CapitalAccessGuard />}>
               <Route index element={<CapitalAccess />} />
               <Route path="strategy" element={<StrategySelection />} />
               {/* CapitalAccessStrategyGuard validates the :id against the user's recommended strategy */}

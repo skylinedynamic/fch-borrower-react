@@ -69,7 +69,7 @@ export default function EstimatedTotalAccessCard({
                 {reasonCode === 'ALL_PLAYS_COMPLETED' && 'Congratulations! You have completed all available strategic funding plays.'}
                 {reasonCode === 'NEXT_PLAY_DELAY_ACTIVE' && 'A cooling-off period is active. Your next recommended strategy is unlocking soon.'}
                 {reasonCode === 'FICO_BELOW_MINIMUM' && 'Your current FICO score is below the minimum required for available plays.'}
-                {reasonCode === 'TIER_BELOW_MINIMUM' && 'Your current business tier status does not meet the minimum requirements.'}
+                {reasonCode === 'TIER_BELOW_MINIMUM' && 'You need to complete Tier 0 to unlock these functionalities'}
                 {reasonCode === 'UTILIZATION_ABOVE_MAXIMUM' && 'Your credit utilization ratio exceeds the maximum threshold for strategic plays.'}
                 {reasonCode === 'RECENT_LATE_PAYMENTS' && 'Recent late payments detected on your profile restrict access to new plays.'}
                 {reasonCode === 'REQUIREMENTS_NOT_MET' && 'Your credit profile does not meet the minimum criteria to initiate plays.'}

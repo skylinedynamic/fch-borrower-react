@@ -39,7 +39,7 @@
   user-select: none;
   transition: all 0.2s;
   margin: 2px 8px;
-  border-radius: 6px;
+  border-radius: 4px;
 }
 
 .fm-tree-item:hover {
@@ -435,8 +435,13 @@
 }
 
 @keyframes fm-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fm-modal-pop {
@@ -444,6 +449,7 @@
     opacity: 0;
     transform: scale(0.95) translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -550,7 +556,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Upload Area */
@@ -579,10 +587,10 @@
 /* Mobile Responsive */
 @media (max-width: 768px) {
 
-  .fm-toolbar-btn:first-child{
+  .fm-toolbar-btn:first-child {
     display: none;
   }
-  
+
   .fm-sidebar {
     display: none;
   }
@@ -700,6 +708,7 @@
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }
@@ -779,7 +788,7 @@
 }
 
 /* File Manager Modal Header */
-.modal-dialog:not(.modal-dialog-scrollable) .modal-header{
+.modal-dialog:not(.modal-dialog-scrollable) .modal-header {
   padding-bottom: 1rem;
 }
 
@@ -825,10 +834,10 @@
 
 
 .fm-grid-item-icon {
-    width: 50% !important;
-    height: auto !important;
+  width: 50% !important;
+  height: auto !important;
 }
 
-.fm-content{
+.fm-content {
   margin-bottom: 20px;
 }

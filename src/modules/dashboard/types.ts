@@ -1,6 +1,7 @@
 export interface DashboardStats {
     funding_applications: number;
-    pre_qualifications: number;
+    funding_requests?: number;
+    pre_qualifications?: number;
     total_requested_amount: number;
     total_funded_amount: number;
 }
@@ -65,13 +66,25 @@ export interface Tier {
     tasks_under_review: number;
 }
 
+export interface ApprovedFundingRequest {
+    id: number;
+    requested_amount: number | string | null;
+    estimated_funding_range?: string | null;
+    funding_type: string | null;
+}
+
 export interface DashboardData {
     states: DashboardStats;
     latest_funding_applications: FundingApplication[];
     latest_pre_qualifications: PreQualification[];
     upcoming_meeting: Meeting[];
     invoices: DashboardInvoice[];
-    tier: Tier
+    tier: Tier | null;
+    /** Null until the borrower's credit profile has been verified. */
+    fico_score?: number | string | null;
+    active_approved_funding_requests?: ApprovedFundingRequest[];
+    active_approved_funding_request?: ApprovedFundingRequest | null;
+    active_approved_funding_request_count?: number;
 }
 
 export interface DashboardResponse {

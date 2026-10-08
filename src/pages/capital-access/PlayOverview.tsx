@@ -38,7 +38,7 @@ export default function PlayOverview() {
   const isDelayLocked = play?.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' && !play?.isCompleted;
 
   if (isError || !play || !play.isAccessible || isDelayLocked) {
-    return <Navigate to="/capital-access/strategy" />;
+    return <Navigate to="/credit-card-stacking/strategy" />;
   }
 
   return (
@@ -50,7 +50,7 @@ export default function PlayOverview() {
           <div className="row pb-1 mb-3">
             <div className="col-12">
               <div className="d-flex align-items-center gap-3 py-2 w-100">
-                <Link to="/capital-access/strategy" className="ca-back-btn" title="Back to Strategies">
+                <Link to="/credit-card-stacking/strategy" className="ca-back-btn" title="Back to Strategies">
                   <i className="ri-arrow-left-line fs-16"></i>
                 </Link>
                 <div>
@@ -99,7 +99,7 @@ export default function PlayOverview() {
                 </div>
 
                 <div className="d-flex align-items-center justify-content-end w-100">
-                  <Link to="/capital-access/strategy" className="ca-btn ca-btn-outline">
+                  <Link to="/credit-card-stacking/strategy" className="ca-btn ca-btn-outline">
                     <i className="ri-arrow-left-line"></i> Back to Strategies
                   </Link>
                 </div>
@@ -179,10 +179,10 @@ export default function PlayOverview() {
                 <hr className="ca-divider my-4" />
 
                 <div className="d-flex align-items-center justify-content-end gap-3 w-100">
-                  <Link to="/capital-access/strategy" className="ca-btn ca-btn-outline ca-btn-min-w">
+                  <Link to="/credit-card-stacking/strategy" className="ca-btn ca-btn-outline ca-btn-min-w">
                     <i className="ri-arrow-left-line"></i> Back
                   </Link>
-                  <Link to={`/capital-access/${play?.id}/pre-flight`} className="ca-btn ca-btn-primary ca-btn-min-w">
+                  <Link to={`/credit-card-stacking/${play?.id}/pre-flight`} className="ca-btn ca-btn-primary ca-btn-min-w">
                     Start This Play <i className="ri-arrow-right-line"></i>
                   </Link>
                 </div>

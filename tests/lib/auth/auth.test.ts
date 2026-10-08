@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useAuthStore } from '../../../src/store/auth'
 import { useBrandingStore } from '../../../src/store/brandingStore'
 import { setAuth, clearAuth, isAuthenticated, checkSession, getToken, getUser } from '../../../src/lib/auth/auth'
+import { getStepShownThisSession, markStepShownThisSession } from '../../../src/modules/onboarding/storage'
 
 const COOKIE_NAME = 'auth_session_active'
 
@@ -16,6 +17,7 @@ const reset = () => {
   useAuthStore.setState({ token: undefined, user: null, userSubscription: null, rememberMe: true })
   useBrandingStore.setState({ branding: null })
   localStorage.clear()
+  sessionStorage.clear()
   clearAllCookies()
   document.title = 'Four Corner Funding'
 }
@@ -48,6 +50,15 @@ describe('auth', () => {
   })
 
   describe('clearAuth', () => {
+    it('forgets which Getting Started step was shown, so the next login shows it again', () => {
+      setAuth('token-123', { id: 1 }, true)
+      markStepShownThisSession(1, 'verify_all')
+
+      clearAuth()
+
+      expect(getStepShownThisSession(1)).toBeNull()
+    })
+
     it('clears the store token/user and erases the session cookie', () => {
       setAuth('token-123', { id: 1 }, true)
 

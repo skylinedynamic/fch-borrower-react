@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useState } from 'react'
 import { http, HttpResponse } from 'msw'
 import { render, screen, waitFor } from '@testing-library/react'
@@ -8,6 +8,7 @@ import { server } from '../../../mocks/server'
 import { createTestQueryClient } from '../../../test-utils'
 import FinancialSupport from '../../../../src/pages/profile/components/FinancialSupport'
 import { LOCKED_FINANCIAL_FIELDS } from '../../../../src/config/profileLockFields'
+import { countries } from '../../../../src/modules/location'
 
 vi.mock('react-toastify', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 vi.mock('react-flatpickr', () => ({
@@ -103,6 +104,120 @@ describe('Profile — Financial tab', () => {
     // formatCurrency groups the digits; the $ belongs to the placeholder, not
     // to the stored value.
     await waitFor(() => expect((revenue as HTMLInputElement).value).toBe('20,000'))
+  })
+
+  // ── the default currency ──────────────────────────────────────────────
+  // The country list is fetched at app start; it is seeded here instead.
+
+  const seedCountries = () => {
+    const country = (name: string, currency: string) => ({ name, code: name.slice(0, 2), currency, phone_code: '', flag: '', states: [] })
+    countries.splice(0, countries.length, country('United States', 'USD'), country('Germany', 'EUR'))
+  }
+  beforeEach(seedCountries)
+  afterEach(() => countries.splice(0, countries.length))
+
+  it('selects USD when the API has no currency yet', async () => {
+    serveFinancial({ currency: null })
+
+    renderTab()
+
+    expect(await screen.findByText(/^USD - United States/)).toBeInTheDocument()
+  })
+
+  it('keeps a currency the borrower already saved', async () => {
+    serveFinancial({ currency: 'EUR' })
+
+    renderTab()
+
+    expect(await screen.findByText(/^EUR - Germany/)).toBeInTheDocument()
+    expect(screen.queryByText(/^USD - United States/)).toBeNull()
+  })
+
+  it('does not lock the default, since nothing was saved', async () => {
+    serveFinancial({ currency: '' })
+
+    renderTab()
+
+    await screen.findByText(/^USD - United States/)
+    expect(screen.queryByRole('button', { name: /change request/i })).toBeNull()
+  })
+
+  // ── saving ────────────────────────────────────────────────────────────
+  // A blank figure must reach the server as missing, so its required rule
+  // fires. Turning it into 0 would pass the rule and save a made-up zero.
+
+  const serveSave = (response: Record<string, unknown> = { status: true, message: 'Saved', data: {} }) => {
+    const sent: { body: Record<string, unknown> | null } = { body: null }
+    server.use(
+      http.post('*/borrower/profile/financial-info', async ({ request }) => {
+        sent.body = (await request.json()) as Record<string, unknown>
+        return HttpResponse.json(response)
+      })
+    )
+    return sent
+  }
+
+  it('sends a blank required figure as missing, not as zero', async () => {
+    const user = userEvent.setup()
+    serveFinancial({})
+    const sent = serveSave()
+    renderTab()
+
+    await user.click(await screen.findByRole('button', { name: /save changes/i }))
+
+    await waitFor(() => expect(sent.body).not.toBeNull())
+    for (const field of ['monthly_revenue', 'annual_revenue', 'annual_personal_income', 'average_monthly_deposits']) {
+      expect(sent.body).not.toHaveProperty(field)
+    }
+  })
+
+  it('still sends a zero the borrower typed', async () => {
+    const user = userEvent.setup()
+    serveFinancial({})
+    const sent = serveSave()
+    renderTab()
+
+    await user.type(await screen.findByPlaceholderText('$20,000'), '0')
+    await user.click(screen.getByRole('button', { name: /save changes/i }))
+
+    await waitFor(() => expect(sent.body).not.toBeNull())
+    expect(sent.body).toMatchObject({ monthly_revenue: 0 })
+    expect(sent.body).not.toHaveProperty('annual_revenue')
+  })
+
+  it('shows the server message under every required figure left blank', async () => {
+    const user = userEvent.setup()
+    serveFinancial({})
+    const required = (name: string) => `${name} is required`
+    server.use(
+      http.post('*/borrower/profile/financial-info', () =>
+        HttpResponse.json(
+          {
+            status: false,
+            message: 'Validation failed',
+            errors: {
+              monthly_revenue: required('Monthly revenue'),
+              annual_revenue: required('Annual revenue'),
+              annual_personal_income: required('Annual personal income'),
+              average_monthly_deposits: required('Average monthly deposits'),
+            },
+          },
+          { status: 422 }
+        )
+      )
+    )
+    renderTab()
+
+    await user.click(await screen.findByRole('button', { name: /save changes/i }))
+
+    for (const message of [
+      'Monthly revenue is required',
+      'Annual revenue is required',
+      'Annual personal income is required',
+      'Average monthly deposits is required',
+    ]) {
+      expect(await screen.findByText(message)).toBeInTheDocument()
+    }
   })
 
   // ── the locking rule ──────────────────────────────────────────────────

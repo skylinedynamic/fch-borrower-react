@@ -175,7 +175,9 @@ export default function CreditScoreHero({ metrics }: Props) {
   const limit = metrics?.total_credit_limit
 
   return (
-    <div className="mb-3">
+    // Score on the left, the figures that explain it on the right (stacked
+    // below on narrow screens) - see .cp-overview.
+    <div className="cp-overview">
       <div className="cp-hero">
         <div className="cp-hero-top">
           <div>

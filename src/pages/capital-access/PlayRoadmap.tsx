@@ -245,7 +245,7 @@ export default function PlayRoadmap() {
   }, [play?.roadmap]);
 
   if (isError) {
-    return <Navigate to="/capital-access/strategy" />;
+    return <Navigate to="/credit-card-stacking/strategy" />;
   }
 
   if (isLoading || !play) {
@@ -275,9 +275,9 @@ export default function PlayRoadmap() {
   }
 
   // Also redirect if delay is active and play not yet completed (safety net for direct URL navigation)
-  if (isDelayActive && !play.isCompleted) return <Navigate to="/capital-access/strategy" />;
+  if (isDelayActive && !play.isCompleted) return <Navigate to="/credit-card-stacking/strategy" />;
 
-  if (!play.isAccessible) return <Navigate to="/capital-access/strategy" />;
+  if (!play.isAccessible) return <Navigate to="/credit-card-stacking/strategy" />;
 
   // Strategy-level lock
   if (play.approval_status === false && !isDelayActive) {
@@ -315,7 +315,7 @@ export default function PlayRoadmap() {
                   </p>
                 </div>
                 <div className="d-flex justify-content-end">
-                  <Link to={`/capital-access/${play.id}/pre-flight`} className="ca-btn ca-btn-outline">
+                  <Link to={`/credit-card-stacking/${play.id}/pre-flight`} className="ca-btn ca-btn-outline">
                     <i className="ri-arrow-left-line"></i> Back to Checklist
                   </Link>
                 </div>
@@ -336,7 +336,7 @@ export default function PlayRoadmap() {
           <div className="row pb-1 mb-3">
             <div className="col-12">
               <div className="d-flex align-items-center gap-3 py-2 w-100">
-                <Link to={play?.id ? `/capital-access/${play.id}/pre-flight` : '/capital-access/strategy'} className="ca-back-btn" title="Back to Checklist">
+                <Link to={play?.id ? `/credit-card-stacking/${play.id}/pre-flight` : '/credit-card-stacking/strategy'} className="ca-back-btn" title="Back to Checklist">
                   <i className="ri-arrow-left-line fs-16"></i>
                 </Link>
                 <div className="flex-grow-1">
@@ -478,7 +478,7 @@ export default function PlayRoadmap() {
                               )}
                               <div className="d-flex align-items-center gap-2">
                                 <Link
-                                  to={`/capital-access/${play.id}/step/${card.id}`}
+                                  to={`/credit-card-stacking/${play.id}/step/${card.id}`}
                                   className={`ca-btn ca-btn-sm ${card.application_status === CAPITAL_ACCESS_STATUS.APPROVED ? 'ca-btn-success' :
                                     card.application_status === CAPITAL_ACCESS_STATUS.PENDING ? 'ca-btn-warning' :
                                       card.application_status === CAPITAL_ACCESS_STATUS.DECLINED ? 'ca-btn-danger' :
@@ -518,15 +518,15 @@ export default function PlayRoadmap() {
 
               <div className="d-flex align-items-center justify-content-end gap-3 w-100">
                 {play.isCompleted ? (
-                  <Link to="/capital-access/strategy" className="ca-btn ca-btn-outline" style={{ minWidth: '180px' }}>
+                  <Link to="/credit-card-stacking/strategy" className="ca-btn ca-btn-outline" style={{ minWidth: '180px' }}>
                     <i className="ri-arrow-left-line"></i> Back to Strategy List
                   </Link>
                 ) : (
-                  <Link to={`/capital-access/${play.id}/pre-flight`} className="ca-btn ca-btn-outline" style={{ minWidth: '180px' }}>
+                  <Link to={`/credit-card-stacking/${play.id}/pre-flight`} className="ca-btn ca-btn-outline" style={{ minWidth: '180px' }}>
                     <i className="ri-arrow-left-line"></i> Back to Checklist
                   </Link>
                 )}
-                <Link to="/capital-access/strategy" className="ca-btn ca-btn-primary" style={{ minWidth: '180px' }}>
+                <Link to="/credit-card-stacking/strategy" className="ca-btn ca-btn-primary" style={{ minWidth: '180px' }}>
                   All Strategies <i className="ri-list-check-3"></i>
                 </Link>
               </div>

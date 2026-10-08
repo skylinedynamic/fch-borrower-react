@@ -2,17 +2,19 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '../../lib/query/queryKeys'
 import { fetchCapitalAccessStrategies, fetchCapitalAccessStrategyDetail, fetchCapitalAccessOverview, fetchCapitalAccessStrategyOverview, fetchCapitalAccessStrategyChecklist, fetchCapitalAccessStrategyRoadmap, fetchCapitalAccessStepDetail, submitCapitalAccessStepDetail, startCapitalAccessPlay } from './services'
 
-export const useCapitalAccessOverview = () => {
+export const useCapitalAccessOverview = (options: { enabled?: boolean } = {}) => {
   return useQuery({
     queryKey: queryKeys.capitalAccess.overview(),
     queryFn: fetchCapitalAccessOverview,
+    enabled: options.enabled ?? true,
   })
 }
 
-export const useCapitalAccessStrategies = () => {
+export const useCapitalAccessStrategies = (options: { enabled?: boolean } = {}) => {
   return useQuery({
     queryKey: queryKeys.capitalAccess.strategies(),
     queryFn: fetchCapitalAccessStrategies,
+    enabled: options.enabled ?? true,
   })
 }
 

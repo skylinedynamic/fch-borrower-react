@@ -13,6 +13,15 @@ import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/flatpickr.css'
 import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
 
+/** A currency field's typed value as a number: undefined while blank, so it is sent as missing. */
+const toAmount = (value: unknown): number | undefined => {
+  const amount = parseFloat(unformatCurrency(String(value ?? '')))
+  return Number.isNaN(amount) ? undefined : amount
+}
+
+/** The currency selected until the borrower saves another one. */
+const DEFAULT_CURRENCY = 'USD'
+
 interface FinancialSupportProps {
   data: any
   onChange: (data: any) => void
@@ -112,10 +121,12 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
     setErrors({})
     const payload: SaveFinancialInfoRequest = {
       currency: data.currency,
-      monthly_revenue: parseFloat(unformatCurrency(String(data.monthly_revenue || ''))) || 0,
-      annual_revenue: parseFloat(unformatCurrency(String(data.annual_revenue || ''))) || 0,
-      annual_personal_income: parseFloat(unformatCurrency(String(data.annual_personal_income || ''))) || 0,
-      average_monthly_deposits: data.average_monthly_deposits ? parseFloat(unformatCurrency(data.average_monthly_deposits)) : undefined,
+      // A blank figure is left out, not sent as 0, so the server's required
+      // rule flags it; a 0 the borrower typed is still sent.
+      monthly_revenue: toAmount(data.monthly_revenue),
+      annual_revenue: toAmount(data.annual_revenue),
+      annual_personal_income: toAmount(data.annual_personal_income),
+      average_monthly_deposits: toAmount(data.average_monthly_deposits),
       monthly_deposit_count: (data.monthly_deposit_count !== '' && data.monthly_deposit_count !== undefined && data.monthly_deposit_count !== null) ? parseInt(data.monthly_deposit_count, 10) : undefined,
       avg_bank_balance: data.avg_bank_balance ? parseFloat(unformatCurrency(data.avg_bank_balance)) : undefined,
       current_business_debt: data.current_business_debt ? parseFloat(unformatCurrency(data.current_business_debt)) : undefined,
@@ -128,6 +139,8 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
       onSuccess: (response) => {
         if (response.status) {
           toast.success(response.message)
+          // On to the next section still to complete.
+          onSave()
         } else {
           toast.error(response.message)
           if (response.errors) {
@@ -149,7 +162,8 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
     if (isSuccess && apiData) {
       onChange({
         ...data,
-        currency: apiData.currency,
+        // Nothing saved yet: start on USD. Not a saved value, so it stays editable.
+        currency: apiData.currency || DEFAULT_CURRENCY,
         years_in_business: apiData.years_in_business,
         monthly_revenue: apiData.monthly_revenue ? formatCurrency(apiData.monthly_revenue) : '',
         annual_revenue: apiData.annual_revenue ? formatCurrency(apiData.annual_revenue) : '',
@@ -547,7 +561,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
         <div className="col-12 d-flex justify-content-between mt-4">
           <button type="button" className="btn btn-warning" onClick={onBack}>Previous</button>
           <button type="button" className="btn primary-btn" onClick={handleSave} disabled={isPending}>
-            {isPending ? 'Saving...' : 'Save Changes'}
+            {isPending ? 'Saving Changes...' : 'Save Changes'}
           </button>
         </div>
       </form>

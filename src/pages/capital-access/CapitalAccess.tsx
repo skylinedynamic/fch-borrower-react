@@ -10,6 +10,7 @@ import WelcomeHeader from '../../components/CapitalAccess/WelcomeHeader'
 import FundingReadinessScoreCard from '../../components/CapitalAccess/FundingReadinessScoreCard'
 import EstimatedTotalAccessCard from '../../components/CapitalAccess/EstimatedTotalAccessCard'
 import RecommendedNextStep from '../../components/CapitalAccess/RecommendedNextStep'
+import { isCapitalAccessLocked } from '../../config/capitalAccess'
 
 export default function CapitalAccess() {
   const { user } = useAuthStore()
@@ -83,7 +84,7 @@ export default function CapitalAccess() {
                         </p>
                       </div>
                       <Link
-                        to={`/capital-access/${overview.current_play.id}/roadmap`}
+                        to={`/credit-card-stacking/${overview.current_play.id}/roadmap`}
                         className="ca-btn ca-btn-primary"
                         style={{ minWidth: '160px', background: 'var(--primary-color, #405189)', borderColor: 'var(--primary-color, #405189)' }}
                       >
@@ -92,7 +93,10 @@ export default function CapitalAccess() {
                     </div>
                   </div>
                 ) : (
-                  <RecommendedNextStep disabled={overview?.reason_code === 'NO_ACTIVE_PLAYS' || overview?.reason_code === 'ALL_PLAYS_COMPLETED'} />
+                  <RecommendedNextStep
+                    locked={isCapitalAccessLocked(overview?.reason_code)}
+                    disabled={overview?.reason_code === 'NO_ACTIVE_PLAYS' || overview?.reason_code === 'ALL_PLAYS_COMPLETED'}
+                  />
                 )}
               </>
             )}

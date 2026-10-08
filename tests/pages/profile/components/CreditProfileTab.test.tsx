@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -7,6 +7,7 @@ import { server } from '../../../mocks/server'
 import { createTestQueryClient, renderWithProviders } from '../../../test-utils'
 import { toast } from 'react-toastify'
 import { useAuthStore } from '../../../../src/store/auth'
+import { queryKeys } from '../../../../src/lib/query'
 import CreditProfileTab from '../../../../src/pages/profile/components/CreditProfileTab'
 import CreditScoreHero from '../../../../src/pages/profile/components/CreditScoreHero'
 import CreditAccountHealth from '../../../../src/pages/profile/components/CreditAccountHealth'
@@ -71,6 +72,14 @@ const renderTab = () => {
  * hunting for which of them held the assertion that broke.
  */
 describe('Profile — Credit Profile tab', () => {
+  // The tab reads the Personal Info profile to pre-fill its form; unless a test
+  // says otherwise there is nothing on file.
+  beforeEach(() => {
+    server.use(
+      http.get('*/borrower/profile/personal-info', () => HttpResponse.json({ status: true, data: null }))
+    )
+  })
+
   describe('the tab itself (PII)', () => {
     afterEach(() => {
       server.resetHandlers()
@@ -669,13 +678,16 @@ describe('Profile — Credit Profile tab', () => {
     })
 
     /** No profile and no prior request, so the tab shows the empty form. */
-    const serveEmpty = () =>
+    const serveEmpty = (personalInfo: Record<string, unknown> | null = null) =>
       server.use(
         http.get('*/borrower/profile/credit-profile', () =>
           HttpResponse.json({ status: true, data: null })
         ),
         http.get('*/borrower/profile/credit-profile-request', () =>
           HttpResponse.json({ status: true, data: [] })
+        ),
+        http.get('*/borrower/profile/personal-info', () =>
+          HttpResponse.json({ status: true, data: personalInfo })
         )
       )
 
@@ -696,6 +708,194 @@ describe('Profile — Credit Profile tab', () => {
       renderTab()
       return await screen.findByLabelText(/social security number/i)
     }
+
+    describe('coming back to the tab', () => {
+      // A request submitted but not yet verified (credit_profile_updated still
+      // false) used to show the empty form again on every visit.
+      beforeEach(() => vi.mocked(toast.error).mockClear())
+
+      const awaitingVerification = () =>
+        useAuthStore.setState({ token: 'tok', user: { id: 1, credit_profile_updated: false }, userSubscription: null, rememberMe: true })
+
+      it('shows a request already submitted, awaiting its results', async () => {
+        awaitingVerification()
+        server.use(
+          http.get('*/borrower/profile/credit-profile-request', () =>
+            HttpResponse.json({ status: true, data: { id: 5, first_name: 'Odessa', last_name: 'Mccall', ssn: '123456789' } })
+          )
+        )
+        renderTab()
+
+        expect(await screen.findByText(/submitted · awaiting results/i)).toBeInTheDocument()
+        expect(screen.getByText(/credit profile submitted/i)).toBeInTheDocument()
+      })
+
+      it('says it was submitted, and that the details can still be updated and submitted again', async () => {
+        awaitingVerification()
+        server.use(
+          http.get('*/borrower/profile/credit-profile-request', () =>
+            HttpResponse.json({ status: true, data: { id: 5, first_name: 'Odessa', last_name: 'Mccall', ssn: '123456789', created_at: '2026-10-08T09:30:00Z' } })
+          )
+        )
+        renderTab()
+
+        const section = await screen.findByRole('status', { name: /credit profile submitted/i })
+        expect(section).toHaveTextContent(/our team is verifying it/i)
+        expect(section).toHaveTextContent(/update your details below and submit again/i)
+        expect(section).toHaveTextContent(/submitted on oct 8, 2026/i)
+        // The form is still there to edit, and its button now says what it does.
+        expect(screen.getByDisplayValue('Odessa')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /resubmit credit profile/i })).toBeInTheDocument()
+      })
+
+      it('says nothing of an earlier submission, and offers a plain Submit, before anything is in', async () => {
+        awaitingVerification()
+        server.use(
+          http.get('*/borrower/profile/credit-profile-request', () => HttpResponse.json({ status: true, data: [] }))
+        )
+        renderTab()
+
+        expect(await screen.findByRole('button', { name: /^submit credit profile$/i })).toBeInTheDocument()
+        expect(screen.queryByRole('status', { name: /credit profile submitted/i })).toBeNull()
+      })
+
+      it('shows the empty form when nothing has been submitted yet', async () => {
+        awaitingVerification()
+        server.use(
+          http.get('*/borrower/profile/credit-profile-request', () => HttpResponse.json({ status: true, data: [] }))
+        )
+        renderTab()
+
+        expect(await screen.findByText(/^not submitted$/i)).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /submit credit profile/i })).toBeInTheDocument()
+      })
+
+      it('falls back to the form, without an error toast, if the earlier request cannot be loaded', async () => {
+        awaitingVerification()
+        server.use(
+          http.get('*/borrower/profile/credit-profile-request', () =>
+            HttpResponse.json({ status: false, message: 'Server error' }, { status: 500 })
+          )
+        )
+        renderTab()
+
+        expect(await screen.findByRole('button', { name: /submit credit profile/i })).toBeInTheDocument()
+        expect(toast.error).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('pre-filled from the profile on file', () => {
+      // The borrower has already given us these on the Personal Info tab, so the
+      // form arrives filled in for them to check and submit.
+      const onFile = {
+        id: 1,
+        first_name: 'Odessa',
+        middle_name: 'Rae',
+        last_name: 'Mccall',
+        email: 'odessa@example.test',
+        home_address: '1 Main St',
+        city: 'Austin',
+        state: 'Texas',
+        zip_code: '78701',
+        country: 'United States',
+        phone_number: '5125550100',
+        home_phone: '',
+        last_4_ssn: '6789',
+        date_of_birth: '1986-09-01',
+      }
+
+      const openPrefilled = async (personalInfo: Record<string, unknown> | null = onFile) => {
+        const { countries } = await import('../../../../src/modules/location')
+        countries.splice(0, countries.length, {
+          name: 'United States', code: 'US', currency: 'USD', phone_code: '+1', flag: '',
+          states: [{ name: 'Texas', code: 'TX', cities: [] }],
+        })
+        resetAuth()
+        serveEmpty(personalInfo)
+        renderTab()
+        await screen.findByLabelText(/social security number/i)
+      }
+
+      afterEach(async () => {
+        const { countries } = await import('../../../../src/modules/location')
+        countries.splice(0, countries.length)
+      })
+
+      const field = (label: RegExp) => screen.getByLabelText(label) as HTMLInputElement
+
+      it('fills in the name, address, phone and email from the profile', async () => {
+        await openPrefilled()
+
+        await waitFor(() => expect(screen.getByDisplayValue('Odessa')).toBeInTheDocument())
+        expect(screen.getByDisplayValue('Rae')).toBeInTheDocument()
+        expect(screen.getByDisplayValue('Mccall')).toBeInTheDocument()
+        expect(screen.getByDisplayValue('1 Main St')).toBeInTheDocument()
+        expect(screen.getByDisplayValue('Austin')).toBeInTheDocument()
+        expect(field(/zip code/i).value).toBe('78701')
+        expect(screen.getByDisplayValue('(512) 555-0100')).toBeInTheDocument()
+        expect(screen.getByDisplayValue('odessa@example.test')).toBeInTheDocument()
+      })
+
+      it('selects the state and the date of birth too', async () => {
+        await openPrefilled()
+
+        expect(await screen.findByText('Texas')).toBeInTheDocument()
+        await waitFor(() => expect(screen.getByDisplayValue('1986-09-01')).toBeInTheDocument())
+      })
+
+      it('leaves the full SSN to the borrower, since only the last four are on file', async () => {
+        await openPrefilled()
+
+        await waitFor(() => expect(screen.getByDisplayValue('Odessa')).toBeInTheDocument())
+        expect(field(/social security number/i).value).toBe('')
+        expect(screen.getByText(/ending in 6789/i)).toBeInTheDocument()
+      })
+
+      it('can be corrected before submitting', async () => {
+        const user = userEvent.setup()
+        await openPrefilled()
+        const city = await screen.findByDisplayValue('Austin')
+
+        await user.clear(city)
+        await user.type(city, 'Dallas')
+
+        expect((city as HTMLInputElement).value).toBe('Dallas')
+      })
+
+      it('does not overwrite what the borrower has already typed', async () => {
+        const user = userEvent.setup()
+        resetAuth()
+        const { countries } = await import('../../../../src/modules/location')
+        countries.splice(0, countries.length)
+        let release: () => void = () => {}
+        const gate = new Promise<void>((resolve) => (release = resolve))
+        server.use(
+          http.get('*/borrower/profile/credit-profile', () => HttpResponse.json({ status: true, data: null })),
+          http.get('*/borrower/profile/credit-profile-request', () => HttpResponse.json({ status: true, data: [] })),
+          http.get('*/borrower/profile/personal-info', async () => {
+            await gate
+            return HttpResponse.json({ status: true, data: onFile })
+          })
+        )
+        renderTab()
+        const ssn = await screen.findByLabelText(/social security number/i)
+        const city = screen.getByPlaceholderText('New York')
+
+        await user.type(city, 'Reno')
+        release()
+
+        await waitFor(() => expect(screen.getByDisplayValue('Odessa')).toBeInTheDocument())
+        expect((city as HTMLInputElement).value).toBe('Reno')
+        expect((ssn as HTMLInputElement).value).toBe('')
+      })
+
+      it('still shows an empty form when there is no profile to copy from', async () => {
+        await openPrefilled(null)
+
+        expect(field(/social security number/i).value).toBe('')
+        expect(screen.getByPlaceholderText('New York')).toHaveValue('')
+      })
+    })
 
     it('writes the SSN as the borrower types it', async () => {
       // The placeholder promised XXX-XX-XXXX and the field did nothing of the
@@ -820,6 +1020,188 @@ describe('Profile — Credit Profile tab', () => {
 
       await waitFor(() => expect(body).not.toBeNull())
       expect(body).toMatchObject({ ssn: '123456789' })
+    })
+
+    it('tells the Getting Started walkthrough the credit profile was submitted', async () => {
+      // The next-step suggestion reads the borrower's step from the profile
+      // completion response - a successful submit has to mark it stale, or it
+      // keeps telling the borrower to fill in a form they just sent.
+      const user = userEvent.setup()
+      resetAuth()
+      serveEmpty()
+      server.use(
+        http.post('*/borrower/profile/credit-profile-request', () =>
+          HttpResponse.json({ status: true, message: 'ok' })
+        )
+      )
+      const queryClient = createTestQueryClient()
+      queryClient.setQueryData(queryKeys.profile.completion(), { status: true, data: null })
+      render(
+        <QueryClientProvider client={queryClient}>
+          <CreditProfileTab />
+        </QueryClientProvider>,
+      )
+
+      await user.type(await screen.findByLabelText(/social security number/i), '123456789')
+      await user.type(screen.getByLabelText(/zip code/i), '78701')
+      await consentThenSubmit(user)
+
+      await waitFor(() =>
+        expect(queryClient.getQueryState(queryKeys.profile.completion())?.isInvalidated).toBe(true)
+      )
+    })
+
+    it('tells the page once the request is in, so it can move the borrower on', async () => {
+      // A funding-only borrower's next step is Documents; the profile page
+      // takes them there (see Profile).
+      const user = userEvent.setup()
+      resetAuth()
+      serveEmpty()
+      server.use(
+        http.post('*/borrower/profile/credit-profile-request', () =>
+          HttpResponse.json({ status: true, message: 'ok' })
+        )
+      )
+      const onSubmitted = vi.fn()
+      render(
+        <QueryClientProvider client={createTestQueryClient()}>
+          <CreditProfileTab onSubmitted={onSubmitted} />
+        </QueryClientProvider>,
+      )
+
+      await user.type(await screen.findByLabelText(/social security number/i), '123456789')
+      await user.type(screen.getByLabelText(/zip code/i), '78701')
+      await consentThenSubmit(user)
+
+      await waitFor(() => expect(onSubmitted).toHaveBeenCalledTimes(1))
+    })
+
+    it('does not move the borrower on again when they submit a request they already had in', async () => {
+      // Editing and resubmitting stays on the page: the walkthrough move (to
+      // the Step-By-Step Guide) is for the first submission only.
+      const user = userEvent.setup()
+      useAuthStore.setState({ token: 'tok', user: { id: 1, credit_profile_updated: false }, userSubscription: null, rememberMe: true })
+      let posts = 0
+      server.use(
+        http.get('*/borrower/profile/credit-profile', () => HttpResponse.json({ status: true, data: null })),
+        http.get('*/borrower/profile/credit-profile-request', () =>
+          HttpResponse.json({ status: true, data: { id: 5, first_name: 'Odessa', last_name: 'Mccall', ssn: '123456789', zip: '78701' } })
+        ),
+        http.post('*/borrower/profile/credit-profile-request', () => {
+          posts++
+          return HttpResponse.json({ status: true, message: 'ok' })
+        })
+      )
+      const onSubmitted = vi.fn()
+      render(
+        <QueryClientProvider client={createTestQueryClient()}>
+          <CreditProfileTab onSubmitted={onSubmitted} />
+        </QueryClientProvider>,
+      )
+
+      await screen.findByText(/submitted · awaiting results/i)
+      await consentThenSubmit(user)
+
+      await waitFor(() => expect(posts).toBe(1))
+      await new Promise((r) => setTimeout(r, 100))
+      expect(onSubmitted).not.toHaveBeenCalled()
+    })
+
+    it('brings the submitted notice into view after resubmitting, since the form is long', async () => {
+      const user = userEvent.setup()
+      const scrollIntoView = vi.fn()
+      Element.prototype.scrollIntoView = scrollIntoView
+      useAuthStore.setState({ token: 'tok', user: { id: 1, credit_profile_updated: false }, userSubscription: null, rememberMe: true })
+      server.use(
+        http.get('*/borrower/profile/credit-profile', () => HttpResponse.json({ status: true, data: null })),
+        http.get('*/borrower/profile/credit-profile-request', () =>
+          HttpResponse.json({ status: true, data: { id: 5, first_name: 'Odessa', last_name: 'Mccall', ssn: '123456789', zip: '78701' } })
+        ),
+        http.post('*/borrower/profile/credit-profile-request', () => HttpResponse.json({ status: true, message: 'ok' }))
+      )
+      renderTab()
+
+      await screen.findByText(/submitted · awaiting results/i)
+      // Opening the tab on a submitted request doesn't scroll anywhere.
+      expect(scrollIntoView).not.toHaveBeenCalled()
+      await consentThenSubmit(user)
+
+      await waitFor(() => expect(scrollIntoView).toHaveBeenCalledTimes(1))
+      const notice = screen.getByRole('status', { name: /credit profile submitted/i })
+      expect(scrollIntoView.mock.contexts[0]).toBe(notice)
+      delete (Element.prototype as { scrollIntoView?: unknown }).scrollIntoView
+    })
+
+    it('does not move the borrower on when the request is refused', async () => {
+      const user = userEvent.setup()
+      resetAuth()
+      serveEmpty()
+      server.use(
+        http.post('*/borrower/profile/credit-profile-request', () =>
+          HttpResponse.json({ message: 'Invalid', errors: { email: ['Enter a valid email'] } }, { status: 422 })
+        )
+      )
+      const onSubmitted = vi.fn()
+      render(
+        <QueryClientProvider client={createTestQueryClient()}>
+          <CreditProfileTab onSubmitted={onSubmitted} />
+        </QueryClientProvider>,
+      )
+
+      await user.type(await screen.findByLabelText(/social security number/i), '123456789')
+      await user.type(screen.getByLabelText(/zip code/i), '78701')
+      await consentThenSubmit(user)
+
+      expect(await screen.findByText(/enter a valid email/i)).toBeInTheDocument()
+      expect(onSubmitted).not.toHaveBeenCalled()
+    })
+  })
+  /**
+   * The redesigned request form: every field is labelled, and the form says
+   * where the borrower's request stands before they read any of it.
+   */
+  describe('the request form layout', () => {
+    afterEach(() => {
+      server.resetHandlers()
+      useAuthStore.setState({ token: undefined, user: null, userSubscription: null, rememberMe: true })
+      vi.restoreAllMocks()
+    })
+
+    const serve = (creditProfile: unknown) =>
+      server.use(
+        http.get('*/borrower/profile/credit-profile', () => HttpResponse.json({ status: true, data: creditProfile })),
+        http.get('*/borrower/profile/credit-profile-request', () => HttpResponse.json({ status: true, data: [] }))
+      )
+
+    it('ties every field to its label', async () => {
+      useAuthStore.setState({ token: 'tok', user: { id: 1, credit_profile_updated: false }, userSubscription: null, rememberMe: true })
+      serve(null)
+      renderTab()
+      await screen.findByLabelText(/social security number/i)
+
+      for (const label of [/first name/i, /middle name/i, /last name/i, /date of birth/i, /phone number/i, /email address/i, /street address/i, /apt \/ suite/i, /^city/i]) {
+        expect(screen.getByLabelText(label)).toBeInstanceOf(HTMLInputElement)
+      }
+    })
+
+    it('says a request has not been sent yet', async () => {
+      useAuthStore.setState({ token: 'tok', user: { id: 1, credit_profile_updated: false }, userSubscription: null, rememberMe: true })
+      serve(null)
+      renderTab()
+
+      expect(await screen.findByTestId('cp-request-status')).toHaveTextContent(/not submitted/i)
+    })
+
+    it('says a request is waiting on results when one was sent but not yet pulled', async () => {
+      // credit_profile_updated with no bureau data back: the endpoint returns the
+      // request the borrower sent (no personal_info), not a credit profile.
+      useAuthStore.setState({ token: 'tok', user: { id: 1, credit_profile_updated: true }, userSubscription: null, rememberMe: true })
+      serve({ first_name: 'Odessa', last_name: 'Mccall', address: '1 Main St', city: 'Austin', state: 'Texas', zip: '78701', ssn: '', date_of_birth: '1986-09-01', phone: '', email: '' })
+      renderTab()
+
+      const status = await screen.findByTestId('cp-request-status')
+      expect(status).toHaveTextContent(/submitted/i)
+      expect(status).not.toHaveTextContent(/not submitted/i)
     })
   })
 })

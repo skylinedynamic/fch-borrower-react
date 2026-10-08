@@ -33,6 +33,7 @@ export const queryKeys = {
     personalInfo: () => [...queryKeys.profile.all, 'personalInfo'] as const,
     businessDetails: () => [...queryKeys.profile.all, 'businessDetails'] as const,
     financialInfo: () => [...queryKeys.profile.all, 'financialInfo'] as const,
+    completion: () => [...queryKeys.profile.all, 'completion'] as const,
   },
   preQualification: {
     all: ['preQualification'] as const,
@@ -57,6 +58,10 @@ export const queryKeys = {
     all: ['documents'] as const,
     types: () => [...queryKeys.documents.all, 'types'] as const,
     list: () => [...queryKeys.documents.all, 'list'] as const,
+  },
+  funding: {
+    all: ['funding'] as const,
+    list: (params: Record<string, unknown> = {}) => [...queryKeys.funding.all, 'list', params] as const,
   },
   fundingApplication: {
     all: ['fundingApplication'] as const,

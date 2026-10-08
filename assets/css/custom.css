@@ -2923,9 +2923,152 @@ File: Custom Css File
 /* ─── Premium Capital Access Locked Page Styles ──────────── */
 .ca-locked-container {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    gap: 20px;
     width: 100%;
+}
+
+/* Why it is still locked: what is done, and what is left. */
+.ca-unlock {
+    max-width: 760px;
+    margin: 32px auto 0;
+    padding-top: 28px;
+    border-top: 1px solid #e9ebec;
+    text-align: left;
+}
+
+.ca-unlock-title {
+    margin: 0 0 4px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #1b2235;
+}
+
+.ca-unlock-intro {
+    margin: 0 0 16px;
+    font-size: 13.5px;
+    color: #6b7286;
+}
+
+.ca-unlock-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ca-unlock-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    border: 1px solid #e9ebec;
+    border-radius: 4px;
+    background: #fafbfc;
+}
+
+.ca-unlock-item.is-current {
+    border-color: rgba(23, 105, 194, 0.35);
+    background: rgba(63, 169, 245, 0.07);
+}
+
+.ca-unlock-icon {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #eef0f3;
+    color: #8a91a1;
+    font-size: 18px;
+}
+
+.ca-unlock-item.is-done .ca-unlock-icon {
+    background: rgba(10, 179, 156, 0.14);
+    color: #0ab39c;
+}
+
+.ca-unlock-item.is-current .ca-unlock-icon {
+    background: rgba(23, 105, 194, 0.14);
+    color: #1769c2;
+}
+
+.ca-unlock-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.ca-unlock-item-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1b2235;
+}
+
+.ca-unlock-state {
+    padding: 1px 8px;
+    border-radius: 4px;
+    background: #eef0f3;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7286;
+}
+
+.ca-unlock-item.is-done .ca-unlock-state {
+    background: rgba(10, 179, 156, 0.14);
+    color: #078a78;
+}
+
+.ca-unlock-item.is-current .ca-unlock-state {
+    background: rgba(23, 105, 194, 0.14);
+    color: #1769c2;
+}
+
+.ca-unlock-item-text {
+    margin-top: 2px;
+    font-size: 13px;
+    color: #6b7286;
+}
+
+.ca-unlock-action {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, #3fa9f5, #1769c2);
+    background-origin: border-box;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.ca-unlock-action:hover {
+    color: #fff;
+    filter: brightness(1.06);
+}
+
+@media (max-width: 575.98px) {
+    .ca-unlock-item {
+        flex-wrap: wrap;
+    }
+
+    .ca-unlock-action {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 .ca-locked-card {
@@ -6048,90 +6191,174 @@ File: Custom Css File
     }
 }
 
-/* ─── Credit profile request form ─────────────────────────────
-   A numbered, sectioned form rather than four unlabelled bands of
-   inputs. Same --ca-* vocabulary as the rest of the tab.
+/* ─── Credit profile tab: page frame ─────────────────────────
+   Shared by the request form and the results view. Same --ca-*
+   tokens as the rest of the tab: 4px corners, theme fields.
    ───────────────────────────────────────────────────────────── */
 
-.cp-form-intro {
+.cp-page-head {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    background: #f8fafc;
-    border: 1px solid rgba(226, 232, 240, 0.8);
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+    background: #ffffff;
+    border: 1px solid var(--ca-border);
+    border-left: 3px solid var(--brand-primary, var(--ca-primary));
     border-radius: var(--ca-radius);
-    padding: 12px 14px;
-    margin-bottom: 12px;
 }
 
-.cp-form-intro i {
+.cp-page-icon {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: var(--ca-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 20px;
-    color: var(--ca-primary);
-    line-height: 1.2;
+    color: var(--brand-primary-ink, var(--ca-primary));
+    background: rgba(var(--brand-primary-rgb, 64, 81, 137), 0.08);
 }
 
-.cp-form-intro-title {
-    font-size: 14px;
+.cp-page-heading {
+    flex: 1;
+    min-width: 0;
+}
+
+.cp-page-title {
+    margin: 0 0 2px;
+    font-size: 15px;
     font-weight: 700;
     color: #1e293b;
-    margin-bottom: 2px;
 }
 
-.cp-form-intro-text {
+.cp-page-text {
+    margin: 0;
     font-size: 13px;
     color: #64748b;
     max-width: 78ch;
 }
 
-.cp-section {
-    background: #ffffff;
-    border: 1px solid rgba(226, 232, 240, 0.8);
-    border-radius: var(--ca-radius);
-    box-shadow: 0 4px 15px -2px rgba(0, 0, 0, 0.02);
-    margin-bottom: 12px;
-}
-
-.cp-section-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--ca-border);
-}
-
-.cp-section-step {
+/* Where the request stands. */
+.cp-status {
     flex-shrink: 0;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background: var(--ca-primary-light);
-    color: var(--ca-primary);
-    font-size: 12px;
-    font-weight: 800;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: var(--ca-radius);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    border: 1px solid transparent;
 }
 
-.cp-section-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: #1e293b;
+.cp-status.is-draft {
+    color: #475569;
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+}
+
+.cp-status.is-submitted {
+    color: #854d0e;
+    background: #fef3c7;
+    border-color: #fde68a;
+}
+
+.cp-status.is-active {
+    color: #065f46;
+    background: #d1fae5;
+    border-color: #a7f3d0;
+}
+
+.cp-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    border-radius: var(--ca-radius);
+    border: 1px solid transparent;
+    font-size: 13px;
+}
+
+.cp-alert > i {
+    font-size: 18px;
     line-height: 1.2;
 }
 
-.cp-section-hint {
-    font-size: 12px;
-    color: #94a3b8;
-    margin-top: 1px;
+.cp-alert-title {
+    font-weight: 700;
+    margin-bottom: 1px;
 }
 
-.cp-section-body {
-    padding: 14px 16px;
+.cp-alert-meta {
+    margin-top: 4px;
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.cp-alert.is-success {
+    color: #065f46;
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+}
+
+.cp-alert.is-danger {
+    color: #991b1b;
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+/* ─── Request form: one card ─────────────────────────────────
+   Header with the request status, every field in one grid,
+   the consents under it and Submit in the footer.
+   ───────────────────────────────────────────────────────────── */
+
+.cp-panel {
+    background: #ffffff;
+    border: 1px solid var(--ca-border);
+    border-radius: var(--ca-radius);
+}
+
+.cp-panel-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--ca-border);
+    border-radius: var(--ca-radius) var(--ca-radius) 0 0;
+}
+
+.cp-panel-body {
+    padding: 20px;
+}
+
+.cp-consent {
+    margin-top: 24px;
+}
+
+.cp-consent > .mb-4 {
+    margin-bottom: 0 !important;
+}
+
+/* Fields keep the theme's look and focus state; only the height is pinned. */
+.cp-page .form-control:not(textarea),
+.cp-page .form-select {
+    height: 37.5px;
+}
+
+.cp-ssn-toggle {
+    color: #6c757d;
+    background: #ffffff;
+    border: 1px solid var(--vz-input-border-custom, #ced4da);
+    box-shadow: none;
 }
 
 .cp-field-hint {
-    font-size: 11px;
+    font-size: 12px;
     color: #94a3b8;
     margin-top: 4px;
 }
@@ -6144,30 +6371,218 @@ File: Custom Css File
     font-weight: 600;
     color: #065f46;
     background: var(--ca-success-light);
-    border-radius: 20px;
-    padding: 3px 9px;
-    margin-left: auto;
+    border-radius: var(--ca-radius);
+    padding: 3px 8px;
 }
+
+/* ─── Authorization: each consent reads as its own choice ──── */
+
+.cp-page .form-check {
+    padding: 12px 14px 12px 40px;
+    margin-bottom: 10px !important;
+    border: 1px solid var(--ca-border);
+    border-radius: var(--ca-radius);
+    background: #ffffff;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cp-page .form-check:last-child {
+    margin-bottom: 0 !important;
+}
+
+.cp-page .form-check .form-check-input {
+    margin-left: -26px;
+}
+
+.cp-page .form-check:has(.form-check-input:checked) {
+    border-color: rgba(var(--brand-primary-rgb, 64, 81, 137), 0.45);
+    background: rgba(var(--brand-primary-rgb, 64, 81, 137), 0.03);
+}
+
+/* The outer box CreditAuthorizationConsent draws: the choices carry the border now. */
+.cp-page .border.rounded.p-3:has(> .form-check) {
+    border: 0 !important;
+    padding: 0 !important;
+}
+
+.cp-page .border.rounded.p-3.border-danger:has(> .form-check) .form-check {
+    border-color: #f06548;
+}
+
+.cp-page [role="note"] {
+    border-radius: var(--ca-radius) !important;
+}
+
+/* ─── Actions ─────────────────────────────────────────────── */
 
 .cp-form-actions {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: 12px;
-    padding-top: 4px;
+    padding: 14px 20px;
+    border-top: 1px solid var(--ca-border);
+    background: #f8fafc;
+    border-radius: 0 0 var(--ca-radius) var(--ca-radius);
+}
+
+/* Inside a card body rather than at the foot of the panel. */
+.cp-form-actions.is-flush {
+    margin: 4px -24px -16px;
+}
+
+.cp-actions-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.cp-submit {
+    min-width: 200px;
+}
+
+/* Disabled until both consents are ticked. The theme drew a disabled
+   .btn-primary transparent with white text - an invisible button - because
+   brand-tokens.css sets --vz-btn-disabled-* while Bootstrap reads
+   --bs-btn-disabled-*. Pinned here so this tab's buttons stay visible. */
+.cp-page .btn-primary:disabled {
+    color: var(--brand-btn-primary-color, #fff) !important;
+    background-color: var(--brand-btn-primary-bg, var(--ca-primary)) !important;
+    border-color: var(--brand-btn-primary-bg, var(--ca-primary)) !important;
+    opacity: 0.45;
+}
+
+/* ─── Results view ───────────────────────────────────────── */
+
+/* Band names stay whole words in the narrower score card: a long one
+   (Exceptional) may run past its slice of the scale rather than split. */
+.cp-overview .cp-scale-band {
+    font-size: 9px;
+    letter-spacing: 0;
+    line-height: 1.3;
+    word-break: normal;
+    overflow-wrap: normal;
+}
+
+/* Score on the left; the figures that explain it on the right. */
+.cp-overview {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.cp-overview > .cp-hero {
+    grid-row: span 2;
+}
+
+.cp-overview > .cp-figures {
+    grid-template-columns: repeat(2, 1fr);
+    margin-top: 0;
+}
+
+.cp-overview > .cp-figures .cp-figure {
+    padding: 14px 16px;
+}
+
+.cp-overview > .cp-selfreport {
+    margin-top: 0;
+    flex-wrap: wrap;
+    align-content: center;
+}
+
+.cp-overview > .cp-hero,
+.cp-overview > .cp-selfreport {
+    box-shadow: none;
+    border-color: var(--ca-border);
+}
+
+.cp-page .card {
+    border-color: var(--ca-border) !important;
+    border-radius: var(--ca-radius);
+    box-shadow: none !important;
+    margin-bottom: 16px !important;
+}
+
+.cp-page .card-header {
+    background: #f8fafc !important;
+    border-radius: var(--ca-radius) var(--ca-radius) 0 0 !important;
+}
+
+.cp-page .card-header .rounded {
+    border-radius: var(--ca-radius) !important;
+}
+
+/* ─── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 991.98px) {
+    .cp-form-actions {
+        padding: 14px 20px;
+    }
+
+    .cp-form-actions.is-flush {
+        margin: 4px -24px -16px;
+    }
+
+    .cp-overview {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: none;
+    }
+
+    .cp-overview > .cp-hero {
+        grid-row: auto;
+    }
+
+    .cp-overview > .cp-figures {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 767.98px) {
+    .cp-overview > .cp-figures {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 576px) {
-    .cp-section-head {
-        padding: 12px 14px;
+    .cp-page-head,
+    .cp-panel-head {
+        flex-wrap: wrap;
+        padding: 14px;
     }
 
-    .cp-section-body {
-        padding: 14px;
+    .cp-panel-body {
+        padding: 16px 14px;
+    }
+
+    .cp-page-icon {
+        display: none;
+    }
+
+    .cp-page-heading {
+        flex-basis: 100%;
     }
 
     .cp-form-actions {
         flex-direction: column-reverse;
         align-items: stretch;
+        padding: 14px;
+    }
+
+    .cp-form-actions.is-flush {
+        margin: 4px -24px -16px;
+        padding: 14px 24px;
+    }
+
+    .cp-actions-hint {
+        justify-content: center;
+    }
+
+    .cp-submit {
+        width: 100%;
+        min-width: 0;
     }
 }

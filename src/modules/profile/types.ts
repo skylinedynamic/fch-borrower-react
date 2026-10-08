@@ -143,9 +143,10 @@ export type FinancialInfoResponse = {
 export type SaveFinancialInfoRequest = {
   currency: string
   years_in_business?: string
-  monthly_revenue: number
-  annual_revenue: number
-  annual_personal_income: number
+  // The server requires these four. They are left out while blank so it can say so.
+  monthly_revenue?: number
+  annual_revenue?: number
+  annual_personal_income?: number
   average_monthly_deposits?: number
   monthly_deposit_count?: number
   avg_bank_balance?: number

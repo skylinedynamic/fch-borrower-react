@@ -126,7 +126,8 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
       onSuccess: async (response) => {
         toast.success(response.message || 'Personal information saved successfully')
         await refreshUser()
-        // onSave() // Call parent onSave if needed
+        // On to the next section still to complete.
+        onSave()
       },
       onError: (error: any) => {
         // Handle validation errors from server
@@ -529,29 +530,29 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
         {showCityInput && (
           <div className="col-md-3">
             <label className="form-label">City Name <span className="text-danger">*</span></label>
-          <div className="position-relative">
-            <input
-              type="text"
-              className={`form-control ${hasError('city') ? 'is-invalid' : ''} ${isFieldLocked('city') ? 'bg-light border-dashed locked-field-padding' : ''}`}
-              placeholder="Enter city name"
-              value={data.city}
-              onChange={(e) => onChange({ ...data, city: e.target.value })}
-              required
-              readOnly={isFieldLocked('city')}
-            />
-            {isFieldLocked('city') && (
-              <button
-                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
-                onClick={() => handleOpenRequestModal('City Name', 'city', data.city)}
-              >
-                Change Request
-              </button>
-            )}
-            {hasError('city') && (
-              <div className="invalid-feedback d-block">{getFieldError('city')}</div>
-            )}
-          </div>
+            <div className="position-relative">
+              <input
+                type="text"
+                className={`form-control ${hasError('city') ? 'is-invalid' : ''} ${isFieldLocked('city') ? 'bg-light border-dashed locked-field-padding' : ''}`}
+                placeholder="Enter city name"
+                value={data.city}
+                onChange={(e) => onChange({ ...data, city: e.target.value })}
+                required
+                readOnly={isFieldLocked('city')}
+              />
+              {isFieldLocked('city') && (
+                <button
+                  className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
+                  type="button"
+                  onClick={() => handleOpenRequestModal('City Name', 'city', data.city)}
+                >
+                  Change Request
+                </button>
+              )}
+              {hasError('city') && (
+                <div className="invalid-feedback d-block">{getFieldError('city')}</div>
+              )}
+            </div>
           </div>
         )}
 
@@ -626,16 +627,16 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
               onChange={(dates, dateStr) => {
                 onChange({ ...data, date_of_birth: dateStr })
               }}
-                options={{
-                  dateFormat: "Y-m-d",
-                  altInput: true,
-                  altFormat: "j M, Y",
-                  maxDate: "today",
-                  yearRange: "1900:" + new Date().getFullYear(),
-                  monthSelectorType: "dropdown",
-                  clickOpens: !isFieldLocked('date_of_birth'),
-                  plugins: [yearDropdownPlugin(1900)],
-                } as any}
+              options={{
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "j M, Y",
+                maxDate: "today",
+                yearRange: "1900:" + new Date().getFullYear(),
+                monthSelectorType: "dropdown",
+                clickOpens: !isFieldLocked('date_of_birth'),
+                plugins: [yearDropdownPlugin(1900)],
+              } as any}
               placeholder="Select date of birth"
               disabled={isFieldLocked('date_of_birth')}
             />
@@ -690,7 +691,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             {isSaving ? (
               <>
                 <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                Saving...
+                Saving Changes...
               </>
             ) : (
               'Save Changes'

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Sidebar from '../../../src/components/Layout/Sidebar'
 import { useAuthStore } from '../../../src/store/auth'
 import { renderWithProviders } from '../../test-utils'
+import { mockOnboardingStep } from '../../mocks/onboarding'
 
 vi.mock('../../../src/modules/dashboard', () => ({
   useDashboard: () => ({ data: null, isLoading: false }),
@@ -32,6 +33,8 @@ function signIn(subscription: Record<string, unknown> | null) {
 describe('Sidebar free-plan banner', () => {
   beforeEach(() => {
     useAuthStore.setState({ user: null, userSubscription: null } as never)
+    // The sidebar asks for the walkthrough step once someone is signed in.
+    mockOnboardingStep(null)
   })
 
   it('marks the sidebar when a free plan banner is shown', () => {

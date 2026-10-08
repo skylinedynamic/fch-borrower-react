@@ -1,0 +1,779 @@
+/* Funding Options: header, overview figures, how it works, filters and the
+   programs. Scoped to .funding-page: funding.css is shared with the detail
+   page and the application wizard. */
+
+.funding-page {
+  --fp-radius: 4px;
+  --fp-border: var(--vz-border-color, #e9ebec);
+  --fp-ink: #141b2d;
+  --fp-body: #4b5266;
+  --fp-muted: #6b7286;
+  --fp-soft: #f6f7f9;
+  --fp-brand: var(--brand-primary, var(--vz-primary, #001f3f));
+  --fp-brand-rgb: var(--brand-primary-rgb, 0, 31, 63);
+  --fp-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.05);
+  --fp-shadow-raised: 0 12px 32px -14px rgba(16, 24, 40, 0.22), 0 2px 6px rgba(16, 24, 40, 0.04);
+  --fp-shadow-hover: 0 18px 36px -16px rgba(16, 24, 40, 0.26);
+}
+
+.fp-shell {
+  width: 100%;
+  padding: 4px 0 32px;
+}
+
+/* -- header -------------------------------------------------------------------- */
+
+.fp-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 22px 32px 68px;
+  border-radius: var(--fp-radius);
+  background:
+    radial-gradient(circle at 92% -30%, rgba(255, 255, 255, 0.14) 0, rgba(255, 255, 255, 0) 42%),
+    radial-gradient(circle at 70% 160%, rgba(255, 255, 255, 0.1) 0, rgba(255, 255, 255, 0) 45%),
+    linear-gradient(120deg, var(--fp-brand) 0%, color-mix(in srgb, var(--fp-brand) 72%, #1769c2) 100%);
+  color: #fff;
+}
+
+/* Fine lines across the right of the banner. */
+.fp-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 46%;
+  background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 22px);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 70%);
+  mask-image: linear-gradient(90deg, transparent, #000 70%);
+  pointer-events: none;
+}
+
+.fp-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.fp-breadcrumb {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+}
+
+.fp-breadcrumb .breadcrumb-item a {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.fp-breadcrumb .breadcrumb-item a:hover {
+  color: #fff;
+}
+
+.funding-page .fp-breadcrumb .breadcrumb-item.active {
+  color: #fff !important;
+  font-weight: 500;
+}
+
+.fp-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.fp-title {
+  margin: 0 0 6px;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+
+.fp-lead {
+  max-width: 560px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* -- overview figures: cards resting on the bottom of the header ------------- */
+
+.fp-stats {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin: -48px 24px 22px;
+}
+
+.fp-stat {
+  --tone: var(--fp-brand);
+  --tone-soft: rgba(var(--fp-brand-rgb), 0.08);
+  --tone-ink: var(--fp-brand);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 14px 18px;
+  border: 1px solid var(--fp-border);
+  border-radius: var(--fp-radius);
+  background: #fff;
+  box-shadow: var(--fp-shadow-raised);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.fp-stat:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--fp-shadow-hover);
+}
+
+.fp-stat.tone-info { --tone: #1769c2; --tone-soft: rgba(23, 105, 194, 0.1); --tone-ink: #1769c2; }
+.fp-stat.tone-success { --tone: #0ab39c; --tone-soft: rgba(10, 179, 156, 0.12); --tone-ink: #078a78; }
+.fp-stat.tone-warning { --tone: #f7b84b; --tone-soft: rgba(247, 184, 75, 0.18); --tone-ink: #b26b00; }
+
+.fp-stat-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fp-stat-label {
+  margin: 0;
+  padding-top: 2px;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fp-muted);
+}
+
+.fp-stat-sub {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.fp-stat-icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--fp-radius);
+  background: var(--tone-soft);
+  font-size: 19px;
+  color: var(--tone-ink);
+}
+
+.fp-stat-value {
+  margin: auto 0 0;
+  padding-top: 6px;
+  font-size: clamp(20px, 1.4vw, 24px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--fp-ink);
+  overflow-wrap: anywhere;
+}
+
+.fp-stat-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.fp-stat-meter {
+  display: block;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--fp-soft);
+}
+
+.fp-stat-meter > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--tone);
+}
+
+/* Keeps the captions in line where a figure has no range. */
+.fp-stat-meter.is-empty {
+  background: transparent;
+}
+
+.fp-stat-caption {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--fp-muted);
+}
+
+/* -- how funding works -------------------------------------------------------- */
+
+.funding-page .funding-how {
+  margin-bottom: 22px !important;
+  border: 1px solid var(--fp-border) !important;
+  border-radius: var(--fp-radius);
+  background: #fff;
+  box-shadow: var(--fp-shadow);
+}
+
+.funding-page .funding-how .card-body {
+  padding: 20px 24px !important;
+}
+
+.funding-page .funding-how-head {
+  margin-bottom: 18px;
+}
+
+.funding-page .funding-how-title {
+  font-size: 15px;
+  color: var(--fp-ink);
+}
+
+.funding-page .funding-how-prequal .btn {
+  padding: 6px 12px;
+  border-radius: var(--fp-radius);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+/* A flow: six chevrons end to end, every stage styled alike. */
+.funding-page .funding-how-steps {
+  gap: 0;
+}
+
+.funding-page .funding-how-steps li {
+  --fp-notch: 14px;
+  position: relative;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  min-height: 64px;
+  margin-left: calc(var(--fp-notch) * -1 + 3px);
+  padding: 12px calc(var(--fp-notch) + 6px) 12px calc(var(--fp-notch) + 8px);
+  border: 0;
+  border-radius: 0;
+  background: rgba(var(--fp-brand-rgb), 0.06);
+  clip-path: polygon(0 0, calc(100% - var(--fp-notch)) 0, 100% 50%, calc(100% - var(--fp-notch)) 100%, 0 100%, var(--fp-notch) 50%);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--fp-ink);
+}
+
+.funding-page .funding-how-steps li:first-child {
+  margin-left: 0;
+  padding-left: 16px;
+  border-top-left-radius: var(--fp-radius);
+  border-bottom-left-radius: var(--fp-radius);
+  clip-path: polygon(0 0, calc(100% - var(--fp-notch)) 0, 100% 50%, calc(100% - var(--fp-notch)) 100%, 0 100%);
+}
+
+.funding-page .funding-how-steps li:last-child {
+  padding-right: 16px;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, var(--fp-notch) 50%);
+}
+
+.funding-page .funding-how-index {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(var(--fp-brand-rgb), 0.25);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fp-brand);
+}
+
+/* -- search and filter -------------------------------------------------------- */
+
+.fp-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 26px;
+  padding: 12px;
+  border: 1px solid var(--fp-border);
+  border-radius: var(--fp-radius);
+  background: #fff;
+  box-shadow: var(--fp-shadow);
+}
+
+.fp-search {
+  position: relative;
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+.fp-search i {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: var(--fp-muted);
+  pointer-events: none;
+}
+
+.fp-search .form-control {
+  height: 37.5px;
+  padding-left: 36px;
+  border-radius: var(--fp-radius);
+  font-size: 13.5px;
+}
+
+.fp-category {
+  flex: 0 1 260px;
+  min-width: 200px;
+}
+
+.fp-category > * {
+  width: 100%;
+}
+
+.fp-actions {
+  display: flex;
+  gap: 8px;
+  flex: none;
+}
+
+.fp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 37.5px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: var(--fp-radius);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fp-btn-primary {
+  background: var(--fp-brand);
+  color: #fff;
+}
+
+.fp-btn-primary:hover {
+  box-shadow: 0 6px 14px -6px rgba(var(--fp-brand-rgb), 0.6);
+  color: #fff;
+}
+
+.fp-btn-ghost {
+  border-color: var(--fp-border);
+  background: #fff;
+  color: var(--fp-body);
+}
+
+.fp-btn-ghost:hover {
+  background: var(--fp-soft);
+}
+
+/* -- groups of programs ----------------------------------------------------- */
+
+.fp-group {
+  margin-bottom: 30px;
+}
+
+.fp-group-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.fp-group-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--fp-ink);
+}
+
+.fp-group-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: var(--fp-radius);
+  background: rgba(var(--fp-brand-rgb), 0.08);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fp-brand);
+}
+
+.fp-group-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--fp-border);
+}
+
+.fp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+@media (max-width: 1199.98px) {
+  .fp-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 991.98px) {
+  .fp-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Search on its own row; the category takes the rest beside the buttons. */
+  .fp-search {
+    flex-basis: 100%;
+  }
+
+  .fp-category {
+    flex: 1 1 200px;
+  }
+}
+
+/* -- a program card ----------------------------------------------------------- */
+
+.funding-page .fc-card-wrap {
+  position: relative;
+  display: flex;
+  height: 100%;
+}
+
+.funding-page .funding-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 16px;
+  border: 1px solid var(--fp-border);
+  border-radius: var(--fp-radius);
+  background: #fff;
+  box-shadow: var(--fp-shadow);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.funding-page .funding-card:hover:not(.funding-card-disabled) {
+  transform: translateY(-3px);
+  border-color: rgba(var(--fp-brand-rgb), 0.28);
+  box-shadow: var(--fp-shadow-hover);
+}
+
+.funding-page .funding-card.funding-card-disabled,
+.funding-page .funding-card.funding-card-locked {
+  opacity: 1;
+  border-style: dashed;
+  background: #f8f9fb;
+  box-shadow: none;
+}
+
+.funding-page .funding-card-disabled .funding-card-icon-wrapper,
+.funding-page .funding-card-locked .funding-card-icon-wrapper {
+  opacity: 0.85;
+}
+
+.funding-page .funding-card-top {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px 12px;
+  margin-bottom: 14px;
+  padding-right: 28px;
+}
+
+.funding-page .funding-card-icon-wrapper {
+  grid-row: 1;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--fp-radius);
+}
+
+.funding-page .funding-card-icon-wrapper i {
+  font-size: 20px;
+}
+
+/* The text block dissolves so the title can sit beside the icon while the
+   subtitle spans the whole card width underneath. */
+.funding-page .funding-card-text-content {
+  display: contents;
+}
+
+.funding-page .funding-card-title {
+  grid-row: 1;
+  grid-column: 2;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--fp-ink);
+  white-space: normal;
+}
+
+.funding-page .funding-card-subtitle {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: normal;
+}
+
+/* Amount and status on the left, the arrow on the right. */
+.funding-page .funding-card-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--fp-border);
+}
+
+.funding-page .funding-card-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.funding-page .funding-card-amount {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--fp-ink);
+}
+
+.funding-page .funding-card-disabled .funding-card-amount,
+.funding-page .funding-card-locked .funding-card-amount {
+  color: #4b5266;
+}
+
+.funding-page .funding-pill {
+  border-radius: var(--fp-radius);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.funding-page .funding-card-arrow {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--fp-border);
+  border-radius: 50%;
+  background: #fff;
+  transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.funding-page .funding-card-arrow i {
+  font-size: 16px;
+  transition: transform 0.18s ease;
+}
+
+.funding-page .funding-card:hover:not(.funding-card-disabled) .funding-card-arrow {
+  border-color: var(--fp-brand);
+  background: var(--fp-brand);
+}
+
+.funding-page .funding-card:hover:not(.funding-card-disabled) .funding-card-arrow i {
+  color: #fff;
+  transform: translateX(2px);
+}
+
+.funding-page .fc-badge-top-right {
+  top: 14px;
+  right: 14px;
+}
+
+/* The tooltip that explains a locked or pending card. funding.css colours it
+   with --primary-color, which the legacy theme defines in terms of itself, so
+   it came out transparent: give it the brand colour directly. */
+.funding-page .funding-missing-tooltip {
+  border-radius: var(--fp-radius);
+  background: var(--fp-brand);
+  box-shadow: 0 16px 40px -12px rgba(16, 24, 40, 0.35);
+}
+
+.funding-page .funding-missing-tooltip::after {
+  border-top-color: var(--fp-brand);
+}
+
+/* -- nothing to show ------------------------------------------------------- */
+
+.fp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 56px 20px;
+  border: 1px dashed var(--fp-border);
+  border-radius: var(--fp-radius);
+  background: #fff;
+  text-align: center;
+}
+
+.fp-empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  background: var(--fp-soft);
+  font-size: 28px;
+  color: var(--fp-muted);
+}
+
+.fp-empty-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--fp-ink);
+}
+
+.fp-empty-text {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--fp-muted);
+}
+
+/* -- smaller screens ----------------------------------------------------------- */
+
+@media (max-width: 1199.98px) {
+  .fp-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+}
+
+/* The chevrons need width: below this the flow runs top to bottom. */
+@media (max-width: 991.98px) {
+  .funding-page .funding-how-steps {
+    grid-template-columns: 1fr;
+    row-gap: 14px;
+  }
+
+  .funding-page .funding-how-steps li,
+  .funding-page .funding-how-steps li:first-child,
+  .funding-page .funding-how-steps li:last-child {
+    min-height: 0;
+    margin-left: 0;
+    padding: 0;
+    background: transparent;
+    clip-path: none;
+    border-radius: 0;
+  }
+
+  .funding-page .funding-how-steps li:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 30px;
+    left: 12px;
+    width: 2px;
+    height: 16px;
+    border-radius: 2px;
+    background: rgba(var(--fp-brand-rgb), 0.2);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .fp-hero {
+    padding: 22px 20px 84px;
+  }
+
+  .fp-hero::after {
+    display: none;
+  }
+
+  .fp-stats {
+    gap: 12px;
+    margin: -60px 12px 18px;
+  }
+
+  .fp-toolbar {
+    padding: 10px;
+  }
+
+  .fp-search,
+  .fp-category {
+    flex: 1 1 100%;
+  }
+
+  .fp-actions {
+    flex: 1 1 100%;
+  }
+
+  .fp-actions .fp-btn {
+    flex: 1;
+  }
+
+}
+
+@media (max-width: 575.98px) {
+  .fp-title {
+    font-size: 21px;
+  }
+
+  .fp-lead {
+    font-size: 13.5px;
+  }
+
+  .fp-stats {
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+
+  .fp-stat {
+    min-height: 0;
+    padding: 14px;
+  }
+
+  .fp-stat-head {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .fp-stat-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .fp-stat-label {
+    font-size: 10.5px;
+  }
+
+  .fp-stat-value {
+    padding-top: 8px;
+    font-size: 20px;
+  }
+
+  .fp-stat-foot {
+    margin-top: 10px;
+  }
+
+  .fp-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* -- loading ------------------------------------------------------------------ */
+
+.fp-hero-skeleton .skeleton-line {
+  background: rgba(255, 255, 255, 0.16);
+}

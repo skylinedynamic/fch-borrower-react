@@ -3,6 +3,7 @@ import { clearAuth } from '../../lib/auth'
 import { useAuthStore } from '../../store/auth'
 import { useBrandingStore } from '../../store/brandingStore'
 import { logout } from '../../modules/auth/services'
+import OnboardingSuggestion from '../Onboarding/OnboardingSuggestion'
 import avatarDefault from '../../../assets/images/users/avatar-default.jpg'
 import { resolveBrandLogo } from '../../utils/brandLogo'
 
@@ -108,6 +109,8 @@ export default function Header() {
           </div>
 
           <div className="d-flex align-items-center">
+            {/* Getting Started: the next step, before the user's name and avatar. */}
+            <OnboardingSuggestion />
             <div className="dropdown ms-sm-3 header-item topbar-user">
               <button type="button" className="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <span className="d-flex align-items-center">
