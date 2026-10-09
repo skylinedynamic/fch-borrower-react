@@ -3309,6 +3309,8 @@
 .fp-yd-list {
   display: none !important;
   position: absolute !important;
+  /* Touch scrolling stays in the list; the mouse wheel is handled in JS. */
+  overscroll-behavior: contain !important;
   z-index: 999 !important;
   max-height: 224px !important;
   overflow-y: auto !important;
@@ -3318,6 +3320,11 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
   padding: 4px 0 !important;
   scrollbar-width: thin !important;
+}
+
+/* Shown by class: an inline display:block cannot beat the !important above. */
+.fp-yd-list.fp-yd-open {
+  display: block !important;
 }
 
 .fp-yd-list::-webkit-scrollbar {
@@ -3357,6 +3364,22 @@
   position: relative !important;
   overflow: visible !important;
   z-index: 10 !important;
+}
+
+/* Month dropdown: the plugin's button replaces the native <select>, so it
+   sits in a box sized exactly like the year's. */
+.flatpickr-current-month.fp-has-custom-month select.flatpickr-monthDropdown-months {
+  display: none !important;
+}
+
+.flatpickr-current-month .fp-md-wrap {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 1 1 50% !important;
+  max-width: 50% !important;
+  min-width: 0 !important;
+  position: relative !important;
 }
 
 .fp-has-custom-year.numInputWrapper input.cur-year {
@@ -3865,8 +3888,7 @@ span.flatpickr-weekday {
 
 /* calender */
 .flatpickr-weekday,
-.flatpickr-months .flatpickr-month,
-.flatpickr-current-month .flatpickr-monthDropdown-months {
+.flatpickr-months .flatpickr-month {
   color: rgb(0, 0, 0) !important;
 }
 
@@ -4126,8 +4148,7 @@ span.flatpickr-weekday {
 
 /* calender */
 .flatpickr-weekday,
-.flatpickr-months .flatpickr-month,
-.flatpickr-current-month .flatpickr-monthDropdown-months {
+.flatpickr-months .flatpickr-month {
   color: rgb(0, 0, 0) !important;
 }
 

@@ -5,10 +5,21 @@ import { queryClient } from './lib/query'
 import 'primereact/resources/themes/saga-blue/theme.css'
 import 'primereact/resources/primereact.min.css'
 import 'primeicons/primeicons.css'
+// PrimeReact <Calendar> panel in the app's calendar design. JS-imported CSS is
+// emitted after index.html's <link>s, so this also wins over custom.min.css.
+import '../assets/css/primereact-calendar.css'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import { loadLocations } from './modules/location'
+import { applyCalendarLocale } from './config/calendarLocale'
+import { applyFlatpickrDefaults } from './config/flatpickrDefaults'
+
+// Before anything renders, so every PrimeReact calendar heads its columns SUN MON ...
+applyCalendarLocale()
+// ...and every Flatpickr picker shows the app calendar on phones too, not the
+// browser's native date input.
+applyFlatpickrDefaults()
 
 const container = document.getElementById('root')
 const root = createRoot(container)

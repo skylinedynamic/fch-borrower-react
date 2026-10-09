@@ -11,6 +11,7 @@ import { fetchAppointmentById, createAppointment, deleteAppointment, updateAppoi
 import { useAuthStore } from '../../store/auth/authStore';
 
 import { useSummernote } from '../../hooks/useSummernote';
+import { yearDropdownPlugin } from '../../utils/flatpickrPlugins';
 import DeleteConfirmationModal from '../../components/GlobalModal/DeleteConfirmModal';
 
 // Config
@@ -19,6 +20,9 @@ import { APPOINTMENT_TYPE_OPTIONS, TIMEZONE_OPTIONS, TIME_SLOTS } from '../../co
 // Styles
 import '../../../assets/css/appointment-modal.css';
 import '../../../assets/css/appointment-styles.css';
+
+// How many years past the current one the date picker's year list offers.
+const APPOINTMENT_YEARS_AHEAD = 10;
 
 interface AppointmentModalProps {
     onSuccess?: (data?: any) => void;
@@ -536,11 +540,16 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
     // Flatpickr initialization
     useEffect(() => {
         if (dateInputRef.current && !viewMode) {
+            const thisYear = new Date().getFullYear();
             const fp = flatpickr(dateInputRef.current, {
                 mode: "single",
                 minDate: "today",
                 defaultDate: formData.date,
                 disableMobile: true, // Forces custom UI on mobile
+                // Same month/year dropdowns as every other date picker. Bookings
+                // only look forward, so the year list runs ahead, not back.
+                monthSelectorType: "dropdown",
+                plugins: [yearDropdownPlugin(thisYear, thisYear + APPOINTMENT_YEARS_AHEAD)],
                 onChange: (selectedDates, dateStr) => {
                     setFormData(prev => ({ ...prev, date: dateStr }));
                 }

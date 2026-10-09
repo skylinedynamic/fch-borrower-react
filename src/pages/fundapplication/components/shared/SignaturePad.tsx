@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
+import { yearDropdownPlugin } from '../../../../utils/flatpickrPlugins'
 import type { SignatureBlockSettings } from '../../../../modules/funding-application/types'
 import { signatureLabel, signatureMetaStyle, signatureTextStyle, signatureWrapperStyle } from './signatureBlock'
 import { FileManagerModal } from '../../../../components/FileManagerModal/FileManagerModal'
@@ -332,7 +333,7 @@ export default function SignaturePad({ value, onChange, invalid, block, showDate
                 onChange={(selected) => selected[0] && onDateChange?.(toYmd(selected[0]))}
                 // The same format the builder's Signature Date uses. A signature
                 // cannot be dated in the future.
-                options={{ dateFormat: 'd M, Y', maxDate: 'today', disableMobile: true, allowInput: false }}
+                options={{ dateFormat: 'd M, Y', maxDate: 'today', disableMobile: true, allowInput: false, monthSelectorType: 'dropdown', plugins: [yearDropdownPlugin(1900)] }}
                 className="form-control border-0 rounded-0 bg-transparent shadow-none p-0 pb-1 w-100"
                 style={{ ...signatureTextStyle(block), textAlign: 'center', borderBottom: '1px solid #64748b', cursor: 'pointer' }}
                 placeholder="Select date"

@@ -5,6 +5,7 @@ import { useAuthStore } from '../../store/auth/authStore'
 import { useCheckAgreementSign, useSubmitAgreementSign } from '../../modules/agreement/queries'
 import { useBrandingStore } from '../../store/brandingStore'
 import { AgreementSignModalLoader } from '../Loader/AgreementLoader.jsx'
+import { withAppCalendar } from '../../utils/agreementCalendar'
 
 const AgreementSignModal = () => {
   const [visible, setVisible] = useState(false)
@@ -362,7 +363,8 @@ const AgreementSignModal = () => {
       html = html + scriptOverride;
     }
 
-    return html;
+    // Its date fields open the app's own calendar.
+    return withAppCalendar(html);
   }, [template]);
 
   if (loadingCheck && visible) return <AgreementSignModalLoader />;
