@@ -69,12 +69,14 @@ describe('SupportChatWidget (borrower)', () => {
         let callCount = 0
         server.use(
             noSessions(),
-            http.get('*/borrower/assistant/config', () => {
-                callCount += 1
+            http.get('*/borrower/assistant/config', ({ request }) => {
+                // Only the on-open (?intro=1) fetches are counted; the load-time
+                // readiness check carries no copy.
+                if (new URL(request.url).searchParams.get('intro') === '1') callCount += 1
                 return HttpResponse.json({
                     status: true,
                     message: '',
-                    // Call 1 (first open) sees the old copy; the reopen (call 2) sees the new.
+                    // Open 1 sees the old copy; the reopen (open 2) sees the new.
                     data: callCount <= 1
                         ? { is_ready: true, welcome_subtitle: 'Ask about the old prompt topic.', quick_suggestions: ['Old prompt question?'] }
                         : { is_ready: true, welcome_subtitle: 'Ask about the new prompt topic.', quick_suggestions: ['New prompt question?'] },
@@ -126,7 +128,10 @@ describe('SupportChatWidget (borrower)', () => {
         expect(await screen.findByText('Here is your status.')).toBeInTheDocument()
     })
 
-    it('closes and hides when the assistant is not ready upon open', async () => {
+    // The reported bug: the button used to show regardless, then vanish on
+    // every click until a hard refresh. Readiness is now known before the
+    // button is ever drawn.
+    it('never shows the button when the assistant is not ready', async () => {
         let configCalls = 0
         server.use(
             noSessions(),
@@ -138,23 +143,38 @@ describe('SupportChatWidget (borrower)', () => {
 
         renderWithProviders(<SupportChatWidget />)
 
-        // No API calls made while closed
-        expect(configCalls).toBe(0)
-
-        // Open chat modal
-        await open()
-
         await waitFor(() => expect(configCalls).toBe(1))
-
-        // The panel opens before the answer arrives, so the chat going away is
-        // waited for rather than asserted on the same tick the request was
-        // counted — the request is counted when it is sent, and the widget can
-        // only react once it has come back.
-        await waitFor(() => expect(screen.queryByPlaceholderText(/type a message/i)).not.toBeInTheDocument())
+        // Give the answer a chance to be applied before asserting nothing appeared.
+        await new Promise((resolve) => setTimeout(resolve, 50))
         expect(screen.queryByRole('button', { name: /open ask support/i })).not.toBeInTheDocument()
     })
 
-    it('does not call the config api when closed and calls it when the panel is opened', async () => {
+    it('does not show the button while the readiness check is still pending', () => {
+        server.use(noSessions(), enabledConfig())
+
+        renderWithProviders(<SupportChatWidget />)
+
+        expect(screen.queryByRole('button', { name: /open ask support/i })).not.toBeInTheDocument()
+    })
+
+    it('does not show the button when the readiness check fails', async () => {
+        let configCalls = 0
+        server.use(
+            noSessions(),
+            http.get('*/borrower/assistant/config', () => {
+                configCalls++
+                return HttpResponse.json({ status: false, message: 'Server error' }, { status: 500 })
+            })
+        )
+
+        renderWithProviders(<SupportChatWidget />)
+
+        await waitFor(() => expect(configCalls).toBe(1))
+        await new Promise((resolve) => setTimeout(resolve, 50))
+        expect(screen.queryByRole('button', { name: /open ask support/i })).not.toBeInTheDocument()
+    })
+
+    it('checks readiness once on load without the intro, then fetches the intro when opened', async () => {
         const asked: Array<string | null> = []
         server.use(
             noSessions(),
@@ -167,12 +187,53 @@ describe('SupportChatWidget (borrower)', () => {
         renderWithProviders(<SupportChatWidget />)
         await screen.findByRole('button', { name: /open ask support/i })
 
-        // No API calls made while closed!
-        expect(asked).toEqual([])
+        // One cheap check (no intro) to decide whether to show the button.
+        expect(asked).toEqual([null])
 
         await open()
 
-        await waitFor(() => expect(asked).toEqual(['1']))
+        await waitFor(() => expect(asked).toEqual([null, '1']))
+    })
+
+    it('closes and hides when the assistant was switched off between load and open', async () => {
+        server.use(
+            noSessions(),
+            http.get('*/borrower/assistant/config', ({ request }) => {
+                const onOpen = new URL(request.url).searchParams.get('intro') === '1'
+                return HttpResponse.json({ status: true, message: '', data: { is_ready: !onOpen, welcome_subtitle: null, quick_suggestions: [] } })
+            })
+        )
+
+        renderWithProviders(<SupportChatWidget />)
+
+        await open()
+
+        await waitFor(() => expect(screen.queryByPlaceholderText(/type a message/i)).not.toBeInTheDocument())
+        expect(screen.queryByRole('button', { name: /open ask support/i })).not.toBeInTheDocument()
+    })
+
+    // A failed intro fetch says nothing about whether the assistant is off, so
+    // it must not take the chat away until a hard refresh.
+    it('keeps the chat when the intro request fails on open', async () => {
+        server.use(
+            noSessions(),
+            http.get('*/borrower/assistant/config', ({ request }) => {
+                if (new URL(request.url).searchParams.get('intro') === '1') {
+                    return HttpResponse.json({ status: false, message: 'Server error' }, { status: 500 })
+                }
+                return HttpResponse.json({ status: true, message: '', data: { is_ready: true, welcome_subtitle: null, quick_suggestions: [] } })
+            })
+        )
+
+        renderWithProviders(<SupportChatWidget />)
+
+        await open()
+        await new Promise((resolve) => setTimeout(resolve, 100))
+
+        expect(screen.getByPlaceholderText(/type a message/i)).toBeInTheDocument()
+
+        await userEvent.click(screen.getByRole('button', { name: /minimize ask support/i }))
+        expect(screen.getByRole('button', { name: /open ask support/i })).toBeInTheDocument()
     })
 
     it('sends a message and renders the bold-formatted answer', async () => {
