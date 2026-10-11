@@ -13,6 +13,38 @@
         padding: 0 !important;
     }
 
+    /* With that padding gone, the menu's scroll area (#scrollbar, height
+       100%) no longer leaves room for the logo bar above it, so it ran off
+       the bottom of the screen and the last items - Profile, Logout - could
+       not be scrolled to. Laid out as a column, as the free-trial sidebar
+       already is (custom.css, .has-trial-panel): the scroll area takes only
+       the height that is left. */
+    :is([data-layout=vertical], [data-layout=semibox]) .app-menu.navbar-menu {
+        display: flex;
+        flex-direction: column;
+    }
+
+    :is([data-layout=vertical], [data-layout=semibox]) .app-menu.navbar-menu > :not(#scrollbar) {
+        flex: 0 0 auto;
+    }
+
+    :is([data-layout=vertical], [data-layout=semibox]) .app-menu.navbar-menu > #scrollbar {
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    /* The sidebar shows the same full logo as on a desktop. The theme swaps
+       it for the small brand mark below 768px - meant for a narrow sidebar,
+       but here the sidebar opens at full width. Only the sidebar's logo: the
+       header keeps its own. */
+    .app-menu .logo span.logo-lg {
+        display: inline-block !important;
+    }
+
+    .app-menu .logo span.logo-sm {
+        display: none !important;
+    }
+
     /* Target only the dashboard page */
     .dashboard-page {
         padding: 80px 10px 10px 10px !important;

@@ -150,7 +150,16 @@ const FundingRequestWizard = () => {
                         return;
                     }
 
-                    if (res.data.latest_review_status === FUNDING_REVIEW_STATUS.APPROVED) {
+                    // An approved request normally means "go and finish that
+                    // application". Not when that application has already left
+                    // the borrower's hands - past the editable statuses: with a
+                    // lender, funded, closed or denied. That round is over, so
+                    // this is a new request and the wizard stays here. Sending
+                    // them to /fund-application instead opened an old application
+                    // and asked whether they wanted to edit it.
+                    const previousRoundSettled = Boolean(res.data.can_start_new_funding_request);
+
+                    if (res.data.latest_review_status === FUNDING_REVIEW_STATUS.APPROVED && !previousRoundSettled) {
                         if (!isRedirecting.current) {
                             isRedirecting.current = true;
                             toast.success('Your funding request is already approved! Please proceed with the application.');
@@ -199,9 +208,17 @@ const FundingRequestWizard = () => {
                             defaultUse = typeof firstObj === 'object' ? (firstObj.value || firstObj.name || firstObj.label) : String(firstObj);
                         }
 
-                        const newAmountRaw = prev.requested_amount || res.data.latest_requested_amount || '';
+                        // The last request's amount and purpose are carried over
+                        // only while that request is still the one in play (it
+                        // was rejected and is being re-submitted, say). Once its
+                        // application is settled this is a new request, and it
+                        // starts empty - nothing from the closed round is reused.
+                        const lastAmount = previousRoundSettled ? '' : res.data.latest_requested_amount;
+                        const lastPurpose = previousRoundSettled ? '' : res.data.latest_use_of_funds;
+
+                        const newAmountRaw = prev.requested_amount || lastAmount || '';
                         const newAmount = newAmountRaw ? String(newAmountRaw).replace(/[^0-9.]/g, '') : '';
-                        let newPurpose: any = res.data.latest_use_of_funds || prev.use_of_funds;
+                        let newPurpose: any = lastPurpose || prev.use_of_funds;
 
                         if (!newPurpose || (Array.isArray(newPurpose) && newPurpose.length === 0)) {
                             if (Array.isArray(parsedUsesArray) && parsedUsesArray.length > 0) {

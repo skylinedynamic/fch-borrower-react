@@ -22,6 +22,8 @@ export type BusinessDetails = {
 export type OwnerInfo = {
   id?: number | null
   firstName: string
+  /** Optional; first and last are the required parts of a name. */
+  middleName?: string
   lastName: string
   dob: string
   ssn: string
@@ -39,6 +41,8 @@ export type OwnerInfo = {
 export type CoBorrower = {
   id?: number | null
   firstName: string
+  /** Optional; first and last are the required parts of a name. */
+  middleName?: string
   lastName: string
   role: string
   ownershipPct: string
@@ -118,9 +122,17 @@ export type DisclosureConsent = {
   marketingOptIn: boolean
 }
 
+export type SignatureType = 'typed' | 'esign'
+
 export type Attestation = {
   certify?: boolean // Keep for backward compatibility if needed, but not required
   signature_name: string
+  // How the borrower chose to sign: a typed full legal name, or an e-signature
+  // (drawn or uploaded image). Only the chosen one is sent.
+  signature_type?: SignatureType
+  signature_image?: string
+  /** The date in the signature block, YYYY-MM-DD. E-signatures only. */
+  signature_date?: string
   esign_consent: boolean
   esign_consent_timestamp?: number
   terms_consent: boolean

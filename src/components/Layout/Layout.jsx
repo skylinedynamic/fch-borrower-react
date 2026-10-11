@@ -5,6 +5,7 @@ import Sidebar from './Sidebar.jsx'
 import Footer from './Footer.jsx'
 import GlobalFundingBanner from './GlobalFundingBanner.jsx'
 import { useDashboard } from '../../modules/dashboard'
+import SupportChatWidget from '../Common/ChatWidget/SupportChatWidget.tsx'
 
 export default function Layout() {
   const { data: dashboardData } = useDashboard();
@@ -27,6 +28,7 @@ export default function Layout() {
         <Outlet />
         <Footer />
       </div>
+      <SupportChatWidget />
     </div>
   )
 }

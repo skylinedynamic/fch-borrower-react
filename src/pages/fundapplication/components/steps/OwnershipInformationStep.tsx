@@ -6,11 +6,12 @@ import StepNavigation from '../shared/StepNavigation'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 import CoBorrowerTable from '../shared/CoBorrowerTable'
 import CustomDropdown from '../../../../components/Common/CustomDropdown'
-import { countries } from '../../../../data/countries'
+import { countries } from '../../../../modules/location'
 import { useOwnershipInfo, useSaveOwnershipInfo } from '../../../../modules/funding-application/queries'
+import { isEditConfirmationCancelled } from '../../../../modules/funding-application/editConfirmation'
 import { citizenshipOptions } from '../../../../data/profile'
 import { toast } from 'react-toastify'
-import { formatPhoneNumber, formatSSN, unformatSSN } from '../../../../utils/formatters'
+import { formatPhoneNumber, formatSSN, unformatSSN, formatZipCode } from '../../../../utils/formatters'
 import { getCountryCodeByName, getPhoneCodeByName, getCountryNameByCode, getDefaultCountry } from '../../../../utils/countryHelpers'
 import { yearDropdownPlugin } from '../../../../utils/flatpickrPlugins'
 
@@ -70,6 +71,7 @@ export default function OwnershipInformationStep({
       id: owner.id ?? null,
       funding_request_id: fundingRequestId || null,
       first_name: owner.firstName,
+      middle_name: owner.middleName || null,
       last_name: owner.lastName,
       date_of_birth: owner.dob,
       ssn: unformatSSN(owner.ssn),
@@ -87,6 +89,7 @@ export default function OwnershipInformationStep({
         ? coBorrowers.map((cb) => ({
           id: cb.id,
           first_name: cb.firstName,
+          middle_name: cb.middleName || null,
           last_name: cb.lastName,
           role: cb.role,
           ownership: cb.ownershipPct,
@@ -110,6 +113,10 @@ export default function OwnershipInformationStep({
       toast.success('Ownership information saved successfully!')
       return true
     } catch (error: any) {
+      // The borrower backed out of the re-signature confirmation - nothing was
+      // attempted, so say nothing.
+      if (isEditConfirmationCancelled(error)) return false
+
       const errors = error.response?.data?.errors
       if (errors) {
         setValidationErrors(errors)
@@ -137,12 +144,13 @@ export default function OwnershipInformationStep({
         ...prev,
         id: apiData.id || null,
         firstName: apiData.first_name || '',
+        middleName: apiData.middle_name || '',
         lastName: apiData.last_name || '',
         dob: apiData.date_of_birth || '',
         ssn: apiData.ssn ? formatSSN(apiData.ssn) : '',
         citizenship: apiData.citizenship_status || citizenshipOptions[0].value,
         streetAddress: apiData.street_address || '',
-        country: apiData.country || getDefaultCountry().name,
+        country: apiData.country || getDefaultCountry()?.name || '',
         city: apiData.city || '',
         state: apiData.state || '',
         zip: apiData.zip_code || '',
@@ -156,6 +164,7 @@ export default function OwnershipInformationStep({
           apiData.co_borrowers.map((cb: any) => ({
             id: cb.id,
             firstName: cb.first_name,
+            middleName: cb.middle_name,
             lastName: cb.last_name,
             role: cb.role,
             ownershipPct: cb.ownership,
@@ -163,7 +172,7 @@ export default function OwnershipInformationStep({
             mobilePhone: cb.mobile_phone,
             homePhone: cb.home_phone,
             streetAddress: cb.street_address,
-            country: getDefaultCountry().name,
+            country: getDefaultCountry()?.name || '',
             city: cb.city,
             state: cb.state,
             zip: cb.zip_code,
@@ -287,17 +296,31 @@ export default function OwnershipInformationStep({
     <>
       <form className="row g-3">
         <div className="col-md-6">
-          <label className="form-label">
-            First Name <span className="text-danger">*</span>
-          </label>
-          <input
-            type="text"
-            className={`form-control ${hasError('first_name') ? 'is-invalid' : ''}`}
-            placeholder="Enter first name"
-            value={owner.firstName}
-            onChange={(e) => setOwner({ ...owner, firstName: e.target.value })}
-          />
-          {hasError('first_name') && <div className="invalid-feedback">{getFieldError('first_name')}</div>}
+          <div className="row g-2">
+            <div className="col-7">
+              <label className="form-label">
+                First Name <span className="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                className={`form-control ${hasError('first_name') ? 'is-invalid' : ''}`}
+                placeholder="Enter first name"
+                value={owner.firstName}
+                onChange={(e) => setOwner({ ...owner, firstName: e.target.value })}
+              />
+              {hasError('first_name') && <div className="invalid-feedback">{getFieldError('first_name')}</div>}
+            </div>
+            <div className="col-5">
+              <label className="form-label">Middle Name</label>
+              <input
+                type="text"
+                className={`form-control ${hasError('middle_name') ? 'is-invalid' : ''}`}
+                placeholder="Optional"
+                value={owner.middleName || ''}
+                onChange={(e) => setOwner({ ...owner, middleName: e.target.value })}
+              />
+            </div>
+          </div>
         </div>
         <div className="col-md-6">
           <label className="form-label">
@@ -317,23 +340,24 @@ export default function OwnershipInformationStep({
           <label className="form-label">
             Date of Birth <span className="text-danger">*</span>
           </label>
-          <Flatpickr
-            className={`form-control ${hasError('date_of_birth') ? 'is-invalid' : ''}`}
-            value={owner.dob}
-            onChange={(dates, dateStr) => {
-              setOwner({ ...owner, dob: dateStr })
-            }}
-            options={{
-              dateFormat: 'Y-m-d',
-              altInput: true,
-              altFormat: 'j M, Y',
-              maxDate: 'today',
-              yearRange: '1900:' + new Date().getFullYear(),
-              monthSelectorType: 'dropdown',
-              plugins: [yearDropdownPlugin(1900)],
-            } as any}
-            placeholder="Select date of birth"
-          />
+          <div className="position-relative">
+            <Flatpickr
+              className={`form-control ${hasError('date_of_birth') ? 'is-invalid' : ''}`}
+              value={owner.dob}
+              onChange={(dates, dateStr) => {
+                setOwner({ ...owner, dob: dateStr })
+              }}
+              options={{
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'j M, Y',
+                maxDate: 'today',
+                monthSelectorType: 'dropdown',
+                plugins: [yearDropdownPlugin(1900)],
+              } as any}
+              placeholder="Select date of birth"
+            />
+          </div>
           {hasError('date_of_birth') && <div className="invalid-feedback d-block">{getFieldError('date_of_birth')}</div>}
         </div>
         <div className="col-md-6">
@@ -496,10 +520,12 @@ export default function OwnershipInformationStep({
           </label>
           <input
             type="text"
+            inputMode="numeric"
+            maxLength={5}
             className={`form-control ${hasError('zip_code') ? 'is-invalid' : ''}`}
             placeholder="Enter zip code"
             value={owner.zip}
-            onChange={(e) => setOwner({ ...owner, zip: e.target.value })}
+            onChange={(e) => setOwner({ ...owner, zip: formatZipCode(e.target.value) })}
           />
           {hasError('zip_code') && <div className="invalid-feedback">{getFieldError('zip_code')}</div>}
         </div>

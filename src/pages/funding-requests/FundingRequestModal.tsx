@@ -237,8 +237,18 @@ export default function FundingRequestModal({ show, onHide, review }: FundingReq
                                             <button className="btn btn-light border" onClick={onHide}>
                                                 <i className="ri-close-line align-bottom me-1"></i> Close
                                             </button>
+                                            {/* Submitted and still editable: status key 3-9 (the server decides). */}
+                                            {displayReview.application_status && displayReview.application_is_editable && !String(displayReview.application_status).toLowerCase().includes('hold') && !String(displayReview.application_status).toLowerCase().includes('draft') && (
+                                                <button
+                                                    className="btn btn-warning shadow-sm"
+                                                    onClick={handleProceed}
+                                                    title="Editing will require you to resign the application"
+                                                >
+                                                    <i className="ri-edit-line align-bottom me-1"></i> Edit Application
+                                                </button>
+                                            )}
                                             {displayReview.application_status && !String(displayReview.application_status).toLowerCase().includes('hold') && !String(displayReview.application_status).toLowerCase().includes('draft') && (
-                                                <button 
+                                                <button
                                                     className="btn btn-info shadow-sm"
                                                     onClick={() => {
                                                         onHide();

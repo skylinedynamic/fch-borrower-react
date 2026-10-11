@@ -6,9 +6,11 @@ import { useAuthStore } from '../../store/auth'
 import { useBrandingStore } from '../../store/brandingStore'
 import { isSubscriptionRestricted, isFreeTrialLocked } from '../../lib/auth/subscriptionUtils'
 import { PARTNER_TYPES } from '../../config/partnerTypeOptions'
-import logoImg from '../../../assets/images/fch-logo-wide.png'
+import { resolveBrandLogo } from '../../utils/brandLogo'
 import avatarDefault from '../../../assets/images/users/avatar-1.jpg'
 import { useDashboard } from '../../modules/dashboard'
+import { useUnreadNotificationCount, formatUnreadCount } from '../../modules/notifications'
+import { NOTIFICATIONS_ROUTE } from '../../config/notifications'
 
 export default function Sidebar() {
   const navigate = useNavigate()
@@ -32,12 +34,20 @@ export default function Sidebar() {
   const secondaryLogo = branding?.logo_document_full_url
   const markLogo = branding?.favicon_full_url
   // The mobile brand box now carries the sidebar colour, so it takes the dark-background logo too.
-  const displayLogo = primaryLogo || secondaryLogo
-  const compactLogo = markLogo || secondaryLogo
+  //
+  // Both end at the packaged default rather than at undefined, which is what the
+  // <img> tags below used to be handed - and rendered as a broken-image icon -
+  // whenever a tenant had uploaded nothing. A tenant branded as itself never
+  // reaches that default: the API substitutes a placeholder carrying its own
+  // company name so the host's logo cannot appear in its sidebar.
+  const displayLogo = resolveBrandLogo(primaryLogo, secondaryLogo)
+  const compactLogo = resolveBrandLogo(markLogo, secondaryLogo)
 
   const { data: dashboardData } = useDashboard()
   const activeApprovedRequest = dashboardData?.data?.active_approved_funding_request
   const activeApprovedRequestCount = dashboardData?.data?.active_approved_funding_request_count || 0
+  // Same cached query as the header bell, so this adds no extra request.
+  const { data: unreadNotificationCount = 0 } = useUnreadNotificationCount()
 
   // Cleaned up unused context
   const [creditOpen, setCreditOpen] = useState(() => {
@@ -61,7 +71,13 @@ export default function Sidebar() {
     if (inSection) setCreditOpen(true)
   }, [location.pathname])
 
-  const menuClass = useMemo(() => 'app-menu navbar-menu', [])
+  // `has-trial-panel` switches the sidebar to a flex column so the banner takes
+  // part in the layout instead of floating over the last menu item. Only when
+  // there is a banner, so a paid plan keeps the theme's own layout untouched.
+  const menuClass = useMemo(
+    () => (isFreeTrial ? 'app-menu navbar-menu has-trial-panel' : 'app-menu navbar-menu'),
+    [isFreeTrial]
+  )
 
   const toggleOpen = () => {
     const body = typeof document !== 'undefined' ? document.body : null
@@ -247,6 +263,14 @@ export default function Sidebar() {
                 </li>
               </ul>
             </li>
+
+            {/* Notification — never locked: the header bell works on every plan */}
+            <LinkItem
+              to={NOTIFICATIONS_ROUTE}
+              label="Notification"
+              icon="ri-notification-3-line"
+              badge={unreadNotificationCount > 0 ? formatUnreadCount(unreadNotificationCount) : undefined}
+            />
 
             <LinkItem to="/profile" label="Profile" icon="ri-account-circle-line" restricted={isRestricted} />
 

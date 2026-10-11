@@ -1,6 +1,7 @@
 export type PersonalInfoData = {
   id: number
   first_name: string
+  middle_name?: string | null
   last_name: string
   email: string
   home_address: string
@@ -22,6 +23,7 @@ export type PersonalInfoResponse = {
 
 export type SavePersonalInfoRequest = {
   first_name: string
+  middle_name?: string | null
   last_name: string
   email: string
   home_address: string

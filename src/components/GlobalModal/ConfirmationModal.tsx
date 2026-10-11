@@ -45,6 +45,18 @@ export default function ConfirmationModal({
   const modalInstanceRef = useRef<Modal | null>(null)
 
   const cleanupModalEffects = () => {
+    // Scheduled below via setTimeout(..., 100/300) from the unmount cleanup,
+    // uncancelled - if the page (or, in tests, jsdom) is torn down before
+    // those fire, `document` is already gone by the time this callback runs.
+    if (typeof document === 'undefined') return
+
+    // Bail out while any modal is still open. This used to remove every
+    // .modal-backdrop in the document, which also took out overlays belonging to
+    // other modals - the profile completion modal is mounted globally, so on any
+    // page that renders this component its overlay was stripped and the page
+    // behind it showed undimmed. Only stray backdrops are cleared now.
+    if (document.querySelector('.modal.show')) return
+
     document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove())
     document.body.classList.remove('modal-open')
     document.body.style.overflow = ''

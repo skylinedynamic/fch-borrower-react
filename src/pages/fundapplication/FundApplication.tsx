@@ -12,11 +12,13 @@ import DisclosuresStep from './components/steps/DisclosuresStep'
 import FederalComplianceStep from './components/steps/FederalComplianceStep'
 import AttestationStep from './components/steps/AttestationStep'
 import CoBorrowerModal from './components/shared/CoBorrowerModal'
+import EditConfirmationModal from './components/shared/EditConfirmationModal'
 
 // Hooks
 import { useCoBorrowers } from './hooks/useCoBorrowers'
 import { FUNDING_PURPOSE_OTHER, purposeOfFundingOptions, timeframeOptions } from '../../data/profile'
 import { useFundingRequest, useFundingApplicationDocuments } from '../../modules/funding-application/queries'
+import { setEditRequiresConfirmation, setEditConfirmationResolving, resetEditConfirmation } from '../../store/fundApplication/editConfirmationStore'
 import { formatCurrency } from '../../utils/formatters'
 
 // Types & Utils
@@ -259,7 +261,7 @@ export default function FundApplication() {
 
   // Fetch funding request and documents (tab-wise lazy loading)
   const currentReqId = fundingRequestId || id || null
-  const { data: fundingData } = useFundingRequest(currentReqId)
+  const { data: fundingData, isLoading: isFundingDataLoading } = useFundingRequest(currentReqId)
   const fundingApplicationId = fundingData?.id ?? null
   const { data: documentsData } = useFundingApplicationDocuments(fundingApplicationId, {
     enabled: !!fundingApplicationId,
@@ -401,8 +403,9 @@ export default function FundApplication() {
 
         case STEP_INDICES.ATTESTATION:
           return Boolean(
-            attestation.signature_name &&
-            attestation.signature_name.trim().length >= 3 &&
+            (attestation.signature_type === 'esign'
+              ? attestation.signature_image
+              : attestation.signature_name && attestation.signature_name.trim().length >= 3) &&
             attestation.esign_consent &&
             attestation.terms_consent &&
             attestation.privacy_consent &&
@@ -417,6 +420,46 @@ export default function FundApplication() {
     [canProceedFromBusinessInfo, owner, financial, funding, disclosure, federal, attestation]
   )
 
+
+  // Whether an edit currently costs the borrower their signature is the API's
+  // call, not a status list held here - the server decides it and enforces it.
+  // Feed it to the gate the step saves wait on, and clear the gate on unmount so
+  // a stale flag cannot follow the borrower to another screen.
+  //
+  // Only a loaded application can answer. The request id changes type once the
+  // application arrives, which refetches it; treating that gap as "not signed"
+  // let saves through unasked and dismissed a dialog that had just opened.
+  useEffect(() => {
+    if (!fundingData) return
+    setEditRequiresConfirmation(Boolean(fundingData.edit_needs_confirmation ?? fundingData.edit_requires_resign), fundingData.id)
+  }, [fundingData])
+
+  // A new signature is owed. Whatever the signing step still holds is the old
+  // one - typed or prefilled before the edit - and re-signing has to be a fresh
+  // act, so the name and every consent start empty.
+  useEffect(() => {
+    if (!fundingData?.requires_resign) return
+
+    setAttestation({
+      certify: false,
+      signature_name: '',
+      signature_type: 'typed',
+      signature_image: '',
+      esign_consent: false,
+      terms_consent: false,
+      privacy_consent: false,
+      credit_consent: false,
+      legal_binding_consent: false,
+    })
+  }, [fundingData?.requires_resign])
+
+  // Until the application has loaded, the flag above is only a default. Saves
+  // wait on this, so one fired early still gets the dialog.
+  useEffect(() => {
+    setEditConfirmationResolving(isFundingDataLoading)
+  }, [isFundingDataLoading])
+
+  useEffect(() => () => resetEditConfirmation(), [])
 
   const initializedRef = React.useRef(false)
   useEffect(() => {
@@ -461,7 +504,10 @@ export default function FundApplication() {
       }
       
       if (!isStepSaved(stepIndex)) return false;
-      if (activeStep === stepIndex && !isStepValid(stepIndex)) return false;
+      // A signed application stays complete while its signing step is open:
+      // that form starts empty for a new signature, which is not a missing one.
+      const alreadySigned = stepIndex === STEP_INDICES.ATTESTATION && Boolean(fundingData?.signature_data);
+      if (activeStep === stepIndex && !alreadySigned && !isStepValid(stepIndex)) return false;
 
       return true;
     },
@@ -469,12 +515,20 @@ export default function FundApplication() {
   )
 
   // Progress calculations
-  const isApplicationSubmitted = fundingData?.status && !['Draft', 'On Hold', 'Pending'].includes(fundingData.status) ? true : false;
   const stepsTotal = tabs.length
   const completedCount = tabs.reduce((acc, _, index) => acc + (isStepComplete(index) ? 1 : 0), 0)
   const progressPct = Math.round((completedCount / stepsTotal) * 100)
-  const firstInvalidIdx = tabs.findIndex((_, index) => !isStepValid(index))
-  const maxAllowedIdx = firstInvalidIdx === -1 ? stepsTotal - 1 : firstInvalidIdx
+  // How far down the list a step may be opened: up to the first one that is not
+  // complete (saved - the one without a tick), and never past it. This used to
+  // ask only whether a step's fields looked valid, so a step whose form was
+  // prefilled but never saved unlocked the one after it, which then showed dark
+  // and clickable beside steps that were correctly greyed out.
+  const firstIncompleteIdx = tabs.findIndex((_, index) => !isStepComplete(index))
+  // Open steps are the complete ones (ticked) and the one being worked on.
+  // Every other step is greyed out - including the very next one - until the
+  // step before it has been saved. The way forward is Save & Next.
+  const lastCompleteIdx = firstIncompleteIdx === -1 ? stepsTotal - 1 : firstIncompleteIdx - 1
+  const maxAllowedIdx = Math.max(activeStep, lastCompleteIdx)
 
   // Handle tab switching with auto-save
   const handleTabSwitch = useCallback(
@@ -641,6 +695,7 @@ export default function FundApplication() {
             onBack={() => setActiveStep(STEP_INDICES.FEDERAL_COMPLIANCE)}
             onSubmit={() => toast.success('Application submitted!')}
             loading={loading}
+            isResigning={Boolean(fundingData?.requires_resign)}
           />
         )
 
@@ -690,6 +745,15 @@ export default function FundApplication() {
                   : 'Apply now to unlock working capital, equipment financing, SBA loans, or credit-building options tailored to your goals.')}
           </div>
         </div>
+
+        {fundingData?.edit_requires_resign && (
+          <div className="alert alert-warning d-flex align-items-start gap-2 mb-4" role="alert">
+            <i className="ri-alert-line fs-18 mt-1"></i>
+            <div>
+              <strong>This application has already been submitted.</strong> Any change you make to a field will invalidate your existing signature. You will be required to review and re-sign the application, after which it returns to Submitted status for our team to verify.
+            </div>
+          </div>
+        )}
 
         <div className="row">
           {/* Desktop Sidebar */}
@@ -791,6 +855,8 @@ export default function FundApplication() {
         onSubmit={submitCoBorrower}
         isEditing={isEditing}
       />
+      {/* Rendered once for the whole wizard: every step's save waits on it. */}
+      <EditConfirmationModal status={fundingData?.status} awaitingResign={Boolean(fundingData?.requires_resign)} />
     </div>
   )
 }

@@ -11,7 +11,24 @@ vi.mock('react-toastify', () => ({ toast: { success: vi.fn(), error: vi.fn() } }
 
 // Raw flatpickr (not react-flatpickr) directly manipulates the DOM via its
 // own scheduling; not what this component's save/delete logic is testing.
-vi.mock('flatpickr', () => ({ default: () => ({ destroy: vi.fn(), setDate: vi.fn() }) }))
+// The options it is called with are recorded, so the picker's setup can be.
+const flatpickrCalls = vi.hoisted(() => [] as Array<Record<string, any>>)
+vi.mock('flatpickr', () => ({
+  default: (_el: unknown, options: Record<string, any>) => {
+    flatpickrCalls.push(options)
+    return { destroy: () => {}, setDate: () => {} }
+  },
+}))
+
+// The plugin itself is covered by tests/utils/flatpickrPlugins.test.ts; here
+// only the range the modal asks it for matters.
+const yearDropdownCalls = vi.hoisted(() => [] as Array<[number | undefined, number | undefined]>)
+vi.mock('../../../src/utils/flatpickrPlugins', () => ({
+  yearDropdownPlugin: (minYear?: number, maxYear?: number) => {
+    yearDropdownCalls.push([minYear, maxYear])
+    return { yearDropdown: true }
+  },
+}))
 
 // Real bootstrap Modal manipulates classList/creates a backdrop via its own
 // transition timers; stubbed so show()/hide() are synchronous and inert.
@@ -75,6 +92,31 @@ describe('AppointmentModal', () => {
     expect(receivedBody.subject).toBe('Quarterly Review')
     expect(receivedBody.meeting_type).toBe('Business Review')
     await waitFor(() => expect(onSuccess).toHaveBeenCalled())
+  })
+
+  it('create(): the date picker uses the shared month/year dropdowns, with future years to pick from', async () => {
+    resetAuth()
+    server.use(
+      http.post('*/common/appointments/fetch-selectable-users', () => HttpResponse.json({ status: true, data: [] }))
+    )
+    flatpickrCalls.length = 0
+    const { ref } = renderModal()
+
+    await act(async () => {
+      ref.current!.create()
+    })
+
+    await waitFor(() => expect(flatpickrCalls.length).toBeGreaterThan(0))
+    const options = flatpickrCalls[flatpickrCalls.length - 1]
+    expect(options.minDate).toBe('today')
+    expect(options.monthSelectorType).toBe('dropdown')
+    expect(options.plugins).toEqual([{ yearDropdown: true }])
+
+    // Appointments are booked forward, so the year list must reach past this year.
+    const [minYear, maxYear] = yearDropdownCalls[yearDropdownCalls.length - 1]
+    const thisYear = new Date().getFullYear()
+    expect(minYear).toBe(thisYear)
+    expect(maxYear).toBeGreaterThan(thisYear)
   })
 
   it('show(id): fetches and displays the appointment in read-only view mode', async () => {

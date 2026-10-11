@@ -1,10 +1,11 @@
 import React from 'react'
 import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { SaveBusinessDetailsRequest, ValidationErrors, BusinessDetailsData } from '../../../modules/profile/types'
-import { countries as countriesData } from '../../../data/countries'
+import { countries as countriesData } from '../../../modules/location'
 import { entityTypes, industryTypes } from '../../../data/profile'
 import { useBusinessDetails, useSaveBusinessDetails, useSubmitChangeRequest } from '../../../modules/profile/queries'
 import { useEffect, useMemo, useState, useRef } from 'react'
+import { formatCalendarDate } from '../../../utils/dates'
 import { toast } from 'react-toastify'
 import TabLoader from '../../../components/Loader/TabLoader'
 import { formatPhoneNumber, formatDUNS, formatEIN, unformatEIN, unformatPhoneNumber, formatZipCode } from '../../../utils/formatters'
@@ -20,6 +21,14 @@ interface BusinessDetailsProps {
   onSave: () => void
   onBack: () => void
 }
+
+/**
+ * An EIN is nine digits. XX-XXXXXXX is how it is written down, not part of the
+ * number - which is why the payload carries the digits and the field shows the
+ * hyphen. Kept together so the placeholder, the mask and the check agree.
+ */
+const EIN_DIGITS = 9
+const EIN_WRITTEN = '12-3456789'
 
 export default function BusinessDetails({ data, onChange, onSave, onBack }: BusinessDetailsProps) {
 
@@ -59,9 +68,23 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
 
   const handleSave = () => {
     setErrors({})
+
+    // An EIN is nine digits; the hyphen the field adds is only how it is
+    // written. Checked here as well as on the server so a borrower who is one
+    // digit short hears about it while the form is still in front of them,
+    // rather than losing the save to a 422.
+    const ein = unformatEIN(data.business_ein)
+
+    if (ein.length !== EIN_DIGITS) {
+      // An array, matching the shape the server's own 422 arrives in, so the
+      // field below renders it the same way either source produced it.
+      setErrors({ business_ein: [`EIN must be 9 digits (${EIN_WRITTEN})`] })
+      return
+    }
+
     const payload = {
       ...data,
-      business_ein: unformatEIN(data.business_ein),
+      business_ein: ein,
       business_phone: data.business_phone,
       duns_number: data.duns_number.replace(/\D/g, ''),
     }
@@ -233,7 +256,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
           <div className="position-relative">
             <input
               type="text"
-              placeholder="9 digit EIN"
+              placeholder="12-3456789"
               value={data.business_ein}
               onChange={(e) => onChange({ ...data, business_ein: formatEIN(e.target.value) })}
               className={`form-control ${errors.business_ein ? 'is-invalid' : ''} ${isFieldLocked('business_ein') ? 'bg-light border-dashed locked-field-padding' : ''}`}
@@ -506,6 +529,8 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
           <div className="position-relative">
             <input
               type="text"
+              inputMode="numeric"
+              maxLength={5}
               placeholder="Enter zip code"
               value={data.business_zip_code}
               onChange={(e) => onChange({ ...data, business_zip_code: formatZipCode(e.target.value) })}
@@ -735,7 +760,9 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               type="text"
               className="form-control bg-light"
               value={updateRequest.key === 'business_start_date' && updateRequest.currentValue
-                ? new Date(updateRequest.currentValue).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                // Not new Date(): that parses a bare calendar date as UTC
+                // midnight, so anywhere behind UTC this showed the previous day.
+                ? formatCalendarDate(String(updateRequest.currentValue))
                 : (updateRequest.key === 'business_ein' ? formatEIN(String(updateRequest.currentValue))
                   : (updateRequest.key === 'duns_number' ? formatDUNS(String(updateRequest.currentValue))
                     : (updateRequest.key === 'business_phone' ? formatPhoneNumber(String(updateRequest.currentValue))

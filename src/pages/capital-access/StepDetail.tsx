@@ -5,6 +5,28 @@ import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
 import type { CapitalAccessStepDetail } from '../../modules/capital-access/types';
 import { CAPITAL_ACCESS_STATUS, type CapitalAccessStatus } from '../../config/capitalAccessStatusOptions';
 
+/**
+ * Whether an approved credit limit can be recorded as entered.
+ *
+ * The figure used to be clamped to the step's own estimate (est_limit_min to
+ * est_limit_max), so an approval outside that band could not be entered at all -
+ * even though the band is a projection and the approval is a fact. The estimate
+ * is shown beside the field as guidance now, and any amount is accepted.
+ *
+ * What is left is only what makes a figure an amount: present, numeric, not
+ * negative. Module scope rather than inside the component because it no longer
+ * reads the step, which also makes it directly testable.
+ *
+ * @returns the message to show, or '' when the value is fine.
+ */
+export const validateCreditLimit = (val: string): string => {
+  if (!val) return 'Approved Credit Limit is required.';
+  const num = parseFloat(val);
+  if (isNaN(num)) return 'Approved Credit Limit must be a number.';
+  if (num < 0) return 'Approved Credit Limit cannot be negative.';
+  return '';
+};
+
 export default function StepDetail() {
   const { id: strategyId, stepId: sequenceId } = useParams<{ id: string; stepId: string }>();
   const navigate = useNavigate();
@@ -34,21 +56,6 @@ export default function StepDetail() {
       setStatus(CAPITAL_ACCESS_STATUS.APPROVED);
     }
   }, [step]);
-
-  const validateCreditLimit = (val: string) => {
-    if (!val) return 'Approved Credit Limit is required.';
-    const num = parseFloat(val);
-    if (isNaN(num)) return 'Approved Credit Limit must be a number.';
-    if (num < 0) return 'Approved Credit Limit cannot be negative.';
-    if (step) {
-      const min = step.est_limit_min ?? 0;
-      if (num < min) return `Approved Credit Limit must be at least $${min.toLocaleString()}.`;
-      if (step.est_limit_max !== null && step.est_limit_max !== undefined) {
-        if (num > step.est_limit_max) return `Approved Credit Limit must be at most $${step.est_limit_max.toLocaleString()}.`;
-      }
-    }
-    return '';
-  };
 
   if (isError) {
     return <Navigate to={`/capital-access/${strategyId}/roadmap`} />;

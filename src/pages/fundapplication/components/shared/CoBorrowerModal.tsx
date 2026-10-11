@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import type { CoBorrower } from '../../types'
 import CustomDropdown from '../../../../components/Common/CustomDropdown'
-import { countries } from '../../../../data/countries'
+import { countries } from '../../../../modules/location'
 import { useValidateCoBorrower } from '../../../../modules/funding-application/queries'
 import { getCountryCodeByName, getPhoneCodeByName } from '../../../../utils/countryHelpers'
-import { formatPhoneNumber, formatSSN, unformatSSN } from '../../../../utils/formatters'
+import { formatPhoneNumber, formatSSN, unformatSSN, formatZipCode } from '../../../../utils/formatters'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
 import { yearDropdownPlugin } from '../../../../utils/flatpickrPlugins'
@@ -241,7 +241,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit, isEditi
                   <label className="form-label">
                     Date of Birth <span className="text-danger">*</span>
                   </label>
-                  <div className="input-group-flatpickr">
+                  <div className="position-relative">
                     <Flatpickr
                       className={`form-control ${hasError('date_of_birth') ? 'is-invalid' : ''}`}
                       value={coDraft.dob}
@@ -251,17 +251,14 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit, isEditi
                       options={{
                         dateFormat: "Y-m-d",
                         altInput: true,
-                        altFormat: "m-d-Y",
+                        altFormat: "j M, Y",
                         maxDate: "today",
-                        yearRange: "1900:" + new Date().getFullYear(),
                         monthSelectorType: "dropdown",
+                        static: true,
                         plugins: [yearDropdownPlugin(1900)],
                       } as any}
                       placeholder="Select date of birth"
                     />
-                    <span className="input-group-text">
-                      <i className="ri-calendar-line"></i>
-                    </span>
                   </div>
                   {hasError('date_of_birth') && <div className="invalid-feedback d-block">{getError('date_of_birth')}</div>}
                 </div>
@@ -380,10 +377,12 @@ export default function CoBorrowerModal({ coDraft, setCoDraft, onSubmit, isEditi
                   </label>
                   <input
                     type="text"
+                    inputMode="numeric"
+                    maxLength={5}
                     className={`form-control ${hasError('zip_code') ? 'is-invalid' : ''}`}
                     placeholder="Enter Zip Code"
                     value={coDraft.zip}
-                    onChange={(e) => setCoDraft({ ...coDraft, zip: e.target.value })}
+                    onChange={(e) => setCoDraft({ ...coDraft, zip: formatZipCode(e.target.value) })}
                   />
                   {hasError('zip_code') && <div className="invalid-feedback">{getError('zip_code')}</div>}
                 </div>

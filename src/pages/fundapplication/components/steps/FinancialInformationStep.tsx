@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
+import { yearDropdownPlugin } from '../../../../utils/flatpickrPlugins'
 import type { FinancialInfo } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 import CustomDropdown from '../../../../components/Common/CustomDropdown'
 import { selfReportedCreditScoreOptions, selfReportedBusinessCreditScoreOptions } from '../../../../data/profile'
 import { useFinancialInfo, useSaveFinancialInfo } from '../../../../modules/funding-application/queries'
+import { isEditConfirmationCancelled } from '../../../../modules/funding-application/editConfirmation'
 import { toast } from 'react-toastify'
 import { formatCurrency, unformatCurrency } from '../../../../utils/formatters'
 
@@ -36,11 +38,16 @@ export default function FinancialInformationStep({
   const { data: apiData, isLoading: isApiLoading, isSuccess } = useFinancialInfo(fundingRequestId)
   const { mutateAsync: saveFinancialInfo, isPending: isSaving } = useSaveFinancialInfo()
 
-  // Helper to format date as YYYY-MM-DD
+  // Helper to format date as YYYY-MM-DD.
+  //
+  // An already-plain date is returned untouched. That matters: new Date('2019-04-02')
+  // is parsed as UTC midnight, so reading it back with local getters returns the
+  // previous day for anyone behind UTC - the exact off-by-one this guards against.
   const formatForApi = (dateStr: string | null | undefined): string | null => {
     if (!dateStr) return null
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr
     const d = new Date(dateStr)
-    if (isNaN(d.getTime())) return dateStr // Try to pass it through if it's already a string we can't parse
+    if (isNaN(d.getTime())) return dateStr // Pass through anything unparseable
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   }
 
@@ -66,6 +73,10 @@ export default function FinancialInformationStep({
       toast.success('Financial information saved successfully!')
       return true
     } catch (error: any) {
+      // The borrower backed out of the re-signature confirmation - nothing was
+      // attempted, so say nothing.
+      if (isEditConfirmationCancelled(error)) return false
+
       const errors = error.response?.data?.errors
       if (errors) {
         setValidationErrors(errors)
@@ -190,19 +201,19 @@ export default function FinancialInformationStep({
         <Flatpickr
           className={`form-control ${hasError('business_checking_start_date') ? 'is-invalid' : ''}`}
           value={financial.checkingStartDate}
-          onChange={(dates, dateStr) => {
-            // When altInput is true, dateStr follows dateFormat if possible
-            // but we'll use the first Date object to be absolutely sure
-            if (dates[0]) {
-              setFinancial({ ...financial, checkingStartDate: formatForApi(dates[0].toISOString()) || '' })
-            }
+          onChange={(_dates, dateStr) => {
+            // dateStr already follows dateFormat ('Y-m-d'). Taking the Date object
+            // and calling toISOString() instead pushes local midnight into UTC,
+            // which moves the date a day for anyone not on UTC.
+            setFinancial({ ...financial, checkingStartDate: dateStr })
           }}
           options={{
             dateFormat: 'Y-m-d',
             altInput: true,
             altFormat: 'j M, Y',
             maxDate: 'today',
-          }}
+            plugins: [yearDropdownPlugin(1900)],
+          } as any}
           placeholder="Select start date"
         />
         {hasError('business_checking_start_date') && (

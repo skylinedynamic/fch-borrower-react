@@ -66,8 +66,11 @@ export default function DeleteConfirmationModal({
     }
 
     modal.hide()
-    // Clean up any remaining backdrop
+    // Clean up any remaining backdrop, but never one belonging to a modal
+    // that is still open - this effect also runs on mount, where `show` starts
+    // false, and it used to strip the globally mounted profile modal overlay.
     const timer = setTimeout(() => {
+      if (document.querySelector('.modal.show')) return
       const backdrops = document.querySelectorAll('.modal-backdrop')
       backdrops.forEach(el => el.remove())
     }, 300)
@@ -94,6 +97,8 @@ export default function DeleteConfirmationModal({
         // Fires after unmount by design, so the host document can already be
         // gone (a torn-down test environment) — bail out instead of throwing.
         if (typeof document === 'undefined') return
+        // Nor one that belongs to a modal still on screen.
+        if (document.querySelector('.modal.show')) return
         const backdrops = document.querySelectorAll('.modal-backdrop')
         backdrops.forEach(el => el.remove())
         document.body.classList.remove('modal-open')

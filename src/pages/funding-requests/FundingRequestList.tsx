@@ -300,7 +300,9 @@ export default function FundingRequestList() {
                                             const appStatus = (row.application_status || '').toLowerCase();
                                             const isNotStarted = isApproved && !row.application_status;
                                             const isOnHoldOrDraft = isApproved && (appStatus.includes('hold') || appStatus.includes('draft'));
-                                            const isSubmittedOrComplete = Boolean(row.application_status && !isOnHoldOrDraft);
+                                            // Submitted and still editable: status key 3-9 (the server decides).
+                                            const isPendingReview = Boolean(row.application_status && row.application_is_editable && !appStatus.includes('hold') && !appStatus.includes('draft'));
+                                            const isSubmittedOrComplete = Boolean(row.application_status && !isOnHoldOrDraft && !isPendingReview);
 
                                             return (
                                                 <div className="d-flex gap-2 align-items-center flex-nowrap">
@@ -328,7 +330,16 @@ export default function FundingRequestList() {
                                                             Continue Application <i className="ri-arrow-right-line ms-1"></i>
                                                         </Link>
                                                     )}
-                                                    {isSubmittedOrComplete && (
+                                                    {isPendingReview && (
+                                                        <Link
+                                                            to={`/fund-application/${row.id}`}
+                                                            className="btn btn-warning btn-sm text-nowrap d-inline-flex align-items-center"
+                                                            title="Editing will require you to resign the application"
+                                                        >
+                                                            <i className="ri-edit-line me-1"></i> Edit Application
+                                                        </Link>
+                                                    )}
+                                                    {(isSubmittedOrComplete || isPendingReview) && (
                                                         <Link
                                                             to={row.funding_application_id ? `/my-applications/funding/${row.funding_application_id}` : '/my-applications'}
                                                             className="btn btn-info btn-sm text-nowrap d-inline-flex align-items-center"
