@@ -32,8 +32,11 @@ apiClient.interceptors.response.use(
   (error: AxiosError) => {
     const status = error?.response?.status
 
-    // Toast for network connectivity issues (no response or network error)
-    if (!error.response || (error.code && error.code === 'ERR_NETWORK')) {
+    const skipToast = error.config?.headers?.['X-Skip-Toast'] === 'true' || error.config?.headers?.['x-skip-toast'] === 'true'
+
+    // Toast for network connectivity issues (no response or network error).
+    // A caller that recovers or reports the failure itself sets X-Skip-Toast.
+    if (!skipToast && (!error.response || (error.code && error.code === 'ERR_NETWORK'))) {
       if (typeof window !== 'undefined') {
         const offline = typeof navigator !== 'undefined' && !navigator.onLine
         const message = offline
@@ -54,7 +57,6 @@ apiClient.interceptors.response.use(
       }
     } else if (status === 403) {
       // Forbidden: keep auth, show informative toast, do not redirect
-      const skipToast = error.config?.headers?.['X-Skip-Toast'] === 'true' || error.config?.headers?.['x-skip-toast'] === 'true'
       if (!skipToast) {
         const serverMessage = (error.response?.data as any)?.message
         const message = serverMessage || 'You do not have permission to perform this action.'

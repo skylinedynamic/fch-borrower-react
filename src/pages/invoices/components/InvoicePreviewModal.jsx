@@ -5,7 +5,6 @@ import { toast } from 'react-toastify';
 import { useAuthStore } from '../../../store/auth/authStore';
 import { useBrandingStore } from '../../../store/brandingStore';
 import InvoicePreviewSkeleton from './InvoicePreviewSkeleton';
-import invoiceLogo from '../../../../assets/images/logo-mail.png';
 
 // Helper to format currency
 const formatCurrency = (amount) => {
@@ -155,9 +154,26 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
 
     // Resolve dynamic branding for invoice
     const invoiceBranding = displayInvoice?.branding || {};
-    const displayLogo = globalBranding?.primary_logo_full_url || invoiceBranding.primary_logo_full_url || invoiceLogo;
-    const displaySiteName = globalBranding?.site_name || invoiceBranding.site_name || 'Four Corner Holdings LLC';
-    const displayAddress = invoiceBranding.address || globalBranding?.copyright_text || 'California, United States';
+    // Priority is the tenant's OWN branding, then the invoice payload's.
+    //
+    // globalBranding is this portal's tenant, resolved from the logged-in
+    // session. invoiceBranding comes from the invoice resource, which resolves
+    // by request domain - so it can come back as the host's and mask a partner
+    // that has a perfectly good logo of its own. Own first prevents that.
+    //
+    // Within each: the document logo, then the mail one (both are light-surface
+    // logos), then the sidebar logo as a last resort. No bundled default: an
+    // invoice with no logo shows the company name rather than another tenant's mark.
+    const displayLogo = globalBranding?.logo_document_full_url
+        || globalBranding?.logo_mail_full_url
+        || globalBranding?.logo_sidebar_full_url
+        || invoiceBranding.logo_document_full_url
+        || invoiceBranding.logo_mail_full_url
+        || invoiceBranding.logo_sidebar_full_url
+        || null;
+    const displaySiteName = globalBranding?.site_name || invoiceBranding.site_name || '';
+    // Was falling back to the copyright line, which is not an address.
+    const displayAddress = invoiceBranding.address || 'California, United States';
 
     // Calculations - only if displayInvoice exists
     const amount = displayInvoice ? (typeof displayInvoice.payable_amount_sub === 'string'
@@ -187,7 +203,17 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
                                         <div className="card-header border-bottom-dashed p-4">
                                             <div className="d-flex flex-column flex-sm-row align-items-center">
                                                 <div className="flex-grow-1 text-center text-sm-start">
-                                                    <img src={displayInvoice.branding?.primary_logo} className="card-logo card-logo-dark" alt="logo dark" height="65" />
+                                                    {/* Same 200x60 box the sidebar uses, so a logo is the
+                                                        same size everywhere. Capping width alone rendered a
+                                                        square logo at full height. */}
+                                                    {displayLogo
+                                                        ? <img
+                                                            src={displayLogo}
+                                                            className="card-logo card-logo-dark"
+                                                            alt={displaySiteName}
+                                                            style={{ width: '200px', height: '60px', objectFit: 'contain', objectPosition: 'left center' }}
+                                                        />
+                                                        : <span className="fs-16 fw-semibold">{displaySiteName}</span>}
                                                 </div>
                                                 <div className="flex-shrink-0 mt-sm-0 mt-4 text-center text-sm-end">
                                                     <h6 className="mb-1"><span className="text-muted fw-normal">Invoice No:</span> <span id="legal-register-no" className="fw-semibold"> #{displayInvoice.invoice_id || displayInvoice.id}</span></h6>

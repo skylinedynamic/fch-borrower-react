@@ -32,7 +32,27 @@ export default function CreditGuide() {
     }
   }, [tiers])
 
-  // Only show error if NOT loading and error exists
+  // Calculate overall progress safely
+  const totalTasks = tiers ? tiers.reduce((sum, tier) => sum + tier.tasks.length, 0) : 0
+  const completedTasks = tiers ? tiers.reduce((sum, tier) =>
+    sum + tier.tasks.filter(t => t.status === CREDIT_BUILDER_STATUS.VERIFIED).length, 0
+  ) : 0
+
+  // Use API state for current tier instead of derived tasks
+  const currentTier = tiers && progressData ? tiers.find(t => t.id === progressData.id) : null
+
+  const overallProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+
+  useEffect(() => {
+    if (currentTier) {
+      setOpenTier(currentTier.id)
+    }
+  }, [currentTier?.id])
+
+  // Only show error if NOT loading and error exists. Placed after every hook
+  // declaration above (Rules of Hooks: an early return between hook calls
+  // means a different hook count between the loading and error renders,
+  // which crashes React with "Rendered fewer hooks than expected").
   if (!isLoading && isError) {
     return (
       <div className="page-content">
@@ -51,23 +71,6 @@ export default function CreditGuide() {
       </div>
     )
   }
-
-  // Calculate overall progress safely
-  const totalTasks = tiers ? tiers.reduce((sum, tier) => sum + tier.tasks.length, 0) : 0
-  const completedTasks = tiers ? tiers.reduce((sum, tier) =>
-    sum + tier.tasks.filter(t => t.status === CREDIT_BUILDER_STATUS.VERIFIED).length, 0
-  ) : 0
-
-  // Use API state for current tier instead of derived tasks
-  const currentTier = tiers && progressData ? tiers.find(t => t.id === progressData.id) : null
-
-  const overallProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
-
-  useEffect(() => {
-    if (currentTier) {
-      setOpenTier(currentTier.id)
-    }
-  }, [currentTier?.id])
 
   const handleTaskClick = (task: TierTaskType) => {
     setSelectedTask(task)

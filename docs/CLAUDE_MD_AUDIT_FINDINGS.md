@@ -10,7 +10,9 @@ Generated 2026-08-30. Result of scanning `CLAUDE.md` against the actual repo (pa
 
 3. **Branching section (CLAUDE.md:41-45) omits `master`** — `master` is the actual default branch (`origin/HEAD -> origin/master`) and is currently ahead of `release`/`stage` (the latest CLAUDE.md commit, `39a0f60`, 2026-08-30, is on `master`). The remote also has ~50 branches that don't follow the documented `feature/*`/hotfix scheme (e.g. `billing-issues`, `hotfix-multiple-issues`, `SCRUM-103`, `fetaure/SCRUM-94`).
 
-**Confirmed still accurate**: "No ESLint/Prettier configured" and "No test runner configured" (CLAUDE.md:27, 33) — no `eslint.config.*`, `.eslintrc*`, prettier/vitest/jest/playwright/cypress config anywhere, and no `lint`/`test`/`format` scripts in `package.json:6-10`.
+**Confirmed still accurate**: "No ESLint/Prettier configured" — no `eslint.config.*`/`.eslintrc*`/prettier config anywhere, no `lint`/`format` script.
+
+**No longer accurate** (as of the `feature/test-infrastructure-setup` branch): "No test runner configured" — Vitest + React Testing Library + MSW + Playwright are now set up (`vitest.config.ts`, `playwright.config.ts`, `tests/` tree, `npm test`/`npm run test:e2e`/`npm run typecheck` scripts), with a CI gate on PRs and in both deploy workflows. CLAUDE.md's TDD section has been updated accordingly — this line is left here only as a record of what the doc used to (correctly) say.
 
 ## Missing from CLAUDE.md
 

@@ -1,6 +1,6 @@
 import React from 'react';
-import StatisticsCard from '../../../components/Common/StatisticsCard';
-import StatisticsCardSkeleton from '../../../components/Common/StatisticsCardSkeleton';
+import StatisticsCard from '../../components/Common/StatisticsCard';
+import StatisticsCardSkeleton from '../../components/Common/StatisticsCardSkeleton';
 
 export default function FundingRequestStats({ stats, loading }: { stats?: any, loading?: boolean }) {
     if (loading && !stats) {

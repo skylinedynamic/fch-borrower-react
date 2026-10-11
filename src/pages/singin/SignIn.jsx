@@ -53,7 +53,7 @@ export default function SignIn() {
     }
   }
 
-  const statusKeywords = ['subscription', 'expired', 'payment', 'suspended', 'inactive', 'trial'];
+  const statusKeywords = ['subscription', 'expired', 'payment', 'suspended', 'inactive', 'trial', 'free plan'];
   const hasStatusError = (msg) => msg && statusKeywords.some(k => msg.toLowerCase().includes(k));
 
   return (
@@ -137,7 +137,7 @@ export default function SignIn() {
                         </div>
                         <div className="flex-grow-1">
                           <strong>Alert:</strong>{" "}
-                          {(emailError?.toLowerCase().includes('trial') || formError?.toLowerCase().includes('trial'))
+                          {(emailError?.toLowerCase().includes('trial') || formError?.toLowerCase().includes('trial') || emailError?.toLowerCase().includes('free plan') || formError?.toLowerCase().includes('free plan'))
                             ? (emailError || formError)
                             : (emailError?.toLowerCase().includes('expired') || formError?.toLowerCase().includes('expired'))
                               ? "Your subscription has expired. Please contact your partner to renew your subscription."

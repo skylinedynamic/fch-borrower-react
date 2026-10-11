@@ -1,0 +1,37 @@
+import { describe, expect, it } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import FundingApplicationDetailsModal from '../../../../src/pages/myapplication/components/FundingApplicationDetailsModal'
+import type { FundingApplication } from '../../../../src/modules/my-application/types'
+
+const baseApplication = {
+  id: 1,
+  status: 'submitted',
+  full_name: 'Jane Borrower',
+  business_name: 'Acme Corp',
+  ssn: '123456789',
+} as unknown as FundingApplication
+
+describe('FundingApplicationDetailsModal', () => {
+  it('renders nothing when there is no application', () => {
+    const { container } = render(
+      <FundingApplicationDetailsModal isOpen application={null} toggle={() => {}} />
+    )
+    expect(container).toBeEmptyDOMElement()
+  })
+
+  it('formats the full SSN for display (self-service: borrower viewing their own submitted data)', () => {
+    render(<FundingApplicationDetailsModal isOpen application={baseApplication} toggle={() => {}} />)
+    expect(screen.getByText('123-45-6789')).toBeInTheDocument()
+  })
+
+  it('shows N/A when no SSN was submitted, rather than an empty/undefined value', () => {
+    render(
+      <FundingApplicationDetailsModal
+        isOpen
+        application={{ ...baseApplication, ssn: '' } as unknown as FundingApplication}
+        toggle={() => {}}
+      />
+    )
+    expect(screen.getAllByText('N/A').length).toBeGreaterThan(0)
+  })
+})

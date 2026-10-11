@@ -1,5 +1,5 @@
 import { apiClient } from '../../lib/http/apiClient'
-import type { PreQualificationResponse, AdvisorResponse, PreQualificationDetailResponse, FundingApplicationResponse } from './types'
+import type { PreQualificationResponse, AdvisorResponse, PreQualificationDetailResponse, FundingApplicationResponse, FundingApplicationDetailResponse } from './types'
 
 const BASE_URL = '/borrower/myapplication'
 const preQualificationBaseUrl = '/borrower'
@@ -21,8 +21,8 @@ export const fetchPreQualificationDetail = async (id: number | string): Promise<
   return data
 }
 
-export const fetchFundingApplicationDetail = async (id: number | string): Promise<FundingApplicationResponse> => {
-  const { data } = await apiClient.get<FundingApplicationResponse>(`/common/request-application/funding-application/${id}`)
+export const fetchFundingApplicationDetail = async (id: number | string): Promise<FundingApplicationDetailResponse> => {
+  const { data } = await apiClient.get<FundingApplicationDetailResponse>(`/common/request-application/funding-application/${id}`)
   return data
 }
 

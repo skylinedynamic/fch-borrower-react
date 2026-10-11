@@ -55,7 +55,8 @@ export default function DocumentUploadStep({
   // Fetch funding request to get ID
   const { data: fundingData } = useFundingRequest(initialRequestId)
   
-  const effectiveAppId = initialAppId || initialRequestId || fundingData?.id || null
+  const rawAppId = initialAppId || initialRequestId || fundingData?.id || null
+  const effectiveAppId: number | null = rawAppId != null ? Number(rawAppId) : null
 
   // Fetch document types and funding documents
   const { data: types, isLoading: typesLoading } = useDocumentTypes()
@@ -166,6 +167,11 @@ export default function DocumentUploadStep({
     return <DocumentUploadSkeleton />
   }
 
+  const handleNext = () => {
+    toast.success('Documents saved successfully')
+    onNext()
+  }
+
   return (
     <>
       <FileManagerModal
@@ -204,7 +210,7 @@ export default function DocumentUploadStep({
           </div>
         </div>
 
-        <StepNavigation onBack={onBack} onNext={onNext} loading={loading} />
+        <StepNavigation onBack={onBack} onNext={handleNext} loading={loading} />
       </div>
     </>  
   )

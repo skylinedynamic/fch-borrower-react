@@ -1,6 +1,7 @@
 import React from 'react'
 import { Modal, ModalBody, ModalHeader, Badge, ModalFooter } from 'reactstrap'
 import { usePreQualificationDetail } from '../../../modules/my-application/queries'
+import { GPT_STATUS, isIncorrectUnderwriting } from '../../../modules/my-application/types'
 import { PreQualificationDetailsLoader } from '../../../components/Loader/PreQualificationDetailsLoader'
 
 interface PreQualificationDetailsModalProps {
@@ -56,6 +57,79 @@ export default function PreQualificationDetailsModal({ isOpen, toggle, requestId
           <PreQualificationDetailsLoader />
         ) : data ? (
           <>
+            {/* Underwriting outcome first — the borrower opens this modal to see
+                where their application stands, not to re-read what they typed.
+                Only the client-safe generation is ever exposed here. */}
+            {data.gpt_status && (
+              <SectionCard title="Underwriting Information" icon="pi pi-verified">
+                <DetailItem
+                  label="Underwriting Review Status"
+                  value={
+                    <Badge
+                      color={data.gpt_status === GPT_STATUS.FAILED ? 'warning' : isIncorrectUnderwriting(data) ? 'danger' : data.gpt_status === GPT_STATUS.COMPLETED ? 'success' : 'secondary'}
+                      pill
+                      className="fs-12 text-uppercase"
+                    >
+                      {data.gpt_status === GPT_STATUS.COMPLETED ? 'Completed' : isIncorrectUnderwriting(data) ? 'Incorrect' : data.gpt_status === GPT_STATUS.FAILED ? 'Failed' : 'In Progress'}
+                    </Badge>
+                  }
+                />
+                <DetailItem label="Submitted Date" value={data.gpt_generated_at} icon="pi pi-calendar" />
+
+                {/* Condensed view of the Client v4 assessment. The full nine
+                    sections live on the Funding Readiness step; this modal shows
+                    the summary and what the borrower still has to act on. */}
+                {(data.underwriting_result?.funding_readiness_summary || data.validation_summary) && (
+                  <DetailItem
+                    label="Funding Readiness Summary"
+                    value={data.underwriting_result?.funding_readiness_summary || data.validation_summary}
+                    fullWidth
+                  />
+                )}
+
+                {!!data.underwriting_result?.strengths?.length && (
+                  <DetailItem
+                    label="Strengths"
+                    fullWidth
+                    value={
+                      <ul className="mb-0 ps-3">
+                        {data.underwriting_result.strengths.map((item: string, idx: number) => (
+                          <li key={idx} className="py-1">{item}</li>
+                        ))}
+                      </ul>
+                    }
+                  />
+                )}
+
+                {!!data.underwriting_result?.areas_requiring_attention?.length && (
+                  <DetailItem
+                    label="Areas Requiring Attention"
+                    fullWidth
+                    value={
+                      <ul className="mb-0 ps-3">
+                        {data.underwriting_result.areas_requiring_attention.map((item: string, idx: number) => (
+                          <li key={idx} className="py-1">{item}</li>
+                        ))}
+                      </ul>
+                    }
+                  />
+                )}
+
+                {data.underwriting_result?.important_notice && (
+                  <DetailItem label="Important Notice" value={data.underwriting_result.important_notice} fullWidth />
+                )}
+
+                {/* Fixed compliance text — shown verbatim wherever the assessment is. */}
+                {data.underwriting_result?.final_disclosure && (
+                  <DetailItem label="Final Disclosure" value={data.underwriting_result.final_disclosure} fullWidth />
+                )}
+
+                {data.underwriting_result?.disclaimer && (
+                  <DetailItem label="Disclaimer" value={data.underwriting_result.disclaimer} fullWidth />
+                )}
+              </SectionCard>
+            )}
+
             {/* Personal Information */}
             <SectionCard title="Personal Information" icon="pi pi-user">
               <DetailItem label="Full Name" value={`${data.first_name} ${data.last_name}`} fullWidth />

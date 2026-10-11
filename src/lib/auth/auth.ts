@@ -1,6 +1,7 @@
 import { getAuthState, setAuthState, clearAuthState, setUserSubscriptionState, getUserSubscriptionState, setUserDataState, AuthUser, UserSubscription } from '../../store/auth'
 import { getUserDetails } from './authApi'
 import { refreshUser as refreshUserService } from '../../modules/auth-profile'
+import { clearBrandTheme } from '../../utils/brandingTheme'
 
 const COOKIE_NAME = 'auth_session_active'
 
@@ -76,6 +77,10 @@ export function clearAuth(): void {
     // Reset title to default
     document.title = 'Four Corner Funding'
   })
+
+  // Drop the paint-ahead brand cache, otherwise the boot script repaints the
+  // previous tenant's colours for whoever logs in next on this browser.
+  clearBrandTheme()
 }
 
 export function isAuthenticated(): boolean {

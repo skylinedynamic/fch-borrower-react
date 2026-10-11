@@ -18,6 +18,8 @@ interface ConfirmationModalProps {
   iconClass?: string
   iconBgClass?: string
   iconTextClass?: string
+  children?: React.ReactNode
+  hideIcon?: boolean
 }
 
 export default function ConfirmationModal({
@@ -36,9 +38,18 @@ export default function ConfirmationModal({
   iconClass,
   iconBgClass = 'bg-danger-subtle',
   iconTextClass = 'text-danger',
+  children,
+  hideIcon = false,
 }: ConfirmationModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
   const modalInstanceRef = useRef<Modal | null>(null)
+
+  const cleanupModalEffects = () => {
+    document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove())
+    document.body.classList.remove('modal-open')
+    document.body.style.overflow = ''
+    document.body.style.paddingRight = ''
+  }
 
   // Initialize Bootstrap Modal instance once
   useEffect(() => {
@@ -48,6 +59,27 @@ export default function ConfirmationModal({
         backdrop: 'static',
         keyboard: false,
       })
+    }
+
+    const modalEl = modalRef.current
+    const handleHidden = () => {
+      cleanupModalEffects()
+    }
+    modalEl?.addEventListener('hidden.bs.modal', handleHidden)
+
+    return () => {
+      modalEl?.removeEventListener('hidden.bs.modal', handleHidden)
+      const modal = modalInstanceRef.current
+      if (modal) {
+        try {
+          modal.hide()
+          if (typeof modal.dispose === 'function') modal.dispose()
+        } catch (_) { }
+      }
+      modalInstanceRef.current = null
+      cleanupModalEffects()
+      setTimeout(cleanupModalEffects, 100)
+      setTimeout(cleanupModalEffects, 300)
     }
   }, [])
 
@@ -59,25 +91,10 @@ export default function ConfirmationModal({
       modal.show()
     } else {
       modal.hide()
+      setTimeout(cleanupModalEffects, 150)
+      setTimeout(cleanupModalEffects, 350)
     }
   }, [show])
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      const modal = modalInstanceRef.current
-      if (modal) {
-        try {
-          modal.hide()
-          // Use a small timeout to let the hide animation finish before disposing
-          setTimeout(() => {
-            if (typeof modal.dispose === 'function') modal.dispose()
-          }, 300)
-        } catch (_) { }
-      }
-      modalInstanceRef.current = null
-    }
-  }, [])
 
   const modalContent = (
     <div
@@ -88,8 +105,13 @@ export default function ConfirmationModal({
     >
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">
-          <div className="modal-body p-5 text-center">
-            {iconClass ? (
+          {hideIcon && (
+            <div className="modal-header justify-content-center border-bottom bg-light py-3">
+              <h4 className="modal-title mb-0">{title}</h4>
+            </div>
+          )}
+          <div className={`modal-body text-center ${hideIcon ? 'px-5 pt-3 pb-4' : 'p-5'}`}>
+            {hideIcon ? null : iconClass ? (
               <div className="avatar-xl mx-auto mb-3">
                 <span className={`avatar-title ${iconBgClass || 'bg-danger-subtle'} ${iconTextClass || 'text-danger'} rounded-circle fs-48`}>
                   <i className={iconClass}></i>
@@ -106,10 +128,13 @@ export default function ConfirmationModal({
               </div>
             )}
             <div className="mt-2 text-center">
-              <h4>{title}</h4>
-              <p className="text-muted fs-15 mb-4">
-                {message}
-              </p>
+              {!hideIcon && <h4>{title}</h4>}
+              {message && (
+                <p className="text-muted fs-15 mb-4">
+                  {message}
+                </p>
+              )}
+              {children}
               <div className="hstack gap-2 justify-content-center">
                 <button
                   type="button"

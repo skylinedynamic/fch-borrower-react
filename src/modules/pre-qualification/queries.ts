@@ -32,13 +32,13 @@ export const useSubmitBusinessInfo = () => {
 }
 
 export const useSubmitFundingInfo = () => {
-  const queryClient = useQueryClient()
-  
   return useMutation({
     mutationFn: submitFundingInfo,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.preQualification.all })
-    }
+    // Do NOT invalidate the pre-qualification query here.
+    // The GET always returns null funding fields (by design — borrowers fill fresh each time).
+    // Invalidating triggers a re-fetch which resets the local `support` state to empty,
+    // causing the Review step to show all dashes for Funding Needs.
+    // The Review step reads from local React state, not the API, so no re-fetch is needed.
   })
 }
 

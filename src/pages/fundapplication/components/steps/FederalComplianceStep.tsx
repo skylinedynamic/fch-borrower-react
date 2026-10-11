@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import type { FederalCompliance } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
@@ -70,8 +70,8 @@ export default function FederalComplianceStep({
     }
 
     try {
-      const response = await saveCompliance(payload)
-      toast.success(response?.message || 'Federal compliance disclosures saved successfully!')
+      await saveCompliance(payload)
+      toast.success('Federal compliance disclosures saved successfully!')
       return true
     } catch (error: any) {
       console.error('Error saving federal compliance:', error)
@@ -96,28 +96,36 @@ export default function FederalComplianceStep({
     }
   }, [onRegisterSave, handleSave])
 
+  const hasInitializedRef = useRef(false)
+
   // Pre-fill form from API
   useEffect(() => {
-    if (isSuccess && apiData) {
+    if (isSuccess && apiData && !hasInitializedRef.current) {
+      hasInitializedRef.current = true
       setComplianceId(apiData.id || null)
 
-      const mapVal = (val: boolean | null | undefined) => {
-        if (val === true) return 'yes'
-        if (val === false) return 'no'
-        return ''
+      const mapVal = (apiVal: any, currentVal?: string) => {
+        // If API has true/yes/1, return 'yes'
+        if (apiVal === true || apiVal === 1 || apiVal === '1' || apiVal === 'yes' || apiVal === 'true') return 'yes'
+        // If API has false/no/0, return 'no'
+        if (apiVal === false || apiVal === 0 || apiVal === '0' || apiVal === 'no' || apiVal === 'false') return 'no'
+        // If borrower already selected 'yes' in current state, keep 'yes'
+        if (currentVal === 'yes') return 'yes'
+        // Default to 'no' when null or not yet answered
+        return 'no'
       }
 
       setFederal((prev) => ({
         ...prev,
-        bankruptcy: mapVal(apiData.filed_for_bankruptcy),
-        lawsuit: mapVal(apiData.any_pending_lawsuits),
-        federalLoanDefault: mapVal(apiData.has_federal_loan),
-        federalDebtDelinquent: mapVal(apiData.has_federal_debt),
-        criminalOffense: mapVal(apiData.has_criminal_offense),
-        paroleProbation: mapVal(apiData.has_parole_or_probation),
-        suspendedDebarred: mapVal(apiData.suspended_or_debarred),
-        judgmentsLiensBusiness: mapVal(apiData.any_outstanding_judgments_business),
-        judgmentsLiensOwner: mapVal(apiData.any_outstanding_judgments_owner),
+        bankruptcy: mapVal(apiData.filed_for_bankruptcy, prev.bankruptcy),
+        lawsuit: mapVal(apiData.any_pending_lawsuits, prev.lawsuit),
+        federalLoanDefault: mapVal(apiData.has_federal_loan, prev.federalLoanDefault),
+        federalDebtDelinquent: mapVal(apiData.has_federal_debt, prev.federalDebtDelinquent),
+        criminalOffense: mapVal(apiData.has_criminal_offense, prev.criminalOffense),
+        paroleProbation: mapVal(apiData.has_parole_or_probation, prev.paroleProbation),
+        suspendedDebarred: mapVal(apiData.suspended_or_debarred, prev.suspendedDebarred),
+        judgmentsLiensBusiness: mapVal(apiData.any_outstanding_judgments_business, prev.judgmentsLiensBusiness),
+        judgmentsLiensOwner: mapVal(apiData.any_outstanding_judgments_owner, prev.judgmentsLiensOwner),
         explanation: apiData.federal_compliance_disclosures_explanation || prev.explanation,
       }))
     }
@@ -126,7 +134,6 @@ export default function FederalComplianceStep({
   const handleNext = async () => {
     const success = await handleSave()
     if (success) {
-      toast.success('Federal compliance disclosures saved successfully')
       onNext()
     }
   }
@@ -164,7 +171,7 @@ export default function FederalComplianceStep({
                       name={q.key as string}
                       id={`${q.key}-yes`}
                       checked={federal[q.key] === 'yes'}
-                      onChange={() => setFederal({ ...federal, [q.key]: 'yes' })}
+                      onChange={() => setFederal((prev) => ({ ...prev, [q.key]: 'yes' }))}
                     />
                     <label className="btn btn-sm btn-outline-success" htmlFor={`${q.key}-yes`}>
                       Yes
@@ -175,7 +182,7 @@ export default function FederalComplianceStep({
                       name={q.key as string}
                       id={`${q.key}-no`}
                       checked={federal[q.key] === 'no'}
-                      onChange={() => setFederal({ ...federal, [q.key]: 'no' })}
+                      onChange={() => setFederal((prev) => ({ ...prev, [q.key]: 'no' }))}
                     />
                     <label className="btn btn-sm btn-outline-danger" htmlFor={`${q.key}-no`}>
                       No

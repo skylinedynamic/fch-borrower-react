@@ -1,8 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 import { fetchCreditAccounts, fetchCreditAccountFilters } from './services';
-import { CreditAccountFilters } from './types';
+import { CreditAccountFilters, CreditAccountResponse } from './types';
 
-export const useCreditAccounts = (filters: CreditAccountFilters = {}, options: any = {}) => {
+export const useCreditAccounts = (
+    filters: CreditAccountFilters = {},
+    options: Partial<UseQueryOptions<CreditAccountResponse>> = {}
+) => {
     return useQuery({
         queryKey: ['credit-accounts', filters],
         queryFn: () => fetchCreditAccounts(filters),

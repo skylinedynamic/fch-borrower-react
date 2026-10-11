@@ -191,7 +191,7 @@ export default function FundingApplicationDetailPage() {
                           <i className="ri-folder-2-line me-2 text-primary"></i>
                           Uploaded Documents
                           <span className="ms-2 badge bg-success-subtle text-success border border-success-subtle">
-                              {application.documents.reduce((acc: number, group: any) => acc + (group.files?.length || 0), 0)} Attached
+                              {application.documents.reduce((acc: number, group) => acc + (group.files?.length || 0), 0)} Attached
                           </span>
                       </h6>
                   </div>
@@ -207,9 +207,9 @@ export default function FundingApplicationDetailPage() {
                                   </tr>
                               </thead>
                               <tbody>
-                                  {application.documents.map((docGroup: any) => 
-                                      docGroup.files?.map((file: any, fileIdx: number) => {
-                                          const fileName = file.original_name || file.name || file.filename || 'document';
+                                  {application.documents.map((docGroup) =>
+                                      docGroup.files?.map((file, fileIdx: number) => {
+                                          const fileName = file.original_name || file.name || 'document';
                                           const config = getFileConfig(file.url || file.path || fileName);
                                           
                                           const fileKey = file.id || `${docGroup.type}-${fileIdx}`;
@@ -221,7 +221,7 @@ export default function FundingApplicationDetailPage() {
                                                       await handleFileDownload(
                                                           () => downloadFundingApplicationDocument(file.id),
                                                           fileName,
-                                                          file.url
+                                                          file.url ?? undefined
                                                       );
                                                   } else if (file.url) {
                                                       await downloadFileFromUrl(file.url, fileName);
@@ -251,7 +251,7 @@ export default function FundingApplicationDetailPage() {
                                                       </span>
                                                   </td>
                                                   <td className="text-center text-muted fs-12">
-                                                      {formatDateTime(file.created_at)}
+                                                      {formatDateTime(file.created_at ?? '')}
                                                   </td>
                                                   <td className="text-end">
                                                       <div className="d-flex gap-2 justify-content-end">

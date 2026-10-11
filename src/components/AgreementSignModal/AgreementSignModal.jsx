@@ -415,7 +415,7 @@ const AgreementSignModal = () => {
             </div>
 
             <div className="asm-side-footer">
-              {branding?.copyright_text || `Copyright © ${new Date().getFullYear()} ${siteName}. All rights reserved.`}
+              {`Copyright © ${new Date().getFullYear()} ${siteName}. All rights reserved.`}
             </div>
           </div>
 
