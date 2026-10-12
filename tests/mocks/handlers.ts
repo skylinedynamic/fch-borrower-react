@@ -15,4 +15,9 @@ export const handlers: HttpHandler[] = [
   http.get('*/common/notifications', () =>
     HttpResponse.json({ status: true, data: [], meta: { current_page: 1, last_page: 1, per_page: 5, total: 0, unread_count: 0 } })
   ),
+  // The credit profile form reads the SSN on file from the personal info, so
+  // default it to a borrower with none; SSN tests override it with server.use().
+  http.get('*/borrower/profile/personal-info', () =>
+    HttpResponse.json({ status: true, data: { ssn: null } })
+  ),
 ]

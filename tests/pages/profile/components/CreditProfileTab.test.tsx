@@ -944,5 +944,102 @@ describe('Profile — Credit Profile tab', () => {
       await waitFor(() => expect(body).not.toBeNull())
       expect(body).toMatchObject({ ssn: '123456789' })
     })
+
+    /**
+     * The SSN the borrower saved on their profile is the default here: it comes
+     * in with the profile, shows masked (***-**-1234), stays put when clicked,
+     * and the eye button shows it in full.
+     */
+    describe('the SSN from the profile', () => {
+      const serveProfileSsn = (ssn: string | null) =>
+        server.use(http.get('*/borrower/profile/personal-info', () => HttpResponse.json({ status: true, data: { ssn } })))
+
+      const capturePost = () => {
+        const sent: { body: Record<string, unknown> | null } = { body: null }
+        server.use(
+          http.post('*/borrower/profile/credit-profile-request', async ({ request }) => {
+            sent.body = (await request.json()) as Record<string, unknown>
+            return HttpResponse.json({ status: true, message: 'ok' })
+          })
+        )
+        return sent
+      }
+
+      it('is shown masked as the default', async () => {
+        serveProfileSsn('123456789')
+
+        const ssn = (await openForm()) as HTMLInputElement
+
+        await waitFor(() => expect(ssn.value).toBe('***-**-6789'))
+      })
+
+      it('keeps the mask when the field is clicked', async () => {
+        serveProfileSsn('123456789')
+        const user = userEvent.setup()
+        const ssn = (await openForm()) as HTMLInputElement
+        await waitFor(() => expect(ssn.value).toBe('***-**-6789'))
+
+        await user.click(ssn)
+        await user.keyboard('1')
+
+        expect(ssn.value).toBe('***-**-6789')
+      })
+
+      it('is shown in full by the eye button', async () => {
+        serveProfileSsn('123456789')
+        const user = userEvent.setup()
+        const ssn = (await openForm()) as HTMLInputElement
+        await waitFor(() => expect(ssn.value).toBe('***-**-6789'))
+
+        await user.click(screen.getByRole('button', { name: /show ssn/i }))
+
+        expect(ssn.value).toBe('123-45-6789')
+      })
+
+      it('is sent with the request when the borrower keeps it', async () => {
+        serveProfileSsn('123456789')
+        const sent = capturePost()
+        const user = userEvent.setup()
+        const ssn = (await openForm()) as HTMLInputElement
+        await waitFor(() => expect(ssn.value).toBe('***-**-6789'))
+
+        await user.type(screen.getByLabelText(/zip code/i), '78701')
+        await consentThenSubmit(user)
+
+        await waitFor(() => expect(sent.body).not.toBeNull())
+        expect(sent.body).toMatchObject({ ssn: '123456789' })
+      })
+
+      it('gives way to a number the borrower changes it to', async () => {
+        serveProfileSsn('123456789')
+        const sent = capturePost()
+        const user = userEvent.setup()
+        const ssn = (await openForm()) as HTMLInputElement
+        await waitFor(() => expect(ssn.value).toBe('***-**-6789'))
+
+        await user.click(screen.getByRole('button', { name: /show ssn/i }))
+        await user.clear(ssn)
+        await user.type(ssn, '234567890')
+        await user.type(screen.getByLabelText(/zip code/i), '78701')
+        await consentThenSubmit(user)
+
+        await waitFor(() => expect(sent.body).not.toBeNull())
+        expect(sent.body).toMatchObject({ ssn: '234567890' })
+      })
+
+      it('is not a default when only the last four are on the profile', async () => {
+        serveProfileSsn('6789')
+        const sent = capturePost()
+        const user = userEvent.setup()
+        const ssn = (await openForm()) as HTMLInputElement
+
+        expect(ssn.value).toBe('')
+        await user.type(screen.getByLabelText(/zip code/i), '78701')
+        await consentThenSubmit(user)
+
+        expect(await screen.findByText(/valid 9-digit SSN/i)).toBeInTheDocument()
+        expect(sent.body).toBeNull()
+      })
+    })
   })
 })
