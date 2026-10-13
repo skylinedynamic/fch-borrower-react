@@ -16,7 +16,6 @@ export default function Auth({ header, children, belowCard, colClass = 'col-xl-5
     }
   })
 
-  // const isSignup = location?.pathname === '/signup'
   const cardMarginClass = 'mt-0'
 
   React.useEffect(() => {

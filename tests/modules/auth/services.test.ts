@@ -3,6 +3,7 @@ import { http, HttpResponse } from 'msw'
 import { server } from '../../mocks/server'
 import { useAuthStore } from '../../../src/store/auth'
 import { login, logout, forgotPassword, resetPassword, fetchThemeConfigurations } from '../../../src/modules/auth/services'
+import * as authModule from '../../../src/modules/auth'
 
 const resetStore = () => useAuthStore.setState({ token: undefined, user: null, userSubscription: null, rememberMe: true })
 
@@ -95,5 +96,23 @@ describe('fetchThemeConfigurations', () => {
 
     server.use(http.get('*/common/get-theme', () => HttpResponse.error()))
     await expect(fetchThemeConfigurations()).resolves.toBeNull()
+  })
+})
+
+/**
+ * Borrowers do not sign up themselves (decision 2026-10-13, fch-api findings
+ * O53): the API route was switched off and the Sign Up page unrouted, so the
+ * register call, its hook, its payload type and the page are gone.
+ */
+describe('no borrower self sign-up', () => {
+  it('has no register call or hook', () => {
+    expect('registerBorrower' in authModule).toBe(false)
+    expect('useRegisterBorrower' in authModule).toBe(false)
+  })
+
+  it('has no Sign Up page', () => {
+    const pages = Object.keys(import.meta.glob('../../../src/pages/singin/*.jsx'))
+    expect(pages.some((path) => path.endsWith('/SignIn.jsx'))).toBe(true)
+    expect(pages.some((path) => path.endsWith('/SignUp.jsx'))).toBe(false)
   })
 })
