@@ -82,7 +82,9 @@ const ResourceHub = () => {
       return;
     }
 
-    toast.error('Resource not available');
+    // No file or link yet: the detail page shows the title/subtitle and its own
+    // "coming soon" state, which beats a dead click with an error toast.
+    navigate(`/resources/${item.id}`);
   };
 
   const handleDownload = async (resourceItem = null) => {

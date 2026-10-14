@@ -15,6 +15,7 @@ import {
 } from '../../modules/billings';
 import BillingDetailsLoader from '../../components/Loader/BillingDetailsLoader';
 import ConfirmationModal from '../../components/GlobalModal/ConfirmationModal';
+import { hideAndDisposeModal } from '../../utils/bootstrapModal';
 import {
   isOneTimeType,
   ENROLLMENT_TYPE_ONE_TIME,
@@ -220,12 +221,8 @@ const ChangePaymentMethodModal = ({
   useEffect(() => {
     return () => {
       const modal = modalInstanceRef.current;
-      if (modal) {
-        try {
-          modal.hide();
-          if (typeof modal.dispose === 'function') modal.dispose();
-        } catch (_) { }
-      }
+      // Not hide()+dispose() back to back: that races the hide animation (E2E-018).
+      hideAndDisposeModal(modal, null);
       modalInstanceRef.current = null;
     };
   }, []);
@@ -495,12 +492,8 @@ const SubscriptionDetailsModal = ({
   useEffect(() => {
     return () => {
       const modal = modalInstanceRef.current;
-      if (modal) {
-        try {
-          modal.hide();
-          if (typeof modal.dispose === 'function') modal.dispose();
-        } catch (_) { }
-      }
+      // Not hide()+dispose() back to back: that races the hide animation (E2E-018).
+      hideAndDisposeModal(modal, null);
       modalInstanceRef.current = null;
     };
   }, []);

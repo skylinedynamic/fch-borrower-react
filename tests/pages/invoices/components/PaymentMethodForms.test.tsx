@@ -123,27 +123,29 @@ describe('StripeForm', () => {
   })
 })
 
-describe('PCI regression guard: raw-card-capture forms must stay unwired', () => {
-  it('AuthorizeNetForm, SquareForm, and EcryptForm are not imported anywhere outside their own definition file', () => {
-    const srcDir = path.resolve(__dirname, '../../../../src')
-    const offenders: string[] = []
+/**
+ * E2E-017: AuthorizeNetForm, SquareForm and EcryptForm collected the raw card
+ * number, expiry and CVV and posted them in payment_token. They were never
+ * wired into a screen (this guard used to check exactly that), but the code
+ * stayed one import away from being used, and the API accepted the payload.
+ * They are gone now, and nothing in src/ may build a raw-card payload again.
+ */
+describe('PCI regression guard: no raw card capture in the portal', () => {
+  const srcDir = path.resolve(__dirname, '../../../../src')
+  const sourceFiles = (dir: string): string[] =>
+    fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const full = path.join(dir, entry.name)
+      if (entry.isDirectory()) return sourceFiles(full)
+      return /\.(tsx?|jsx?)$/.test(entry.name) ? [full] : []
+    })
 
-    const walk = (dir: string) => {
-      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-        const full = path.join(dir, entry.name)
-        if (entry.isDirectory()) {
-          walk(full)
-        } else if (/\.(tsx?|jsx?)$/.test(entry.name) && !full.endsWith(path.normalize('pages/invoices/components/PaymentMethodForms.jsx'))) {
-          const content = fs.readFileSync(full, 'utf-8')
-          if (/\b(AuthorizeNetForm|SquareForm|EcryptForm)\b/.test(content)) {
-            offenders.push(full)
-          }
-        }
-      }
-    }
+  it('the raw-card forms no longer exist', () => {
+    const offenders = sourceFiles(srcDir).filter((f) => /\b(AuthorizeNetForm|SquareForm|EcryptForm)\b/.test(fs.readFileSync(f, 'utf-8')))
+    expect(offenders).toEqual([])
+  })
 
-    walk(srcDir)
-
+  it('no source file puts a card number or CVV into a payment payload', () => {
+    const offenders = sourceFiles(srcDir).filter((f) => /\b(cardNumber|cardCode)\s*:/.test(fs.readFileSync(f, 'utf-8')))
     expect(offenders).toEqual([])
   })
 })

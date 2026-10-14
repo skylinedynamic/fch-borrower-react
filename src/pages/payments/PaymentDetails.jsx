@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Modal from 'bootstrap/js/dist/modal';
+import { hideAndDisposeModal } from '../../utils/bootstrapModal';
 import { fetchPaymentDetail, approvePayment, rejectPayment } from '../../modules/payment';
 import { toast } from 'react-toastify';
 import {
@@ -79,24 +80,11 @@ export default function PaymentDetails() {
 
     useEffect(() => {
         return () => {
-            if (modalInstanceRef.current) {
-                try {
-                    modalInstanceRef.current.hide();
-                    if (typeof modalInstanceRef.current.dispose === 'function') {
-                        modalInstanceRef.current.dispose();
-                    }
-                } catch (_) { }
-                modalInstanceRef.current = null;
-            }
-            if (rejectModalInstanceRef.current) {
-                try {
-                    rejectModalInstanceRef.current.hide();
-                    if (typeof rejectModalInstanceRef.current.dispose === 'function') {
-                        rejectModalInstanceRef.current.dispose();
-                    }
-                } catch (_) { }
-                rejectModalInstanceRef.current = null;
-            }
+            // Not hide()+dispose() back to back: that races the hide animation (E2E-018).
+            hideAndDisposeModal(modalInstanceRef.current, null);
+            modalInstanceRef.current = null;
+            hideAndDisposeModal(rejectModalInstanceRef.current, null);
+            rejectModalInstanceRef.current = null;
         };
     }, []);
 

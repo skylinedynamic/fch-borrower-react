@@ -80,5 +80,23 @@ This app touches applicant PII, credit, and payment (Stripe) data — see the `c
 - Hotfixes branch from `release`, then merge to both `release` and `stage`.
 - Pushes to `stage`/`release` auto-deploy via `.github/workflows/deploy-stage.yml`/`deploy-release.yml` (SSH to EC2, build, restart Nginx, smoke test) — a merge to either branch is a live deploy, not just a QA/prod gate.
 
+## Handoff notes (required)
+Every new feature, and every change to an existing feature (including bug fixes), ends with a handoff file in `docs/handoff/`. Write it in the same task as the change — not later, and not only when asked.
+- **File name**: `docs/handoff/YYYY-MM-DD-<short-kebab-title>.md` — the date the work was done plus a short title, e.g. `2026-10-13-e2e-sidebar-tests.md`. If one already exists for the same date and title, update it rather than creating a second.
+- **Contents** (in this order):
+  1. `# <Title>` and the date
+  2. **Problem** — what was wrong or missing, and how it showed up (route, screen, error message)
+  3. **Solution** — what was changed and why this approach
+  4. **Files changed** — paths, one line each on what changed
+  5. **Testing** — which tests were added/run and their result (pass/fail counts)
+  6. **Open items** — anything not done, known risks, follow-ups
+- Not the same as the automatic `SessionEnd` hook notes (`.claude/hooks/session-handoff.sh`, named `<timestamp>_<session-id>.md`) — those are per session; this one is per feature change, written deliberately.
+
+## E2E tests
+- Playwright specs live in `e2e/`. Specs for pages reachable from the sidebar go in `e2e/sidebar/<menu-item>/` — one folder per sidebar menu item (`dashboard`, `pre-qualification`, `funding-request`, …, with `credit-builder/<sub-item>` for the submenu). Guest/login specs go in `e2e/auth/`.
+- The suite runs against the local `fch-backend-api` (`http://127.0.0.1:8000`) and a borrower in the local DB; `e2e/auth.setup.ts` logs in once and saves the session to `e2e/.auth/` (gitignored). Override the account with `E2E_BORROWER_EMAIL`/`E2E_BORROWER_PASSWORD`.
+- Topbar specs go in `e2e/topbar/<item>/`, and pages that are not linked from a menu go in `e2e/pages/`. Specs that write data are named `*-submit`/`*-save`/`*-create`/`*-upload`/`*-payment` and must undo their change or be safe to repeat. Test data the portal cannot create or restore comes from local-only `fch-backend-api` seeders (`E2E*Seeder`) via `e2e/support/backend.ts`. Note that `prequal-submit` calls the real OpenAI agent, and `funding-request-submit` uses up one funding option per run.
+- Issues found by E2E runs are tracked in `docs/e2e/ISSUES.md` with a status per issue — add new findings there and update the status when fixed.
+
 ## Code review
 Use the `code-reviewer` agent (`~/.claude/agents/code-reviewer.md`) before merging into `stage` or `release`: architecture, security, duplication, vulnerable dependencies, magic strings, code smells, performance.

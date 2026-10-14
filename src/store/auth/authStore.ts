@@ -33,6 +33,8 @@ export type UserSubscription = {
   partner_payment_for_me?: boolean
   is_free_trail?: boolean
   free_trail_end_date?: string | null
+  /** Hosts are exempt from subscription restrictions (see subscriptionUtils). */
+  is_host?: boolean | number
   [key: string]: unknown
 }
 

@@ -8,11 +8,6 @@ Website: https://themesbrand.com/
 Contact: support@themesbrand.com
 File: Main Css File
 */
-:root {
-  --primary-color: var(--primary-color);
-  --secondary-color: var(--secondary-color);
-}
-
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap");
@@ -24,6 +19,11 @@ File: Main Css File
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Rubik:wght@300;400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap");
+
+:root {
+  --primary-color: var(--primary-color);
+  --secondary-color: var(--secondary-color);
+}
 
 @font-face {
   font-family: "hkgrotesk";
