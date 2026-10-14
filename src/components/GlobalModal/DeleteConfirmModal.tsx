@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import Modal from 'bootstrap/js/dist/modal'
+import { hideAndDisposeModal } from '../../utils/bootstrapModal'
 
 interface DeleteConfirmationModalProps {
   show: boolean
@@ -84,12 +85,8 @@ export default function DeleteConfirmationModal({
       pendingTimersRef.current = []
 
       const modal = modalInstanceRef.current
-      if (modal) {
-        try {
-          modal.hide()
-          if (typeof modal.dispose === 'function') modal.dispose()
-        } catch (_) { }
-      }
+      // Not hide()+dispose() back to back: that races the hide animation (E2E-018).
+      hideAndDisposeModal(modal, modalRef.current)
       modalInstanceRef.current = null
       
       // Clean up any remaining backdrops and restore body
