@@ -52,7 +52,11 @@ test.describe('Sidebar › Invoices (pay with Stripe test card)', () => {
     // Read the status first: the page moves on after success, and the body may be gone by then.
     expect(paid.status()).toBe(200)
 
-    await page.goto('/invoices')
+    // The page navigates on its own after a successful payment; a goto racing
+    // that navigation is aborted (net::ERR_ABORTED), so retry until it lands.
+    await expect(async () => {
+      await page.goto('/invoices')
+    }).toPass({ timeout: 30_000 })
     const row = dataRows(page).filter({ hasText: invoiceNo })
     await expect(row).toContainText(/Paid/)
   })
