@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { useAuthStore } from '../../../store/auth/authStore';
 import { useBrandingStore } from '../../../store/brandingStore';
 import InvoicePreviewSkeleton from './InvoicePreviewSkeleton';
+import InvoicePartyDetails from './InvoicePartyDetails';
 
 // Helper to format currency
 const formatCurrency = (amount) => {
@@ -172,15 +173,22 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
         || invoiceBranding.logo_sidebar_full_url
         || null;
     const displaySiteName = globalBranding?.site_name || invoiceBranding.site_name || '';
-    // Was falling back to the copyright line, which is not an address.
-    const displayAddress = invoiceBranding.address || 'California, United States';
+
+    // Who issued the invoice and who pays it, resolved by the API. The list row
+    // the modal opens with lacks both, so when the detail fetch fails fall back
+    // to what that row does carry.
+    const billedFrom = displayInvoice?.billed_from || { company_name: displaySiteName };
+    const billedTo = displayInvoice?.billed_to || {
+        name: displayInvoice?.customer_name || displayInvoice?.name,
+        email: displayInvoice?.email,
+        phone: displayInvoice?.phone,
+        address: displayInvoice?.address,
+    };
 
     // Calculations - only if displayInvoice exists
-    const amount = displayInvoice ? (typeof displayInvoice.payable_amount_sub === 'string'
-        ? parseFloat(displayInvoice.payable_amount_sub)
-        : displayInvoice.payable_amount_sub || (typeof displayInvoice.payment_amount === 'string'
-            ? parseFloat(displayInvoice.payment_amount)
-            : displayInvoice.payment_amount || 0)) : 0;
+    // The invoice's own amount. It used to prefer the subscription's total, which
+    // priced a fee, a down payment or one installment as the whole plan.
+    const amount = parseFloat(displayInvoice?.payment_amount) || 0;
 
     const subtotal = amount;
 
@@ -224,18 +232,8 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
                                     <div className="col-lg-12 border-top border-top-dashed">
                                         <div className="card-body p-4">
                                             <div className="row g-3">
-                                                <div className="col-6">
-                                                    <h6 className="text-muted text-uppercase fw-semibold mb-3">Address</h6>
-                                                    <p className="text-muted mb-1">{displaySiteName}</p>
-                                                    <p className="text-muted mb-0">{displayAddress}</p>
-                                                </div>
-                                                <div className="col-6 text-end">
-                                                    <h6 className="text-muted text-uppercase fw-semibold mb-3">Billing Address</h6>
-                                                    <p className="fw-medium mb-2" id="billing-name">{displayInvoice.customer_name || displayInvoice.name || ''}</p>
-                                                    <p className="text-muted mb-1" id="billing-address-line-1">{displayInvoice.address || ''}</p>
-                                                    {displayInvoice.phone && <p className="text-muted mb-1"><span>Phone: </span><span id="billing-phone-no">{displayInvoice.phone}</span></p>}
-                                                    <p className="text-muted mb-0"><span>Email: </span><span id="billing-email">{displayInvoice.email || ''}</span> </p>
-                                                </div>
+                                                <InvoicePartyDetails className="col-6" title="Billed From" party={billedFrom} />
+                                                <InvoicePartyDetails className="col-6 text-end" title="Billed To" party={billedTo} />
                                             </div>
                                         </div>
                                     </div>
@@ -267,18 +265,20 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
                                     <div className="col-lg-12">
                                         <div className="card-body p-4">
                                             <div className="table-responsive">
-                                                <table className="table table-borderless text-center table-nowrap align-middle mb-0">
+                                                <table className="table table-borderless text-center table-nowrap align-middle mb-0" aria-label="Invoice items">
                                                     <thead>
                                                         <tr className="table-active">
-                                                            <th scope="col" className="text-start">Enrollment Details</th>
+                                                            <th scope="col" className="text-start">Description</th>
                                                             <th scope="col" className="text-end">Amount</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id="products-list">
                                                         <tr>
                                                             <td className="text-start">
-                                                                <span className="fw-medium">{displayInvoice.enrollment_type || 'Service Enrollment'}</span>
-                                                                {displayInvoice.details && <p className="text-muted mb-0">{displayInvoice.details}</p>}
+                                                                {/* What the invoice charges for; the plan only on an
+                                                                    invoice that bills for it (the API omits it otherwise). */}
+                                                                <span className="fw-medium">{displayInvoice.type || 'Invoice'}</span>
+                                                                {displayInvoice.enrollment_type && <p className="text-muted mb-0">{displayInvoice.enrollment_type}</p>}
                                                             </td>
                                                             <td className="text-end">{formatCurrency(subtotal)}</td>
                                                         </tr>
@@ -306,7 +306,7 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
                                                 {displayInvoice.payment_date && (
                                                     <p className="text-muted mb-1">Paid Date: <span className="fw-medium" id="paid-date">{displayInvoice.payment_date}</span></p>
                                                 )}
-                                                <p className="text-muted mb-1">Card Holder: <span className="fw-medium" id="card-holder-name">{displayInvoice.customer_name || displayInvoice.name}</span></p>
+                                                <p className="text-muted mb-1">Card Holder: <span className="fw-medium" id="card-holder-name">{billedTo.name || billedTo.company_name}</span></p>
                                                 <p className="text-muted">Total Amount: <span className="fw-medium">$</span><span id="card-total-amount" className="fw-bold">{amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p>
                                             </div>
                                             <div className="mt-4">

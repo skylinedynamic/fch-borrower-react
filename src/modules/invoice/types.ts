@@ -3,6 +3,22 @@ export interface InvoicePartner {
     name: string;
 }
 
+/**
+ * One side of an invoice - who issued it (billed_from) or who pays it
+ * (billed_to). Same shape whatever kind of account is behind it.
+ */
+export interface InvoiceParty {
+    name: string | null;
+    company_name: string | null;
+    email: string | null;
+    phone: string | null;
+    address: string | null;
+    city: string | null;
+    state: string | null;
+    postal_code: string | null;
+    country: string | null;
+}
+
 export interface Invoice {
     id: number;
     invoice_id: string;
@@ -20,6 +36,9 @@ export interface Invoice {
     created_at: string;
     updated_at: string;
     partner?: InvoicePartner;
+    // Only on the invoice detail response.
+    billed_from?: InvoiceParty;
+    billed_to?: InvoiceParty;
 }
 
 export interface InvoiceStatsData {
