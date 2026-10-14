@@ -285,10 +285,10 @@ export default function SupportChatWidget() {
     const [routes, setRoutes] = useState<Record<string, string>>(NO_ROUTES);
     const [open, setOpen] = useState(false);
     // Whether the host has this assistant enabled (with an agent to run).
-    // Assumed available so the floating button costs nothing to show: the
-    // check happens when the panel is opened, and a "no" hides the whole
-    // widget — button included — from that point on.
-    const [available, setAvailable] = useState(true);
+    // null until the load-time check answers; the button is drawn only once it
+    // is known to be true. Showing it on an assumption meant a borrower could
+    // click a chat that was switched off and watch it vanish on every click.
+    const [available, setAvailable] = useState<boolean | null>(null);
     const [expanded, setExpanded] = useState(false);
     const [messages, setMessages] = useState<ChatBubble[]>([]);
     // Both come from the backend, which writes them from the agent's current
@@ -325,12 +325,33 @@ export default function SupportChatWidget() {
         messagesEndRef.current?.scrollIntoView({ block: 'end' });
     }, [open, messages, loadingHistory]);
 
-    // The only availability check, and it runs on open — never while the chat
-    // sits closed. A borrower who never opens the chat costs no request at all,
-    // which is the whole reason the page-load check and its background poll
-    // were dropped.
-    //
-    // Re-fetched on every open, not just the first — the backend live-derives
+    // One cheap readiness check when the widget mounts (the layout mounts it
+    // once, so not on every route change). No ?intro, so the backend does not
+    // read the agent from OpenAI. A failed check is treated as "not ready":
+    // better no button than one that cannot work.
+    useEffect(() => {
+        let cancelled = false;
+
+        fetchAssistantConfig()
+            .then((response) => {
+                if (cancelled) return;
+
+                const ready = !!response.data.is_ready;
+                setAvailable(ready);
+                if (ready) {
+                    setRoutes(response.data.navigation && !Array.isArray(response.data.navigation) ? response.data.navigation : NO_ROUTES);
+                }
+            })
+            .catch(() => {
+                if (!cancelled) setAvailable(false);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    // Re-checked on every open, not just the first — the backend live-derives
     // the welcome line and suggestions from the agent's current instructions on
     // the OpenAI platform (see SupportAssistantService::widgetIntro()), so an
     // edit to the agent shows up here without a page reload and without any
@@ -372,12 +393,10 @@ export default function SupportChatWidget() {
                 setSuggestions(response.data.quick_suggestions || []);
             })
             .catch(() => {
-                // The check itself failed, so whether the assistant is there is
-                // unknown. Treated as "not available": better a missing button
-                // than a chat that errors on every message.
-                if (cancelled) return;
-
-                hide();
+                // Only the welcome copy failed to load. The load-time check
+                // already said the assistant is on, so the chat stays: hiding
+                // it here would take it away until a hard refresh over what may
+                // be a single dropped request.
             }), 0);
 
         return () => {
@@ -510,8 +529,8 @@ export default function SupportChatWidget() {
         submitMessage(suggestionText);
     };
 
-    // Disabled in Settings (or no agent saved): no chat at all.
-    if (!available) return null;
+    // Still checking, or disabled in Settings (or no agent saved): no chat at all.
+    if (available !== true) return null;
 
     return (
         <>

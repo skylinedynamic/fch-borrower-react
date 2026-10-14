@@ -5,7 +5,6 @@ import Dashboard from '../src/pages/dashboard/Dashboard.jsx'
 import SignIn from '../src/pages/singin/SignIn.jsx'
 import ForgotPassword from '../src/pages/singin/ForgotPassword.jsx'
 import ResetPassword from '../src/pages/singin/ResetPassword.jsx'
-// import SignUp from '../src/pages/singin/SignUp.jsx'
 import CreditGuide from '../src/pages/credit-builder/creditguide/CreditGuide.tsx'
 import Documents from '../src/pages/documents/Documents.tsx'
 import { ProtectedRoute, GuestRoute, HostRoute, CapitalAccessGuard, CapitalAccessStrategyGuard, checkSession, refreshSubscription } from './lib/auth'
@@ -103,7 +102,6 @@ export default function App() {
       <Routes>
         <Route element={<GuestRoute />}>
           <Route path="login" element={<SignIn />} />
-          {/* <Route path="signup" element={<SignUp />} /> */}
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password" element={<ResetPassword />} />
         </Route>

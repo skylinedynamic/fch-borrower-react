@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import Modal from 'bootstrap/js/dist/modal'
+import { hideAndDisposeModal } from '../../../../utils/bootstrapModal'
 import {
   useEditConfirmationStore,
   requestEditConfirmation,
@@ -57,10 +58,8 @@ export default function EditConfirmationModal({ status, awaitingResign }: { stat
     return () => {
       const modal = modalInstanceRef.current
       modalInstanceRef.current = null
-      try {
-        modal?.hide()
-        modal?.dispose()
-      } catch (_) { }
+      // Not hide()+dispose() back to back: that races the hide animation (E2E-018).
+      hideAndDisposeModal(modal, null)
     }
   }, [])
 

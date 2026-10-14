@@ -17,6 +17,9 @@ const DownloadAgreement = () => {
     const { userId } = useParams();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+    // Flagged as signed (borrowers.has_sign) but no stored copy - e.g. signed
+    // before the agreement builder existed. Say so rather than a generic 404.
+    const [notOnFile, setNotOnFile] = useState(false);
     const iframeRef = useRef(null);
 
     useEffect(() => {
@@ -29,7 +32,8 @@ const DownloadAgreement = () => {
             .then(res => {
                 let html = res?.data?.content_html;
                 if (!html) {
-                    navigate('/not-found');
+                    if (res?.status) setNotOnFile(true);
+                    else navigate('/not-found');
                     return;
                 }
 
@@ -211,6 +215,18 @@ const DownloadAgreement = () => {
     const handlePrint = () => {
         iframeRef.current?.contentWindow?.print();
     };
+
+    if (notOnFile) {
+        return (
+            <div className="da-page d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>
+                <div className="text-center p-4">
+                    <i className="ri-file-search-line display-4 text-muted d-block mb-3"></i>
+                    <h4 className="mb-2">No signed agreement on file</h4>
+                    <p className="text-muted mb-0">We couldn't find a signed copy of your agreement. Please contact support if you need one.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="da-page">

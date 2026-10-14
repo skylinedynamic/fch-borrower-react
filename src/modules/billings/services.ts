@@ -26,6 +26,12 @@ export const updateDefaultPaymentMethod = async (payload: { provider_name: strin
   return data?.data || data;
 };
 
+/** Takes the default payment method off; nothing is auto-charged until one is set again. */
+export const removeDefaultPaymentMethod = async (): Promise<any> => {
+  const { data } = await apiClient.post('/borrower/remove-default-payment-method');
+  return data?.data || data;
+};
+
 export const cancelBorrowerSubscription = async (): Promise<any> => {
   const { data } = await apiClient.post('/borrower/cancel-subscription');
   return data?.data || data;

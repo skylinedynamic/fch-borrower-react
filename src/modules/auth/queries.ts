@@ -1,6 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { login, logout, registerBorrower, forgotPassword, resetPassword } from './services'
-import type { BorrowerRegistrationPayload } from './types'
+import { login, logout, forgotPassword, resetPassword } from './services'
 
 export const useLogin = () => {
     return useMutation({
@@ -12,12 +11,6 @@ export const useLogin = () => {
 export const useLogout = () => {
     return useMutation({
         mutationFn: logout
-    })
-}
-
-export const useRegisterBorrower = () => {
-    return useMutation({
-        mutationFn: (payload: BorrowerRegistrationPayload) => registerBorrower(payload)
     })
 }
 

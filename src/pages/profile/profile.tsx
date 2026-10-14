@@ -28,7 +28,7 @@ export default function Profile() {
     country_code: '',
     phone_number: '',
     home_phone: '',
-    last_4_ssn: '',
+    ssn: '',
     date_of_birth: '',
   })
 
