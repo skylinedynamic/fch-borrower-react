@@ -4,7 +4,6 @@ import type {
   FetchAppointmentsResponse,
   CreateAppointmentPayload,
   CreateAppointmentResponse,
-  FetchTimeSlotsResponse,
   CheckAvailabilityPayload,
   CheckAvailabilityResponse,
   FetchSelectableUsersResponse
@@ -32,11 +31,6 @@ export const updateAppointment = async (id: string | number, payload: Partial<Cr
 
 export const deleteAppointment = async (id: string | number): Promise<{ status: boolean, message: string }> => {
   const { data } = await apiClient.delete(`/common/appointments/${id}`)
-  return data
-}
-
-export const fetchTimeSlots = async (): Promise<FetchTimeSlotsResponse> => {
-  const { data } = await apiClient.get('/common/time-slots/fetch-all')
   return data
 }
 

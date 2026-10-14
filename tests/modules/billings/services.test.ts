@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import { server } from '../../mocks/server'
-import { fetchBillingDetails, fetchPaymentProviders } from '../../../src/modules/billings/services'
+import { fetchBillingDetails, fetchPaymentProviders, removeDefaultPaymentMethod } from '../../../src/modules/billings/services'
 
 afterEach(() => server.resetHandlers())
 
@@ -33,5 +33,19 @@ describe('fetchPaymentProviders', () => {
     await expect(fetchPaymentProviders()).resolves.toEqual([
       { id: 1, name: 'Stripe', display_name: 'Stripe', status: true },
     ])
+  })
+})
+
+describe('removeDefaultPaymentMethod', () => {
+  it('posts to the remove route and unwraps data', async () => {
+    let called = false
+    server.use(
+      http.post('*/borrower/remove-default-payment-method', () => {
+        called = true
+        return HttpResponse.json({ status: true, data: { default_payment_method: null } })
+      })
+    )
+    await expect(removeDefaultPaymentMethod()).resolves.toEqual({ default_payment_method: null })
+    expect(called).toBe(true)
   })
 })

@@ -6,5 +6,4 @@ templete/
 playwright-report/
 test-results/
 coverage/
-
 e2e/.auth/

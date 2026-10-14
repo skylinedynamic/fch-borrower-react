@@ -1,13 +1,7 @@
 import { apiClient } from '../../lib/http/apiClient'
 import { setAuth, AuthUser, setUserSubscription } from '../../lib/auth/auth'
-import type { BorrowerRegistrationPayload } from './types'
 
 export type LoginSuccess = { token: string; user: AuthUser }
-
-export const registerBorrower = async (payload: BorrowerRegistrationPayload): Promise<any> => {
-  const { data } = await apiClient.post('/borrower/register', payload)
-  return data
-}
 
 export async function login(email: string, password: string, remember: boolean = true): Promise<LoginSuccess> {
   try {
