@@ -4350,7 +4350,7 @@ File: Custom Css File
     align-items: flex-start;
     gap: 16px;
     margin-bottom: 16px;
-    zIndex: 1;
+    z-index: 1;
 }
 
 .ca-sk-step-dot-wrap {
@@ -6336,4 +6336,18 @@ File: Custom Css File
     .cp-pull-status {
         grid-template-columns: 1fr;
     }
+}
+
+/* Tenant name shown in place of a logo that failed to load (BrandLogo.tsx). */
+.brand-logo-text {
+  max-width: 200px;
+  font-size: 18px;
+  line-height: 1.2;
+  vertical-align: middle;
+  color: var(--vz-vertical-menu-item-active-color, #fff);
+}
+
+.navbar-header .brand-logo-text,
+.auth-page-wrapper .brand-logo-text {
+  color: var(--vz-heading-color, #212529);
 }

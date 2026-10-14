@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Modal from 'bootstrap/js/dist/modal';
+import { hideAndDisposeModal } from '../../../utils/bootstrapModal';
 import { downloadInvoice, sendInvoice, fetchInvoiceDetails } from '../../../modules/invoice/services';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '../../../store/auth/authStore';
@@ -77,11 +78,9 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
 
         return () => {
             modalRef.current?.removeEventListener('hidden.bs.modal', handleHidden);
-            if (modalInstanceRef.current) {
-                modalInstanceRef.current.hide();
-                modalInstanceRef.current.dispose();
-                modalInstanceRef.current = null;
-            }
+            // Not hide()+dispose() back to back: that races the hide animation (E2E-018).
+            hideAndDisposeModal(modalInstanceRef.current, null);
+            modalInstanceRef.current = null;
         };
     }, [modalRef.current]);
 
