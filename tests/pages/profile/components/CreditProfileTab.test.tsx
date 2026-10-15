@@ -1041,5 +1041,126 @@ describe('Profile — Credit Profile tab', () => {
         expect(sent.body).toBeNull()
       })
     })
+
+    /**
+     * What the form starts from.
+     *
+     * A borrower who has already asked finds their earlier request in the form.
+     * One who has not finds their profile there instead, so a first request is
+     * not their address typed out a second time. The SSN follows its own rule
+     * (a full number on file only), covered above.
+     */
+    describe('what it starts from', () => {
+      const profile = {
+        id: 1,
+        first_name: 'Profile',
+        middle_name: 'Middle',
+        last_name: 'Person',
+        email: 'profile@example.com',
+        home_address: '9 Profile Way',
+        city: 'Austin',
+        state: 'Texas',
+        zip_code: '78701',
+        country: 'United States',
+        home_phone: '',
+        phone_number: '5125550100',
+        ssn: '6789',
+        date_of_birth: '1990-04-05',
+      }
+
+      const previousRequest = {
+        id: 11,
+        borrower_id: 1,
+        first_name: 'Earlier',
+        middle_name: null,
+        last_name: 'Request',
+        address: '1 Earlier Street',
+        apt_suite_other: 'Suite 2',
+        city: 'Dallas',
+        state: 'Texas',
+        zip: '75001',
+        ssn: '123456789',
+        date_of_birth: '1985-01-02',
+        phone: '2145550100',
+        email: 'earlier@example.com',
+      }
+
+      const serveProfile = () =>
+        server.use(
+          http.get('*/borrower/profile/personal-info', () =>
+            HttpResponse.json({ status: true, data: profile })
+          )
+        )
+
+      it('fills a first request from the borrower profile', async () => {
+        serveProfile()
+        await openForm()
+
+        expect(await screen.findByDisplayValue('9 Profile Way')).toBeInTheDocument()
+        expect(screen.getByDisplayValue('Austin')).toBeInTheDocument()
+        expect(screen.getByLabelText(/zip code/i)).toHaveValue('78701')
+        expect(screen.getByDisplayValue('Profile')).toBeInTheDocument()
+        expect(screen.getByDisplayValue('Middle')).toBeInTheDocument()
+        expect(screen.getByDisplayValue('Person')).toBeInTheDocument()
+        expect(screen.getByDisplayValue('profile@example.com')).toBeInTheDocument()
+      })
+
+      it('fills the rest but leaves the SSN empty when the profile holds only its last four digits', async () => {
+        serveProfile()
+        const ssn = await openForm()
+        await screen.findByDisplayValue('9 Profile Way')
+
+        expect(ssn).toHaveValue('')
+      })
+
+      it('prefers the earlier request over the profile', async () => {
+        serveProfile()
+        resetAuth()
+        server.use(
+          http.get('*/borrower/profile/credit-profile', () =>
+            HttpResponse.json({ status: true, data: previousRequest })
+          )
+        )
+        renderTab()
+
+        expect(await screen.findByDisplayValue('1 Earlier Street')).toBeInTheDocument()
+        expect(screen.getByDisplayValue('Dallas')).toBeInTheDocument()
+        expect(screen.getByLabelText(/zip code/i)).toHaveValue('75001')
+        expect(screen.getByDisplayValue('Earlier')).toBeInTheDocument()
+        expect(screen.getByDisplayValue('earlier@example.com')).toBeInTheDocument()
+        expect(screen.queryByDisplayValue('9 Profile Way')).not.toBeInTheDocument()
+        expect(screen.queryByDisplayValue('Austin')).not.toBeInTheDocument()
+      })
+
+      it('takes the fields an earlier request left empty from the profile', async () => {
+        serveProfile()
+        resetAuth()
+        server.use(
+          http.get('*/borrower/profile/credit-profile', () =>
+            HttpResponse.json({
+              status: true,
+              data: { ...previousRequest, middle_name: null, apt_suite_other: null },
+            })
+          )
+        )
+        renderTab()
+
+        await screen.findByDisplayValue('1 Earlier Street')
+        expect(await screen.findByDisplayValue('Middle')).toBeInTheDocument()
+      })
+
+      it('does not put the profile back over what the borrower cleared', async () => {
+        serveProfile()
+        const user = userEvent.setup()
+        await openForm()
+
+        const address = await screen.findByDisplayValue('9 Profile Way')
+        await user.clear(address)
+        // A later refetch of the profile (window focus, remount) must not refill it.
+        await user.type(screen.getByLabelText(/zip code/i), '1')
+
+        expect(address).toHaveValue('')
+      })
+    })
   })
 })
