@@ -22,11 +22,6 @@ export default function SsnField({ value, onChange, lastFourOnly, error }: SsnFi
         Social Security Number <span className="text-danger">*</span>
       </label>
       <SsnInput id="profile-ssn" value={value} onChange={onChange} invalid={!!message} />
-      {lastFourOnly && (
-        <div className="form-text text-warning">
-          Only the last 4 digits are on file. Please enter your full SSN.
-        </div>
-      )}
       {message && <div className="invalid-feedback d-block">{message}</div>}
     </div>
   )
