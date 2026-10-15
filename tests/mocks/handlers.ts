@@ -15,4 +15,29 @@ export const handlers: HttpHandler[] = [
   http.get('*/common/notifications', () =>
     HttpResponse.json({ status: true, data: [], meta: { current_page: 1, last_page: 1, per_page: 5, total: 0, unread_count: 0 } })
   ),
+
+  // The credit profile request form starts from the borrower's profile. Default
+  // to a blank profile so a test rendering that form for something else is not
+  // an unhandled request; tests about the prefill override it with server.use().
+  http.get('*/borrower/profile/personal-info', () =>
+    HttpResponse.json({
+      status: true,
+      data: {
+        id: 1,
+        first_name: '',
+        middle_name: null,
+        last_name: '',
+        email: '',
+        home_address: '',
+        city: '',
+        state: '',
+        zip_code: '',
+        country: '',
+        home_phone: '',
+        phone_number: '',
+        last_4_ssn: '',
+        date_of_birth: '',
+      },
+    })
+  ),
 ]
