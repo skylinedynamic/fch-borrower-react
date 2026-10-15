@@ -145,4 +145,39 @@ describe('Profile — Business Details tab', () => {
     await waitFor(() => expect(posted).toBe(true))
     expect(screen.queryByText(/EIN must be 9 digits/i)).not.toBeInTheDocument()
   })
+
+  it('shows a server error on a locked field without losing its Change Request button', async () => {
+    // A locked field (one the API already holds) can still be refused - the API
+    // now checks every phone number is a real US one, and (124) 982-7457 is not.
+    // The error and the button share the field's wrapper; the CSS in
+    // custom.css sizes the button against the input (.locked-field-padding)
+    // and drops the invalid icon (.is-invalid) so the two do not collide. The
+    // layout itself is asserted in e2e/sidebar/profile/business-details-locked-error.spec.ts.
+    const message = 'Enter a valid 10-digit US phone number, e.g. (555) 234-5678.'
+    server.use(
+      http.get('*/borrower/profile/business-info', () =>
+        HttpResponse.json({
+          status: true,
+          data: { business_name: 'Acme Corp', business_ein: '123456789', business_phone: '1249827457' },
+        })
+      ),
+      http.post('*/borrower/profile/business-info', () =>
+        HttpResponse.json({ status: false, errors: { business_phone: [message] } }, { status: 422 })
+      )
+    )
+
+    const user = userEvent.setup()
+    renderComponent()
+
+    const phone = (await screen.findByDisplayValue('(124) 982-7457')) as HTMLInputElement
+    await user.click(screen.getByRole('button', { name: /Save Changes/i }))
+
+    const error = await screen.findByText(message)
+    const wrapper = phone.closest('.position-relative') as HTMLElement
+
+    expect(wrapper).toContainElement(error)
+    expect(wrapper.querySelector('.change-request-btn')).toHaveTextContent('Change Request')
+    expect(phone).toHaveClass('is-invalid', 'locked-field-padding')
+    expect(phone).toHaveAttribute('readonly')
+  })
 })

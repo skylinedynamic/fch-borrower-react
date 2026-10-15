@@ -16,10 +16,16 @@ One place rather than 40 markup edits: all 40 buttons (`BusinessDetails`, `Perso
 
 ## Files changed
 - `assets/css/custom.css` — the two rules above.
+- `tests/pages/profile/components/BusinessDetails.test.tsx` — integration test (added afterwards).
+- `e2e/sidebar/profile/business-details-locked-error.spec.ts` (new) — E2E layout spec (added afterwards).
+- `e2e/sidebar/profile/business-details-format-errors.spec.ts` (new) — E2E for the API's format errors reaching the field; belongs with fch-api `2026-10-15-shared-format-validation-rules.md`.
 
 ## Testing
 - Rendered the field markup with the app's stylesheets (bootstrap, app, custom.min, custom, responsive, brand-tokens) in Playwright, with and without an error, before and after. Before: button 59px tall over the message, icon on top (reproduces the report). After: button 29.5px at 4px in both states, no icon.
-- No Vitest/E2E change: jsdom does not apply stylesheet layout, and no spec asserts this styling.
+- Integration (Vitest): `BusinessDetails.test.tsx` › "shows a server error on a locked field without losing its Change Request button" — a 422 on the locked phone shows the message in the field's wrapper beside the button, input carries `is-invalid` + `locked-field-padding` (the classes the CSS targets). File: 5/5 pass.
+- E2E (real app + local API): `business-details-locked-error.spec.ts` answers the one save with the API's phone 422 (the field is read-only and the stored phone valid, so a real one cannot be produced without corrupting test data) and measures the button against the input before/after the error, checks it ends above the message and that the input has no background icon. Failed against a stale build with the old CSS (button 29.5 → 50.6px), passes against a fresh build.
+- Unit: none — no script logic changed.
+- Note: Playwright reuses a running preview server locally (`reuseExistingServer`), so run `npm run build` before E2E after a CSS change or the old bundle is tested.
 
 ## Open items
 - The fixed 37.5px assumes the theme's input height; a locked field that is not a single-line input would need its own size.
