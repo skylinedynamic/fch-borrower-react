@@ -377,16 +377,20 @@ const FundingDetail = () => {
                             ))}
                         </div>
 
-                        {/* ── Bank statements failed: say so and where to fix it ── */}
+                        {/* ── Bank statements missing, rejected or short: say so and where to fix it ── */}
                         {bankStatementsGuidance && (
-                            <div className="alert alert-danger d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4" role="alert">
-                                <div className="d-flex align-items-center gap-2">
-                                    <i className="ri-bank-line fs-18" />
-                                    <span className="fw-medium">{bankStatementsGuidance.message}</span>
+                            <div className="funding-bank-banner" role="alert">
+                                <div className="funding-bank-banner-icon" aria-hidden="true">
+                                    <i className="ri-bank-line" />
+                                    <i className="ri-error-warning-fill funding-bank-banner-badge" />
+                                </div>
+                                <div className="funding-bank-banner-text">
+                                    <h6 className="funding-bank-banner-title">{bankStatementsGuidance.title}</h6>
+                                    <p className="funding-bank-banner-detail">{bankStatementsGuidance.detail}</p>
                                 </div>
                                 {bankStatementsGuidance.action && (
-                                    <Link to={bankStatementsGuidance.action.path} className="btn btn-sm btn-danger">
-                                        <i className="ri-upload-2-line me-1" />{bankStatementsGuidance.action.label}
+                                    <Link to={bankStatementsGuidance.action.path} className="btn btn-primary funding-bank-banner-action">
+                                        <i className="ri-upload-cloud-2-line me-2" />{bankStatementsGuidance.action.label}
                                     </Link>
                                 )}
                             </div>

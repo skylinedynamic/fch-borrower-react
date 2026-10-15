@@ -78,6 +78,48 @@ test.describe('Sidebar › Funding › bank statements', () => {
     await expect(tooltip).not.toContainText('Bank statements missing')
   })
 
+  // QA design: missing statements show a "Bank statements required" banner
+  // with an Upload Bank Statements button, on one line at desktop width.
+  test('missing bank statements show the required banner with the upload button', async ({ page }) => {
+    await page.route('**/common/funding-qualification/*/readiness-factors', (route) =>
+      route.fulfill({
+        json: {
+          status: true,
+          data: [{
+            label: 'Banking Activity',
+            status: 'Failed',
+            group: 'banking',
+            reason_code: 'not_uploaded',
+            reason: 'No Business Bank Statements uploaded yet.',
+            requirement: 'Upload your Business Bank Statements on the Documents page.',
+            message: 'Bank statements missing. Please upload your business bank statements.',
+            action: { label: 'Upload Bank Statements', path: '/documents' },
+          }],
+        },
+      })
+    )
+    await page.setViewportSize({ width: 1366, height: 900 })
+
+    await page.goto('/funding')
+    const card = page.locator('.funding-card:not(.funding-card-disabled)').first()
+    await expect(card).toBeVisible({ timeout: 60_000 })
+    await card.click()
+    await expect(page).toHaveURL(/\/funding\/\d+$/)
+
+    const banner = page.locator('.funding-bank-banner')
+    await expect(banner.getByRole('heading', { name: 'Bank statements required' })).toBeVisible()
+    await expect(banner).toContainText('Upload your business bank statements to continue.')
+
+    const upload = banner.getByRole('link', { name: 'Upload Bank Statements' })
+    const [heading, button] = await Promise.all([banner.getByRole('heading').boundingBox(), upload.boundingBox()])
+    // Text on the left, button on the right, same row.
+    expect(button!.x).toBeGreaterThan(heading!.x + heading!.width)
+    expect(Math.abs((button!.y + button!.height / 2) - (heading!.y + heading!.height / 2))).toBeLessThan(30)
+
+    await upload.click()
+    await expect(page).toHaveURL(/\/documents$/)
+  })
+
   test('no bank statement message while the banking checks pass', async ({ page }) => {
     await page.route('**/common/funding-qualification/*/readiness-factors', (route) =>
       route.fulfill({ json: { status: true, data: [{ ...failedDeposits, status: 'Strong', message: undefined, action: undefined }] } })
