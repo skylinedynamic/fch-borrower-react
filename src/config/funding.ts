@@ -282,10 +282,20 @@ export const FUNDING_REVIEW_TIMELINE_STEPS = [
     },
 ];
 
+// What each status means to the borrower, in the order a request moves
+// through them. Shown as the Status Guideline on the funding request page.
 export const FUNDING_REVIEW_GUIDELINE_CARDS = [
     {
+        label: 'Submitted',
+        desc: 'You submitted your funding request.',
+        bg: '#f0fdf4',
+        border: '#bbf7d0',
+        iconBg: '#16a34a',
+        icon: 'ri-file-list-3-line'
+    },
+    {
         label: FUNDING_REVIEW_STATUS.PENDING,
-        desc: 'Request submitted and waiting for review.',
+        desc: 'Your request is waiting for the review team.',
         bg: '#f0fdf4',
         border: '#bbf7d0',
         iconBg: '#16a34a',
@@ -293,7 +303,7 @@ export const FUNDING_REVIEW_GUIDELINE_CARDS = [
     },
     {
         label: FUNDING_REVIEW_STATUS.ACCEPTED,
-        desc: 'Review completed successfully.',
+        desc: 'The review team accepted your request for review.',
         bg: '#fefce8',
         border: '#fef08a',
         iconBg: '#eab308',
@@ -301,7 +311,7 @@ export const FUNDING_REVIEW_GUIDELINE_CARDS = [
     },
     {
         label: FUNDING_REVIEW_STATUS.IN_PROGRESS,
-        desc: 'Admin can reviewing the request.',
+        desc: 'The review team is working on your request. Updates and questions from them appear under Activity.',
         bg: '#eff6ff',
         border: '#bfdbfe',
         iconBg: '#3b82f6',
@@ -309,7 +319,7 @@ export const FUNDING_REVIEW_GUIDELINE_CARDS = [
     },
     {
         label: FUNDING_REVIEW_STATUS.APPROVED,
-        desc: 'Borrower can start funding application.',
+        desc: 'Your request is approved. You can start your funding application now.',
         bg: '#f0fdf4',
         border: '#bbf7d0',
         iconBg: '#16a34a',
@@ -317,7 +327,7 @@ export const FUNDING_REVIEW_GUIDELINE_CARDS = [
     },
     {
         label: FUNDING_REVIEW_STATUS.REJECTED,
-        desc: 'Request declined missing information.',
+        desc: 'Your request was declined. See Decision Details for the reason.',
         bg: '#fef2f2',
         border: '#fecaca',
         iconBg: '#ef4444',
@@ -325,10 +335,30 @@ export const FUNDING_REVIEW_GUIDELINE_CARDS = [
     },
     {
         label: FUNDING_REVIEW_STATUS.CANCELED,
-        desc: 'Request has been canceled.',
+        desc: 'This request was cancelled.',
         bg: '#fef2f2',
         border: '#fecaca',
         iconBg: '#ef4444',
         icon: 'ri-stop-circle-line'
     }
 ];
+
+// The "What happens next" line for the request's current status.
+export const FUNDING_REVIEW_NEXT_STEP: Record<string, string> = {
+    [FUNDING_REVIEW_STATUS.PENDING]: 'Your request is waiting for the review team. We will notify you when they pick it up.',
+    [FUNDING_REVIEW_STATUS.ACCEPTED]: 'The review team accepted your request and will start working on it shortly.',
+    [FUNDING_REVIEW_STATUS.IN_PROGRESS]: 'The review team is working on your request. Updates and questions from them appear under Activity - reply or upload anything they ask for.',
+    [FUNDING_REVIEW_STATUS.APPROVED]: 'Your request is approved. Start your funding application now with Process Application.',
+    [FUNDING_REVIEW_STATUS.REJECTED]: 'Your request was declined. See Decision Details for the reason before submitting a new request.',
+    [FUNDING_REVIEW_STATUS.CANCELED]: 'This request was cancelled. Start a new funding request from Funding if you still need funding.',
+};
+
+// Statuses at which the funding application is not open yet but will be once
+// the request is approved.
+export const FUNDING_REVIEW_AWAITING_APPROVAL = [
+    FUNDING_REVIEW_STATUS.PENDING,
+    FUNDING_REVIEW_STATUS.ACCEPTED,
+    FUNDING_REVIEW_STATUS.IN_PROGRESS,
+];
+
+export const FUNDING_REVIEW_AWAITING_APPROVAL_NOTE = 'You can start your funding application once this request is approved.';

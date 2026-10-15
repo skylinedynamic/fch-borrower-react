@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { sendAssistantMessage, fetchAssistantHistory, listAssistantSessions, startNewAssistantSession, fetchAssistantConfig } from '../../../modules/support-chat/services';
 import type { ChatAction, ChatBubble } from '../../../modules/support-chat/types';
 import { useAuthStore } from '../../../store/auth/authStore';
+import { revealRoute } from '../../../utils/revealRoute';
 import avatarDefault from '../../../../assets/images/users/avatar-default.jpg';
 import supportAvatar from '../../../../assets/images/support-avatar.svg';
 import '../../../../assets/css/support-chat-widget.css';
@@ -444,6 +445,7 @@ export default function SupportChatWidget() {
     const handleNavigate = (path: string) => {
         setOpen(false);
         navigate(path);
+        revealRoute();
     };
 
     const handleStartNewConversation = async () => {

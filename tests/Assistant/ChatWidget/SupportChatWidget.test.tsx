@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders, screen, waitFor } from '../../test-utils'
@@ -347,6 +347,46 @@ describe('SupportChatWidget (borrower)', () => {
 
         // Following the button leaves the chat: the panel closes on the way to the page.
         await waitFor(() => expect(screen.queryByPlaceholderText(/type a message/i)).not.toBeInTheDocument())
+    })
+
+    // Defect: on a scrolled-down dashboard, "Take Me There" for the dashboard
+    // closed the chat and changed nothing - navigating to the open page does
+    // not move it. The page now scrolls smoothly to the top.
+    it('scrolls the page to the top after Take Me There, even for the page already open', async () => {
+        const scrollTo = vi.fn()
+        window.scrollTo = scrollTo as unknown as typeof window.scrollTo
+        server.use(
+            noSessions(),
+            http.get('*/borrower/assistant/config', () =>
+                HttpResponse.json({
+                    status: true,
+                    message: '',
+                    data: { is_ready: true, welcome_subtitle: null, quick_suggestions: [], navigation: { dashboard: '/' } },
+                })
+            ),
+            http.post('*/borrower/assistant/messages', () =>
+                HttpResponse.json({
+                    status: true,
+                    message: '',
+                    data: {
+                        session_id: 'session-123',
+                        message_id: 'message-789',
+                        answer: 'The **Dashboard** provides a high-level overview.\n\n[[ACTION:navigate_dashboard]]',
+                        actions: [{ type: 'navigate', id: 'navigate_dashboard', label: 'Take Me There', path: '/', route_key: 'dashboard' }],
+                        sources: [],
+                        escalation: { required: false, reason: null, route: null },
+                        policy: { live_data_used: false, restricted_content_blocked: false, sensitive_input_detected: false },
+                    },
+                })
+            )
+        )
+
+        renderWithProviders(<SupportChatWidget />)
+        await open()
+        await sendMessage('dashboard')
+        await userEvent.click(await screen.findByRole('button', { name: 'Take Me There' }))
+
+        await waitFor(() => expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' }))
     })
 
     it('does not render a button for an action id that is not locally allowlisted', async () => {

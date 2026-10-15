@@ -839,6 +839,15 @@ File: Custom Css File
     background-color: #299cdb !important;
 }
 
+/* custom.min.css gives every .btn-warning extra vertical padding for the large
+   Filters button. A small (.btn-sm) warning button keeps the small-button
+   padding, so it lines up with the small buttons beside it - e.g. Edit
+   Application next to Details and View Application on Funding Requests. */
+.btn-warning.btn-sm {
+    padding-top: var(--vz-btn-padding-y);
+    padding-bottom: var(--vz-btn-padding-y);
+}
+
 .btn-warning-subtle {
     color: #f7b84b !important;
     background-color: rgba(247, 184, 75, 0.1) !important;

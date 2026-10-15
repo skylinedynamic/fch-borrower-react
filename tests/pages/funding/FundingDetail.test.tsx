@@ -47,11 +47,11 @@ const detail = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 })
 
-const renderDetail = (overrides: Record<string, unknown> = {}) => {
+const renderDetail = (overrides: Record<string, unknown> = {}, readiness: unknown[] = []) => {
   server.use(
     http.get('*/borrower/funding/2', () => HttpResponse.json({ status: true, data: detail(overrides) })),
     http.get('*/common/funding-qualification/*/readiness-factors', () =>
-      HttpResponse.json({ status: true, data: [] })
+      HttpResponse.json({ status: true, data: readiness })
     )
   )
 
@@ -108,5 +108,61 @@ describe('FundingDetail call to action', () => {
     // rather than a link - there is nothing to do until the request is decided.
     expect(await screen.findByText('Start Funding Request')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /start funding request/i })).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * Defect: a funding option blocked by the borrower's bank statement figures
+ * said only "Missing Info" - nothing told the borrower the bank statements were
+ * the problem or where to fix it. The API's message is shown with an upload link.
+ */
+describe('FundingDetail bank statement message', () => {
+  const failedDeposits = {
+    label: 'Minimum Monthly Deposits',
+    status: 'Failed',
+    group: 'banking',
+    borrower_value: 5000,
+    required_value: 60000,
+    message: 'Bank statements failed. Please upload proper bank statements.',
+    action: { label: 'Upload Bank Statements', path: '/documents' },
+  }
+
+  it('tells the borrower the bank statements failed and links to the upload page', async () => {
+    renderDetail({ latest_review_status: null, has_funding_application: false }, [failedDeposits])
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('Bank statements failed. Please upload proper bank statements.')
+    expect(screen.getByRole('link', { name: 'Upload Bank Statements' })).toHaveAttribute('href', '/documents')
+  })
+
+  it('shows no bank statement message when the banking checks pass', async () => {
+    renderDetail(
+      { latest_review_status: null, has_funding_application: false },
+      [{ label: 'Minimum Monthly Deposits', status: 'Strong', group: 'banking' }]
+    )
+
+    expect((await screen.findAllByRole('heading', { name: 'Business Credit Builder Cards' })).length).toBeGreaterThan(0)
+    expect(screen.queryByText(/bank statements failed/i)).not.toBeInTheDocument()
+  })
+})
+
+describe('FundingDetail Banking Activity reason', () => {
+  // One message: the alert says why and what to do (with the upload button);
+  // the Banking Activity row does not repeat it.
+  it('says why Banking Activity failed once, in the alert', async () => {
+    renderDetail({ latest_review_status: null, has_funding_application: false }, [{
+      label: 'Banking Activity',
+      status: 'Failed',
+      group: 'banking',
+      reason_code: 'rejected',
+      reason: 'Your Business Bank Statements were rejected.',
+      requirement: 'Upload your Business Bank Statements on the Documents page.',
+      message: 'Bank statements rejected. Please upload new business bank statements.',
+      action: { label: 'Upload Bank Statements', path: '/documents' },
+    }])
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Bank statements rejected. Please upload new business bank statements.')
+    expect(screen.getAllByText(/rejected/i)).toHaveLength(1)
+    expect(screen.queryByText(/Required: Upload your Business Bank Statements/)).not.toBeInTheDocument()
   })
 })

@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { fetchFundingDetail, fetchReadinessFactors } from '../../../modules/funding/services';
 import { FUNDING_ICON_MAP, QUALIFY_REASONS_MAP, FUNDING_REVIEW_STATUS, ENGINE_STATUS_LABELS, MATCH_LEVEL_LABELS, ENGINE_STATUS_VALUES, READINESS_FACTOR_LABELS, FACTOR_STATUS_VALUES, BADGE_LABELS, FACTOR_ICON_STYLES, META_ITEM_LABELS, READINESS_BADGE_STYLES } from '../../../config/funding';
 import { getFundingColorStyles } from '../../../config/fundingColor';
+import { bankingGuidance } from '../../../utils/bankingGuidance';
 import { toast } from 'react-toastify';
 import { UncontrolledTooltip } from 'reactstrap';
 import '../../../../assets/css/funding.css';
@@ -291,6 +292,7 @@ const FundingDetail = () => {
     const ctaSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
     const activeFactors = dynamicReadiness.length > 0 ? dynamicReadiness : readiness_factors;
+    const bankStatementsGuidance = bankingGuidance(activeFactors);
     const hasMissingFactors = activeFactors.some((r: any) => {
         const s = r.status?.toLowerCase();
         return s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED || s === FACTOR_STATUS_VALUES.WEAK;
@@ -374,6 +376,21 @@ const FundingDetail = () => {
                                 </div>
                             ))}
                         </div>
+
+                        {/* ── Bank statements failed: say so and where to fix it ── */}
+                        {bankStatementsGuidance && (
+                            <div className="alert alert-danger d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4" role="alert">
+                                <div className="d-flex align-items-center gap-2">
+                                    <i className="ri-bank-line fs-18" />
+                                    <span className="fw-medium">{bankStatementsGuidance.message}</span>
+                                </div>
+                                {bankStatementsGuidance.action && (
+                                    <Link to={bankStatementsGuidance.action.path} className="btn btn-sm btn-danger">
+                                        <i className="ri-upload-2-line me-1" />{bankStatementsGuidance.action.label}
+                                    </Link>
+                                )}
+                            </div>
+                        )}
 
                         {/* ── Two-column: Why You May Qualify + Underwriting Factors ── */}
                         <div className="row g-3 mb-3">

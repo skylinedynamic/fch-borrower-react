@@ -4,7 +4,10 @@ import {
     FUNDING_REVIEW_STATUS, 
     getFundingReviewProgress, 
     FUNDING_REVIEW_TIMELINE_STEPS, 
-    FUNDING_REVIEW_GUIDELINE_CARDS
+    FUNDING_REVIEW_GUIDELINE_CARDS,
+    FUNDING_REVIEW_NEXT_STEP,
+    FUNDING_REVIEW_AWAITING_APPROVAL,
+    FUNDING_REVIEW_AWAITING_APPROVAL_NOTE,
 } from '../../../config/funding';
 
 interface ReviewProgressCardProps {
@@ -25,18 +28,14 @@ export default function ReviewProgressCard({
     const isRejected = status === FUNDING_REVIEW_STATUS.REJECTED;
     const isCanceled = status === FUNDING_REVIEW_STATUS.CANCELED;
     const isErrorState = isRejected || isCanceled;
-    const guidelineCards = FUNDING_REVIEW_GUIDELINE_CARDS;
-    
-    const terminalStatuses = [FUNDING_REVIEW_STATUS.APPROVED, FUNDING_REVIEW_STATUS.REJECTED, FUNDING_REVIEW_STATUS.CANCELED];
+const terminalStatuses = [FUNDING_REVIEW_STATUS.APPROVED, FUNDING_REVIEW_STATUS.REJECTED, FUNDING_REVIEW_STATUS.CANCELED];
     const isCurrentTerminal = terminalStatuses.includes(status);
     const terminalKey = isCurrentTerminal ? status : FUNDING_REVIEW_STATUS.APPROVED;
 
-    const baseSteps = [
-        { key: FUNDING_REVIEW_STATUS.PENDING, label: FUNDING_REVIEW_STATUS.PENDING, subtext: 'We have received your request.', icon: 'ri-file-text-line' },
-        { key: FUNDING_REVIEW_STATUS.IN_PROGRESS, label: FUNDING_REVIEW_STATUS.IN_PROGRESS, subtext: 'Our team is reviewing.', icon: 'ri-search-eye-line' },
-        { key: FUNDING_REVIEW_STATUS.ACCEPTED, label: FUNDING_REVIEW_STATUS.ACCEPTED, subtext: 'Request accepted, processing.', icon: 'ri-checkbox-circle-line' },
-        { key: FUNDING_REVIEW_STATUS.APPROVED, label: FUNDING_REVIEW_STATUS.APPROVED, subtext: 'Application is approved.', icon: 'ri-check-double-line' }
-    ];
+    // What the current status means for the borrower, and - until approval -
+    // that the funding application opens only once the request is approved.
+    const nextStep = FUNDING_REVIEW_NEXT_STEP[status];
+    const awaitingApproval = FUNDING_REVIEW_AWAITING_APPROVAL.includes(status);
 
     const displaySteps = FUNDING_REVIEW_TIMELINE_STEPS.filter(step => {
         if (terminalStatuses.includes(step.key)) {
@@ -195,15 +194,35 @@ export default function ReviewProgressCard({
                     </div>
                 </div>
 
+                {/* What happens next */}
+                {nextStep && (
+                    <section aria-labelledby="fr-next-step-title" className="px-4 pb-4">
+                        <div
+                            className={`d-flex align-items-start gap-2 p-3 rounded-3 border ${isErrorState ? 'bg-danger-subtle border-danger-subtle' : status === FUNDING_REVIEW_STATUS.APPROVED ? 'bg-success-subtle border-success-subtle' : 'bg-light'}`}
+                        >
+                            <i className="ri-lightbulb-flash-line fs-5 fr-progress-title"></i>
+                            <div>
+                                <h6 id="fr-next-step-title" className="mb-1 fw-bold fs-13 fr-progress-title">What happens next</h6>
+                                <p className="mb-0 fs-13 text-dark">{nextStep}</p>
+                                {awaitingApproval && (
+                                    <p className="mb-0 mt-1 fs-13 text-muted">
+                                        <i className="ri-lock-line me-1"></i>{FUNDING_REVIEW_AWAITING_APPROVAL_NOTE}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </section>
+                )}
+
                 <hr className="my-0 border-light" />
 
                 {/* Status Guideline */}
-                <div className="p-4 pt-3">
+                <section aria-labelledby="fr-status-guideline-title" className="p-4 pt-3">
                     <div className="d-flex align-items-center mb-3">
                         <i className="ri-information-line fs-5 me-2 fr-progress-title"></i>
-                        <h6 className="mb-0 fw-bold fr-progress-title">
+                        <h5 id="fr-status-guideline-title" className="mb-0 fw-bold fs-15 fr-progress-title">
                             Status Guideline
-                        </h6>
+                        </h5>
                     </div>
 
                     <div className="row g-2">
@@ -224,7 +243,7 @@ export default function ReviewProgressCard({
                             </div>
                         ))}
                     </div>
-                </div>
+                </section>
 
             </div>
         </div>
