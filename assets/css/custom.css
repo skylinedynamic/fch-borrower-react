@@ -5754,6 +5754,7 @@ File: Custom Css File
 .bank-copy-btn:active {
     transform: scale(0.95);
 }
+
 /* ─── Credit profile ──────────────────────────────────────────
    Built on the --ca-* tokens and the metric-card / slider-wrapper
    patterns above rather than a palette of its own, so this tab reads
@@ -5886,19 +5887,59 @@ File: Custom Css File
 
 /* ─── Band colours (fixed, see note above) ────────────────── */
 
-.cp-band-exceptional { color: #059669; }
-.cp-band-very-good   { color: #10b981; }
-.cp-band-good        { color: #65a30d; }
-.cp-band-fair        { color: #e49b0f; }
-.cp-band-poor        { color: #f06548; }
-.cp-band-unknown     { color: #94a3b8; }
+.cp-band-exceptional {
+    color: #059669;
+}
 
-.cp-pill-exceptional { color: #065f46; background: #d1fae5; }
-.cp-pill-very-good   { color: #065f46; background: #d1fae5; }
-.cp-pill-good        { color: #3f6212; background: #ecfccb; }
-.cp-pill-fair        { color: #854d0e; background: #fef3c7; }
-.cp-pill-poor        { color: #991b1b; background: #fee2e2; }
-.cp-pill-unknown     { color: #475569; background: #f1f5f9; }
+.cp-band-very-good {
+    color: #10b981;
+}
+
+.cp-band-good {
+    color: #65a30d;
+}
+
+.cp-band-fair {
+    color: #e49b0f;
+}
+
+.cp-band-poor {
+    color: #f06548;
+}
+
+.cp-band-unknown {
+    color: #94a3b8;
+}
+
+.cp-pill-exceptional {
+    color: #065f46;
+    background: #d1fae5;
+}
+
+.cp-pill-very-good {
+    color: #065f46;
+    background: #d1fae5;
+}
+
+.cp-pill-good {
+    color: #3f6212;
+    background: #ecfccb;
+}
+
+.cp-pill-fair {
+    color: #854d0e;
+    background: #fef3c7;
+}
+
+.cp-pill-poor {
+    color: #991b1b;
+    background: #fee2e2;
+}
+
+.cp-pill-unknown {
+    color: #475569;
+    background: #f1f5f9;
+}
 
 /* ─── The figures strip under the score ───────────────────── */
 
@@ -6001,9 +6042,17 @@ File: Custom Css File
     letter-spacing: -0.02em;
 }
 
-.cp-health-value.is-flagged { color: #f06548; }
-.cp-health-value.is-clear   { color: #1e293b; }
-.cp-health-value.is-unknown { color: #94a3b8; }
+.cp-health-value.is-flagged {
+    color: #f06548;
+}
+
+.cp-health-value.is-clear {
+    color: #1e293b;
+}
+
+.cp-health-value.is-unknown {
+    color: #94a3b8;
+}
 
 .cp-clean-banner {
     display: flex;
@@ -6184,7 +6233,7 @@ File: Custom Css File
     padding: 18px 20px;
 }
 
-.cp-form > .row {
+.cp-form>.row {
     margin-bottom: 8px;
 }
 
@@ -6201,7 +6250,7 @@ File: Custom Css File
     }
 }
 
-.cp-form > .mb-4 {
+.cp-form>.mb-4 {
     margin-top: 24px;
 }
 
@@ -6242,9 +6291,17 @@ File: Custom Css File
     background: #cbd5e1;
 }
 
-.cp-pull-cell[data-testid='last-pulled']::before { background: var(--ca-primary, #021f3c); }
-.cp-pull-cell.is-pending::before   { background: #f59e0b; }
-.cp-pull-cell.is-completed::before { background: #10b981; }
+.cp-pull-cell[data-testid='last-pulled']::before {
+    background: var(--ca-primary, #021f3c);
+}
+
+.cp-pull-cell.is-pending::before {
+    background: #f59e0b;
+}
+
+.cp-pull-cell.is-completed::before {
+    background: #10b981;
+}
 
 .cp-pull-icon {
     flex-shrink: 0;
@@ -6257,10 +6314,25 @@ File: Custom Css File
     font-size: 18px;
 }
 
-.cp-pull-icon.is-pulled    { color: var(--ca-primary, #021f3c); background: var(--ca-primary-light, #e8eef5); }
-.cp-pull-icon.is-pending   { color: #b45309; background: #fef3c7; }
-.cp-pull-icon.is-completed { color: #047857; background: #d1fae5; }
-.cp-pull-icon.is-none      { color: #64748b; background: #f1f5f9; }
+.cp-pull-icon.is-pulled {
+    color: var(--ca-primary, #021f3c);
+    background: var(--ca-primary-light, #e8eef5);
+}
+
+.cp-pull-icon.is-pending {
+    color: #b45309;
+    background: #fef3c7;
+}
+
+.cp-pull-icon.is-completed {
+    color: #047857;
+    background: #d1fae5;
+}
+
+.cp-pull-icon.is-none {
+    color: #64748b;
+    background: #f1f5f9;
+}
 
 .cp-pull-body {
     flex: 1;
@@ -6312,8 +6384,15 @@ File: Custom Css File
     letter-spacing: 0.05em;
 }
 
-.cp-request-pill.is-pending   { color: #92400e; background: #fef3c7; }
-.cp-request-pill.is-completed { color: #065f46; background: #d1fae5; }
+.cp-request-pill.is-pending {
+    color: #92400e;
+    background: #fef3c7;
+}
+
+.cp-request-pill.is-completed {
+    color: #065f46;
+    background: #d1fae5;
+}
 
 .cp-request-dot {
     width: 7px;
@@ -6324,16 +6403,80 @@ File: Custom Css File
 }
 
 @keyframes cp-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55); }
-    50%      { box-shadow: 0 0 0 5px rgba(245, 158, 11, 0); }
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55);
+    }
+
+    50% {
+        box-shadow: 0 0 0 5px rgba(245, 158, 11, 0);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .cp-request-dot { animation: none; }
+    .cp-request-dot {
+        animation: none;
+    }
 }
 
 @media (max-width: 576px) {
     .cp-pull-status {
         grid-template-columns: 1fr;
     }
+}
+
+/* Tenant name shown in place of a logo that failed to load (BrandLogo.tsx). */
+.brand-logo-text {
+    max-width: 200px;
+    font-size: 18px;
+    line-height: 1.2;
+    vertical-align: middle;
+    color: var(--vz-vertical-menu-item-active-color, #fff);
+}
+
+.navbar-header .brand-logo-text,
+.auth-page-wrapper .brand-logo-text {
+    color: var(--vz-heading-color, #212529);
+}
+
+/*
+ * Additional Funding Types (funding application, Step 4): a PrimeReact
+ * MultiSelect sized like the other fields - 37.5px tall with 4px corners - and
+ * compact chips in the primary tint, growing a row at a time.
+ */
+.additional-funding-types.p-multiselect {
+    min-height: 37.5px;
+    border-radius: 4px;
+    align-items: center;
+}
+
+.additional-funding-types .p-multiselect-label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    white-space: normal;
+}
+
+.additional-funding-types .p-multiselect-label.p-placeholder {
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.additional-funding-types .p-multiselect-token {
+    margin: 0;
+    padding: 2px 6px 2px 8px;
+    border-radius: 4px;
+    background: rgba(var(--vz-primary-rgb, 64, 81, 137), 0.1);
+    color: var(--vz-primary, #405189);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.additional-funding-types .p-multiselect-token .p-multiselect-token-icon {
+    margin-left: 6px;
+    width: 12px;
+    height: 12px;
 }
