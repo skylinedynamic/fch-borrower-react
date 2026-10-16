@@ -50,7 +50,7 @@ describe('Login page branding', () => {
     expect(content('meta[property="og:title"]')).toBe('Acme Capital | Borrower Portal')
     expect(document.head.querySelectorAll('meta[property="og:title"]')).toHaveLength(1)
     expect(content('meta[property="og:description"]')).toBe('Capital for Main Street')
-    expect(content('meta[property="og:image"]')).toBe('https://api.test/storage/acme-doc.png')
+    expect(content('meta[property="og:image"]')).toBe('https://api.test/storage/acme-sidebar.png')
 
     const icons = document.head.querySelectorAll('link[rel~="icon"]')
     expect(icons).toHaveLength(1)
