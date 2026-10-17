@@ -283,74 +283,61 @@ export const FUNDING_REVIEW_TIMELINE_STEPS = [
 ];
 
 // What each status means to the borrower, in the order a request moves
-// through them. Shown as the Status Guideline on the funding request page.
+// through them. Only the Host reviews a funding request. Shown as the Status
+// Guideline on the funding request page.
 export const FUNDING_REVIEW_GUIDELINE_CARDS = [
     {
         label: 'Submitted',
-        desc: 'You submitted your funding request.',
-        bg: '#f0fdf4',
-        border: '#bbf7d0',
-        iconBg: '#16a34a',
+        desc: 'You sent your funding request. Only the Host reviews it.',
+        color: '#16a34a',
         icon: 'ri-file-list-3-line'
     },
     {
         label: FUNDING_REVIEW_STATUS.PENDING,
-        desc: 'Your request is waiting for the review team.',
-        bg: '#f0fdf4',
-        border: '#bbf7d0',
-        iconBg: '#16a34a',
+        desc: 'Waiting for the Host to start the review.',
+        color: '#f59e0b',
         icon: 'ri-time-line'
     },
     {
         label: FUNDING_REVIEW_STATUS.ACCEPTED,
-        desc: 'The review team accepted your request for review.',
-        bg: '#fefce8',
-        border: '#fef08a',
-        iconBg: '#eab308',
-        icon: 'ri-check-line'
+        desc: 'The Host checked your documents and information. Everything needed is in place.',
+        color: '#06b6d4',
+        icon: 'ri-checkbox-circle-line'
     },
     {
         label: FUNDING_REVIEW_STATUS.IN_PROGRESS,
-        desc: 'The review team is working on your request. Updates and questions from them appear under Activity.',
-        bg: '#eff6ff',
-        border: '#bfdbfe',
-        iconBg: '#3b82f6',
-        icon: 'ri-shield-user-fill'
+        desc: 'The Host is processing your request. Follow any instructions shown under Activity.',
+        color: '#3b82f6',
+        icon: 'ri-loader-4-line'
     },
     {
         label: FUNDING_REVIEW_STATUS.APPROVED,
-        desc: 'Your request is approved. You can start your funding application now.',
-        bg: '#f0fdf4',
-        border: '#bbf7d0',
-        iconBg: '#16a34a',
-        icon: 'ri-check-line'
+        desc: 'Everything is complete and correct. You can start your funding application.',
+        color: '#10b981',
+        icon: 'ri-check-double-line'
     },
     {
         label: FUNDING_REVIEW_STATUS.REJECTED,
-        desc: 'Your request was declined. See Decision Details for the reason.',
-        bg: '#fef2f2',
-        border: '#fecaca',
-        iconBg: '#ef4444',
+        desc: 'Documents are missing or the request is not correct. See Decision Details for the reason.',
+        color: '#ef4444',
         icon: 'ri-close-line'
     },
     {
         label: FUNDING_REVIEW_STATUS.CANCELED,
-        desc: 'This request was cancelled.',
-        bg: '#fef2f2',
-        border: '#fecaca',
-        iconBg: '#ef4444',
+        desc: 'The request was stopped, for example the wrong funding type was requested.',
+        color: '#64748b',
         icon: 'ri-stop-circle-line'
     }
 ];
 
 // The "What happens next" line for the request's current status.
 export const FUNDING_REVIEW_NEXT_STEP: Record<string, string> = {
-    [FUNDING_REVIEW_STATUS.PENDING]: 'Your request is waiting for the review team. We will notify you when they pick it up.',
-    [FUNDING_REVIEW_STATUS.ACCEPTED]: 'The review team accepted your request and will start working on it shortly.',
-    [FUNDING_REVIEW_STATUS.IN_PROGRESS]: 'The review team is working on your request. Updates and questions from them appear under Activity - reply or upload anything they ask for.',
+    [FUNDING_REVIEW_STATUS.PENDING]: 'The Host has not started reviewing your request yet. We will notify you when they do.',
+    [FUNDING_REVIEW_STATUS.ACCEPTED]: 'The Host has checked your documents and information. Your request moves to processing next.',
+    [FUNDING_REVIEW_STATUS.IN_PROGRESS]: 'The Host is processing your request. Check Activity and follow any instructions or upload anything requested.',
     [FUNDING_REVIEW_STATUS.APPROVED]: 'Your request is approved. Start your funding application now with Process Application.',
-    [FUNDING_REVIEW_STATUS.REJECTED]: 'Your request was declined. See Decision Details for the reason before submitting a new request.',
-    [FUNDING_REVIEW_STATUS.CANCELED]: 'This request was cancelled. Start a new funding request from Funding if you still need funding.',
+    [FUNDING_REVIEW_STATUS.REJECTED]: 'Your request was rejected because documents are missing or the request is not correct. See Decision Details, then submit a new request.',
+    [FUNDING_REVIEW_STATUS.CANCELED]: 'This request was cancelled. Submit a new funding request if you still need funding.',
 };
 
 // Statuses at which the funding application is not open yet but will be once

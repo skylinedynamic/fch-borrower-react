@@ -55,7 +55,9 @@ export default function DocumentUploadStep({
   // Fetch funding request to get ID
   const { data: fundingData } = useFundingRequest(initialRequestId)
   
-  const rawAppId = initialAppId || initialRequestId || fundingData?.id || null
+  // Only ever the application id - never the funding request id, which would
+  // file documents into a second FA-{requestId} folder.
+  const rawAppId = initialAppId || fundingData?.id || null
   const effectiveAppId: number | null = rawAppId != null ? Number(rawAppId) : null
 
   // Fetch document types and funding documents

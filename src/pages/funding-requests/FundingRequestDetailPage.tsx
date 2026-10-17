@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import { getBorrowerFundingRequest } from '../../modules/funding-requests/services'
 import { getBorrowerActivityLogs, downloadActivityAttachment } from '../../modules/activity-log/services'
 import { downloadBorrowerDocument } from '../../modules/documents/services'
+import { downloadFundingApplicationDocument } from '../../modules/my-application/services'
 import { downloadBlob, downloadFileFromUrl, handleFileDownload } from '../../utils/fileDownload'
 import { getFileConfig, getDocumentStatusBadgeClass } from '../../config/fileTypeConfig'
 import { FUNDING_REVIEW_STATUS, FUNDING_REVIEW_STATUS_COLORS } from '../../config/funding'
@@ -933,7 +934,8 @@ export default function FundingRequestDetailPage() {
 
                                                             if (doc.id && !String(doc.id).startsWith('missing_')) {
                                                                 handleFileDownload(
-                                                                    () => downloadBorrowerDocument(doc.id),
+                                                                    // The funding application's copy, or the My Documents file.
+                                                                    () => doc.source === 'application' ? downloadFundingApplicationDocument(doc.id) : downloadBorrowerDocument(doc.id),
                                                                     fileName,
                                                                     doc.document_url
                                                                 );
