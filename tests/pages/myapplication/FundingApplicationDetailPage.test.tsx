@@ -73,3 +73,22 @@ describe('FundingApplicationDetailPage — Edit Application', () => {
     expect(editLink()).not.toBeInTheDocument()
   })
 })
+
+describe('FundingApplicationDetailPage — funding types', () => {
+  it('lists the additional funding types after the funding type', () => {
+    detail.application = { ...editable, preferred_funding_type: 'Term Loan', additional_funding_types: ['SBA Loan', 'Line of Credit'] }
+    renderWithProviders(<FundingApplicationDetailPage />)
+
+    const preferred = screen.getByText('Funding Type')
+    const additional = screen.getByText('Additional Funding Types')
+    expect(preferred.compareDocumentPosition(additional) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.getByText('SBA Loan, Line of Credit')).toBeInTheDocument()
+  })
+
+  it('shows N/A when none were chosen', () => {
+    detail.application = { ...editable, preferred_funding_type: 'Term Loan', additional_funding_types: [] }
+    renderWithProviders(<FundingApplicationDetailPage />)
+
+    expect(screen.getByText('Additional Funding Types').parentElement).toHaveTextContent('N/A')
+  })
+})

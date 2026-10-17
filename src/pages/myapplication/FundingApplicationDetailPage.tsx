@@ -180,6 +180,7 @@ export default function FundingApplicationDetailPage() {
               <DetailItem label="Funding Request Status" value={application.funding_request_status} icon="ri-information-line" />
               <DetailItem label="Amount Range" value={application.funding_sequence_amount_range ? application.funding_sequence_amount_range.split('-').map((v: string) => `$${Number(v.trim()).toLocaleString('en-US')}`).join(' - ') : 'N/A'} icon="ri-bar-chart-box-line" />
               <DetailItem label="Funding Type" value={application.preferred_funding_type} icon="ri-star-line" />
+              <DetailItem label="Additional Funding Types" value={application.additional_funding_types?.length ? application.additional_funding_types.join(', ') : 'N/A'} icon="ri-stack-line" />
               <DetailItem label="Request Amount" value={application.requested_amount || 'N/A'} icon="ri-money-dollar-circle-line" />
               <DetailItem label="Speed to Funds" value={application.funding_sequence_speed_to_funds} icon="ri-time-line" />
               <DetailItem label="Collateral Available" value={application.collateral_available} icon="ri-safe-2-line" />

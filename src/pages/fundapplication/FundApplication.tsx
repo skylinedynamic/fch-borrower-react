@@ -16,7 +16,7 @@ import EditConfirmationModal from './components/shared/EditConfirmationModal'
 
 // Hooks
 import { useCoBorrowers } from './hooks/useCoBorrowers'
-import { FUNDING_PURPOSE_OTHER, purposeOfFundingOptions, timeframeOptions } from '../../data/profile'
+import { FUNDING_PURPOSE_OTHER, purposeOfFundingOptions, timeframeOptions, withoutPreferredFundingType } from '../../data/profile'
 import { useFundingRequest, useFundingApplicationDocuments } from '../../modules/funding-application/queries'
 import { setEditRequiresConfirmation, setEditConfirmationResolving, resetEditConfirmation } from '../../store/fundApplication/editConfirmationStore'
 import { formatCurrency } from '../../utils/formatters'
@@ -191,6 +191,7 @@ export default function FundApplication() {
     purpose: '',
     approvedFunding: '',
     fundingType: '',
+    additionalFundingTypes: [],
     timeframe: '',
     collateral: '',
     purposeNote: '',
@@ -283,6 +284,7 @@ export default function FundApplication() {
         purpose: resolvedPurpose,
         approvedFunding: resolvedApproved,
         fundingType: resolvedType,
+        additionalFundingTypes: withoutPreferredFundingType(fundingData.additional_funding_types, resolvedType),
         timeframe: resolvedTimeframe,
         collateral: fundingData.collateral_available || '',
         purposeNote: fundingData.purpose_note || '',
