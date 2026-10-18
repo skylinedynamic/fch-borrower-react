@@ -264,10 +264,10 @@ export default function Sidebar() {
               </ul>
             </li>
 
-            {/* Notification — never locked: the header bell works on every plan */}
+            {/* Notifications — never locked: the header bell works on every plan */}
             <LinkItem
               to={NOTIFICATIONS_ROUTE}
-              label="Notification"
+              label="Notifications"
               icon="ri-notification-3-line"
               badge={unreadNotificationCount > 0 ? formatUnreadCount(unreadNotificationCount) : undefined}
             />

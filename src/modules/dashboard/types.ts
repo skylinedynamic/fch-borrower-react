@@ -3,6 +3,9 @@ export interface DashboardStats {
     pre_qualifications: number;
     total_requested_amount: number;
     total_funded_amount: number;
+    /** As the top cards show them, formatted by the API: "$37.2M", "$45,000". */
+    total_requested_amount_formatted: string;
+    total_funded_amount_formatted: string;
 }
 
 export interface FundingApplication {

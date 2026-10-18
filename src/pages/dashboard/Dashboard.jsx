@@ -65,14 +65,15 @@ export default function Dashboard() {
         },
         {
             title: 'Total Requested Amount',
-            value: `$${(dashboardData.data.states.total_requested_amount / 1000).toFixed(0)}K`,
+            // Formatted by the API: $37.2M, $45,000.
+            value: dashboardData.data.states.total_requested_amount_formatted || '$0',
             iconClass: 'bx bx-wallet',
             iconBg: 'bg-soft-primary',
             iconColor: 'text-primary',
         },
         {
             title: 'Total Funded Amount',
-            value: dashboardData.data.states.total_funded_amount > 0 ? `$${(dashboardData.data.states.total_funded_amount / 1000).toFixed(0)}K` : '$0',
+            value: dashboardData.data.states.total_funded_amount_formatted || '$0',
             iconClass: 'las la-user-friends',
             iconBg: 'bg-soft-info',
             iconColor: 'text-info',

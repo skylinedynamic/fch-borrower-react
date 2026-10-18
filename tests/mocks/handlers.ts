@@ -8,7 +8,7 @@ import { http, HttpResponse, type HttpHandler } from 'msw'
  * silently hitting the network.
  */
 export const handlers: HttpHandler[] = [
-  // The layout (header bell + sidebar "Notification" badge) loads the latest
+  // The layout (header bell + sidebar "Notifications" badge) loads the latest
   // notifications - and the unread count in their meta - on every page. Default
   // it to empty so tests that render the layout for something else don't need
   // to; notification tests override it with server.use().
