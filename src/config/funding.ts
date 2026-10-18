@@ -287,46 +287,40 @@ export const FUNDING_REVIEW_TIMELINE_STEPS = [
 // Guideline on the funding request page.
 export const FUNDING_REVIEW_GUIDELINE_CARDS = [
     {
-        label: 'Submitted',
-        desc: 'You sent your funding request. Only the Host reviews it.',
-        color: '#16a34a',
-        icon: 'ri-file-list-3-line'
-    },
-    {
         label: FUNDING_REVIEW_STATUS.PENDING,
-        desc: 'Waiting for the Host to start the review.',
+        desc: 'Your request is received and waiting for the Host to review.',
         color: '#f59e0b',
         icon: 'ri-time-line'
     },
     {
         label: FUNDING_REVIEW_STATUS.ACCEPTED,
-        desc: 'The Host checked your documents and information. Everything needed is in place.',
-        color: '#06b6d4',
-        icon: 'ri-checkbox-circle-line'
+        desc: 'All documents and information are checked and complete.',
+        color: '#22c55e',
+        icon: 'ri-check-line'
     },
     {
         label: FUNDING_REVIEW_STATUS.IN_PROGRESS,
-        desc: 'The Host is processing your request. Follow any instructions shown under Activity.',
+        desc: 'Your request is under review. We may need more information or documents.',
         color: '#3b82f6',
-        icon: 'ri-loader-4-line'
+        icon: 'ri-loader-2-line'
     },
     {
         label: FUNDING_REVIEW_STATUS.APPROVED,
         desc: 'Everything is complete and correct. You can start your funding application.',
-        color: '#10b981',
-        icon: 'ri-check-double-line'
+        color: '#16a34a',
+        icon: 'ri-shield-check-line'
     },
     {
         label: FUNDING_REVIEW_STATUS.REJECTED,
-        desc: 'Documents are missing or the request is not correct. See Decision Details for the reason.',
+        desc: 'The request does not meet our requirements. You can check the reason and reapply if needed.',
         color: '#ef4444',
         icon: 'ri-close-line'
     },
     {
         label: FUNDING_REVIEW_STATUS.CANCELED,
-        desc: 'The request was stopped, for example the wrong funding type was requested.',
+        desc: 'You stopped the request before it was completed.',
         color: '#64748b',
-        icon: 'ri-stop-circle-line'
+        icon: 'ri-forbid-line'
     }
 ];
 

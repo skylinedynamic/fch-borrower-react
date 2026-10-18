@@ -23,21 +23,34 @@ describe('ReviewProgressCard status guidance', () => {
     renderWithProviders(<ReviewProgressCard status={FUNDING_REVIEW_STATUS.PENDING} />)
 
     const titles = within(guideline()).getAllByRole('heading', { level: 6 }).map((h) => h.textContent)
-    expect(titles).toEqual(['Submitted', 'Pending', 'Accepted', 'In Progress', 'Approved', 'Rejected', 'Cancelled'])
+    // Submitted is shown on the timeline above, so the guideline has the six review statuses (3 x 2 cards).
+    expect(titles).toEqual(['Pending', 'Accepted', 'In Progress', 'Approved', 'Rejected', 'Cancelled'])
     expect(screen.queryByText(/admin can reviewing/i)).not.toBeInTheDocument()
   })
 
-  it('says that only the Host reviews the request and what each decision means', () => {
+  it('explains what each status means', () => {
     renderWithProviders(<ReviewProgressCard status={FUNDING_REVIEW_STATUS.PENDING} />)
     const g = within(guideline())
 
-    expect(g.getByText(/only the host reviews it/i)).toBeInTheDocument()
-    expect(g.getByText(/host checked your documents and information/i)).toBeInTheDocument()
-    expect(g.getByText(/host is processing your request.*instructions/i)).toBeInTheDocument()
-    expect(g.getByText(/everything is complete and correct/i)).toBeInTheDocument()
-    expect(g.getByText(/documents are missing or the request is not correct/i)).toBeInTheDocument()
-    expect(g.getByText(/wrong funding type/i)).toBeInTheDocument()
+    expect(g.getByText(/received and waiting for the host to review/i)).toBeInTheDocument()
+    expect(g.getByText(/all documents and information are checked and complete/i)).toBeInTheDocument()
+    expect(g.getByText(/under review.*more information or documents/i)).toBeInTheDocument()
+    expect(g.getByText(/everything is complete and correct.*start your funding application/i)).toBeInTheDocument()
+    expect(g.getByText(/does not meet our requirements.*reapply if needed/i)).toBeInTheDocument()
+    expect(g.getByText(/stopped the request before it was completed/i)).toBeInTheDocument()
     expect(screen.queryByText(/review team/i)).not.toBeInTheDocument()
+  })
+
+  // Layout (QA 2026-10-18): one short card per status in a three-column grid.
+  it('shows each status as its own card in a three-column grid', () => {
+    renderWithProviders(<ReviewProgressCard status={FUNDING_REVIEW_STATUS.PENDING} />)
+
+    const list = within(guideline()).getByRole('list')
+    expect(list).toHaveClass('row')
+    within(list).getAllByRole('listitem').forEach((card) => {
+      expect(card).toHaveClass('col-md-4')
+      expect(card.firstElementChild).toHaveClass('fr-guideline-card')
+    })
   })
 
   it.each([

@@ -671,7 +671,7 @@ export default function FundApplication() {
             setDisclosure={setDisclosure}
             disclosureItems={disclosureItems}
             fundingRequestId={fundingRequestId || id}
-            {...commonStepProps}
+            {...currentCommonProps}
           />
         )
 
@@ -682,7 +682,7 @@ export default function FundApplication() {
             setFederal={setFederal}
             isValid={isStepValid(STEP_INDICES.FEDERAL_COMPLIANCE)}
             fundingRequestId={fundingRequestId || id}
-            {...commonStepProps}
+            {...currentCommonProps}
           />
         )
 
