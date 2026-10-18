@@ -667,7 +667,6 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
         <SsnField
           value={data.ssn || ''}
           onChange={(ssn) => onChange({ ...data, ssn })}
-          lastFourOnly={unformatSSN(apiData?.ssn || '').length === 4}
           error={getFieldError('ssn')}
         />
         <div className="col-12 d-flex justify-content-end mt-4">
