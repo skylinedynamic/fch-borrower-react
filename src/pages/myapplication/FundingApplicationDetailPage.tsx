@@ -95,7 +95,7 @@ export default function FundingApplicationDetailPage() {
       <div className="container-fluid">
         <div className="row pb-1 page-subheader-sticky bg-body">
             <div className="col-12">
-                <div className="d-flex align-items-center justify-content-between flex-row py-2">
+                <div className="d-flex align-items-center justify-content-between flex-row flex-wrap gap-2 py-2">
                     <div className="flex-grow-1">
                         <h4 className="fs-20 mb-1">Funding Application Details</h4>
                         <nav aria-label="breadcrumb">
@@ -106,11 +106,11 @@ export default function FundingApplicationDetailPage() {
                             </ol>
                         </nav>
                     </div>
-                    <div className="mt-0 d-flex align-items-center gap-2">
+                    <div className="mt-0 d-flex align-items-center flex-wrap text-nowrap gap-2">
                         {canEditApplication && (
                             <Link
                                 to={`/fund-application/${application.funding_request_id}`}
-                                className="btn btn-warning fw-medium d-flex align-items-center gap-2 shadow-none px-4"
+                                className="btn btn-warning fw-medium d-flex align-items-center gap-2 shadow-none px-4 py-2"
                                 title="Editing will require you to resign the application"
                             >
                                 <i className="ri-edit-line me-1"></i> Edit Application

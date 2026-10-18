@@ -240,7 +240,7 @@ export default function FundingRequestModal({ show, onHide, review }: FundingReq
                                             {/* Submitted and still editable: status key 3-9 (the server decides). */}
                                             {displayReview.application_status && displayReview.application_is_editable && !String(displayReview.application_status).toLowerCase().includes('hold') && !String(displayReview.application_status).toLowerCase().includes('draft') && (
                                                 <button
-                                                    className="btn btn-warning shadow-sm"
+                                                    className="btn btn-warning shadow-sm py-2"
                                                     onClick={handleProceed}
                                                     title="Editing will require you to resign the application"
                                                 >

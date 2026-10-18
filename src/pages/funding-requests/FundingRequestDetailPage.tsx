@@ -715,7 +715,7 @@ export default function FundingRequestDetailPage() {
                                         </ol>
                                     </nav>
                                 </div>
-                                <div className="page-actions d-flex align-items-center gap-2 mt-3 mt-lg-0">
+                                <div className="page-actions d-flex align-items-center flex-wrap text-nowrap gap-2 mt-3 mt-lg-0">
                                     {isNotStarted && (
                                         <Link
                                             to={`/fund-application/${review.id}`}
@@ -737,7 +737,7 @@ export default function FundingRequestDetailPage() {
                                     {isPendingReview && (
                                         <Link
                                             to={`/fund-application/${review.id}`}
-                                            className="btn btn-warning fw-medium d-flex align-items-center gap-2 shadow-none px-4"
+                                            className="btn btn-warning fw-medium d-flex align-items-center gap-2 shadow-none px-4 py-2"
                                             title="Editing will require you to resign the application"
                                         >
                                             <i className="ri-edit-line me-1"></i> Edit Application
