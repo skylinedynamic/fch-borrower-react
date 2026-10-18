@@ -181,6 +181,7 @@ const ChangePaymentMethodModal = ({
   const [selectedProvider, setSelectedProvider] = useState<PaymentProviderItem | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [stripePromise, setStripePromise] = useState<any>(null);
+  const [stripeUnavailable, setStripeUnavailable] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -236,11 +237,16 @@ const ChangePaymentMethodModal = ({
   }, [show, selectedProvider]);
 
   const initStripe = async (pubKey?: string) => {
+    setStripeUnavailable(false);
     try {
       const promise = await getStripe(pubKey);
       setStripePromise(promise);
+      // No key, or Stripe failed to load: say so instead of loading forever.
+      setStripeUnavailable(!promise);
     } catch (e) {
       console.error('Failed to init stripe', e);
+      setStripePromise(null);
+      setStripeUnavailable(true);
     }
   };
 
@@ -397,6 +403,11 @@ const ChangePaymentMethodModal = ({
                               onCancel={handleClose}
                             />
                           </Elements>
+                        ) : stripeUnavailable ? (
+                          <div className="alert alert-warning fs-12 mb-3 rounded-1 d-flex align-items-center gap-2" role="alert">
+                            <i className="ri-error-warning-line fs-16 flex-shrink-0"></i>
+                            <span>Card payment is not available right now. Please choose another payment method or contact your advisor.</span>
+                          </div>
                         ) : (
                           <StripeFormLoader />
                         )}

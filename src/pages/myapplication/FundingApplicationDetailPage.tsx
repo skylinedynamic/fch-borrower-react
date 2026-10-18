@@ -225,8 +225,19 @@ export default function FundingApplicationDetailPage() {
                                   </tr>
                               </thead>
                               <tbody>
-                                  {application.documents.map((docGroup) =>
-                                      docGroup.files?.map((file, fileIdx: number) => {
+                                  {application.documents.map((docGroup) => (
+                                      // One title per document type, its files listed under it.
+                                      <React.Fragment key={docGroup.type}>
+                                      <tr className="border-bottom border-bottom-dashed">
+                                          <td colSpan={4} className="text-start fw-semibold text-dark bg-light-subtle">
+                                              <i className="ri-folder-3-line me-2 text-primary"></i>
+                                              {docGroup.type}
+                                              <span className="ms-2 badge bg-primary-subtle text-primary">
+                                                  {docGroup.files?.length || 0} {(docGroup.files?.length || 0) === 1 ? 'file' : 'files'}
+                                              </span>
+                                          </td>
+                                      </tr>
+                                      {docGroup.files?.map((file, fileIdx: number) => {
                                           const fileName = file.original_name || file.name || 'document';
                                           const config = getFileConfig(file.url || file.path || fileName);
                                           
@@ -251,7 +262,7 @@ export default function FundingApplicationDetailPage() {
 
                                           return (
                                               <tr key={`${docGroup.type}-${fileIdx}`} className="border-bottom border-bottom-dashed">
-                                                  <td className="text-start fw-medium text-dark">
+                                                  <td className="text-start fw-medium text-dark ps-4">
                                                       <div className="d-flex align-items-center">
                                                           <div className="avatar-xs flex-shrink-0 me-2">
                                                               <div className={`avatar-title ${config.bg} ${config.color} rounded fs-16`}>
@@ -286,8 +297,9 @@ export default function FundingApplicationDetailPage() {
                                                   </td>
                                               </tr>
                                           );
-                                      })
-                                  )}
+                                      })}
+                                      </React.Fragment>
+                                  ))}
                               </tbody>
                           </table>
                       </div>

@@ -900,9 +900,9 @@ export default function FundingRequestDetailPage() {
                                     <h6 className="mb-0 fw-bold fs-15">
                                         <i className="ri-folder-2-line me-2 text-primary"></i>
                                         Uploaded Documents
-                                        {review.actual_documents?.length > 0 && (
+                                        {review.actual_documents?.some((d: any) => !String(d.id).startsWith('missing_')) && (
                                             <span className="ms-2 badge bg-success-subtle text-success border border-success-subtle">
-                                                {review.actual_documents.length} Attached
+                                                {review.actual_documents.filter((d: any) => !String(d.id).startsWith('missing_')).length} Attached
                                             </span>
                                         )}
                                     </h6>
@@ -920,12 +920,32 @@ export default function FundingRequestDetailPage() {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {review.actual_documents.map((doc: any, idx: number) => {
+                                                    {Object.entries(
+                                                        // One title per document type, its files listed under it.
+                                                        (review.actual_documents as any[]).reduce((groups: Record<string, any[]>, doc: any) => {
+                                                            (groups[doc.document_name] ||= []).push(doc);
+                                                            return groups;
+                                                        }, {})
+                                                    ).map(([title, docs]) => {
+                                                        const files = (docs as any[]).filter((d: any) => !String(d.id).startsWith('missing_'));
+                                                        return (
+                                                    <React.Fragment key={title}>
+                                                        <tr className="border-bottom border-bottom-dashed">
+                                                            <td colSpan={4} className="text-start fw-semibold text-dark bg-light-subtle">
+                                                                <i className="ri-folder-3-line me-2 text-primary"></i>
+                                                                {title}
+                                                                <span className="ms-2 badge bg-primary-subtle text-primary">
+                                                                    {files.length} {files.length === 1 ? 'file' : 'files'}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    {(docs as any[]).map((doc: any, idx: number) => {
                                                         const config = getFileConfig(doc.document_url || doc.file_path || doc.document_name || '')
 
                                                         const handleDownload = (e: React.MouseEvent) => {
                                                             e.preventDefault();
-                                                            let fileName = doc.document_name || 'document';
+                                                            // Save under the real file name, so several files of one type stay apart.
+                                                            let fileName = doc.file_name || doc.document_name || 'document';
                                                             const ext = (doc.document_url?.split(/[#?]/)[0].split('.').pop() || '').trim().toLowerCase();
                                                             if (ext && !fileName.toLowerCase().endsWith(`.${ext}`)) {
                                                                 fileName += `.${ext}`;
@@ -945,17 +965,21 @@ export default function FundingRequestDetailPage() {
                                                         };
 
                                                         return (
-                                                            <tr key={idx} className="border-bottom border-bottom-dashed">
-                                                                <td className="text-start fw-medium text-dark">
+                                                            <tr key={`${title}-${idx}`} className="border-bottom border-bottom-dashed">
+                                                                <td className="text-start fw-medium text-dark ps-4">
                                                                     <div className="d-flex align-items-center">
                                                                         <div className="avatar-xs flex-shrink-0 me-2">
                                                                             <div className={`avatar-title ${config.bg} ${config.color} rounded fs-16`}>
                                                                                 <i className={config.icon}></i>
                                                                             </div>
                                                                         </div>
-                                                                        <a href="#" onClick={handleDownload} className="text-body fw-medium text-truncate d-block fr-doc-link">
-                                                                            {doc.document_name}
-                                                                        </a>
+                                                                        {doc.file_name ? (
+                                                                            <a href="#" onClick={handleDownload} className="text-body fw-medium text-truncate d-block fr-doc-link">
+                                                                                {doc.file_name}
+                                                                            </a>
+                                                                        ) : (
+                                                                            <span className="text-muted">Not uploaded</span>
+                                                                        )}
                                                                     </div>
                                                                 </td>
                                                                 <td className="text-center">
@@ -975,6 +999,9 @@ export default function FundingRequestDetailPage() {
                                                                 </td>
                                                             </tr>
                                                         )
+                                                    })}
+                                                    </React.Fragment>
+                                                        );
                                                     })}
                                                 </tbody>
                                             </table>
