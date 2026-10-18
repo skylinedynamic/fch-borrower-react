@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
 import { toast } from 'react-toastify'
@@ -8,6 +8,9 @@ import { useAuth } from '../../../hooks/useAuth'
 import { countries } from '../../../modules/location'
 import { apiClient } from '../../../lib/http/apiClient'
 import { formatPhoneNumber, formatZipCode, formatSSN, unformatSSN, maskSSN, formatDate } from '../../../utils/formatters'
+import { SSN_DIGITS, ssnError } from '../../../utils/validators'
+import SsnInput from '../../../components/SsnInput/SsnInput'
+import { usePersonalInfo } from '../../../modules/profile'
 import TabLoader from '../../../components/Loader/TabLoader'
 import { fetchCreditProfile } from '../../../modules/credit-profile'
 import type { CreditProfile, CreditProfileRequestData } from '../../../modules/credit-profile'
@@ -77,7 +80,8 @@ export default function CreditProfileTab() {
   const [submitting, setSubmitting] = useState(false)
   const [submittedData, setSubmittedData] = useState<CreditProfileRequestData | null>(null)
   const [creditProfile, setCreditProfile] = useState<CreditProfile | null>(null)
-  const [showSSN, setShowSSN] = useState(false)
+  // The full SSN on the borrower's profile is the default for this form.
+  const { data: personalInfo } = usePersonalInfo()
   // Set when the borrower picks "my city isn't listed" and types it instead.
   const [cityOther, setCityOther] = useState(false)
   
@@ -142,6 +146,15 @@ export default function CreditProfileTab() {
     }
   }, [user])
 
+  // Prefill the SSN from the profile, unless the form already has one (from a
+  // request submitted before). Only a full SSN: the last four alone is not one.
+  useEffect(() => {
+    const profileSsn = personalInfo?.ssn
+    if (profileSsn && unformatSSN(profileSsn).length === SSN_DIGITS) {
+      setFormData(prev => (prev.ssn ? prev : { ...prev, ssn: formatSSN(profileSsn) }))
+    }
+  }, [personalInfo?.ssn])
+
   // Prefill from submitted data
   useEffect(() => {
     if (submittedData) {
@@ -162,6 +175,33 @@ export default function CreditProfileTab() {
       }))
     }
   }, [submittedData])
+
+  // A form with nothing to start from asks the borrower for their address a
+  // second time, so the blanks are filled from their profile. Only the blanks:
+  // an earlier request is the more specific record and has already been applied
+  // by the time `initialized` turns true. Once, so a refetch of the profile
+  // never puts back something the borrower has since cleared. The SSN is left to
+  // the effect above, which takes it from the profile only when it is the full
+  // number.
+  const profile = personalInfo
+  const profilePrefilled = useRef(false)
+  useEffect(() => {
+    if (!initialized || !profile || profilePrefilled.current) return
+    profilePrefilled.current = true
+    setFormData(prev => ({
+      ...prev,
+      first_name: prev.first_name || profile.first_name || '',
+      middle_name: prev.middle_name || profile.middle_name || '',
+      last_name: prev.last_name || profile.last_name || '',
+      address: prev.address || profile.home_address || '',
+      city: prev.city || profile.city || '',
+      state: prev.state || profile.state || '',
+      zip: prev.zip || formatZipCode(profile.zip_code || ''),
+      date_of_birth: prev.date_of_birth || (profile.date_of_birth ? profile.date_of_birth.substring(0, 10) : ''),
+      phone: prev.phone || formatPhoneNumber(profile.phone_number || ''),
+      email: prev.email || profile.email || '',
+    }))
+  }, [initialized, profile])
 
   // If credit_profile_updated flag is set, fetch credit profile data.
   // If not set, mark as initialized immediately so the form shows right away.
@@ -236,35 +276,7 @@ export default function CreditProfileTab() {
     }
   }
 
-/**
- * What the server's Ssn rule enforces, repeated here so a borrower hears about
- * a malformed number while the form is still in front of them rather than as a
- * 422 for the one field they cannot easily re-read off a screen.
- *
- * Nine digits is not enough to be an SSN: the SSA never issues area 000, 666 or
- * 900-999, group 00, or serial 0000. Kept in step with App\Rules\Ssn - a change
- * to one belongs in both.
- */
-const SSN_DIGITS = 9
 const ZIP_DIGITS = 5
-
-function ssnError(value: string): string | null {
-  const digits = unformatSSN(value)
-
-  if (digits.length !== SSN_DIGITS) {
-    return 'Enter a valid 9-digit SSN as XXX-XX-XXXX.'
-  }
-
-  const area = digits.slice(0, 3)
-  const group = digits.slice(3, 5)
-  const serial = digits.slice(5)
-
-  if (area === '000' || area === '666' || Number(area) >= 900 || group === '00' || serial === '0000') {
-    return 'Enter a valid 9-digit SSN as XXX-XX-XXXX.'
-  }
-
-  return null
-}
 
 function zipError(value: string): string | null {
   return value.replace(/\D/g, '').length === ZIP_DIGITS
@@ -607,28 +619,12 @@ function zipError(value: string): string | null {
             </div>
             <div className="col-md-6">
               <label className="form-label" htmlFor="cp-ssn">Social Security Number <span className="text-danger">*</span></label>
-              <div className="input-group">
-                <input
-                  id="cp-ssn"
-                  type={showSSN ? 'text' : 'password'}
-                  className={`form-control${errors.ssn ? ' is-invalid' : ''}`}
-                  value={formData.ssn}
-                  placeholder="XXX-XX-XXXX"
-                  onChange={e => update('ssn', formatSSN(e.target.value))}
-                  inputMode="numeric"
-                  maxLength={11}
-                />
-                <button
-                  type="button"
-                  className="btn"
-                  style={{ border: '1px solid #ced4da', background: '#fff', color: '#6c757d', boxShadow: 'none' }}
-                  onClick={() => setShowSSN(s => !s)}
-                  tabIndex={-1}
-                  title={showSSN ? 'Hide SSN' : 'Show SSN'}
-                >
-                  <i className={showSSN ? 'ri-eye-close-line' : 'ri-eye-2-line'}></i>
-                </button>
-              </div>
+              <SsnInput
+                id="cp-ssn"
+                value={formData.ssn}
+                onChange={val => update('ssn', val)}
+                invalid={!!errors.ssn}
+              />
               {errors.ssn && <div className="text-danger fs-12 mt-1">{errors.ssn}</div>}
             </div>
             <div className="col-md-6">

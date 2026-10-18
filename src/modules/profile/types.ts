@@ -11,7 +11,12 @@ export type PersonalInfoData = {
   country: string
   home_phone: string
   phone_number: string
-  last_4_ssn: string
+  /**
+   * The borrower's own SSN as digits: nine, or just the last four on accounts
+   * from before the full SSN was collected, or null with none on file. Shown
+   * masked; the eye button shows it.
+   */
+  ssn: string | null
   date_of_birth: string
 }
 
@@ -34,7 +39,8 @@ export type SavePersonalInfoRequest = {
   country_code: string
   phone_number: string
   home_phone?: string
-  last_4_ssn: string
+  /** The full SSN; left out to keep the one on file. */
+  ssn?: string
   date_of_birth: string
 }
 

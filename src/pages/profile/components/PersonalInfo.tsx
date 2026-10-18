@@ -9,7 +9,9 @@ import TabLoader from '../../../components/Loader/TabLoader'
 import { formatCalendarDate } from '../../../utils/dates'
 import { countries as countriesData } from '../../../modules/location'
 
-import { formatPhoneNumber, formatLast4SSN, unformatPhoneNumber, formatZipCode } from '../../../utils/formatters'
+import { formatPhoneNumber, unformatPhoneNumber, formatZipCode, formatSSN, unformatSSN } from '../../../utils/formatters'
+import { SSN_DIGITS, ssnError } from '../../../utils/validators'
+import SsnField from './SsnField'
 import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
 import { useAuth } from '../../../hooks/useAuth'
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
@@ -49,7 +51,9 @@ const transformApiToComponent = (apiData: PersonalInfoData): SavePersonalInfoReq
     home_address: apiData.home_address || '',
     home_phone: apiData.home_phone || '',
     date_of_birth: apiData.date_of_birth || '',
-    last_4_ssn: apiData.last_4_ssn || '',
+    // Only a full SSN is a value for the field; just the last four on file
+    // means the borrower still has to give the whole number.
+    ssn: unformatSSN(apiData.ssn || '').length === SSN_DIGITS ? formatSSN(apiData.ssn as string) : '',
     country_code: countriesData.find(c => c.name === apiData.country || c.code === apiData.country)?.phone_code || '+1',
   }
 }
@@ -116,9 +120,17 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
     // Clear previous errors
     setValidationErrors({})
 
-    // Ensure country_code is set
-    const payload = {
-      ...data,
+    const { ssn, ...rest } = data
+    const ssnProblem = ssn ? ssnError(ssn) : null
+    if (ssnProblem) {
+      setValidationErrors({ ssn: [ssnProblem] })
+      return
+    }
+
+    // Ensure country_code is set. A blank SSN is left out so the one on file stays.
+    const payload: SavePersonalInfoRequest = {
+      ...rest,
+      ...(ssn ? { ssn: unformatSSN(ssn) } : {}),
       country_code: getCountryCode()
     }
 
@@ -652,33 +664,12 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             <div className="invalid-feedback d-block">{getFieldError('date_of_birth')}</div>
           )}
         </div>
-        <div className="col-md-6">
-          <label className="form-label">Last 4 SSN <span className="text-danger">*</span></label>
-          <div className="position-relative">
-            <input
-              type="password"
-              className={`form-control ${hasError('last_4_ssn') ? 'is-invalid' : ''} ${isFieldLocked('last_4_ssn') ? 'bg-light border-dashed locked-field-padding' : ''}`}
-              placeholder="Enter last 4 digits"
-              value={data.last_4_ssn}
-              onChange={(e) => onChange({ ...data, last_4_ssn: formatLast4SSN(e.target.value) })}
-              maxLength={4}
-              required
-              readOnly={isFieldLocked('last_4_ssn')}
-            />
-            {isFieldLocked('last_4_ssn') && (
-              <button
-                className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
-                onClick={() => handleOpenRequestModal('Last 4 SSN', 'last_4_ssn', data.last_4_ssn)}
-              >
-                Change Request
-              </button>
-            )}
-          </div>
-          {hasError('last_4_ssn') && (
-            <div className="invalid-feedback d-block">{getFieldError('last_4_ssn')}</div>
-          )}
-        </div>
+        <SsnField
+          value={data.ssn || ''}
+          onChange={(ssn) => onChange({ ...data, ssn })}
+          lastFourOnly={unformatSSN(apiData?.ssn || '').length === 4}
+          error={getFieldError('ssn')}
+        />
         <div className="col-12 d-flex justify-content-end mt-4">
           <button
             type="button"
@@ -783,11 +774,10 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
                 onChange={(e) => {
                   let val = e.target.value;
                   if (updateRequest.key === 'phone_number') val = formatPhoneNumber(val);
-                  if (updateRequest.key === 'last_4_ssn') val = formatLast4SSN(val);
                   if (updateRequest.key === 'zip_code') val = formatZipCode(val);
                   setUpdateRequest({ ...updateRequest, newValue: val });
                 }}
-                maxLength={updateRequest.key === 'phone_number' ? 14 : (updateRequest.key === 'last_4_ssn' ? 4 : undefined)}
+                maxLength={updateRequest.key === 'phone_number' ? 14 : undefined}
               />
             )}
             {modalErrors.new_value && (
