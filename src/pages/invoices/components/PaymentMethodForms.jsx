@@ -324,28 +324,11 @@ export const EcryptForm = ({ amount, invoice, selectedProvider, onPaymentSuccess
 /* ── Stripe form ── */
 
 export const StripeForm = ({ amount, invoice, selectedProvider, onPaymentSuccess, onCancel }) => {
-  // undefined = still loading, null = Stripe cannot be used (no key / failed to load)
-  const [stripePromise, setStripePromise] = useState(undefined);
+  const [stripePromise, setStripePromise] = useState(null);
 
   useEffect(() => {
-    let active = true;
-    setStripePromise(undefined);
-    getStripe(selectedProvider?.publishable_key)
-      .then((stripe) => active && setStripePromise(stripe || null))
-      .catch(() => active && setStripePromise(null));
-    return () => {
-      active = false;
-    };
+    getStripe(selectedProvider?.publishable_key).then(setStripePromise);
   }, [selectedProvider]);
-
-  if (stripePromise === null) {
-    return (
-      <div className="alert alert-warning d-flex align-items-center gap-2 my-3" role="alert">
-        <i className="ri-error-warning-line fs-16 flex-shrink-0"></i>
-        <span>Card payment is not available right now. Please choose another payment method or contact your advisor.</span>
-      </div>
-    );
-  }
 
   if (!stripePromise) {
     return (
