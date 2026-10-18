@@ -3,8 +3,8 @@ import { test, expect, type Page, type Route } from '@playwright/test'
 // The borrower's Social Security Number on the profile.
 //
 // Personal Info takes the full number: one on file shows masked, in full on the
-// eye button; an older account holding only the last four digits is asked for
-// the whole number. "Identity on file" on the Credit Profile tab offers Reveal
+// eye button; an older account holding only the last four digits finds the field
+// empty, with no note, to enter the whole number. "Identity on file" on the Credit Profile tab offers Reveal
 // only when the masked value hides something. Nothing is saved: every backend
 // call is answered here, at the API origin.
 const API_ORIGIN = 'http://127.0.0.1:8000/api/v1'
@@ -141,11 +141,12 @@ test.describe('Profile › Social Security Number', () => {
     await expect(ssn).toHaveValue('***-**-7890')
   })
 
-  test('Personal Info asks an older account with only the last four digits for the full SSN', async ({ page }) => {
+  test('Personal Info leaves the SSN empty, with no note, when only the last four digits are on file', async ({ page }) => {
     await openProfile(page, { tab: 0, profileSsn: '6789' })
 
-    await expect(page.getByText(/only the last 4 digits are on file/i)).toBeVisible()
+    await expect(page.getByLabel(/social security number/i)).toBeVisible()
     await expect(page.getByLabel(/social security number/i)).toHaveValue('')
+    await expect(page.getByText(/only the last 4 digits are on file/i)).toHaveCount(0)
   })
 
   test('Identity on file offers Reveal for a full SSN', async ({ page }) => {

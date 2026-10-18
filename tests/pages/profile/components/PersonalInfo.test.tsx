@@ -273,13 +273,14 @@ describe('Profile — Personal Info tab', () => {
       await waitFor(() => expect(ssnInput().value).toBe('***-**-7890'))
     })
 
-    it('asks for the full number when only the last four are on file', async () => {
+    it('leaves the field empty, with no note, when only the last four are on file', async () => {
       serve({ first_name: 'Jane', ssn: '6789' })
 
       renderTab()
 
-      expect(await screen.findByText(/only the last 4 digits/i)).toBeInTheDocument()
+      await waitFor(() => expect(screen.getByDisplayValue('Jane')).toBeInTheDocument())
       expect(ssnInput().value).toBe('')
+      expect(screen.queryByText(/only the last 4 digits/i)).not.toBeInTheDocument()
     })
 
     it('sends the SSN on file with the save, as digits', async () => {
