@@ -156,6 +156,189 @@ describe('Profile — Personal Info tab', () => {
     ).toBeInTheDocument()
   })
 
+  describe('Social Security Number', () => {
+    /**
+     * The tab used to take only the last four digits ("Last 4 SSN"), and the
+     * API wrote them over the full SSN on file with every save. It now takes the
+     * full SSN. The profile read carries it; the field shows it masked
+     * (***-**-6789), leaves it alone when clicked, and the eye button shows it.
+     */
+    const onFile = { first_name: 'Jane', ssn: '123456789' }
+
+    const serve = (data: Record<string, unknown>) =>
+      server.use(http.get('*/borrower/profile/personal-info', () => HttpResponse.json({ status: true, data })))
+
+    const capturePost = () => {
+      const sent: { body: Record<string, unknown> | null } = { body: null }
+      server.use(
+        http.post('*/borrower/profile/personal-info', async ({ request }) => {
+          sent.body = (await request.json()) as Record<string, unknown>
+          return HttpResponse.json({ status: true, message: 'Saved' })
+        })
+      )
+      return sent
+    }
+
+    const ssnInput = () => screen.getByLabelText(/social security number/i) as HTMLInputElement
+
+    it('asks for the full Social Security Number, not the last four', async () => {
+      serve({})
+
+      renderTab()
+
+      expect(await screen.findByLabelText(/social security number/i)).toBeInTheDocument()
+      expect(screen.queryByText(/last 4 ssn/i)).not.toBeInTheDocument()
+    })
+
+    it('formats a new number as XXX-XX-XXXX while it is typed', async () => {
+      serve({})
+      const user = userEvent.setup()
+      renderTab()
+
+      await user.type(await screen.findByLabelText(/social security number/i), '12345')
+
+      expect(ssnInput().value).toBe('123-45')
+    })
+
+    it('masks a newly typed number once the borrower leaves the field, not mid-typing', async () => {
+      serve({})
+      const user = userEvent.setup()
+      renderTab()
+
+      await user.type(await screen.findByLabelText(/social security number/i), '123456789')
+      expect(ssnInput().value).toBe('123-45-6789')
+
+      await user.tab()
+      expect(ssnInput().value).toBe('***-**-6789')
+    })
+
+    it('shows the number on file masked in the field itself, with no extra note', async () => {
+      serve(onFile)
+
+      renderTab()
+
+      await waitFor(() => expect(ssnInput().value).toBe('***-**-6789'))
+      expect(screen.queryByText(/on file/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/leave blank/i)).not.toBeInTheDocument()
+    })
+
+    it('keeps the masked number when the field is clicked', async () => {
+      serve(onFile)
+      const user = userEvent.setup()
+      renderTab()
+      await waitFor(() => expect(ssnInput().value).toBe('***-**-6789'))
+
+      await user.click(ssnInput())
+      await user.keyboard('1')
+
+      expect(ssnInput().value).toBe('***-**-6789')
+    })
+
+    it('shows the full number on the eye button, and masks it again', async () => {
+      serve(onFile)
+      const user = userEvent.setup()
+      renderTab()
+      await waitFor(() => expect(ssnInput().value).toBe('***-**-6789'))
+
+      await user.click(screen.getByRole('button', { name: /show ssn/i }))
+      expect(ssnInput().value).toBe('123-45-6789')
+
+      await user.click(screen.getByRole('button', { name: /hide ssn/i }))
+      expect(ssnInput().value).toBe('***-**-6789')
+    })
+
+    it('shows the saved number masked once the save is done', async () => {
+      // Saved, the field emptied: the borrower could not tell their SSN was kept.
+      let saved = false
+      server.use(
+        http.get('*/borrower/profile/personal-info', () =>
+          HttpResponse.json({ status: true, data: saved ? { first_name: 'Jane', ssn: '234567890' } : { first_name: 'Jane' } })
+        ),
+        http.post('*/borrower/profile/personal-info', () => {
+          saved = true
+          return HttpResponse.json({ status: true, message: 'Saved' })
+        })
+      )
+      const user = userEvent.setup()
+      renderTab()
+
+      await user.type(await screen.findByLabelText(/social security number/i), '234567890')
+      await user.click(screen.getByRole('button', { name: /save/i }))
+
+      await waitFor(() => expect(ssnInput().value).toBe('***-**-7890'))
+    })
+
+    it('asks for the full number when only the last four are on file', async () => {
+      serve({ first_name: 'Jane', ssn: '6789' })
+
+      renderTab()
+
+      expect(await screen.findByText(/only the last 4 digits/i)).toBeInTheDocument()
+      expect(ssnInput().value).toBe('')
+    })
+
+    it('sends the SSN on file with the save, as digits', async () => {
+      serve(onFile)
+      const sent = capturePost()
+      const user = userEvent.setup()
+      renderTab()
+      await waitFor(() => expect(ssnInput().value).toBe('***-**-6789'))
+
+      await user.click(screen.getByRole('button', { name: /save/i }))
+
+      await waitFor(() => expect(sent.body).not.toBeNull())
+      expect(sent.body).toMatchObject({ ssn: '123456789' })
+      expect(sent.body).not.toHaveProperty('last_4_ssn')
+    })
+
+    it('lets the shown number be changed, and sends the new one', async () => {
+      serve(onFile)
+      const sent = capturePost()
+      const user = userEvent.setup()
+      renderTab()
+      await waitFor(() => expect(ssnInput().value).toBe('***-**-6789'))
+
+      await user.click(screen.getByRole('button', { name: /show ssn/i }))
+      await user.clear(ssnInput())
+      await user.type(ssnInput(), '234567890')
+      await user.click(screen.getByRole('button', { name: /save/i }))
+
+      await waitFor(() => expect(sent.body).not.toBeNull())
+      expect(sent.body).toMatchObject({ ssn: '234567890' })
+    })
+
+    it('refuses a malformed SSN before anything is sent', async () => {
+      serve({ first_name: 'Jane' })
+      const sent = capturePost()
+      const user = userEvent.setup()
+      renderTab()
+
+      await user.type(await screen.findByLabelText(/social security number/i), '666-12-3456')
+      await user.click(screen.getByRole('button', { name: /save/i }))
+
+      expect(await screen.findByText('Enter a valid 9-digit SSN as XXX-XX-XXXX.')).toBeInTheDocument()
+      expect(sent.body).toBeNull()
+    })
+
+    it('puts the API\'s SSN error on the SSN field', async () => {
+      server.use(
+        http.get('*/borrower/profile/personal-info', () => HttpResponse.json({ status: true, data: {} })),
+        http.post('*/borrower/profile/personal-info', () =>
+          HttpResponse.json(
+            { status: false, errors: { ssn: ['Social Security Number is required.'] } },
+            { status: 422 }
+          )
+        )
+      )
+      const user = userEvent.setup()
+      renderTab()
+
+      await user.click(await screen.findByRole('button', { name: /save/i }))
+
+      expect(await screen.findByText('Social Security Number is required.')).toBeInTheDocument()
+    })
+  })
+
   it('renders while the API is still answering', () => {
     server.use(
       http.get('*/borrower/profile/personal-info', () =>

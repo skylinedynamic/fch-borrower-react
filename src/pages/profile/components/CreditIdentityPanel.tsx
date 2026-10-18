@@ -56,6 +56,12 @@ function SsnDetail({ ssn }: { ssn: string | null | undefined }) {
     return <Detail label="SSN" value={null} />
   }
 
+  // Just the last four digits (an older account, or a bureau that reports it
+  // masked): the mask already shows all there is, so nothing to reveal.
+  if (ssn.replace(/\D/g, '').length <= 4) {
+    return <Detail label="SSN" value={maskSSN(ssn)} />
+  }
+
   return (
     <div className="col-sm-6 col-lg-4">
       <div className="py-2">

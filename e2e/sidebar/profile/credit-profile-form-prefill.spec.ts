@@ -4,8 +4,9 @@ import { test, expect, type Page, type Route } from '@playwright/test'
 //
 // A borrower who has already asked finds their earlier request in the form. One
 // who has not finds their profile there, so a first request is not their address
-// typed out again. The profile only holds the last four digits of the SSN, so
-// that field stays empty. Nothing is submitted: a real submission writes an FCRA
+// typed out again. The SSN comes from the profile only when it is the full
+// number, shown masked; an older account with just the last four digits on file
+// leaves that field empty. Nothing is submitted: a real submission writes an FCRA
 // consent row that cannot be undone, so every backend call is answered here, at
 // the API origin, and the form is only read.
 const API_ORIGIN = 'http://127.0.0.1:8000/api/v1'
@@ -24,7 +25,8 @@ const PROFILE = {
   country_code: 'US',
   home_phone: '',
   phone_number: '5125550100',
-  last_4_ssn: '6789',
+  // An older account: only the last four digits of the SSN on file.
+  ssn: '6789',
   date_of_birth: '1990-04-05',
 }
 
@@ -47,7 +49,7 @@ const EARLIER_REQUEST = {
 
 const COMPLETE = { is_complete: true, missing_fields: [] }
 
-async function openCreditProfileTab(page: Page, opts: { earlierRequest: boolean }) {
+async function openCreditProfileTab(page: Page, opts: { earlierRequest: boolean; profileSsn?: string | null }) {
   const user = {
     id: 1,
     name: 'Profile Person',
@@ -79,7 +81,9 @@ async function openCreditProfileTab(page: Page, opts: { earlierRequest: boolean 
   await page.route(`${API_ORIGIN}/borrower/profile/completion`, (route) =>
     ok(route, { ...COMPLETE, personal: COMPLETE, business: COMPLETE, financial: COMPLETE })
   )
-  await page.route(`${API_ORIGIN}/borrower/profile/personal-info`, (route) => ok(route, PROFILE))
+  await page.route(`${API_ORIGIN}/borrower/profile/personal-info`, (route) =>
+    ok(route, opts.profileSsn === undefined ? PROFILE : { ...PROFILE, ssn: opts.profileSsn })
+  )
   // No pulled profile yet: with an earlier request the API answers with that
   // request, without one it answers with nothing.
   await page.route(`${API_ORIGIN}/borrower/profile/credit-profile`, (route) =>
@@ -93,13 +97,22 @@ async function openCreditProfileTab(page: Page, opts: { earlierRequest: boolean 
 }
 
 test.describe('Profile › Credit Profile — what the request form starts from', () => {
-  test('a first request starts from the borrower profile, with the SSN left empty', async ({ page }) => {
+  test('a first request starts from the borrower profile, with only the last four SSN digits left empty', async ({ page }) => {
     await openCreditProfileTab(page, { earlierRequest: false })
 
     await expect(page.getByPlaceholder('123 Main Street')).toHaveValue('9 Profile Way')
     await expect(page.getByLabel(/zip code/i)).toHaveValue('78701')
     await expect(page.getByPlaceholder('e.g. Michael')).toHaveValue('Middle')
     await expect(page.getByLabel(/social security number/i)).toHaveValue('')
+  })
+
+  test('a full SSN on the profile comes in masked, and the eye button shows it', async ({ page }) => {
+    await openCreditProfileTab(page, { earlierRequest: false, profileSsn: '123456789' })
+
+    const ssn = page.getByLabel(/social security number/i)
+    await expect(ssn).toHaveValue('***-**-6789')
+    await page.getByRole('button', { name: /show ssn/i }).click()
+    await expect(ssn).toHaveValue('123-45-6789')
   })
 
   test('a repeat request starts from the earlier request, not the profile', async ({ page }) => {

@@ -625,6 +625,29 @@ describe('Profile — Credit Profile tab', () => {
       expect(screen.getByText('***-**-4821')).toBeInTheDocument()
     })
 
+    it('offers no Reveal when the bureau reports the SSN already masked', async () => {
+      // The mask already shows all there is: "Reveal" would show less.
+      const user = userEvent.setup()
+      renderWithProviders(<CreditIdentityPanel personalInfo={personalInfo as never} addresses={addresses} />)
+
+      await user.click(screen.getByRole('button', { name: /identity on file/i }))
+
+      expect(screen.getByText('***-**-4821')).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /reveal/i })).not.toBeInTheDocument()
+    })
+
+    it('offers no Reveal when only the last four digits are on file', async () => {
+      const user = userEvent.setup()
+      renderWithProviders(
+        <CreditIdentityPanel personalInfo={{ ...personalInfo, ssn: '4821' } as never} addresses={addresses} />,
+      )
+
+      await user.click(screen.getByRole('button', { name: /identity on file/i }))
+
+      expect(screen.getByText('***-**-4821')).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /reveal/i })).not.toBeInTheDocument()
+    })
+
     it('keeps the SSN out of the document entirely while closed', async () => {
       // Collapsed, the digits are not merely hidden by CSS - they are not
       // rendered, so nothing on screen or in the DOM carries them.
@@ -950,8 +973,8 @@ describe('Profile — Credit Profile tab', () => {
      *
      * A borrower who has already asked finds their earlier request in the form.
      * One who has not finds their profile there instead, so a first request is
-     * not their address typed out a second time. The profile holds only the last
-     * four digits of the SSN, so that one field is always theirs to enter.
+     * not their address typed out a second time. The SSN comes from the profile
+     * only when it is the full number (see "the SSN from the profile").
      */
     describe('what it starts from', () => {
       const profile = {
@@ -967,7 +990,8 @@ describe('Profile — Credit Profile tab', () => {
         country: 'United States',
         home_phone: '',
         phone_number: '5125550100',
-        last_4_ssn: '6789',
+        // An older account: only the last four digits of the SSN on file.
+        ssn: '6789',
         date_of_birth: '1990-04-05',
       }
 
@@ -1008,7 +1032,7 @@ describe('Profile — Credit Profile tab', () => {
         expect(screen.getByDisplayValue('profile@example.com')).toBeInTheDocument()
       })
 
-      it('leaves the SSN for the borrower, the profile only holds its last four digits', async () => {
+      it('leaves the SSN for the borrower when the profile only holds its last four digits', async () => {
         serveProfile()
         const ssn = await openForm()
         await screen.findByDisplayValue('9 Profile Way')
@@ -1063,6 +1087,103 @@ describe('Profile — Credit Profile tab', () => {
         await user.type(screen.getByLabelText(/zip code/i), '1')
 
         expect(address).toHaveValue('')
+      })
+    })
+
+    /**
+     * The SSN the borrower saved on their profile is the default here: it comes
+     * in with the profile, shows masked (***-**-1234), stays put when clicked,
+     * and the eye button shows it in full.
+     */
+    describe('the SSN from the profile', () => {
+      const serveProfileSsn = (ssn: string | null) =>
+        server.use(http.get('*/borrower/profile/personal-info', () => HttpResponse.json({ status: true, data: { ssn } })))
+
+      const capturePost = () => {
+        const sent: { body: Record<string, unknown> | null } = { body: null }
+        server.use(
+          http.post('*/borrower/profile/credit-profile-request', async ({ request }) => {
+            sent.body = (await request.json()) as Record<string, unknown>
+            return HttpResponse.json({ status: true, message: 'ok' })
+          })
+        )
+        return sent
+      }
+
+      it('is shown masked as the default', async () => {
+        serveProfileSsn('123456789')
+
+        const ssn = (await openForm()) as HTMLInputElement
+
+        await waitFor(() => expect(ssn.value).toBe('***-**-6789'))
+      })
+
+      it('keeps the mask when the field is clicked', async () => {
+        serveProfileSsn('123456789')
+        const user = userEvent.setup()
+        const ssn = (await openForm()) as HTMLInputElement
+        await waitFor(() => expect(ssn.value).toBe('***-**-6789'))
+
+        await user.click(ssn)
+        await user.keyboard('1')
+
+        expect(ssn.value).toBe('***-**-6789')
+      })
+
+      it('is shown in full by the eye button', async () => {
+        serveProfileSsn('123456789')
+        const user = userEvent.setup()
+        const ssn = (await openForm()) as HTMLInputElement
+        await waitFor(() => expect(ssn.value).toBe('***-**-6789'))
+
+        await user.click(screen.getByRole('button', { name: /show ssn/i }))
+
+        expect(ssn.value).toBe('123-45-6789')
+      })
+
+      it('is sent with the request when the borrower keeps it', async () => {
+        serveProfileSsn('123456789')
+        const sent = capturePost()
+        const user = userEvent.setup()
+        const ssn = (await openForm()) as HTMLInputElement
+        await waitFor(() => expect(ssn.value).toBe('***-**-6789'))
+
+        await user.type(screen.getByLabelText(/zip code/i), '78701')
+        await consentThenSubmit(user)
+
+        await waitFor(() => expect(sent.body).not.toBeNull())
+        expect(sent.body).toMatchObject({ ssn: '123456789' })
+      })
+
+      it('gives way to a number the borrower changes it to', async () => {
+        serveProfileSsn('123456789')
+        const sent = capturePost()
+        const user = userEvent.setup()
+        const ssn = (await openForm()) as HTMLInputElement
+        await waitFor(() => expect(ssn.value).toBe('***-**-6789'))
+
+        await user.click(screen.getByRole('button', { name: /show ssn/i }))
+        await user.clear(ssn)
+        await user.type(ssn, '234567890')
+        await user.type(screen.getByLabelText(/zip code/i), '78701')
+        await consentThenSubmit(user)
+
+        await waitFor(() => expect(sent.body).not.toBeNull())
+        expect(sent.body).toMatchObject({ ssn: '234567890' })
+      })
+
+      it('is not a default when only the last four are on the profile', async () => {
+        serveProfileSsn('6789')
+        const sent = capturePost()
+        const user = userEvent.setup()
+        const ssn = (await openForm()) as HTMLInputElement
+
+        expect(ssn.value).toBe('')
+        await user.type(screen.getByLabelText(/zip code/i), '78701')
+        await consentThenSubmit(user)
+
+        expect(await screen.findByText(/valid 9-digit SSN/i)).toBeInTheDocument()
+        expect(sent.body).toBeNull()
       })
     })
   })
