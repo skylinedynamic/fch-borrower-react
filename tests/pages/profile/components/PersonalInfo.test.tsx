@@ -161,7 +161,8 @@ describe('Profile — Personal Info tab', () => {
      * The tab used to take only the last four digits ("Last 4 SSN"), and the
      * API wrote them over the full SSN on file with every save. It now takes the
      * full SSN. The profile read carries it; the field shows it masked
-     * (***-**-6789), leaves it alone when clicked, and the eye button shows it.
+     * (***-**-6789); a click on the field makes it editable, and the eye button
+     * shows it.
      */
     const onFile = { first_name: 'Jane', ssn: '123456789' }
 
@@ -222,16 +223,20 @@ describe('Profile — Personal Info tab', () => {
       expect(screen.queryByText(/leave blank/i)).not.toBeInTheDocument()
     })
 
-    it('keeps the masked number when the field is clicked', async () => {
+    it('lets the number on file be changed by clicking the field, without the eye button', async () => {
       serve(onFile)
+      const sent = capturePost()
       const user = userEvent.setup()
       renderTab()
       await waitFor(() => expect(ssnInput().value).toBe('***-**-6789'))
 
       await user.click(ssnInput())
-      await user.keyboard('1')
+      await user.clear(ssnInput())
+      await user.type(ssnInput(), '234567890')
+      await user.click(screen.getByRole('button', { name: /save/i }))
 
-      expect(ssnInput().value).toBe('***-**-6789')
+      await waitFor(() => expect(sent.body).not.toBeNull())
+      expect(sent.body).toMatchObject({ ssn: '234567890' })
     })
 
     it('shows the full number on the eye button, and masks it again', async () => {

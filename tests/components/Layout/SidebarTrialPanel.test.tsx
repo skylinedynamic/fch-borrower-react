@@ -5,7 +5,7 @@ import { useAuthStore } from '../../../src/store/auth'
 import { renderWithProviders } from '../../test-utils'
 
 vi.mock('../../../src/modules/dashboard', () => ({
-  useDashboard: () => ({ data: null, isLoading: false }),
+  useActiveFundingRequests: () => ({ data: null, isLoading: false }),
 }))
 
 /**

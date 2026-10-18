@@ -10,8 +10,8 @@ interface SsnFieldProps {
 
 /**
  * The borrower's full Social Security Number on the Personal Info tab: shown
- * masked, in full on the eye button. Accounts holding only the last four
- * digits are asked for the whole number.
+ * masked, editable on a click, in full on the eye button. Accounts holding
+ * only the last four digits are asked for the whole number.
  */
 export default function SsnField({ value, onChange, lastFourOnly, error }: SsnFieldProps) {
   const message = Array.isArray(error) ? error[0] : error

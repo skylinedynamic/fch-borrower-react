@@ -1118,16 +1118,21 @@ describe('Profile — Credit Profile tab', () => {
         await waitFor(() => expect(ssn.value).toBe('***-**-6789'))
       })
 
-      it('keeps the mask when the field is clicked', async () => {
+      it('can be changed by clicking the field, without the eye button', async () => {
         serveProfileSsn('123456789')
+        const sent = capturePost()
         const user = userEvent.setup()
         const ssn = (await openForm()) as HTMLInputElement
         await waitFor(() => expect(ssn.value).toBe('***-**-6789'))
 
         await user.click(ssn)
-        await user.keyboard('1')
+        await user.clear(ssn)
+        await user.type(ssn, '234567890')
+        await user.type(screen.getByLabelText(/zip code/i), '78701')
+        await consentThenSubmit(user)
 
-        expect(ssn.value).toBe('***-**-6789')
+        await waitFor(() => expect(sent.body).not.toBeNull())
+        expect(sent.body).toMatchObject({ ssn: '234567890' })
       })
 
       it('is shown in full by the eye button', async () => {

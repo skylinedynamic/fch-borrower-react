@@ -111,6 +111,36 @@ test.describe('Profile › Social Security Number', () => {
     await expect(ssn).toHaveValue('123-45-6789')
   })
 
+  test('Personal Info: a click on the field edits the SSN, no eye button needed', async ({ page }) => {
+    await openProfile(page, { tab: 0 })
+
+    const ssn = page.getByLabel(/social security number/i)
+    await expect(ssn).toHaveValue('***-**-6789')
+    await ssn.click()
+    await expect(ssn).toHaveValue('123-45-6789')
+    await expect(ssn).toHaveAttribute('type', 'password')
+    await ssn.fill('')
+    await ssn.pressSequentially('234567890')
+    await expect(ssn).toHaveValue('234-56-7890')
+
+    await page.locator('body').click({ position: { x: 5, y: 5 } })
+    await expect(ssn).toHaveValue('***-**-7890')
+  })
+
+  test('Credit Profile form: a click on the field edits the SSN, no eye button needed', async ({ page }) => {
+    await openProfile(page, { tab: 3 })
+
+    const ssn = page.locator('#cp-ssn')
+    await expect(ssn).toHaveValue('***-**-6789')
+    await ssn.click()
+    await ssn.fill('')
+    await ssn.pressSequentially('234567890')
+    await expect(ssn).toHaveValue('234-56-7890')
+
+    await page.locator('body').click({ position: { x: 5, y: 5 } })
+    await expect(ssn).toHaveValue('***-**-7890')
+  })
+
   test('Personal Info asks an older account with only the last four digits for the full SSN', async ({ page }) => {
     await openProfile(page, { tab: 0, profileSsn: '6789' })
 

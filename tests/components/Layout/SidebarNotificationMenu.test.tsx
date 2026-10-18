@@ -7,7 +7,7 @@ import { useAuthStore } from '../../../src/store/auth'
 import { PARTNER_TYPES } from '../../../src/config/partnerTypeOptions'
 
 vi.mock('../../../src/modules/dashboard', () => ({
-  useDashboard: () => ({ data: null, isLoading: false }),
+  useActiveFundingRequests: () => ({ data: null, isLoading: false }),
 }))
 
 let countRequests = 0
