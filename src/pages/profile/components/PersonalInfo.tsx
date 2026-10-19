@@ -9,8 +9,7 @@ import TabLoader from '../../../components/Loader/TabLoader'
 import { formatCalendarDate } from '../../../utils/dates'
 import { countries as countriesData } from '../../../modules/location'
 
-import { formatPhoneNumber, unformatPhoneNumber, formatZipCode, formatSSN, unformatSSN } from '../../../utils/formatters'
-import { SSN_DIGITS, ssnError } from '../../../utils/validators'
+import { formatPhoneNumber, unformatPhoneNumber, formatZipCode, formatSSN, unformatSSN, SSN_DIGITS } from '../../../utils/formatters'
 import SsnField from './SsnField'
 import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
 import { useAuth } from '../../../hooks/useAuth'
@@ -120,12 +119,9 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
     // Clear previous errors
     setValidationErrors({})
 
+    // Whether the SSN is valid is the API's call (App\Rules\Ssn); its 422
+    // lands on the field like any other error.
     const { ssn, ...rest } = data
-    const ssnProblem = ssn ? ssnError(ssn) : null
-    if (ssnProblem) {
-      setValidationErrors({ ssn: [ssnProblem] })
-      return
-    }
 
     // Ensure country_code is set. A blank SSN is left out so the one on file stays.
     const payload: SavePersonalInfoRequest = {

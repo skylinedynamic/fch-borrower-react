@@ -854,60 +854,52 @@ describe('Profile — Credit Profile tab', () => {
       await waitFor(() => expect((ssn as HTMLInputElement).value).toBe('123-45-6789'))
     })
 
-    it('refuses a short SSN without asking the server', async () => {
-      let posted = false
-      const user = userEvent.setup()
-      const ssn = await openForm()
+    // Format checks are the API's alone (App\Rules\Ssn, App\Rules\UsPostalCode):
+    // the form sends what was typed and shows the 422 on the field.
+    const refuseWith = (errors: Record<string, string[]>) => {
+      const sent: { body: Record<string, unknown> | null } = { body: null }
       server.use(
-        http.post('*/borrower/profile/credit-profile-request', () => {
-          posted = true
-          return HttpResponse.json({ status: true, message: 'ok' })
+        http.post('*/borrower/profile/credit-profile-request', async ({ request }) => {
+          sent.body = (await request.json()) as Record<string, unknown>
+          return HttpResponse.json({ status: false, message: 'The given data was invalid.', errors }, { status: 422 })
         })
       )
+      return sent
+    }
+
+    it('leaves a short SSN to the server and shows its answer on the field', async () => {
+      const user = userEvent.setup()
+      const ssn = await openForm()
+      const sent = refuseWith({ ssn: ['Enter a valid 9-digit Social Security Number, e.g. 123-45-6789.'] })
 
       await user.type(ssn, '12345')
       await consentThenSubmit(user)
 
-      expect(await screen.findByText(/valid 9-digit SSN/i)).toBeInTheDocument()
-      expect(posted).toBe(false)
+      expect(await screen.findByText('Enter a valid 9-digit Social Security Number, e.g. 123-45-6789.')).toBeInTheDocument()
+      expect(sent.body).toMatchObject({ ssn: '12345' })
     })
 
-    it('refuses a combination the SSA never issues', async () => {
-      // Parity with the server's Ssn rule. Nine digits is not enough to be an
-      // SSN, and finding that out from a 422 helps nobody.
-      let posted = false
+    it('sends a combination the SSA never issues as typed - the server decides', async () => {
       const user = userEvent.setup()
       const ssn = await openForm()
-      server.use(
-        http.post('*/borrower/profile/credit-profile-request', () => {
-          posted = true
-          return HttpResponse.json({ status: true, message: 'ok' })
-        })
-      )
+      const sent = refuseWith({ ssn: ['Enter a valid 9-digit Social Security Number, e.g. 123-45-6789.'] })
 
       await user.type(ssn, '666456789')
       await consentThenSubmit(user)
 
-      expect(await screen.findByText(/valid 9-digit SSN/i)).toBeInTheDocument()
-      expect(posted).toBe(false)
+      await waitFor(() => expect(sent.body).toMatchObject({ ssn: '666456789' }))
     })
 
-    it('refuses a short ZIP without asking the server', async () => {
-      let posted = false
+    it('leaves a short ZIP to the server and shows its answer on the field', async () => {
       const user = userEvent.setup()
       await openForm()
-      server.use(
-        http.post('*/borrower/profile/credit-profile-request', () => {
-          posted = true
-          return HttpResponse.json({ status: true, message: 'ok' })
-        })
-      )
+      const sent = refuseWith({ zip: ['Enter a 5-digit ZIP code, e.g. 10001.'] })
 
       await user.type(screen.getByLabelText(/zip code/i), '787')
       await consentThenSubmit(user)
 
-      expect(await screen.findByText(/5-digit ZIP/i)).toBeInTheDocument()
-      expect(posted).toBe(false)
+      expect(await screen.findByText('Enter a 5-digit ZIP code, e.g. 10001.')).toBeInTheDocument()
+      expect(sent.body).toMatchObject({ zip: '787' })
     })
 
     it('reports a validation problem on the field, never as a toast', async () => {
@@ -917,11 +909,16 @@ describe('Profile — Credit Profile tab', () => {
       // mistake is.
       const user = userEvent.setup()
       const ssn = await openForm()
+      refuseWith({
+        ssn: ['Enter a valid 9-digit Social Security Number, e.g. 123-45-6789.'],
+        zip: ['Enter a 5-digit ZIP code, e.g. 10001.'],
+      })
 
       await user.type(ssn, '12345')
       await consentThenSubmit(user)
 
-      expect(await screen.findByText(/valid 9-digit SSN/i)).toBeInTheDocument()
+      expect(await screen.findByText(/valid 9-digit Social Security Number/i)).toBeInTheDocument()
+      expect(screen.getByText(/5-digit ZIP/i)).toBeInTheDocument()
       expect(toast.error).not.toHaveBeenCalled()
     })
 
@@ -1135,6 +1132,28 @@ describe('Profile — Credit Profile tab', () => {
         expect(sent.body).toMatchObject({ ssn: '234567890' })
       })
 
+      it('the SSN of the request just submitted reads back written XXX-XX-XXXX', async () => {
+        // After a submit the form is filled from the saved request, whose SSN
+        // the API sends as its nine digits.
+        const user = userEvent.setup()
+        const ssn = (await openForm()) as HTMLInputElement
+        capturePost()
+        server.use(
+          http.get('*/borrower/profile/credit-profile-request', () =>
+            HttpResponse.json({ status: true, data: [{ id: 3, first_name: 'Jane', last_name: 'Doe', ssn: '234567890', zip: '78701' }] })
+          )
+        )
+
+        await user.type(ssn, '234567890')
+        await user.type(screen.getByLabelText(/zip code/i), '78701')
+        await consentThenSubmit(user)
+        await screen.findByText('Credit Profile Submitted')
+
+        const shown = screen.getByLabelText(/social security number/i) as HTMLInputElement
+        await user.click(screen.getByRole('button', { name: /show ssn/i }))
+        expect(shown.value).toBe('234-56-7890')
+      })
+
       it('is shown in full by the eye button', async () => {
         serveProfileSsn('123456789')
         const user = userEvent.setup()
@@ -1179,7 +1198,16 @@ describe('Profile — Credit Profile tab', () => {
 
       it('is not a default when only the last four are on the profile', async () => {
         serveProfileSsn('6789')
-        const sent = capturePost()
+        const sent: { body: Record<string, unknown> | null } = { body: null }
+        server.use(
+          http.post('*/borrower/profile/credit-profile-request', async ({ request }) => {
+            sent.body = (await request.json()) as Record<string, unknown>
+            return HttpResponse.json(
+              { status: false, message: 'The given data was invalid.', errors: { ssn: ['The ssn field is required.'] } },
+              { status: 422 }
+            )
+          })
+        )
         const user = userEvent.setup()
         const ssn = (await openForm()) as HTMLInputElement
 
@@ -1187,8 +1215,9 @@ describe('Profile — Credit Profile tab', () => {
         await user.type(screen.getByLabelText(/zip code/i), '78701')
         await consentThenSubmit(user)
 
-        expect(await screen.findByText(/valid 9-digit SSN/i)).toBeInTheDocument()
-        expect(sent.body).toBeNull()
+        // The last four are never sent as if they were the number.
+        expect(await screen.findByText('The ssn field is required.')).toBeInTheDocument()
+        expect(sent.body).toMatchObject({ ssn: '' })
       })
     })
   })

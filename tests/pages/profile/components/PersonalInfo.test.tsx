@@ -313,17 +313,20 @@ describe('Profile — Personal Info tab', () => {
       expect(sent.body).toMatchObject({ ssn: '234567890' })
     })
 
-    it('refuses a malformed SSN before anything is sent', async () => {
+    it('leaves a malformed SSN to the server - the field only writes it as XXX-XX-XXXX', async () => {
+      // Format checks are server-side only (App\Rules\Ssn).
       serve({ first_name: 'Jane' })
       const sent = capturePost()
       const user = userEvent.setup()
       renderTab()
 
-      await user.type(await screen.findByLabelText(/social security number/i), '666-12-3456')
+      await user.type(await screen.findByLabelText(/social security number/i), '666123456')
+      expect(ssnInput().value).toBe('666-12-3456')
       await user.click(screen.getByRole('button', { name: /save/i }))
 
-      expect(await screen.findByText('Enter a valid 9-digit SSN as XXX-XX-XXXX.')).toBeInTheDocument()
-      expect(sent.body).toBeNull()
+      await waitFor(() => expect(sent.body).not.toBeNull())
+      expect(sent.body).toMatchObject({ ssn: '666123456' })
+      expect(screen.queryByText(/valid 9-digit SSN/i)).not.toBeInTheDocument()
     })
 
     it('puts the API\'s SSN error on the SSN field', async () => {

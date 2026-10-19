@@ -99,29 +99,42 @@ describe('Profile — Business Details tab', () => {
     expect(await screen.findByPlaceholderText('12-3456789')).toBeInTheDocument()
   })
 
-  it('refuses a short EIN without asking the server', async () => {
-    // An EIN is nine digits. Finding that out after a round trip meant the
-    // borrower lost the rest of the form to a 422 they could have been told
-    // about while typing.
-    let posted = false
+  it('leaves a short EIN to the server and shows its answer under the field', async () => {
+    // The format is checked server-side only (App\Rules\BusinessEin); the field
+    // only writes the number as XX-XXXXXXX.
+    let sentEin: unknown
     server.use(
       http.get('*/borrower/profile/business-info', () =>
         HttpResponse.json({ status: true, data: {} })
       ),
-      http.post('*/borrower/profile/business-info', () => {
-        posted = true
-        return HttpResponse.json({ status: true, message: 'Saved' })
+      http.post('*/borrower/profile/business-info', async ({ request }) => {
+        sentEin = ((await request.json()) as Record<string, unknown>).business_ein
+        return HttpResponse.json(
+          { status: false, message: 'Validation failed', errors: { business_ein: ['Enter a 9-digit EIN as XX-XXXXXXX, e.g. 12-3456789.'] } },
+          { status: 422 }
+        )
       })
     )
 
     const user = userEvent.setup()
     renderComponent()
 
-    await user.type(await screen.findByPlaceholderText('12-3456789'), '12345678')
+    const ein = await screen.findByPlaceholderText('12-3456789')
+    await user.type(ein, '12345678')
+    expect(ein).toHaveValue('12-345678')
     await user.click(screen.getByRole('button', { name: /save|update|next/i }))
 
-    expect(await screen.findByText(/EIN must be 9 digits/i)).toBeInTheDocument()
-    expect(posted).toBe(false)
+    expect(await screen.findByText('Enter a 9-digit EIN as XX-XXXXXXX, e.g. 12-3456789.')).toBeInTheDocument()
+    expect(sentEin).toBe('12345678')
+    expect(screen.queryByText(/EIN must be 9 digits/i)).not.toBeInTheDocument()
+  })
+
+  it('shows a business phone example a real US number could be', async () => {
+    server.use(http.get('*/borrower/profile/business-info', () => HttpResponse.json({ status: true, data: {} })))
+    renderComponent()
+
+    expect(await screen.findByPlaceholderText('(555) 555-5555')).toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('(123) 456-7890')).not.toBeInTheDocument()
   })
 
   it('lets a complete EIN through', async () => {
