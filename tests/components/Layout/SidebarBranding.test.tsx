@@ -8,7 +8,7 @@ import { DEFAULT_BRAND_LOGO } from '../../../src/utils/brandLogo'
 import { renderWithProviders } from '../../test-utils'
 
 vi.mock('../../../src/modules/dashboard', () => ({
-  useDashboard: () => ({ data: null, isLoading: false }),
+  useActiveFundingRequests: () => ({ data: null, isLoading: false }),
 }))
 
 const TENANT_LOGO = 'http://127.0.0.1:8000/storage/partners/9/missing-logo.png'

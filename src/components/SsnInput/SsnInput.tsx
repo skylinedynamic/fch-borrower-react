@@ -12,17 +12,18 @@ interface SsnInputProps {
 /**
  * A full Social Security Number input, written XXX-XX-XXXX as it is typed.
  *
- * A complete number shows masked (***-**-1234) and read-only, so clicking the
- * field leaves it alone. The eye button shows it in full - and editable, which
- * is how a number on file is changed - and masks it again.
+ * A complete number shows masked (***-**-1234) while the field is not in use.
+ * Clicking the field makes it editable, the number hidden as dots like one
+ * being typed; it masks again once the borrower leaves the field. The eye
+ * button shows the digits and hides them again.
  */
 export default function SsnInput({ id, value, onChange, invalid }: SsnInputProps) {
   const [visible, setVisible] = useState(false)
-  // Set while the borrower is typing, so the number does not turn into a mask
-  // under their fingers on the ninth digit; it masks once they leave the field.
-  const [typing, setTyping] = useState(false)
+  // Set while the field has focus, so a number on file can be edited and a new
+  // one does not turn into a mask under the borrower's fingers on the ninth digit.
+  const [editing, setEditing] = useState(false)
   const complete = unformatSSN(value).length === SSN_DIGITS
-  const masked = complete && !visible && !typing
+  const masked = complete && !visible && !editing
 
   return (
     <div className="input-group">
@@ -32,12 +33,9 @@ export default function SsnInput({ id, value, onChange, invalid }: SsnInputProps
         className={`form-control${invalid ? ' is-invalid' : ''}`}
         placeholder="XXX-XX-XXXX"
         value={masked ? maskSSN(value) : value}
-        readOnly={masked}
-        onBlur={() => setTyping(false)}
-        onChange={(e) => {
-          setTyping(true)
-          onChange(formatSSN(e.target.value))
-        }}
+        onFocus={() => setEditing(true)}
+        onBlur={() => setEditing(false)}
+        onChange={(e) => onChange(formatSSN(e.target.value))}
         maxLength={11}
         inputMode="numeric"
         autoComplete="off"

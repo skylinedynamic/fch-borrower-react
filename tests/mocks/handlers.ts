@@ -8,7 +8,7 @@ import { http, HttpResponse, type HttpHandler } from 'msw'
  * silently hitting the network.
  */
 export const handlers: HttpHandler[] = [
-  // The layout (header bell + sidebar "Notification" badge) loads the latest
+  // The layout (header bell + sidebar "Notifications" badge) loads the latest
   // notifications - and the unread count in their meta - on every page. Default
   // it to empty so tests that render the layout for something else don't need
   // to; notification tests override it with server.use().
@@ -16,10 +16,10 @@ export const handlers: HttpHandler[] = [
     HttpResponse.json({ status: true, data: [], meta: { current_page: 1, last_page: 1, per_page: 5, total: 0, unread_count: 0 } })
   ),
 
-  // The credit profile request form starts from the borrower's profile,
-  // including the SSN on file. Default to a blank profile with no SSN so a test
-  // rendering that form for something else is not an unhandled request; tests
-  // about the prefill or the SSN override it with server.use().
+  // The credit profile request form starts from the borrower's profile - its
+  // address and the SSN on file. Default to a blank profile with no SSN so a
+  // test rendering that form for something else is not an unhandled request;
+  // tests about the prefill or the SSN override it with server.use().
   http.get('*/borrower/profile/personal-info', () =>
     HttpResponse.json({
       status: true,

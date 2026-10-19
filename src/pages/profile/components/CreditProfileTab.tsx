@@ -180,8 +180,9 @@ export default function CreditProfileTab() {
   // second time, so the blanks are filled from their profile. Only the blanks:
   // an earlier request is the more specific record and has already been applied
   // by the time `initialized` turns true. Once, so a refetch of the profile
-  // never puts back something the borrower has since cleared. The SSN has its
-  // own rule (a full number only) in the effect above.
+  // never puts back something the borrower has since cleared. The SSN is left to
+  // the effect above, which takes it from the profile only when it is the full
+  // number.
   const profile = personalInfo
   const profilePrefilled = useRef(false)
   useEffect(() => {

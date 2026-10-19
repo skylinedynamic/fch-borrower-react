@@ -109,6 +109,7 @@ export default function FundingApplicationDetailsModal({ isOpen, toggle, applica
         <SectionCard title="Funding Request" icon="pi pi-chart-line">
           <DetailItem label="Requested Amount" value={application.requested_amount || 'N/A'} icon="pi pi-dollar" />
           <DetailItem label="Preferred Funding Type" value={application.preferred_funding_type} icon="pi pi-star" />
+          <DetailItem label="Additional Funding Types" value={application.additional_funding_types?.length ? application.additional_funding_types.join(', ') : 'N/A'} icon="pi pi-clone" />
           <DetailItem label="Timeframe Needed" value={application.timeframe_needed} icon="pi pi-hourglass" />
           <DetailItem label="Collateral Available" value={application.collateral_available} />
           <DetailItem label="Purpose of Funds" value={application.purpose_of_funds} fullWidth />

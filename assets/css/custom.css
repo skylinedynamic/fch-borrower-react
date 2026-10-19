@@ -5765,6 +5765,7 @@ File: Custom Css File
 .bank-copy-btn:active {
     transform: scale(0.95);
 }
+
 /* ─── Credit profile ──────────────────────────────────────────
    Built on the --ca-* tokens and the metric-card / slider-wrapper
    patterns above rather than a palette of its own, so this tab reads
@@ -5897,19 +5898,59 @@ File: Custom Css File
 
 /* ─── Band colours (fixed, see note above) ────────────────── */
 
-.cp-band-exceptional { color: #059669; }
-.cp-band-very-good   { color: #10b981; }
-.cp-band-good        { color: #65a30d; }
-.cp-band-fair        { color: #e49b0f; }
-.cp-band-poor        { color: #f06548; }
-.cp-band-unknown     { color: #94a3b8; }
+.cp-band-exceptional {
+    color: #059669;
+}
 
-.cp-pill-exceptional { color: #065f46; background: #d1fae5; }
-.cp-pill-very-good   { color: #065f46; background: #d1fae5; }
-.cp-pill-good        { color: #3f6212; background: #ecfccb; }
-.cp-pill-fair        { color: #854d0e; background: #fef3c7; }
-.cp-pill-poor        { color: #991b1b; background: #fee2e2; }
-.cp-pill-unknown     { color: #475569; background: #f1f5f9; }
+.cp-band-very-good {
+    color: #10b981;
+}
+
+.cp-band-good {
+    color: #65a30d;
+}
+
+.cp-band-fair {
+    color: #e49b0f;
+}
+
+.cp-band-poor {
+    color: #f06548;
+}
+
+.cp-band-unknown {
+    color: #94a3b8;
+}
+
+.cp-pill-exceptional {
+    color: #065f46;
+    background: #d1fae5;
+}
+
+.cp-pill-very-good {
+    color: #065f46;
+    background: #d1fae5;
+}
+
+.cp-pill-good {
+    color: #3f6212;
+    background: #ecfccb;
+}
+
+.cp-pill-fair {
+    color: #854d0e;
+    background: #fef3c7;
+}
+
+.cp-pill-poor {
+    color: #991b1b;
+    background: #fee2e2;
+}
+
+.cp-pill-unknown {
+    color: #475569;
+    background: #f1f5f9;
+}
 
 /* ─── The figures strip under the score ───────────────────── */
 
@@ -6012,9 +6053,17 @@ File: Custom Css File
     letter-spacing: -0.02em;
 }
 
-.cp-health-value.is-flagged { color: #f06548; }
-.cp-health-value.is-clear   { color: #1e293b; }
-.cp-health-value.is-unknown { color: #94a3b8; }
+.cp-health-value.is-flagged {
+    color: #f06548;
+}
+
+.cp-health-value.is-clear {
+    color: #1e293b;
+}
+
+.cp-health-value.is-unknown {
+    color: #94a3b8;
+}
 
 .cp-clean-banner {
     display: flex;
@@ -6195,7 +6244,7 @@ File: Custom Css File
     padding: 18px 20px;
 }
 
-.cp-form > .row {
+.cp-form>.row {
     margin-bottom: 8px;
 }
 
@@ -6212,7 +6261,7 @@ File: Custom Css File
     }
 }
 
-.cp-form > .mb-4 {
+.cp-form>.mb-4 {
     margin-top: 24px;
 }
 
@@ -6253,9 +6302,17 @@ File: Custom Css File
     background: #cbd5e1;
 }
 
-.cp-pull-cell[data-testid='last-pulled']::before { background: var(--ca-primary, #021f3c); }
-.cp-pull-cell.is-pending::before   { background: #f59e0b; }
-.cp-pull-cell.is-completed::before { background: #10b981; }
+.cp-pull-cell[data-testid='last-pulled']::before {
+    background: var(--ca-primary, #021f3c);
+}
+
+.cp-pull-cell.is-pending::before {
+    background: #f59e0b;
+}
+
+.cp-pull-cell.is-completed::before {
+    background: #10b981;
+}
 
 .cp-pull-icon {
     flex-shrink: 0;
@@ -6268,10 +6325,25 @@ File: Custom Css File
     font-size: 18px;
 }
 
-.cp-pull-icon.is-pulled    { color: var(--ca-primary, #021f3c); background: var(--ca-primary-light, #e8eef5); }
-.cp-pull-icon.is-pending   { color: #b45309; background: #fef3c7; }
-.cp-pull-icon.is-completed { color: #047857; background: #d1fae5; }
-.cp-pull-icon.is-none      { color: #64748b; background: #f1f5f9; }
+.cp-pull-icon.is-pulled {
+    color: var(--ca-primary, #021f3c);
+    background: var(--ca-primary-light, #e8eef5);
+}
+
+.cp-pull-icon.is-pending {
+    color: #b45309;
+    background: #fef3c7;
+}
+
+.cp-pull-icon.is-completed {
+    color: #047857;
+    background: #d1fae5;
+}
+
+.cp-pull-icon.is-none {
+    color: #64748b;
+    background: #f1f5f9;
+}
 
 .cp-pull-body {
     flex: 1;
@@ -6323,8 +6395,15 @@ File: Custom Css File
     letter-spacing: 0.05em;
 }
 
-.cp-request-pill.is-pending   { color: #92400e; background: #fef3c7; }
-.cp-request-pill.is-completed { color: #065f46; background: #d1fae5; }
+.cp-request-pill.is-pending {
+    color: #92400e;
+    background: #fef3c7;
+}
+
+.cp-request-pill.is-completed {
+    color: #065f46;
+    background: #d1fae5;
+}
 
 .cp-request-dot {
     width: 7px;
@@ -6335,12 +6414,21 @@ File: Custom Css File
 }
 
 @keyframes cp-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55); }
-    50%      { box-shadow: 0 0 0 5px rgba(245, 158, 11, 0); }
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55);
+    }
+
+    50% {
+        box-shadow: 0 0 0 5px rgba(245, 158, 11, 0);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .cp-request-dot { animation: none; }
+    .cp-request-dot {
+        animation: none;
+    }
 }
 
 @media (max-width: 576px) {
@@ -6351,14 +6439,174 @@ File: Custom Css File
 
 /* Tenant name shown in place of a logo that failed to load (BrandLogo.tsx). */
 .brand-logo-text {
-  max-width: 200px;
-  font-size: 18px;
-  line-height: 1.2;
-  vertical-align: middle;
-  color: var(--vz-vertical-menu-item-active-color, #fff);
+    max-width: 200px;
+    font-size: 18px;
+    line-height: 1.2;
+    vertical-align: middle;
+    color: var(--vz-vertical-menu-item-active-color, #fff);
 }
 
 .navbar-header .brand-logo-text,
 .auth-page-wrapper .brand-logo-text {
-  color: var(--vz-heading-color, #212529);
+    color: var(--vz-heading-color, #212529);
+}
+
+/*
+ * Several-at-once pickers - `.chip-multiselect` (components/Common/ChipMultiSelect):
+ * Purpose of Funds and Additional Funding Types on the funding application's
+ * Funding Request step, in both portals: 37.5px tall, 4px corners, chips that
+ * wrap a row at a time inside the field, no hover or focus colour, ticked
+ * boxes in the primary colour. Kept identical to the admin portal's copy.
+ */
+.chip-multiselect .p-multiselect {
+    position: relative; /* the appendTo="self" panel is placed against the field */
+    width: 100%;
+    border-color: #ced4da; /* the same at rest, on hover and on focus */
+    min-height: 37.5px;
+    height: auto;
+    border-radius: 4px;
+    align-items: center;
+}
+
+/* No hover or focus colour: the border and shadow stay as they are at rest -
+   on the field and on the search box in its list. */
+.chip-multiselect .p-multiselect:not(.p-disabled):hover,
+.chip-multiselect .p-multiselect:not(.p-disabled).p-focus,
+.chip-multiselect .p-multiselect:not(.p-disabled).p-inputwrapper-focus,
+.chip-multiselect-panel .p-multiselect-filter-container .p-inputtext:enabled:hover,
+.chip-multiselect-panel .p-multiselect-filter-container .p-inputtext:enabled:focus {
+    border-color: #ced4da;
+    box-shadow: none;
+    outline: 0 none;
+}
+
+.chip-multiselect .p-multiselect .p-multiselect-label-container {
+    overflow: visible;
+}
+
+.chip-multiselect .p-multiselect .p-multiselect-label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 8px;
+    white-space: normal;
+}
+
+.chip-multiselect .p-multiselect .p-multiselect-label.p-placeholder {
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--vz-secondary-color, #878a99);
+}
+
+.chip-multiselect .p-multiselect .p-multiselect-token {
+    flex-shrink: 0;
+    max-width: 100%;
+    margin: 0;
+    gap: 6px;
+    padding: 2px 6px 2px 10px;
+    border: 1px solid rgba(var(--vz-primary-rgb, 64, 81, 137), 0.18);
+    border-radius: 20px;
+    background: rgba(var(--vz-primary-rgb, 64, 81, 137), 0.1);
+    color: var(--vz-primary, #405189);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.chip-multiselect .p-multiselect .p-multiselect-token-label {
+    margin-right: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chip-multiselect .p-multiselect .p-multiselect-token-icon {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    border-radius: 50%;
+    color: var(--vz-primary, #405189);
+    font-size: 11px;
+    line-height: 16px;
+    text-align: center;
+    opacity: 0.65;
+    transition: all 0.15s ease-in-out;
+}
+
+.chip-multiselect .p-multiselect .p-multiselect-token-icon:hover {
+    background: var(--vz-primary, #405189);
+    color: #fff;
+    opacity: 1;
+}
+
+/* The list: pinned under the field at its width, search-only header. */
+.chip-multiselect .chip-multiselect-panel.p-multiselect-panel {
+    top: calc(100% + 3px) !important;
+    left: -1px !important;
+    width: calc(100% + 2px);
+    min-width: 0;
+    max-width: none;
+    border: 1px solid var(--vz-border-color, #e9ebec);
+    border-radius: 4px;
+    box-shadow: 0 5px 20px rgba(30, 32, 37, 0.12);
+    transform-origin: top !important;
+    z-index: 1056;
+}
+
+.chip-multiselect-panel .p-multiselect-header {
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--vz-border-color, #e9ebec);
+    border-radius: 4px 4px 0 0;
+    background: var(--vz-light, #f3f6f9);
+}
+
+.chip-multiselect-panel .p-multiselect-filter-container {
+    width: 100%;
+}
+
+.chip-multiselect-panel .p-multiselect-filter-container .p-inputtext {
+    width: 100%;
+    padding: 6px 10px 6px 30px;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.chip-multiselect-panel .p-multiselect-filter-container .p-multiselect-filter-icon {
+    right: auto;
+    left: 10px;
+    margin-top: -0.5rem;
+    color: var(--vz-secondary-color, #878a99);
+}
+
+.chip-multiselect-panel .p-multiselect-items-wrapper {
+    max-height: 240px;
+}
+
+.chip-multiselect-panel .p-multiselect-item {
+    margin: 2px 6px;
+    padding: 7px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* A ticked option's checkbox in the primary colour, not PrimeReact's blue.
+   !important only on the border: the global `.p-checkbox .p-checkbox-box`
+   rule above sets it with !important. */
+.chip-multiselect-panel .p-checkbox.p-highlight .p-checkbox-box,
+.chip-multiselect-panel .p-checkbox .p-checkbox-box.p-highlight {
+    border-color: var(--vz-primary, #405189) !important;
+    background: var(--vz-primary, #405189);
+}
+
+.chip-multiselect-panel .p-checkbox .p-checkbox-box {
+    box-shadow: none;
+}
+
+.chip-multiselect-panel .p-multiselect-item.p-highlight {
+    background: rgba(var(--vz-primary-rgb, 64, 81, 137), 0.1);
+    color: var(--vz-primary, #405189);
 }

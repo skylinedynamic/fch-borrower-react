@@ -11,7 +11,7 @@ import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils';
 import { INVOICE_STATUS_TYPES } from '../../config/invoiceStatusOptions';
 import { PARTNER_TYPES } from '../../config/partnerTypeOptions';
 import { FUNDING_APPLICATION_STATUS_CLASS_MAP } from '../../config/funding';
-import { useDashboard } from '../../modules/dashboard';
+import { useActiveFundingRequests, useDashboard } from '../../modules/dashboard';
 import { useCapitalAccessOverview } from '../../modules/capital-access/queries';
 import DashboardLoader from '../../components/Loader/DashboardLoader';
 
@@ -30,6 +30,7 @@ export default function Dashboard() {
 
     // Fetch dashboard data
     const { data: dashboardData, isLoading, error } = useDashboard();
+    const { data: activeFundingRequests } = useActiveFundingRequests();
 
     // Fetch capital access overview data
     const { data: overview } = useCapitalAccessOverview();
@@ -65,14 +66,15 @@ export default function Dashboard() {
         },
         {
             title: 'Total Requested Amount',
-            value: `$${(dashboardData.data.states.total_requested_amount / 1000).toFixed(0)}K`,
+            // Formatted by the API: $37.2M, $45,000.
+            value: dashboardData.data.states.total_requested_amount_formatted || '$0',
             iconClass: 'bx bx-wallet',
             iconBg: 'bg-soft-primary',
             iconColor: 'text-primary',
         },
         {
             title: 'Total Funded Amount',
-            value: dashboardData.data.states.total_funded_amount > 0 ? `$${(dashboardData.data.states.total_funded_amount / 1000).toFixed(0)}K` : '$0',
+            value: dashboardData.data.states.total_funded_amount_formatted || '$0',
             iconClass: 'las la-user-friends',
             iconBg: 'bg-soft-info',
             iconColor: 'text-info',
@@ -144,9 +146,10 @@ export default function Dashboard() {
     const isCertified = partnerType.includes('certified') || partnerType === PARTNER_TYPES.CERTIFIED.toLowerCase();
     const showAlert = (isRestricted || isWL || isCertified) && pendingInvoices.length > 0;
 
-    const activeApprovedRequests = dashboardData?.data?.active_approved_funding_requests || [];
-    const activeApprovedRequestCount = dashboardData?.data?.active_approved_funding_request_count || 0;
-    const currentActiveRequest = activeApprovedRequests[activeRequestIndex] || dashboardData?.data?.active_approved_funding_request;
+    // The same cached query as the layout's banner: no extra request.
+    const activeApprovedRequests = activeFundingRequests?.data?.active_approved_funding_requests || [];
+    const activeApprovedRequestCount = activeFundingRequests?.data?.active_approved_funding_request_count || 0;
+    const currentActiveRequest = activeApprovedRequests[activeRequestIndex] || activeFundingRequests?.data?.active_approved_funding_request;
 
     // Credit Score from API
     const ficoScore = dashboardData?.data.fico_score;

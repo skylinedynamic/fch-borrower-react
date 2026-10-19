@@ -35,3 +35,20 @@ describe('FundingApplicationDetailsModal', () => {
     expect(screen.getAllByText('N/A').length).toBeGreaterThan(0)
   })
 })
+
+describe('FundingApplicationDetailsModal — funding types', () => {
+  it('lists the additional funding types after the preferred one', () => {
+    render(
+      <FundingApplicationDetailsModal
+        isOpen
+        application={{ ...baseApplication, preferred_funding_type: 'Term Loan', additional_funding_types: ['SBA Loan', 'Line of Credit'] } as FundingApplication}
+        toggle={() => {}}
+      />
+    )
+
+    const preferred = screen.getByText('Preferred Funding Type')
+    const additional = screen.getByText('Additional Funding Types')
+    expect(preferred.compareDocumentPosition(additional) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.getByText('SBA Loan, Line of Credit')).toBeInTheDocument()
+  })
+})

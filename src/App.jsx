@@ -47,6 +47,7 @@ import ErrorPage from './pages/Utility/ErrorPage.jsx'
 import { fetchBorrowerTheme } from './modules/settings/services'
 import { useBrandingStore } from './store/brandingStore'
 import { applyBrandTheme } from './utils/brandingTheme'
+import { applyPortalMeta } from './utils/portalMeta'
 
 export default function App() {
   const { setBranding } = useBrandingStore()
@@ -58,19 +59,8 @@ export default function App() {
         setBranding(res.data.branding);
         const branding = res.data.branding;
 
-        const pageTitle = branding.meta_title || branding.site_name;
-        if (pageTitle) {
-          document.title = pageTitle;
-        }
-
-        const faviconUrl = branding.favicon_full_url || branding.favicon;
-        if (faviconUrl && faviconUrl !== 'null') {
-          document.querySelectorAll("link[rel~='icon']").forEach(el => el.remove());
-          const link = document.createElement('link');
-          link.rel = 'icon';
-          link.href = faviconUrl.includes('?') ? `${faviconUrl}&_t=${Date.now()}` : `${faviconUrl}?_t=${Date.now()}`;
-          document.head.appendChild(link);
-        }
+        // Title, description, preview tags and favicon, as the partner's.
+        applyPortalMeta(branding);
 
         // Every brand colour, including the derived contrast tokens that keep
         // text readable on a light brand colour.
