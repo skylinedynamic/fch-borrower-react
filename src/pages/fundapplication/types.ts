@@ -78,6 +78,8 @@ export type FundingRequest = {
   purposeNote?: string
   approvedFunding: string
   fundingType: string
+  /** The other funding types the applicant would also consider. */
+  additionalFundingTypes?: string[]
   timeframe: string
   collateral: string
   is_funding_request_saved?: boolean

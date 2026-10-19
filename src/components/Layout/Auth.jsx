@@ -5,6 +5,7 @@ import { fetchBranding } from '../../modules/auth/services'
 import { applyBrandTheme } from '../../utils/brandingTheme'
 import { resolveBrandLogo } from '../../utils/brandLogo'
 import BrandLogo from './BrandLogo'
+import { applyPortalMeta } from '../../utils/portalMeta'
 
 export default function Auth({ header, children, belowCard, colClass = 'col-xl-5 col-lg-6 col-md-8', bodyClass }) {
   const location = useLocation()
@@ -34,17 +35,8 @@ export default function Auth({ header, children, belowCard, colClass = 'col-xl-5
           // The server's precomputed map is passed through so this matches what
           // /api/branding.css already painted before React mounted.
           applyBrandTheme(data, payload?.cssVars)
-          const faviconUrl = data.favicon_full_url || data.favicon || data.website_favicon
-          if (faviconUrl && faviconUrl !== 'null') {
-            document.querySelectorAll("link[rel~='icon']").forEach(el => el.remove())
-            const link = document.createElement('link')
-            link.rel = 'icon'
-            link.href = faviconUrl.includes('?') ? `${faviconUrl}&_t=${Date.now()}` : `${faviconUrl}?_t=${Date.now()}`
-            document.head.appendChild(link)
-          }
-          if (data.site_name || data.meta_title) {
-            document.title = data.meta_title || data.site_name
-          }
+          // Title, description, preview tags and favicon, as the partner's.
+          applyPortalMeta(data)
         }
       })
       .catch((err) => {

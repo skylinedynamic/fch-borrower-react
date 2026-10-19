@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
 import { toast } from 'react-toastify'
@@ -175,6 +175,33 @@ export default function CreditProfileTab() {
       }))
     }
   }, [submittedData])
+
+  // A form with nothing to start from asks the borrower for their address a
+  // second time, so the blanks are filled from their profile. Only the blanks:
+  // an earlier request is the more specific record and has already been applied
+  // by the time `initialized` turns true. Once, so a refetch of the profile
+  // never puts back something the borrower has since cleared. The SSN is left to
+  // the effect above, which takes it from the profile only when it is the full
+  // number.
+  const profile = personalInfo
+  const profilePrefilled = useRef(false)
+  useEffect(() => {
+    if (!initialized || !profile || profilePrefilled.current) return
+    profilePrefilled.current = true
+    setFormData(prev => ({
+      ...prev,
+      first_name: prev.first_name || profile.first_name || '',
+      middle_name: prev.middle_name || profile.middle_name || '',
+      last_name: prev.last_name || profile.last_name || '',
+      address: prev.address || profile.home_address || '',
+      city: prev.city || profile.city || '',
+      state: prev.state || profile.state || '',
+      zip: prev.zip || formatZipCode(profile.zip_code || ''),
+      date_of_birth: prev.date_of_birth || (profile.date_of_birth ? profile.date_of_birth.substring(0, 10) : ''),
+      phone: prev.phone || formatPhoneNumber(profile.phone_number || ''),
+      email: prev.email || profile.email || '',
+    }))
+  }, [initialized, profile])
 
   // If credit_profile_updated flag is set, fetch credit profile data.
   // If not set, mark as initialized immediately so the form shows right away.

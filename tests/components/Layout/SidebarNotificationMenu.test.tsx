@@ -7,7 +7,7 @@ import { useAuthStore } from '../../../src/store/auth'
 import { PARTNER_TYPES } from '../../../src/config/partnerTypeOptions'
 
 vi.mock('../../../src/modules/dashboard', () => ({
-  useDashboard: () => ({ data: null, isLoading: false }),
+  useActiveFundingRequests: () => ({ data: null, isLoading: false }),
 }))
 
 let countRequests = 0
@@ -19,7 +19,7 @@ const unread = (count: number) =>
     })
   )
 
-describe('Sidebar "Notification" menu', () => {
+describe('Sidebar "Notifications" menu', () => {
   beforeEach(() => {
     countRequests = 0
     useAuthStore.setState({ token: 't', user: { id: 1, name: 'Odessa Mccall' }, userSubscription: null } as never)
@@ -30,7 +30,7 @@ describe('Sidebar "Notification" menu', () => {
     renderWithProviders(<Sidebar />)
 
     // The menu re-renders once the count arrives, so find the link by its final name.
-    const link = await screen.findByRole('link', { name: /^notification\s*4$/i })
+    const link = await screen.findByRole('link', { name: /^notifications\s*4$/i })
     expect(link).toHaveAttribute('href', '/notifications')
   })
 
@@ -40,8 +40,8 @@ describe('Sidebar "Notification" menu', () => {
 
     await waitFor(() => expect(countRequests).toBeGreaterThan(0))
 
-    // Exactly "Notification": no "0" badge appended.
-    expect(await screen.findByRole('link', { name: /^notification$/i })).toHaveAttribute('href', '/notifications')
+    // Exactly "Notifications": no "0" badge appended.
+    expect(await screen.findByRole('link', { name: /^notifications$/i })).toHaveAttribute('href', '/notifications')
   })
 
   it('stays open on a restricted account (the bell works there too)', () => {
@@ -53,7 +53,7 @@ describe('Sidebar "Notification" menu', () => {
     const hasLock = (link: HTMLElement) => !!link.querySelector('.ri-lock-line')
     // Sanity check: the account really is restricted (Documents is locked) ...
     expect(hasLock(screen.getByRole('link', { name: /^documents/i }))).toBe(true)
-    // ... but Notification is not.
+    // ... but Notifications is not.
     expect(hasLock(screen.getByRole('link', { name: /^notification/i }))).toBe(false)
     expect(container.querySelector('a[href="/notifications"]')).not.toBeNull()
   })
