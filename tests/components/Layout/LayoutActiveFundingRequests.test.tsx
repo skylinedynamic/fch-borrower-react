@@ -1,5 +1,13 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { http, HttpResponse } from 'msw'
+
+// No real socket: otherwise the test connects to whatever Reverb is running on
+// the machine (VITE_REVERB_* from .env), and its result depends on that.
+vi.mock('../../../src/lib/realtime/echo', () => ({
+  getEcho: () => null,
+  disconnectEcho: () => {},
+  userChannelName: (id: number | string) => `App.Models.User.${id}`,
+}))
 import { Route, Routes } from 'react-router-dom'
 import { renderWithProviders, screen } from '../../test-utils'
 import { server } from '../../mocks/server'

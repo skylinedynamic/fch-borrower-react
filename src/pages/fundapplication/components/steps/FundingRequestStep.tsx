@@ -7,7 +7,7 @@ import CustomDropdown from '../../../../components/Common/CustomDropdown'
 import { purposeOfFundingOptions, fundingTypeOptions, timeframeOptions, collateralOptions, FUNDING_PURPOSE_OTHER, additionalFundingTypeOptions, withoutPreferredFundingType, splitPurposes, joinPurposes } from '../../../../data/profile'
 import ChipMultiSelect from '../../../../components/Common/ChipMultiSelect'
 import { useFundingRequest, useSaveFundingRequest } from '../../../../modules/funding-application/queries'
-import { isEditConfirmationCancelled } from '../../../../modules/funding-application/editConfirmation'
+import { reportSaveFailure } from '../../../../modules/funding-application/saveFeedback'
 import { toast } from 'react-toastify'
 import { formatCurrency, unformatCurrency } from '../../../../utils/formatters'
 import { useQuery } from '@tanstack/react-query'
@@ -146,17 +146,11 @@ export default function FundingRequestStep({
       toast.success('Funding request information saved successfully!')
       return true
     } catch (error: any) {
-      // The borrower backed out of the re-signature confirmation - nothing was
-      // attempted, so say nothing.
-      if (isEditConfirmationCancelled(error)) return false
-
-      console.error('Error saving funding request:', error)
-      const errors = error.response?.data?.errors
-      if (errors) {
-        setValidationErrors(errors)
-      } else {
-        toast.error(error?.response?.data?.message || 'Failed to save funding request')
-      }
+      // Every outcome gets a message: cancelled, validation, or failure.
+      reportSaveFailure(error, {
+        fallbackMessage: 'Failed to save funding request',
+        onFieldErrors: setValidationErrors,
+      })
       return false
     }
   }, [fundingRequestId, effectiveRequestId, apiData, fundingSequenceId, funding, hasOtherPurpose, saveMutation])

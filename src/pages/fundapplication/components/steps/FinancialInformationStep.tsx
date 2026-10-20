@@ -8,7 +8,7 @@ import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 import CustomDropdown from '../../../../components/Common/CustomDropdown'
 import { selfReportedCreditScoreOptions, selfReportedBusinessCreditScoreOptions } from '../../../../data/profile'
 import { useFinancialInfo, useSaveFinancialInfo } from '../../../../modules/funding-application/queries'
-import { isEditConfirmationCancelled } from '../../../../modules/funding-application/editConfirmation'
+import { reportSaveFailure } from '../../../../modules/funding-application/saveFeedback'
 import { toast } from 'react-toastify'
 import { formatCurrency, unformatCurrency } from '../../../../utils/formatters'
 
@@ -73,16 +73,11 @@ export default function FinancialInformationStep({
       toast.success('Financial information saved successfully!')
       return true
     } catch (error: any) {
-      // The borrower backed out of the re-signature confirmation - nothing was
-      // attempted, so say nothing.
-      if (isEditConfirmationCancelled(error)) return false
-
-      const errors = error.response?.data?.errors
-      if (errors) {
-        setValidationErrors(errors)
-      } else {
-        toast.error(error.response?.data?.message || 'Failed to save financial information. Please try again.')
-      }
+      // Every outcome gets a message: cancelled, validation, or failure.
+      reportSaveFailure(error, {
+        fallbackMessage: 'Failed to save financial information. Please try again.',
+        onFieldErrors: setValidationErrors,
+      })
       return false
     }
   }, [financial, saveFinancialInfo])

@@ -9,8 +9,10 @@ import { createTestQueryClient } from '../../../../test-utils'
 import OwnershipInformationStep from '../../../../../src/pages/fundapplication/components/steps/OwnershipInformationStep'
 import type { OwnerInfo, CoBorrower } from '../../../../../src/pages/fundapplication/types'
 import { countries, clearLocationCache } from '../../../../../src/modules/location'
+import { toast } from 'react-toastify'
+import { VALIDATION_ERROR_MESSAGE } from '../../../../../src/modules/funding-application/saveFeedback'
 
-vi.mock('react-toastify', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
+vi.mock('react-toastify', () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }))
 
 // react-flatpickr wraps the vanilla flatpickr library, which schedules async
 // DOM-manipulation timeouts (via the app's custom yearDropdownPlugin) that
@@ -213,5 +215,41 @@ describe('OwnershipInformationStep — when the country list never loaded', () =
     // CustomDropdown, which renders the selected option as its label text
     // rather than as an input value.
     expect(await screen.findByText('United States')).toBeInTheDocument()
+  })
+})
+
+describe('OwnershipInformationStep — save messages', () => {
+  beforeEach(() => {
+    clearLocationCache()
+    countries.push({ name: 'United States', code: 'USA', currency: 'USD', phone_code: '+1', flag: '', states: [] })
+  })
+
+  afterEach(() => {
+    server.resetHandlers()
+    vi.clearAllMocks()
+    clearLocationCache()
+  })
+
+  /**
+   * Defect: a validation error (422) only highlighted the fields - no message,
+   * so the borrower clicked Save and saw nothing happen.
+   */
+  it('shows a message, not just highlighted fields, when the save fails validation', async () => {
+    server.use(
+      http.get('*/borrower/funding-application/ownership-info', () => HttpResponse.json({ status: true, data: {} })),
+      http.post('*/borrower/funding-application/ownership-info', () =>
+        HttpResponse.json(
+          { status: false, message: 'The ssn field is required.', errors: { ssn: ['The ssn field is required.'] } },
+          { status: 422 }
+        )
+      )
+    )
+    const { getSave } = renderStep()
+    await screen.findByPlaceholderText('xxx-xx-xxxx')
+
+    await expect(getSave()!()).resolves.toBe(false)
+
+    expect(toast.error).toHaveBeenCalledWith(VALIDATION_ERROR_MESSAGE, expect.anything())
+    expect(await screen.findByText('The ssn field is required.')).toBeInTheDocument()
   })
 })
