@@ -8,7 +8,7 @@ import CoBorrowerTable from '../shared/CoBorrowerTable'
 import CustomDropdown from '../../../../components/Common/CustomDropdown'
 import { countries } from '../../../../modules/location'
 import { useOwnershipInfo, useSaveOwnershipInfo } from '../../../../modules/funding-application/queries'
-import { isEditConfirmationCancelled } from '../../../../modules/funding-application/editConfirmation'
+import { reportSaveFailure } from '../../../../modules/funding-application/saveFeedback'
 import { citizenshipOptions } from '../../../../data/profile'
 import { toast } from 'react-toastify'
 import { formatPhoneNumber, formatSSN, unformatSSN, formatZipCode } from '../../../../utils/formatters'
@@ -113,16 +113,11 @@ export default function OwnershipInformationStep({
       toast.success('Ownership information saved successfully!')
       return true
     } catch (error: any) {
-      // The borrower backed out of the re-signature confirmation - nothing was
-      // attempted, so say nothing.
-      if (isEditConfirmationCancelled(error)) return false
-
-      const errors = error.response?.data?.errors
-      if (errors) {
-        setValidationErrors(errors)
-      } else {
-        toast.error(error.response?.data?.message || 'Failed to save ownership information. Please try again.')
-      }
+      // Every outcome gets a message: cancelled, validation, or failure.
+      reportSaveFailure(error, {
+        fallbackMessage: 'Failed to save ownership information. Please try again.',
+        onFieldErrors: setValidationErrors,
+      })
       return false
     }
   }, [owner, coBorrowers, saveOwnershipInfo])
