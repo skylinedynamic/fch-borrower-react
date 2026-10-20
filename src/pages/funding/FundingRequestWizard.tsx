@@ -9,6 +9,7 @@ import { useDocumentTypes, useBorrowerDocuments } from '../../modules/documents'
 import { FileManagerModal } from '../../components/FileManagerModal/FileManagerModal';
 import { submitFileSelection } from '../../modules/filemanager/services';
 import DeleteConfirmationModal from '../../components/GlobalModal/DeleteConfirmModal';
+import ConfirmationModal from '../../components/GlobalModal/ConfirmationModal';
 import type { FileSystemItem } from '../../modules/filemanager/types';
 import { PdfIcon, FileIcon } from '../../components/FileManagerModal/Icons';
 import '../../../assets/css/funding.css';
@@ -18,7 +19,7 @@ import { apiClient } from '../../lib/http';
 import { queryKeys } from '../../lib/query';
 import { useBusinessDetails, useFinancialInfo } from '../../modules/profile/queries';
 import type { BusinessDetailsData, FinancialInfoData } from '../../modules/profile/types';
-import { FUNDING_WIZARD_STEPS, FUNDING_REVIEW_STATUS, FACTOR_STATUS_VALUES } from '../../config/funding';
+import { FUNDING_WIZARD_STEPS, FACTOR_STATUS_VALUES } from '../../config/funding';
 import { useBrandingStore } from '../../store/brandingStore';
 const steps = FUNDING_WIZARD_STEPS;
 
@@ -29,6 +30,7 @@ const FundingRequestWizard = () => {
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
     const [fundingDetail, setFundingDetail] = useState<any>(null);
     const [submitDate, setSubmitDate] = useState('');
     const isRedirecting = React.useRef(false);
@@ -141,42 +143,9 @@ const FundingRequestWizard = () => {
                         });
                     }
 
-                    if (res.data.latest_review_status === FUNDING_REVIEW_STATUS.PENDING) {
-                        if (!isRedirecting.current) {
-                            isRedirecting.current = true;
-                            toast.warning('Already applied. Please wait for approval or rejection.');
-                            navigate(`/funding/${id}`, { replace: true });
-                        }
-                        return;
-                    }
-
-                    // An approved request normally means "go and finish that
-                    // application". Not when that application has already left
-                    // the borrower's hands - past the editable statuses: with a
-                    // lender, funded, closed or denied. That round is over, so
-                    // this is a new request and the wizard stays here. Sending
-                    // them to /fund-application instead opened an old application
-                    // and asked whether they wanted to edit it.
-                    const previousRoundSettled = Boolean(res.data.can_start_new_funding_request);
-
-                    if (res.data.latest_review_status === FUNDING_REVIEW_STATUS.APPROVED && !previousRoundSettled) {
-                        if (!isRedirecting.current) {
-                            isRedirecting.current = true;
-                            toast.success('Your funding request is already approved! Please proceed with the application.');
-                            navigate('/fund-application', {
-                                replace: true,
-                                state: {
-                                    purpose: initialPurpose,
-                                    amount: initialAmount,
-                                    requested_amount: initialAmount,
-                                    approved_funding: res.data.name || res.data.funding_type,
-                                    funding_type: res.data.funding_type || res.data.name,
-                                    funding_sequence_id: id,
-                                    funding_request_id: res.data.latest_review_id,
-                                }
-                            });
-                        }
-                    }
+                    // Every funding request is a new one. An earlier request or
+                    // application for this option (pending, approved, on hold,
+                    // ...) neither redirects the borrower nor fills this form.
 
                     if (isHidden || hasMissingFactors) {
                         if (!isRedirecting.current) {
@@ -208,17 +177,12 @@ const FundingRequestWizard = () => {
                             defaultUse = typeof firstObj === 'object' ? (firstObj.value || firstObj.name || firstObj.label) : String(firstObj);
                         }
 
-                        // The last request's amount and purpose are carried over
-                        // only while that request is still the one in play (it
-                        // was rejected and is being re-submitted, say). Once its
-                        // application is settled this is a new request, and it
-                        // starts empty - nothing from the closed round is reused.
-                        const lastAmount = previousRoundSettled ? '' : res.data.latest_requested_amount;
-                        const lastPurpose = previousRoundSettled ? '' : res.data.latest_use_of_funds;
-
-                        const newAmountRaw = prev.requested_amount || lastAmount || '';
+                        // Nothing from an earlier request is carried over: the
+                        // form starts from what was passed in to this page (if
+                        // anything) and the option's default uses.
+                        const newAmountRaw = prev.requested_amount || '';
                         const newAmount = newAmountRaw ? String(newAmountRaw).replace(/[^0-9.]/g, '') : '';
-                        let newPurpose: any = lastPurpose || prev.use_of_funds;
+                        let newPurpose: any = prev.use_of_funds;
 
                         if (!newPurpose || (Array.isArray(newPurpose) && newPurpose.length === 0)) {
                             if (Array.isArray(parsedUsesArray) && parsedUsesArray.length > 0) {
@@ -354,9 +318,20 @@ const FundingRequestWizard = () => {
         : [];
     const uploadedCount = requiredDocTypes.length - missingDocs.length;
 
+    // "Submit for Underwriting" asks for confirmation first; the request is
+    // only sent once the borrower confirms in the modal.
+    const openSubmitConfirm = () => {
+        if (isDocsRequired && missingDocs.length > 0) {
+            toast.error('Please upload all required documents before submitting.');
+            return;
+        }
+        setShowSubmitConfirm(true);
+    };
+
     const handleSubmit = async () => {
         if (isDocsRequired && missingDocs.length > 0) {
             toast.error('Please upload all required documents before submitting.');
+            setShowSubmitConfirm(false);
             return;
         }
 
@@ -378,8 +353,10 @@ const FundingRequestWizard = () => {
             if (reviewData?.reviewer?.name) {
                 setDynamicReviewerName(reviewData.reviewer.name);
             }
+            setShowSubmitConfirm(false);
             setCurrentStep(4);
         } catch (error: any) {
+            setShowSubmitConfirm(false);
             toast.error(error.response?.data?.message || 'Failed to submit funding request');
         } finally {
             setSubmitting(false);
@@ -414,6 +391,19 @@ const FundingRequestWizard = () => {
                 onConfirm={confirmDelete}
                 loading={deleteFundingDocumentMutation.isPending}
                 text={`Are you sure you want to delete "${documentToDelete?.name}"? This action cannot be undone.`}
+            />
+            <ConfirmationModal
+                show={showSubmitConfirm}
+                onClose={() => setShowSubmitConfirm(false)}
+                onConfirm={handleSubmit}
+                title="Submit for Underwriting"
+                message="Are you sure you want to submit this funding request for underwriting? Please review your request details and documents before confirming."
+                confirmText="Yes, Submit"
+                loading={submitting}
+                loadingText="Submitting..."
+                iconClass="ri-question-line"
+                iconBgClass="bg-warning-subtle"
+                iconTextClass="text-warning"
             />
             <div className="container-fluid">
 
@@ -998,7 +988,7 @@ const FundingRequestWizard = () => {
                                             <button
                                                 className={`btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4`}
                                                 style={(submitting || (isDocsRequired && missingDocs.length > 0)) ? { opacity: 0.5, pointerEvents: 'none' } : {}}
-                                                onClick={handleSubmit}
+                                                onClick={openSubmitConfirm}
                                                 disabled={submitting || (isDocsRequired && missingDocs.length > 0)}
                                             >
                                                 {submitting ? (
