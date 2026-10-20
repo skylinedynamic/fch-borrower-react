@@ -77,6 +77,11 @@ export const queryKeys = {
     all: ['agreement'] as const,
     check: () => [...queryKeys.agreement.all, 'check'] as const,
   },
+  account: {
+    all: ['account'] as const,
+    emailChangeLink: (action: string, user: string, hash: string, query: string) =>
+      [...queryKeys.account.all, 'emailChangeLink', action, user, hash, query] as const,
+  },
   notifications: {
     all: ['notifications'] as const,
     lists: () => [...queryKeys.notifications.all, 'list'] as const,
