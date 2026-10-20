@@ -11,6 +11,7 @@ import { countries as countriesData } from '../../../modules/location'
 
 import { formatPhoneNumber, unformatPhoneNumber, formatZipCode, formatSSN, unformatSSN, SSN_DIGITS } from '../../../utils/formatters'
 import SsnField from './SsnField'
+import PendingEmailNotice from './PendingEmailNotice'
 import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
 import { useAuth } from '../../../hooks/useAuth'
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
@@ -355,6 +356,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
           {hasError('email') && (
             <div className="invalid-feedback d-block">{getFieldError('email')}</div>
           )}
+          <PendingEmailNotice pendingEmail={apiData?.pending_email} />
         </div>
         <div className="col-md-6">
           <label className="form-label">Phone Number <span className="text-danger">*</span></label>
