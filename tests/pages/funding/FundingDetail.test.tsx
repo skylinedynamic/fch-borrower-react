@@ -10,18 +10,14 @@ afterEach(() => server.resetHandlers())
 /**
  * The call-to-action on a funding option's detail page.
  *
- * The page has to distinguish two situations that look identical in the raw
- * data - the borrower has an application for this option, and the last request
- * was approved - but mean opposite things:
+ * Every funding request is a new one. Whatever the borrower already has for
+ * this option - a pending request, an approved one, an application On Hold or
+ * in review, or one that is settled - the card offers "Start Funding Request"
+ * and links into a fresh wizard. It never offers "Edit Application",
+ * "View Application" or "Process Application" for an earlier round.
  *
- *   still running  -> the application is theirs to work on: show it to them.
- *   settled        -> it has left their hands (with a lender, funded, closed,
- *                     denied), so there is nothing left to open. Offering
- *                     "View Application" parks them on a file they cannot act
- *                     on; what they actually want is to apply again.
- *
- * The server decides which it is and says so in `can_start_new_funding_request`,
- * so the page never has to carry its own copy of the status list.
+ * Only eligibility (a hidden option, or missing underwriting factors) stops the
+ * borrower from starting.
  */
 
 const detail = (overrides: Record<string, unknown> = {}) => ({
@@ -65,48 +61,72 @@ const renderDetail = (overrides: Record<string, unknown> = {}) => {
   )
 }
 
+const expectOnlyANewRequest = async () => {
+  const start = await screen.findByRole('link', { name: /start funding request/i })
+  expect(start).toHaveAttribute('href', '/funding/2/review')
+  expect(screen.queryByRole('link', { name: /edit application/i })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /view application/i })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /process application/i })).not.toBeInTheDocument()
+  expect(screen.getByText(/start your funding request/i)).toBeInTheDocument()
+}
+
 describe('FundingDetail call to action', () => {
-  it('points the borrower at an application that is still theirs to work on', async () => {
+  /**
+   * Defect: an On Hold application for this option turned the card into
+   * "Edit Application" ("Your funding application is On Hold. You can still
+   * review and edit it.") instead of starting a new request.
+   */
+  it('starts a new request even while an application is still editable', async () => {
+    renderDetail({
+      has_funding_application: true,
+      can_start_new_funding_request: false,
+      funding_application_is_editable: true,
+      funding_application_status: 'On Hold',
+      funding_application_funding_request_id: 7,
+    })
+
+    await expectOnlyANewRequest()
+    expect(screen.queryByText(/you can still review and edit it/i)).not.toBeInTheDocument()
+  })
+
+  /** Defect: an application in review offered "View Application" instead. */
+  it('starts a new request even while an application is in review', async () => {
     renderDetail({ has_funding_application: true, can_start_new_funding_request: false })
 
-    expect(await screen.findByRole('link', { name: /view application/i })).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: /start funding request/i })).not.toBeInTheDocument()
+    await expectOnlyANewRequest()
   })
 
-  it('offers a fresh request once the previous application has left the borrower\'s hands', async () => {
-    // Approved request, application exists - but it is with a lender, funded,
-    // closed or denied, so the server says a new request is allowed.
+  it('starts a new request once the previous application is settled', async () => {
     renderDetail({ has_funding_application: true, can_start_new_funding_request: true })
 
-    expect(await screen.findByRole('link', { name: /start funding request/i })).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: /view application/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: /process application/i })).not.toBeInTheDocument()
+    await expectOnlyANewRequest()
   })
 
-  it('stops telling the borrower to finish an application that is already settled', async () => {
-    renderDetail({ has_funding_application: true, can_start_new_funding_request: true })
-
-    expect(await screen.findByRole('link', { name: /start funding request/i })).toBeInTheDocument()
-    expect(screen.queryByText(/please proceed with the final funding application/i)).not.toBeInTheDocument()
-    expect(screen.getByText(/start your funding request/i)).toBeInTheDocument()
-  })
-
-  it('still sends an approved request with no application yet to the application form', async () => {
+  /** Defect: an approved request with no application yet offered "Process Application". */
+  it('starts a new request even when an earlier request is approved', async () => {
     renderDetail({ has_funding_application: false, can_start_new_funding_request: false })
 
-    expect(await screen.findByRole('link', { name: /process application/i })).toBeInTheDocument()
+    await expectOnlyANewRequest()
   })
 
-  it('leaves a pending request waiting rather than offering anything', async () => {
+  /** Defect: a pending request disabled the button ("Already applied"). */
+  it('starts a new request even when an earlier request is pending', async () => {
     renderDetail({
       latest_review_status: 'Pending',
       has_funding_application: false,
       can_start_new_funding_request: false,
     })
 
-    // The call to action is still labelled, but rendered as a disabled span
-    // rather than a link - there is nothing to do until the request is decided.
+    await expectOnlyANewRequest()
+    expect(screen.queryByText(/already applied/i)).not.toBeInTheDocument()
+  })
+
+  it('does not let the borrower start when the option is not available to them', async () => {
+    renderDetail({ engine_status: 'Hidden', latest_review_status: null, has_funding_application: false })
+
+    // Still labelled, but a disabled span rather than a link.
     expect(await screen.findByText('Start Funding Request')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /start funding request/i })).not.toBeInTheDocument()
+    expect(screen.getByText(/not available for your profile/i)).toBeInTheDocument()
   })
 })

@@ -8,6 +8,16 @@ import type { AppNotification, NotificationBroadcast, NotificationsReadBroadcast
 
 const READ_EVENT = '.notification.read'
 
+// Sent to the borrower when the host or a partner changes a funding request's
+// status (Approved included). The approved banner and the sidebar badge read
+// GET /borrower/active-funding-requests, cached for 5 minutes - so this push
+// calls that endpoint straight away, otherwise the banner only showed after the
+// cache expired or a hard reload.
+const FUNDING_REQUEST_STATUS_CHANGED = 'borrower.funding_request.status_changed'
+
+const refreshActiveFundingRequests = (queryClient: ReturnType<typeof useQueryClient>) =>
+  queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.activeFundingRequests() })
+
 /**
  * Subscribes the signed-in user's private channel to:
  * - new notifications (Laravel BroadcastNotificationCreated) -> cache + onNotification
@@ -40,6 +50,9 @@ export function useNotificationStream(onNotification?: (notification: AppNotific
     const handleNotification = (payload: NotificationBroadcast) => {
       const notification = fromBroadcast(payload)
       addIncomingNotification(queryClient, notification)
+      if (notification.type === FUNDING_REQUEST_STATUS_CHANGED) {
+        refreshActiveFundingRequests(queryClient)
+      }
       onNotificationRef.current?.(notification)
     }
     const handleRead = (payload: NotificationsReadBroadcast) => {
@@ -51,12 +64,21 @@ export function useNotificationStream(onNotification?: (notification: AppNotific
 
     const connection = (echo.connector as any)?.pusher?.connection
     let wasConnected = connection?.state === 'connected'
+    // Whether the socket has been up at least once since this mounted: the
+    // first connection on page load is not a reconnect.
+    let hasConnectedBefore = wasConnected
     setConnected(wasConnected)
 
     const handleStateChange = ({ current }: { current: string }) => {
       const isConnected = current === 'connected'
       if (isConnected && !wasConnected) {
         queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all })
+        if (hasConnectedBefore) {
+          // Back after a drop: an approval may have been missed while offline.
+          // Not on the first connect - the page has just loaded it.
+          refreshActiveFundingRequests(queryClient)
+        }
+        hasConnectedBefore = true
       }
       wasConnected = isConnected
       setConnected(isConnected)
