@@ -50,48 +50,6 @@ describe('usePreQualificationForm', () => {
     expect(result.current.personalErrors).toEqual({})
   })
 
-  // Defect (BUG-036, CP-PREQ-09): "Previous" (and the Personal Info tab) on
-  // Business Details did nothing - going back first validated and saved the
-  // business step, so empty or partly filled fields kept the borrower there.
-  it('goes back from Business Details to Personal Info without saving, keeping what was typed', async () => {
-    server.use(http.get('*/borrower/pre-qualification', () => HttpResponse.json({ status: true, data: null })))
-    server.use(
-      http.post('*/borrower/pre-qualification/personal-info', () => HttpResponse.json({ status: true, data: { id: 'preq-1' } }))
-    )
-    let businessSaves = 0
-    server.use(
-      http.post('*/borrower/pre-qualification/business-info', () => {
-        businessSaves += 1
-        return HttpResponse.json({ status: false, message: 'Validation Error', errors: { business_name: ['The business name field is required.'] } }, { status: 422 })
-      })
-    )
-
-    const { result } = renderPreQualForm()
-    await waitFor(() => expect(result.current.loading).toBe(false))
-    act(() => {
-      result.current.setPersonal({
-        firstName: 'Jane', lastName: 'Borrower', email: 'jane@example.com', countryCode: 'USA (+1)',
-        phoneNumber: '(512) 555-0100', businessWebsite: '', stateOfIncorporation: 'Texas',
-      })
-    })
-    await act(async () => {
-      await result.current.handlePersonalInfoSubmit()
-    })
-    expect(result.current.step).toBe(1)
-
-    act(() => {
-      result.current.setBusiness({ ...result.current.business, industryType: 'Retail' })
-    })
-    await act(async () => {
-      await result.current.handleTabClick(0)
-    })
-
-    expect(result.current.step).toBe(0)
-    expect(businessSaves).toBe(0)
-    expect(result.current.personal.firstName).toBe('Jane')
-    expect(result.current.business.industryType).toBe('Retail')
-  })
-
   it('maps snake_case API validation errors to their camelCase form fields', async () => {
     server.use(
       http.get('*/borrower/pre-qualification', () => HttpResponse.json({ status: true, data: null })),

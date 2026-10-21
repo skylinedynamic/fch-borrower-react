@@ -163,9 +163,6 @@ export interface FundingApplication {
   application_number: string | null
   borrower_id: number
   status: string
-  /** The request an On Hold application is continued from. */
-  funding_request_id?: number | null
-  is_editable?: boolean
   full_name: string
   business_name: string
   business_email: string

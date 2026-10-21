@@ -380,15 +380,6 @@ export const usePreQualificationForm = () => {
   const handleTabClick = async (targetStep: number) => {
     if (targetStep === step) return
 
-    // Going back never saves the step being left: its fields may be empty or
-    // half filled, and saving first kept the borrower stuck on it (BUG-036).
-    // What was typed stays in state and is saved on the way forward.
-    if (targetStep < step) {
-      setStep(targetStep)
-      setMobileOpenIdx(targetStep)
-      return
-    }
-
     if (step === 0 && targetStep !== 0) {
       await handlePersonalInfoSubmit(targetStep)
       return
