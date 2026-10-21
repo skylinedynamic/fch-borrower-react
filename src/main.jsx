@@ -1,6 +1,5 @@
 import React from 'react'
-import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClient } from './lib/query'
+import { AppProviders } from './AppProviders'
 // PrimeReact styles
 import 'primereact/resources/themes/saga-blue/theme.css'
 import 'primereact/resources/primereact.min.css'
@@ -9,7 +8,6 @@ import 'primeicons/primeicons.css'
 // emitted after index.html's <link>s, so this also wins over custom.min.css.
 import '../assets/css/primereact-calendar.css'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import { loadLocations } from './modules/location'
 import { applyCalendarLocale } from './config/calendarLocale'
@@ -27,11 +25,9 @@ const root = createRoot(container)
 const render = () =>
   root.render(
     <React.StrictMode>
-      <BrowserRouter>
-        <QueryClientProvider client={queryClient}>
-          <App />
-        </QueryClientProvider>
-      </BrowserRouter>
+      <AppProviders>
+        <App />
+      </AppProviders>
     </React.StrictMode>
   )
 

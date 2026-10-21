@@ -52,6 +52,23 @@ Cover the level the change actually needs, not just one:
 
 A private/unexported component or helper that needs direct unit testing may be exported for that purpose (additive-only, e.g. `const x` → `export const x`) — don't restructure the file beyond that.
 
+### Every change updates the tests (mandatory)
+For **any** change — a new feature, a change to an existing feature, or a bug fix:
+
+1. **Find the existing tests first.** Search `tests/` (Vitest unit and integration/feature tests) and `e2e/` (Playwright specs) for the module, page, component and flow you are touching. Update every test whose expectation the change affects — never leave a test asserting the old behaviour, and never delete, skip or weaken a test to make it pass.
+2. **Cover each level the change touches**, not just one:
+   - **Unit** — new/changed hook, util, store or `services.ts` mapping logic.
+   - **Integration / feature** — new/changed component or page, rendered with its real children, store and query client, HTTP mocked with MSW against the real `apiClient`.
+   - **Functional (E2E)** — new/changed user flow (form submit → API call → UI result) in Playwright.
+3. **Bug fixes are test-first:** write the test expecting the *correct* behaviour, watch it fail, then fix.
+4. **New features:** failing test → minimum code → refactor with the test green.
+5. Run the affected suites (and `npm run typecheck`) before finishing, and say so — with the failure output if anything fails.
+
+When the change follows an API change in `fch-api`, update the MSW handlers and fixtures to the API's new response shape in the same change.
+
+## Handoffs
+`docs/handoff/` holds one file per finished piece of work — a feature, a change or a bug fix — named `YYYY-MM-DD-short-title.md`. It records **the problem**, **the solution**, the files changed, the tests added/updated and anything left open, so the next person (or session) can pick up without re-reading the history. Template: `docs/handoff/README.md`. Write it when the work is finished, before handing over or opening the PR.
+
 ## Compliance & data security
 This app touches applicant PII, credit, and payment (Stripe) data — see the `code-reviewer` agent's compliance/data-security categories (PCI-DSS, FCRA, GLBA, TCPA, state privacy law). Never log or persist raw card numbers, SSNs, or bank account numbers client-side; only handle Stripe tokens/Elements. The API base URL is configured via `VITE_API_BASE_URL` (`.env`/`.env.example`); production deploys inject a separate value into `.env.production` at build time (see Branching below) — never commit a real production value into a tracked `.env` file.
 
@@ -62,6 +79,24 @@ This app touches applicant PII, credit, and payment (Stripe) data — see the `c
 - Feature branches (`feature/*`) branch from `stage` and merge back via PR. In practice many ad hoc branch names exist on the remote (ticket IDs, typo'd prefixes) that don't follow this scheme — treat the scheme as the standard for new branches, not a guarantee about what you'll find on the remote.
 - Hotfixes branch from `release`, then merge to both `release` and `stage`.
 - Pushes to `stage`/`release` auto-deploy via `.github/workflows/deploy-stage.yml`/`deploy-release.yml` (SSH to EC2, build, restart Nginx, smoke test) — a merge to either branch is a live deploy, not just a QA/prod gate.
+
+## Handoff notes (required)
+Every new feature, and every change to an existing feature (including bug fixes), ends with a handoff file in `docs/handoff/`. Write it in the same task as the change — not later, and not only when asked.
+- **File name**: `docs/handoff/YYYY-MM-DD-<short-kebab-title>.md` — the date the work was done plus a short title, e.g. `2026-10-13-e2e-sidebar-tests.md`. If one already exists for the same date and title, update it rather than creating a second.
+- **Contents** (in this order):
+  1. `# <Title>` and the date
+  2. **Problem** — what was wrong or missing, and how it showed up (route, screen, error message)
+  3. **Solution** — what was changed and why this approach
+  4. **Files changed** — paths, one line each on what changed
+  5. **Testing** — which tests were added/run and their result (pass/fail counts)
+  6. **Open items** — anything not done, known risks, follow-ups
+- Not the same as the automatic `SessionEnd` hook notes (`.claude/hooks/session-handoff.sh`, named `<timestamp>_<session-id>.md`) — those are per session; this one is per feature change, written deliberately.
+
+## E2E tests
+- Playwright specs live in `e2e/`. Specs for pages reachable from the sidebar go in `e2e/sidebar/<menu-item>/` — one folder per sidebar menu item (`dashboard`, `pre-qualification`, `funding-request`, …, with `credit-builder/<sub-item>` for the submenu). Guest/login specs go in `e2e/auth/`.
+- The suite runs against the local `fch-backend-api` (`http://127.0.0.1:8000`) and a borrower in the local DB; `e2e/auth.setup.ts` logs in once and saves the session to `e2e/.auth/` (gitignored). Override the account with `E2E_BORROWER_EMAIL`/`E2E_BORROWER_PASSWORD`.
+- Topbar specs go in `e2e/topbar/<item>/`, and pages that are not linked from a menu go in `e2e/pages/`. Specs that write data are named `*-submit`/`*-save`/`*-create`/`*-upload`/`*-payment` and must undo their change or be safe to repeat. Test data the portal cannot create or restore comes from local-only `fch-backend-api` seeders (`E2E*Seeder`) via `e2e/support/backend.ts`. Note that `prequal-submit` calls the real OpenAI agent, and `funding-request-submit` uses up one funding option per run.
+- Issues found by E2E runs are tracked in `docs/e2e/ISSUES.md` with a status per issue — add new findings there and update the status when fixed.
 
 ## Code review
 Use the `code-reviewer` agent (`~/.claude/agents/code-reviewer.md`) before merging into `stage` or `release`: architecture, security, duplication, vulnerable dependencies, magic strings, code smells, performance.

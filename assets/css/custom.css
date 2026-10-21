@@ -4350,7 +4350,7 @@ File: Custom Css File
     align-items: flex-start;
     gap: 16px;
     margin-bottom: 16px;
-    zIndex: 1;
+    z-index: 1;
 }
 
 .ca-sk-step-dot-wrap {

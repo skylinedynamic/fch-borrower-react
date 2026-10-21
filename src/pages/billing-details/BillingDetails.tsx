@@ -9,11 +9,13 @@ import {
   fetchPaymentProviders,
   updateDefaultPaymentMethod,
   cancelBorrowerSubscription,
+  removeDefaultPaymentMethod,
   BillingDetailsData,
   PaymentProviderItem,
 } from '../../modules/billings';
 import BillingDetailsLoader from '../../components/Loader/BillingDetailsLoader';
 import ConfirmationModal from '../../components/GlobalModal/ConfirmationModal';
+import { hideAndDisposeModal } from '../../utils/bootstrapModal';
 import {
   isOneTimeType,
   ENROLLMENT_TYPE_ONE_TIME,
@@ -219,12 +221,8 @@ const ChangePaymentMethodModal = ({
   useEffect(() => {
     return () => {
       const modal = modalInstanceRef.current;
-      if (modal) {
-        try {
-          modal.hide();
-          if (typeof modal.dispose === 'function') modal.dispose();
-        } catch (_) { }
-      }
+      // Not hide()+dispose() back to back: that races the hide animation (E2E-018).
+      hideAndDisposeModal(modal, null);
       modalInstanceRef.current = null;
     };
   }, []);
@@ -494,12 +492,8 @@ const SubscriptionDetailsModal = ({
   useEffect(() => {
     return () => {
       const modal = modalInstanceRef.current;
-      if (modal) {
-        try {
-          modal.hide();
-          if (typeof modal.dispose === 'function') modal.dispose();
-        } catch (_) { }
-      }
+      // Not hide()+dispose() back to back: that races the hide animation (E2E-018).
+      hideAndDisposeModal(modal, null);
       modalInstanceRef.current = null;
     };
   }, []);
@@ -642,6 +636,8 @@ export default function BillingDetails() {
   const [showDetailsModal, setShowDetailsModal] = useState<boolean>(false);
   const [showCancelModal, setShowCancelModal] = useState<boolean>(false);
   const [cancelling, setCancelling] = useState<boolean>(false);
+  const [showRemoveModal, setShowRemoveModal] = useState<boolean>(false);
+  const [removing, setRemoving] = useState<boolean>(false);
   const [toastMsg, setToastMsg] = useState<{ type: 'success' | 'danger'; message: string } | null>(null);
 
   useEffect(() => {
@@ -679,11 +675,30 @@ export default function BillingDetails() {
     }
   };
 
+  const handleRemoveDefaultPaymentMethod = async () => {
+    setRemoving(true);
+    try {
+      await removeDefaultPaymentMethod();
+      setToastMsg({ type: 'success', message: 'Default payment method removed.' });
+      setShowRemoveModal(false);
+      loadBillingDetails();
+    } catch (err: any) {
+      setToastMsg({
+        type: 'danger',
+        message: err?.response?.data?.message || 'Failed to remove the default payment method.',
+      });
+    } finally {
+      setRemoving(false);
+    }
+  };
+
   const recentBill = data?.recent_bill;
   const upcoming = data?.upcoming_billing;
   const subscription = data?.subscription;
   const borrower = data?.borrower;
   const recentPayments = data?.recent_payments || [];
+  // None once removed; the API still answers Stripe for a card saved before defaults were recorded.
+  const hasDefaultMethod = Boolean(borrower?.payment_provider?.name || borrower?.default_payment_method);
 
   const isSubscriptionCancelled = (subscription?.status || '').toLowerCase() === SUBSCRIPTION_STATUS_CANCELLED.toLowerCase();
   const subHasCompletedDate = Boolean(subscription?.enrollment_completed_at);
@@ -843,6 +858,15 @@ export default function BillingDetails() {
                           </div>
                         </div>
                         {(() => {
+                          if (!hasDefaultMethod) {
+                            return (
+                              <div className="d-flex align-items-center gap-2 mt-auto pt-2 fs-12 text-warning fw-semibold">
+                                <i className="ri-error-warning-line fs-14 text-warning"></i>
+                                <span>Not charged automatically - no default payment method</span>
+                              </div>
+                            );
+                          }
+
                           const providerName = borrower?.payment_provider?.name || borrower?.default_payment_method || PROVIDER_STRIPE;
                           const isStripe = providerName.toLowerCase() === PROVIDER_STRIPE.toLowerCase();
 
@@ -891,15 +915,37 @@ export default function BillingDetails() {
                           </h6>
                         </div>
                       </div>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-soft-primary px-2.5 py-1 fs-12 fw-medium rounded-1"
-                        onClick={() => setShowChangeModal(true)}
-                      >
-                        <i className="ri-edit-line me-1"></i> Change
-                      </button>
+                      <div className="d-flex align-items-center gap-1">
+                        {hasDefaultMethod && (
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-soft-danger px-2.5 py-1 fs-12 fw-medium rounded-1"
+                            onClick={() => setShowRemoveModal(true)}
+                          >
+                            <i className="ri-delete-bin-line me-1"></i> Remove
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-soft-primary px-2.5 py-1 fs-12 fw-medium rounded-1"
+                          onClick={() => setShowChangeModal(true)}
+                        >
+                          <i className="ri-edit-line me-1"></i> Change
+                        </button>
+                      </div>
                     </div>
 
+                    {!hasDefaultMethod ? (
+                      <div className="d-flex align-items-center gap-3 pt-2">
+                        <div className="billing-card-icon-avatar bg-light text-muted">
+                          <i className="ri-bank-card-2-line"></i>
+                        </div>
+                        <div>
+                          <h6 className="fs-14 fw-bold text-dark mb-1">No default payment method</h6>
+                          <span className="text-muted fs-12 d-block">Invoices are not charged automatically until you set one.</span>
+                        </div>
+                      </div>
+                    ) : (
                     <div className="d-flex align-items-center gap-3 pt-2">
                       {borrower?.payment_provider?.logo ? (
                         <div className="billing-card-logo-box">
@@ -948,6 +994,7 @@ export default function BillingDetails() {
                         })()}
                       </div>
                     </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1196,6 +1243,23 @@ export default function BillingDetails() {
           setShowDetailsModal(false);
           setShowCancelModal(true);
         }}
+      />
+
+      {/* ── Remove Default Payment Method Confirmation Modal ── */}
+      <ConfirmationModal
+        show={showRemoveModal}
+        onClose={() => setShowRemoveModal(false)}
+        onConfirm={handleRemoveDefaultPaymentMethod}
+        title="Remove Default Payment Method?"
+        message="Your invoices will not be charged automatically until you set a default payment method again - you will need to pay them manually. Payments already made are not affected."
+        confirmText="Yes, Remove It"
+        cancelText="Keep It"
+        confirmBtnClass="btn-danger"
+        iconClass="ri-error-warning-line"
+        iconBgClass="bg-danger-subtle"
+        iconTextClass="text-danger"
+        loading={removing}
+        loadingText="Removing..."
       />
 
       {/* ── Cancel Subscription Confirmation Modal ── */}

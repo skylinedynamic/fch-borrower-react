@@ -7,6 +7,7 @@ import { useBrandingStore } from '../../store/brandingStore'
 import { isSubscriptionRestricted, isFreeTrialLocked } from '../../lib/auth/subscriptionUtils'
 import { PARTNER_TYPES } from '../../config/partnerTypeOptions'
 import { resolveBrandLogo } from '../../utils/brandLogo'
+import BrandLogo from './BrandLogo'
 import avatarDefault from '../../../assets/images/users/avatar-1.jpg'
 import { useActiveFundingRequests } from '../../modules/dashboard'
 import { useUnreadNotificationCount, formatUnreadCount } from '../../modules/notifications'
@@ -42,6 +43,8 @@ export default function Sidebar() {
   // company name so the host's logo cannot appear in its sidebar.
   const displayLogo = resolveBrandLogo(primaryLogo, secondaryLogo)
   const compactLogo = resolveBrandLogo(markLogo, secondaryLogo)
+  // What the brand box shows if the logo file itself can't be loaded.
+  const brandName = branding?.site_name || branding?.meta_title || null
 
   const { data: activeFundingRequests } = useActiveFundingRequests()
   const activeApprovedRequest = activeFundingRequests?.data?.active_approved_funding_request
@@ -143,18 +146,18 @@ export default function Sidebar() {
       <div className="navbar-brand-box text-start px-2" style={{ lineHeight: '50px' }}>
         <a href="/" className="logo logo-dark" onClick={() => isMobile && closeSidebar()}>
           <span className="logo-sm">
-            <img src={compactLogo} alt="" height="50" />
+            <BrandLogo src={compactLogo} fallbackText={brandName} height="50" />
           </span>
           <span className="logo-lg">
-            <img src={displayLogo} alt="" style={{ height: '55px', width: 'auto', maxWidth: '200px' }} />
+            <BrandLogo src={displayLogo} fallbackText={brandName} style={{ height: '55px', width: 'auto', maxWidth: '200px' }} />
           </span>
         </a>
         <a href="/" className="logo logo-light" onClick={() => isMobile && closeSidebar()}>
           <span className="logo-sm">
-            <img src={compactLogo} alt="" height="50" />
+            <BrandLogo src={compactLogo} fallbackText={brandName} height="50" />
           </span>
           <span className="logo-lg">
-            <img src={displayLogo} alt="" style={{ height: '55px', width: 'auto', maxWidth: '200px' }} />
+            <BrandLogo src={displayLogo} fallbackText={brandName} style={{ height: '55px', width: 'auto', maxWidth: '200px' }} />
           </span>
         </a>
 
@@ -176,14 +179,11 @@ export default function Sidebar() {
           </span>
         </button>
         <div className="dropdown-menu dropdown-menu-end">
-          <h6 className="dropdown-header">Welcome Anna!</h6>
+          <h6 className="dropdown-header">Welcome {user?.name || 'User'}!</h6>
           <Link className="dropdown-item" to="/profile" onClick={() => isMobile && closeSidebar()}><i className="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Profile</span></Link>
-          <a className="dropdown-item" href="#" onClick={() => isMobile && closeSidebar()}><i className="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Messages</span></a>
-          <a className="dropdown-item" href="#" onClick={() => isMobile && closeSidebar()}><i className="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Help</span></a>
+          <Link className="dropdown-item" to="/change-password" onClick={() => isMobile && closeSidebar()}><i className="mdi mdi-lock-reset text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Change Password</span></Link>
           <div className="dropdown-divider"></div>
-          <a className="dropdown-item" href="#" onClick={() => isMobile && closeSidebar()}><i className="mdi mdi-wallet text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Balance : <b>$5971.67</b></span></a>
-          <a className="dropdown-item" href="#" onClick={() => isMobile && closeSidebar()}><span className="badge bg-success-subtle text-success mt-1 float-end">New</span><i className="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Settings</span></a>
-          <a className="dropdown-item" href="#" onClick={handleLogout}><i className="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Logout</span></a>
+          <button type="button" className="dropdown-item" onClick={handleLogout}><i className="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Logout</span></button>
         </div>
       </div>
 

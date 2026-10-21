@@ -29,10 +29,11 @@ export interface BorrowerInfo {
   stripe_card_info?: StripeCardInfo | null;
   default_payment_method?: string | null;
   partner_payment_for_me?: boolean;
+  /** null once the default payment method was removed. */
   payment_provider?: {
     name: string;
     logo?: string | null;
-  };
+  } | null;
 }
 
 export interface SubscriptionInfo {

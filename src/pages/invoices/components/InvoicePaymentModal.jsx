@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Modal from 'bootstrap/js/dist/modal';
+import { hideAndDisposeModal } from '../../../utils/bootstrapModal';
 import { fetchPartnerPaymentMethods, processUnifiedPayment } from '../../../modules/invoice/services';
 import { toast } from 'react-toastify';
 import PaymentProviderSelector from './PaymentProviderSelector';
@@ -724,11 +725,9 @@ export default function InvoicePaymentModal({ show, onHide, onSuccess, invoice }
       });
     }
     return () => {
-      if (modalInstanceRef.current) {
-        modalInstanceRef.current.hide();
-        modalInstanceRef.current.dispose();
-        modalInstanceRef.current = null;
-      }
+      // Not hide()+dispose() back to back: that races the hide animation (E2E-018).
+      hideAndDisposeModal(modalInstanceRef.current, null);
+      modalInstanceRef.current = null;
     };
   }, []);
 

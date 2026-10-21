@@ -4,6 +4,7 @@ import formBg from '../../../assets/images/form-bg.png'
 import { fetchBranding } from '../../modules/auth/services'
 import { applyBrandTheme } from '../../utils/brandingTheme'
 import { resolveBrandLogo } from '../../utils/brandLogo'
+import BrandLogo from './BrandLogo'
 import { applyPortalMeta } from '../../utils/portalMeta'
 
 export default function Auth({ header, children, belowCard, colClass = 'col-xl-5 col-lg-6 col-md-8', bodyClass }) {
@@ -17,7 +18,6 @@ export default function Auth({ header, children, belowCard, colClass = 'col-xl-5
     }
   })
 
-  // const isSignup = location?.pathname === '/signup'
   const cardMarginClass = 'mt-0'
 
   React.useEffect(() => {
@@ -72,7 +72,7 @@ export default function Auth({ header, children, belowCard, colClass = 'col-xl-5
 
               <div className="text-center mb-5">
                 <a href="/" className="d-inline-block auth-logo">
-                  <img src={displayLogo} alt={displaySiteName || ''} className="auth-logo-img" />
+                  <BrandLogo src={displayLogo} fallbackText={displaySiteName} className="auth-logo-img" />
                 </a>
               </div>
 
