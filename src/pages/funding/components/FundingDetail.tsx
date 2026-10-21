@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { fetchFundingDetail, fetchReadinessFactors } from '../../../modules/funding/services';
 import { FUNDING_ICON_MAP, QUALIFY_REASONS_MAP, ENGINE_STATUS_LABELS, MATCH_LEVEL_LABELS, ENGINE_STATUS_VALUES, READINESS_FACTOR_LABELS, FACTOR_STATUS_VALUES, BADGE_LABELS, FACTOR_ICON_STYLES, META_ITEM_LABELS, READINESS_BADGE_STYLES } from '../../../config/funding';
+import { eligibilityLabel, hasMissingReadinessFactors } from '../../../utils/fundingEligibility';
 import { getFundingColorStyles } from '../../../config/fundingColor';
 import { toast } from 'react-toastify';
 import { UncontrolledTooltip } from 'reactstrap';
@@ -271,7 +272,6 @@ const FundingDetail = () => {
 
     const isGreyedOut = engine_status === ENGINE_STATUS_VALUES.GREYED_OUT || engine_status === ENGINE_STATUS_VALUES.HIDDEN;
     const finalEngineStatus = engine_status || ENGINE_STATUS_VALUES.ACTIVE;
-    const displayLabel = engine_status_label || ENGINE_STATUS_LABELS.LIKELY_ELIGIBLE;
 
     // Meta row items
     const metaItems = [
@@ -284,10 +284,9 @@ const FundingDetail = () => {
     const ctaSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
     const activeFactors = dynamicReadiness.length > 0 ? dynamicReadiness : readiness_factors;
-    const hasMissingFactors = activeFactors.some((r: any) => {
-        const s = r.status?.toLowerCase();
-        return s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED || s === FACTOR_STATUS_VALUES.WEAK;
-    });
+    const hasMissingFactors = hasMissingReadinessFactors(activeFactors);
+    // Same eligibility label as the funding card (BUG-026).
+    const displayLabel = eligibilityLabel({ engineStatus: finalEngineStatus, engineStatusLabel: engine_status_label, hasMissingFactors });
     // Every funding request is a new one: an earlier request or application for
     // this option (pending, approved, on hold, ...) does not change this card.
     // Only eligibility can stop the borrower from starting.

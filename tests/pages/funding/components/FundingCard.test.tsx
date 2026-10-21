@@ -59,9 +59,34 @@ describe('FundingCard with a pending funding request', () => {
   })
 
   it('shows the normal eligibility label once the request is no longer pending', () => {
-    renderCard({ latest_review_status: 'Approved' })
+    renderCard({ latest_review_status: 'Approved', engine_status: 'Active', engine_status_label: 'Eligible Now' })
 
-    expect(screen.getByText('Likely Eligible')).toBeInTheDocument()
+    expect(screen.getByText('Eligible Now')).toBeInTheDocument()
     expect(screen.queryByText('Under Review')).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * Defect (BUG-026, CP-FUND-04): the card always said "Likely Eligible" while
+ * the detail page showed the engine's label ("Eligible Now", "Manual Review
+ * Required", "Conditional"). The card shows the same label as the detail.
+ */
+describe('FundingCard eligibility label', () => {
+  it.each([
+    ['Active', 'Eligible Now'],
+    ['Review', 'Manual Review Required'],
+    ['Warning', 'Conditional'],
+  ])('shows the engine label for %s, as the detail page does', (engine_status, engine_status_label) => {
+    renderCard({ latest_review_status: null, engine_status, engine_status_label })
+
+    expect(screen.getByText(engine_status_label)).toBeInTheDocument()
+    expect(screen.queryByText('Likely Eligible')).not.toBeInTheDocument()
+  })
+
+  it('says Failed while underwriting factors are missing', () => {
+    renderCard({ latest_review_status: null, engine_status: 'Warning', engine_status_label: 'Conditional', readiness_factors: [{ label: 'Time in Business', status: 'Failed' }] })
+
+    expect(screen.getByText('Failed')).toBeInTheDocument()
+    expect(screen.queryByText('Conditional')).not.toBeInTheDocument()
   })
 })
