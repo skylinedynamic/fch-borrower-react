@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import FundingApplicationDetailsModal from '../../../../src/pages/myapplication/components/FundingApplicationDetailsModal'
 import type { FundingApplication } from '../../../../src/modules/my-application/types'
 
@@ -19,8 +20,15 @@ describe('FundingApplicationDetailsModal', () => {
     expect(container).toBeEmptyDOMElement()
   })
 
-  it('formats the full SSN for display (self-service: borrower viewing their own submitted data)', () => {
+  it('shows the SSN masked, written XXX-XX-XXXX on the eye button - as every SSN is shown', async () => {
+    const user = userEvent.setup()
     render(<FundingApplicationDetailsModal isOpen application={baseApplication} toggle={() => {}} />)
+
+    expect(screen.getByText('***-**-6789')).toBeInTheDocument()
+    expect(screen.queryByText('123-45-6789')).not.toBeInTheDocument()
+
+    // The modal sits outside the accessibility tree until Bootstrap shows it.
+    await user.click(screen.getByRole('button', { name: 'Show SSN', hidden: true }))
     expect(screen.getByText('123-45-6789')).toBeInTheDocument()
   })
 
