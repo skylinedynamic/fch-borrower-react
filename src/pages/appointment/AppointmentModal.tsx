@@ -15,7 +15,8 @@ import { yearDropdownPlugin } from '../../utils/flatpickrPlugins';
 import DeleteConfirmationModal from '../../components/GlobalModal/DeleteConfirmModal';
 
 // Config
-import { APPOINTMENT_TYPE_OPTIONS, TIMEZONE_OPTIONS, TIME_SLOTS } from '../../config/appointmentTypeOptions';
+import { APPOINTMENT_TYPE_OPTIONS, TIME_SLOTS } from '../../config/appointmentTypeOptions';
+import { browserTimeZone, defaultStart, localDateString, startSlotsFrom, timeAfter, timeZoneLabel } from '../../utils/appointmentTime';
 
 // Styles
 import '../../../assets/css/appointment-modal.css';
@@ -78,7 +79,8 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
     const [formData, setFormData] = useState({
         subject: '',
         category: 'Business Review',
-        location: 'UTC (GMT+00:00)',
+        // Booked in the browser's zone; the API stores UTC (BUG-080).
+        location: browserTimeZone(),
         description: '',
         date: '',
         timeStart: '09:00',
@@ -107,6 +109,14 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
     });
 
     const [originalData, setOriginalData] = useState<any>(null);
+
+    // Start times still ahead on the chosen day (BUG-078); an appointment being
+    // edited keeps its own time in the list.
+    const openStarts = startSlotsFrom(TIME_SLOTS, formData.date);
+    const ownStart: string | null = !isNewEvent && originalData?.date === formData.date ? originalData?.timeStart : null;
+    const startOptions = ownStart && !openStarts.some(slot => slot.value === ownStart)
+        ? TIME_SLOTS.filter(slot => slot.value === ownStart || openStarts.includes(slot))
+        : openStarts;
 
     const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
     const [showDateSkeleton, setShowDateSkeleton] = useState(false);
@@ -312,15 +322,17 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
             setLastConflictingAttempt(null);
             setConflictError(null);
             setIsMeetingWithChecked(false);
-            const defaultDate = dateStr || new Date().toISOString().split('T')[0];
+            // The browser's own day, at 09:00 or the next time still ahead (BUG-078).
+            const start = defaultStart(TIME_SLOTS, dateStr || localDateString());
+            const defaultDate = start.date;
             setFormData({
                 subject: '',
                 category: 'Business Review',
-                location: 'UTC (GMT+00:00)',
+                location: browserTimeZone(),
                 description: '',
                 date: defaultDate,
-                timeStart: '09:00',
-                timeEnd: '09:30',
+                timeStart: start.time,
+                timeEnd: timeAfter(start.time),
                 entity_id: '',
                 assigned_for: '',
                 entity_type: 'borrower',
@@ -351,7 +363,8 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
                 date: formatDate(start),
                 timeStart: tConvert(start.toTimeString().slice(0, 5)),
                 timeEnd: tConvert(end.toTimeString().slice(0, 5)),
-                location: apt.timezone || "Virtual",
+                // The API sends the time in this browser's zone.
+                location: timeZoneLabel(browserTimeZone()),
                 description: apt.description || "No Description",
                 scheduledBy: apt.scheduled_by?.name || "FCH Admin",
                 assignedFor: apt.assigned_for?.name || "N/A",
@@ -375,9 +388,9 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
             setFormData({
                 subject: apt.subject,
                 category: apt.meeting_type || 'Business Review',
-                location: apt.timezone || "UTC (GMT+00:00)",
+                location: browserTimeZone(),
                 description: apt.description || "",
-                date: start.toISOString().split('T')[0],
+                date: localDateString(start),
                 timeStart: hh_mm_full,
                 timeEnd: hh_mm_end_full,
                 entity_id: String(apt.assigned_for?.entity_id || apt.assigned_for?.id || ''),
@@ -402,9 +415,9 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
                 setOriginalData({
                     subject: apt.subject,
                     category: apt.meeting_type || 'Business Review',
-                    location: apt.timezone || "UTC (GMT+00:00)",
+                    location: browserTimeZone(),
                     description: apt.description || "",
-                    date: start.toISOString().split('T')[0],
+                    date: localDateString(start),
                     timeStart: hh_mm_full,
                     timeEnd: hh_mm_end_full,
                     entity_id: String(apt.assigned_for.entity_id || apt.assigned_for.id),
@@ -551,7 +564,13 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
                 monthSelectorType: "dropdown",
                 plugins: [yearDropdownPlugin(thisYear, thisYear + APPOINTMENT_YEARS_AHEAD)],
                 onChange: (selectedDates, dateStr) => {
-                    setFormData(prev => ({ ...prev, date: dateStr }));
+                    setFormData(prev => {
+                        const open = startSlotsFrom(TIME_SLOTS, dateStr);
+                        if (!dateStr || open.some(slot => slot.value === prev.timeStart)) return { ...prev, date: dateStr };
+                        // That time has passed today: move to the next one still ahead.
+                        const next = open[0]?.value ?? prev.timeStart;
+                        return { ...prev, date: dateStr, timeStart: next, timeEnd: timeAfter(next) };
+                    });
                 }
             });
             return () => fp.destroy();
@@ -836,7 +855,7 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
 
                                                 <label className="form-label fs-13 fw-semibold">Time Slot <span className="text-danger">*</span></label>
                                                 <div className="d-flex align-items-center gap-2 time-slot-container">
-                                                    <Dropdown value={formData.timeStart} options={TIME_SLOTS}
+                                                    <Dropdown value={formData.timeStart} options={startOptions}
                                                         onChange={(e) => {
                                                             const startVal = e.value;
                                                             setFormData(p => {
@@ -912,10 +931,11 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
                                     )}
 
                                     <div className="col-12 mb-3">
-                                        <label className="form-label fs-13 fw-semibold">Time Zone</label>
-                                        <Dropdown value={formData.location} options={TIMEZONE_OPTIONS}
-                                            onChange={(e) => setFormData(p => ({ ...p, location: e.value }))}
-                                            className={`w-100 ${formErrors.timezone ? 'p-invalid' : ''}`} placeholder="Select Time Zone" appendTo="self" />
+                                        <label className="form-label fs-13 fw-semibold" htmlFor="appointment-time-zone">Time Zone</label>
+                                        <input id="appointment-time-zone" type="text" readOnly
+                                            className={`form-control ${formErrors.timezone ? 'is-invalid' : ''}`}
+                                            value={timeZoneLabel(formData.location)} />
+                                        <div className="text-muted fs-11 mt-1">Times are booked and shown in your time zone.</div>
                                         {formErrors.timezone && <div className="text-danger fs-11 mt-1">{formErrors.timezone}</div>}
                                     </div>
 
