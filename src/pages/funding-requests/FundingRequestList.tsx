@@ -333,7 +333,7 @@ export default function FundingRequestList() {
                                                     {isPendingReview && (
                                                         <Link
                                                             to={`/fund-application/${row.id}`}
-                                                            className="btn btn-warning btn-sm text-nowrap d-inline-flex align-items-center"
+                                                            className="btn btn-warning btn-sm py-1 fw-normal text-nowrap d-inline-flex align-items-center"
                                                             title="Editing will require you to resign the application"
                                                         >
                                                             <i className="ri-edit-line me-1"></i> Edit Application

@@ -9,7 +9,7 @@ import { PARTNER_TYPES } from '../../config/partnerTypeOptions'
 import { resolveBrandLogo } from '../../utils/brandLogo'
 import BrandLogo from './BrandLogo'
 import avatarDefault from '../../../assets/images/users/avatar-1.jpg'
-import { useDashboard } from '../../modules/dashboard'
+import { useActiveFundingRequests } from '../../modules/dashboard'
 import { useUnreadNotificationCount, formatUnreadCount } from '../../modules/notifications'
 import { NOTIFICATIONS_ROUTE } from '../../config/notifications'
 
@@ -46,9 +46,9 @@ export default function Sidebar() {
   // What the brand box shows if the logo file itself can't be loaded.
   const brandName = branding?.site_name || branding?.meta_title || null
 
-  const { data: dashboardData } = useDashboard()
-  const activeApprovedRequest = dashboardData?.data?.active_approved_funding_request
-  const activeApprovedRequestCount = dashboardData?.data?.active_approved_funding_request_count || 0
+  const { data: activeFundingRequests } = useActiveFundingRequests()
+  const activeApprovedRequest = activeFundingRequests?.data?.active_approved_funding_request
+  const activeApprovedRequestCount = activeFundingRequests?.data?.active_approved_funding_request_count || 0
   // Same cached query as the header bell, so this adds no extra request.
   const { data: unreadNotificationCount = 0 } = useUnreadNotificationCount()
 
@@ -264,10 +264,10 @@ export default function Sidebar() {
               </ul>
             </li>
 
-            {/* Notification — never locked: the header bell works on every plan */}
+            {/* Notifications — never locked: the header bell works on every plan */}
             <LinkItem
               to={NOTIFICATIONS_ROUTE}
-              label="Notification"
+              label="Notifications"
               icon="ri-notification-3-line"
               badge={unreadNotificationCount > 0 ? formatUnreadCount(unreadNotificationCount) : undefined}
             />

@@ -3,6 +3,9 @@ export interface DashboardStats {
     pre_qualifications: number;
     total_requested_amount: number;
     total_funded_amount: number;
+    /** As the top cards show them, formatted by the API: "$37.2M", "$45,000". */
+    total_requested_amount_formatted: string;
+    total_funded_amount_formatted: string;
 }
 
 export interface FundingApplication {
@@ -65,6 +68,28 @@ export interface Tier {
     tasks_under_review: number;
 }
 
+/** An approved funding request no application has been started for. */
+export interface ActiveFundingRequest {
+    id: number;
+    requested_amount: string | number | null;
+    estimated_funding_range: string | null;
+    funding_type: string | null;
+}
+
+export interface ActiveFundingRequestsData {
+    active_approved_funding_requests: ActiveFundingRequest[];
+    /** The latest of them, or null when there are none. */
+    active_approved_funding_request: ActiveFundingRequest | null;
+    active_approved_funding_request_count: number;
+}
+
+export interface ActiveFundingRequestsResponse {
+    status: boolean;
+    message: string;
+    data: ActiveFundingRequestsData;
+}
+
+/** Without the active funding requests: those come from fetchActiveFundingRequests(). */
 export interface DashboardData {
     states: DashboardStats;
     latest_funding_applications: FundingApplication[];

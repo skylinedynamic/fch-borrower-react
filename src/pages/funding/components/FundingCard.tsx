@@ -208,17 +208,19 @@ const MissingTooltip: React.FC<{ factors: ReadinessFactor[]; visible: boolean }>
 };
 
 // ─── Pending Tooltip ───────────────────────────────────────────────────────────
+// Shown while the borrower's funding *request* for this option is Pending. No
+// funding application exists yet, so the wording talks about the request.
 const PendingTooltip: React.FC<{ visible: boolean }> = ({ visible }) => {
     if (!visible) return null;
     return (
         <div className="funding-missing-tooltip">
             <div className="funding-missing-tooltip-header">
                 <i className="ri-time-fill fc-icon-clock" />
-                <span>Application Under Review</span>
+                <span>Funding Request Under Review</span>
             </div>
-            
+
             <p className="funding-missing-tooltip-desc">
-                You have already submitted an application for this funding option.
+                You have already submitted a funding request for this funding option.
             </p>
             
             <div className="funding-missing-tooltip-divider" />
@@ -227,7 +229,7 @@ const PendingTooltip: React.FC<{ visible: boolean }> = ({ visible }) => {
                 <li className="funding-missing-tooltip-item">
                     <div className="d-flex align-items-start gap-2">
                         <i className="ri-information-line fc-icon-info-sm" />
-                        <div className="tooltip-item-title">Status: Awaiting Review</div>
+                        <div className="tooltip-item-title">Status: Pending Review</div>
                     </div>
                 </li>
             </ul>
@@ -236,7 +238,7 @@ const PendingTooltip: React.FC<{ visible: boolean }> = ({ visible }) => {
             
             <div className="funding-missing-tooltip-footer-info">
                 <i className="ri-information-fill fc-icon-info-md" />
-                <span>Please wait for approval or rejection before reapplying.</span>
+                <span>Please wait for approval or rejection before submitting a new request.</span>
             </div>
         </div>
     );

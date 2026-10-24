@@ -3,7 +3,7 @@ import type { FederalCompliance } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 import { useFederalCompliance, useSaveFederalCompliance } from '../../../../modules/funding-application/queries'
-import { isEditConfirmationCancelled } from '../../../../modules/funding-application/editConfirmation'
+import { reportSaveFailure } from '../../../../modules/funding-application/saveFeedback'
 import { toast } from 'react-toastify'
 
 interface FederalComplianceStepProps {
@@ -75,18 +75,11 @@ export default function FederalComplianceStep({
       toast.success('Federal compliance disclosures saved successfully!')
       return true
     } catch (error: any) {
-      // The borrower backed out of the re-signature confirmation - nothing was
-      // attempted, so say nothing.
-      if (isEditConfirmationCancelled(error)) return false
-
-      console.error('Error saving federal compliance:', error)
-      const errors = error.response?.data?.errors
-      if (errors) {
-        setValidationErrors(errors)
-        toast.error('Please resolve validation errors')
-      } else {
-        toast.error(error.response?.data?.message || 'Failed to save federal compliance')
-      }
+      // Every outcome gets a message: cancelled, validation, or failure.
+      reportSaveFailure(error, {
+        fallbackMessage: 'Failed to save federal compliance',
+        onFieldErrors: setValidationErrors,
+      })
       return false
     }
   }, [complianceId, federal, saveCompliance])

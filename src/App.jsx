@@ -5,6 +5,7 @@ import Dashboard from '../src/pages/dashboard/Dashboard.jsx'
 import SignIn from '../src/pages/singin/SignIn.jsx'
 import ForgotPassword from '../src/pages/singin/ForgotPassword.jsx'
 import ResetPassword from '../src/pages/singin/ResetPassword.jsx'
+import EmailChangeLinkPage from './pages/email-change/EmailChangeLinkPage'
 import CreditGuide from '../src/pages/credit-builder/creditguide/CreditGuide.tsx'
 import Documents from '../src/pages/documents/Documents.tsx'
 import { ProtectedRoute, GuestRoute, HostRoute, CapitalAccessGuard, CapitalAccessStrategyGuard, checkSession, refreshSubscription } from './lib/auth'
@@ -47,6 +48,7 @@ import ErrorPage from './pages/Utility/ErrorPage.jsx'
 import { fetchBorrowerTheme } from './modules/settings/services'
 import { useBrandingStore } from './store/brandingStore'
 import { applyBrandTheme } from './utils/brandingTheme'
+import { applyPortalMeta } from './utils/portalMeta'
 
 export default function App() {
   const { setBranding } = useBrandingStore()
@@ -58,19 +60,8 @@ export default function App() {
         setBranding(res.data.branding);
         const branding = res.data.branding;
 
-        const pageTitle = branding.meta_title || branding.site_name;
-        if (pageTitle) {
-          document.title = pageTitle;
-        }
-
-        const faviconUrl = branding.favicon_full_url || branding.favicon;
-        if (faviconUrl && faviconUrl !== 'null') {
-          document.querySelectorAll("link[rel~='icon']").forEach(el => el.remove());
-          const link = document.createElement('link');
-          link.rel = 'icon';
-          link.href = faviconUrl.includes('?') ? `${faviconUrl}&_t=${Date.now()}` : `${faviconUrl}?_t=${Date.now()}`;
-          document.head.appendChild(link);
-        }
+        // Title, description, preview tags and favicon, as the partner's.
+        applyPortalMeta(branding);
 
         // Every brand colour, including the derived contrast tokens that keep
         // text readable on a light brand colour.
@@ -105,6 +96,8 @@ export default function App() {
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password" element={<ResetPassword />} />
         </Route>
+        {/* The links in the email-change emails: they open signed in or not. */}
+        <Route path="email-change/:action/:user/:hash" element={<EmailChangeLinkPage />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="download-agreement/:userId" element={<DownloadAgreement />} />

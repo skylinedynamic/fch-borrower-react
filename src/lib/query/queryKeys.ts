@@ -68,9 +68,19 @@ export const queryKeys = {
     federalCompliance: () => [...queryKeys.fundingApplication.all, 'federalCompliance'] as const,
     documents: (id: number | null) => [...queryKeys.fundingApplication.all, 'documents', id] as const,
   },
+  dashboard: {
+    all: ['dashboard'] as const,
+    // Under `all`, so invalidating the dashboard refreshes the layout's banner too.
+    activeFundingRequests: () => [...queryKeys.dashboard.all, 'activeFundingRequests'] as const,
+  },
   agreement: {
     all: ['agreement'] as const,
     check: () => [...queryKeys.agreement.all, 'check'] as const,
+  },
+  account: {
+    all: ['account'] as const,
+    emailChangeLink: (action: string, user: string, hash: string, query: string) =>
+      [...queryKeys.account.all, 'emailChangeLink', action, user, hash, query] as const,
   },
   notifications: {
     all: ['notifications'] as const,

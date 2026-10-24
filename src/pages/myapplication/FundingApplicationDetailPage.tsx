@@ -95,7 +95,7 @@ export default function FundingApplicationDetailPage() {
       <div className="container-fluid">
         <div className="row pb-1 page-subheader-sticky bg-body">
             <div className="col-12">
-                <div className="d-flex align-items-center justify-content-between flex-row py-2">
+                <div className="d-flex align-items-center justify-content-between flex-row flex-wrap gap-2 py-2">
                     <div className="flex-grow-1">
                         <h4 className="fs-20 mb-1">Funding Application Details</h4>
                         <nav aria-label="breadcrumb">
@@ -106,11 +106,11 @@ export default function FundingApplicationDetailPage() {
                             </ol>
                         </nav>
                     </div>
-                    <div className="mt-0 d-flex align-items-center gap-2">
+                    <div className="mt-0 d-flex align-items-center flex-wrap text-nowrap gap-2">
                         {canEditApplication && (
                             <Link
                                 to={`/fund-application/${application.funding_request_id}`}
-                                className="btn btn-warning fw-medium d-flex align-items-center gap-2 shadow-none px-4"
+                                className="btn btn-warning fw-medium d-flex align-items-center gap-2 shadow-none px-4 py-2"
                                 title="Editing will require you to resign the application"
                             >
                                 <i className="ri-edit-line me-1"></i> Edit Application
@@ -180,6 +180,7 @@ export default function FundingApplicationDetailPage() {
               <DetailItem label="Funding Request Status" value={application.funding_request_status} icon="ri-information-line" />
               <DetailItem label="Amount Range" value={application.funding_sequence_amount_range ? application.funding_sequence_amount_range.split('-').map((v: string) => `$${Number(v.trim()).toLocaleString('en-US')}`).join(' - ') : 'N/A'} icon="ri-bar-chart-box-line" />
               <DetailItem label="Funding Type" value={application.preferred_funding_type} icon="ri-star-line" />
+              <DetailItem label="Additional Funding Types" value={application.additional_funding_types?.length ? application.additional_funding_types.join(', ') : 'N/A'} icon="ri-stack-line" />
               <DetailItem label="Request Amount" value={application.requested_amount || 'N/A'} icon="ri-money-dollar-circle-line" />
               <DetailItem label="Speed to Funds" value={application.funding_sequence_speed_to_funds} icon="ri-time-line" />
               <DetailItem label="Collateral Available" value={application.collateral_available} icon="ri-safe-2-line" />
@@ -224,8 +225,19 @@ export default function FundingApplicationDetailPage() {
                                   </tr>
                               </thead>
                               <tbody>
-                                  {application.documents.map((docGroup) =>
-                                      docGroup.files?.map((file, fileIdx: number) => {
+                                  {application.documents.map((docGroup) => (
+                                      // One title per document type, its files listed under it.
+                                      <React.Fragment key={docGroup.type}>
+                                      <tr className="border-bottom border-bottom-dashed">
+                                          <td colSpan={4} className="text-start fw-semibold text-dark bg-light-subtle">
+                                              <i className="ri-folder-3-line me-2 text-primary"></i>
+                                              {docGroup.type}
+                                              <span className="ms-2 badge bg-primary-subtle text-primary">
+                                                  {docGroup.files?.length || 0} {(docGroup.files?.length || 0) === 1 ? 'file' : 'files'}
+                                              </span>
+                                          </td>
+                                      </tr>
+                                      {docGroup.files?.map((file, fileIdx: number) => {
                                           const fileName = file.original_name || file.name || 'document';
                                           const config = getFileConfig(file.url || file.path || fileName);
                                           
@@ -250,7 +262,7 @@ export default function FundingApplicationDetailPage() {
 
                                           return (
                                               <tr key={`${docGroup.type}-${fileIdx}`} className="border-bottom border-bottom-dashed">
-                                                  <td className="text-start fw-medium text-dark">
+                                                  <td className="text-start fw-medium text-dark ps-4">
                                                       <div className="d-flex align-items-center">
                                                           <div className="avatar-xs flex-shrink-0 me-2">
                                                               <div className={`avatar-title ${config.bg} ${config.color} rounded fs-16`}>
@@ -285,8 +297,9 @@ export default function FundingApplicationDetailPage() {
                                                   </td>
                                               </tr>
                                           );
-                                      })
-                                  )}
+                                      })}
+                                      </React.Fragment>
+                                  ))}
                               </tbody>
                           </table>
                       </div>

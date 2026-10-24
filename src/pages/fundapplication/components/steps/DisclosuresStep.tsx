@@ -3,7 +3,7 @@ import type { DisclosureConsent } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
 import DisclosuresSkeleton from '../../../../components/Loader/DisclosuresSkeleton'
 import { useDisclosuresConsent, useSaveDisclosuresConsent } from '../../../../modules/funding-application/queries'
-import { isEditConfirmationCancelled } from '../../../../modules/funding-application/editConfirmation'
+import { reportSaveFailure } from '../../../../modules/funding-application/saveFeedback'
 import { toast } from 'react-toastify'
 import DisclosureModal from '../shared/DisclosureModal'
 import { AUTHORIZATION_DATA, TERMS_OF_SERVICE_DATA } from '../../../../config/disclosureConfig'
@@ -50,18 +50,11 @@ export default function DisclosuresStep({
       toast.success('Disclosures saved successfully!')
       return true
     } catch (error: any) {
-      // The borrower backed out of the re-signature confirmation - nothing was
-      // attempted, so say nothing.
-      if (isEditConfirmationCancelled(error)) return false
-
-      console.error('Error saving disclosures:', error)
-      const errors = error.response?.data?.errors
-      if (errors) {
-        setValidationErrors(errors)
-        toast.error('Please resolve validation errors')
-      } else {
-        toast.error(error.response?.data?.message || 'Failed to save disclosures')
-      }
+      // Every outcome gets a message: cancelled, validation, or failure.
+      reportSaveFailure(error, {
+        fallbackMessage: 'Failed to save disclosures',
+        onFieldErrors: setValidationErrors,
+      })
       return false
     }
   }, [disclosureId, disclosure, saveDisclosures])

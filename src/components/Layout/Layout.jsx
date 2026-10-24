@@ -4,14 +4,14 @@ import Header from './Header.jsx'
 import Sidebar from './Sidebar.jsx'
 import Footer from './Footer.jsx'
 import GlobalFundingBanner from './GlobalFundingBanner.jsx'
-import { useDashboard } from '../../modules/dashboard'
+import { useActiveFundingRequests } from '../../modules/dashboard'
 import SupportChatWidget from '../Common/ChatWidget/SupportChatWidget.tsx'
 
 export default function Layout() {
-  const { data: dashboardData } = useDashboard();
-  const activeApprovedRequest = dashboardData?.data?.active_approved_funding_request;
+  const { data: activeFundingRequests } = useActiveFundingRequests();
+  const activeApprovedRequest = activeFundingRequests?.data?.active_approved_funding_request;
 
-  const activeApprovedRequestCount = dashboardData?.data?.active_approved_funding_request_count || 0;
+  const activeApprovedRequestCount = activeFundingRequests?.data?.active_approved_funding_request_count || 0;
 
   return (
     <div id="layout-wrapper">

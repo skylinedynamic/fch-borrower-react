@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { fetchFundingDetail, fetchReadinessFactors } from '../../../modules/funding/services';
-import { FUNDING_ICON_MAP, QUALIFY_REASONS_MAP, FUNDING_REVIEW_STATUS, ENGINE_STATUS_LABELS, MATCH_LEVEL_LABELS, ENGINE_STATUS_VALUES, READINESS_FACTOR_LABELS, FACTOR_STATUS_VALUES, BADGE_LABELS, FACTOR_ICON_STYLES, META_ITEM_LABELS, READINESS_BADGE_STYLES } from '../../../config/funding';
+import { FUNDING_ICON_MAP, QUALIFY_REASONS_MAP, ENGINE_STATUS_LABELS, MATCH_LEVEL_LABELS, ENGINE_STATUS_VALUES, READINESS_FACTOR_LABELS, FACTOR_STATUS_VALUES, BADGE_LABELS, FACTOR_ICON_STYLES, META_ITEM_LABELS, READINESS_BADGE_STYLES } from '../../../config/funding';
 import { getFundingColorStyles } from '../../../config/fundingColor';
 import { toast } from 'react-toastify';
 import { UncontrolledTooltip } from 'reactstrap';
@@ -264,13 +264,6 @@ const FundingDetail = () => {
         qualify_reasons = [],
         readiness_factors = [],
         missing_documents = [],
-        latest_review_status,
-        latest_review_id = null,
-        has_funding_application = false,
-        can_start_new_funding_request = false,
-        funding_application_is_editable = false,
-        funding_application_funding_request_id = null,
-        funding_application_status = null,
     } = data;
 
     const colors = getFundingColorStyles(icon_color);
@@ -295,22 +288,11 @@ const FundingDetail = () => {
         const s = r.status?.toLowerCase();
         return s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED || s === FACTOR_STATUS_VALUES.WEAK;
     });
-    const isPending = latest_review_status === FUNDING_REVIEW_STATUS.PENDING;
-
-    // The approved request and the application it produced both still exist in
-    // the data once a round is over, which is why this card used to go on
-    // offering "View Application" for a file that had already been sent to a
-    // lender, funded, closed or denied. The server decides when a round is
-    // settled and says so here, so the card can go back to offering a fresh
-    // request instead of parking the borrower on something they cannot act on.
-    const previousRoundSettled = can_start_new_funding_request;
-    const hasLiveApplication = has_funding_application && !previousRoundSettled;
-    const isApproved = latest_review_status === FUNDING_REVIEW_STATUS.APPROVED && !previousRoundSettled;
-    // Status key 9 or below: the application is still the borrower's to change,
-    // so the card sends them straight into it. Past that it is read-only and
-    // `previousRoundSettled` puts the card back to starting a new request.
-    const canEditApplication = hasLiveApplication && funding_application_is_editable;
-    const editApplicationId = funding_application_funding_request_id ?? latest_review_id;
+    // Every funding request is a new one: an earlier request or application for
+    // this option (pending, approved, on hold, ...) does not change this card.
+    // Only eligibility can stop the borrower from starting.
+    const isNotAvailable = finalEngineStatus === ENGINE_STATUS_VALUES.HIDDEN;
+    const cannotStart = hasMissingFactors || isNotAvailable;
 
     return (
         <div className="page-content">
@@ -477,49 +459,19 @@ const FundingDetail = () => {
                                 Next Step
                             </p>
                             <p className="funding-detail-footer-desc">
-                                {canEditApplication
-                                    ? `Your funding application is ${funding_application_status}. You can still review and edit it.`
-                                    : isPending
-                                    ? 'You have already applied for this funding option. Please wait for approval or rejection.'
-                                    : isApproved
-                                        ? 'Your funding request is approved! Please proceed with the final funding application.'
-                                        : finalEngineStatus === 'Hidden'
-                                            ? 'This funding option is currently not available for your profile.'
-                                            : hasMissingFactors
-                                                ? 'Please address missing underwriting factors before starting your review.'
-                                                : 'Start your funding request by providing a few details and uploading missing documents.'}
+                                {isNotAvailable
+                                    ? 'This funding option is currently not available for your profile.'
+                                    : hasMissingFactors
+                                        ? 'Please address missing underwriting factors before starting your review.'
+                                        : 'Start your funding request by providing a few details and uploading missing documents.'}
                             </p>
                         </div>
                         <span id="btn-start-funding-request-wrapper" className="funding-detail-btn-wrapper">
-                            {canEditApplication ? (
-                                <Link
-                                    to={`/fund-application/${editApplicationId}`}
-                                    className="btn btn-info d-flex align-items-center justify-content-center gap-2 fw-medium px-4"
-                                >
-                                    <i className="ri-edit-2-line" />
-                                    Edit Application
-                                </Link>
-                            ) : hasLiveApplication ? (
-                                <Link
-                                    to="/my-applications"
-                                    className="btn btn-info d-flex align-items-center justify-content-center gap-2 fw-medium px-4"
-                                >
-                                    View Application
-                                    <i className="ri-arrow-right-line" />
-                                </Link>
-                            ) : (hasMissingFactors || isPending || finalEngineStatus === 'Hidden') && !isApproved ? (
+                            {cannotStart ? (
                                 <span className="btn btn-primary disabled d-flex align-items-center justify-content-center gap-2 fw-medium px-4">
                                     Start Funding Request
                                     <i className="ri-arrow-right-line" />
                                 </span>
-                            ) : isApproved ? (
-                                <Link
-                                    to={`/fund-application/${latest_review_id}`}
-                                    className="btn btn-success d-flex align-items-center justify-content-center gap-2 fw-medium px-4"
-                                >
-                                    Process Application
-                                    <i className="ri-arrow-right-line" />
-                                </Link>
                             ) : (
                                 <Link to={`/funding/${id}/review`} className="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium px-4">
                                     Start Funding Request
@@ -527,9 +479,9 @@ const FundingDetail = () => {
                                 </Link>
                             )}
                         </span>
-                        {(isPending || finalEngineStatus === 'Hidden') && (
+                        {isNotAvailable && (
                             <UncontrolledTooltip placement="top" target="btn-start-funding-request-wrapper">
-                                {isPending ? 'Already applied. Please wait for approval or rejection.' : 'Not eligible for this funding option.'}
+                                Not eligible for this funding option.
                             </UncontrolledTooltip>
                         )}
                     </div>
