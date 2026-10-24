@@ -3,6 +3,7 @@ import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
 import type { OwnerInfo, CoBorrower } from '../../types'
 import StepNavigation from '../shared/StepNavigation'
+import SsnInput from '../../../../components/SsnInput/SsnInput'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 import CoBorrowerTable from '../shared/CoBorrowerTable'
 import CustomDropdown from '../../../../components/Common/CustomDropdown'
@@ -356,17 +357,12 @@ export default function OwnershipInformationStep({
           {hasError('date_of_birth') && <div className="invalid-feedback d-block">{getFieldError('date_of_birth')}</div>}
         </div>
         <div className="col-md-6">
-          <label className="form-label">
+          <label className="form-label" htmlFor="owner-ssn">
             Social Security Number (SSN) <span className="text-danger">*</span>
           </label>
-          <input
-            type="text"
-            className={`form-control ${hasError('ssn') ? 'is-invalid' : ''}`}
-            placeholder="xxx-xx-xxxx"
-            value={owner.ssn}
-            onChange={(e) => setOwner({ ...owner, ssn: formatSSN(e.target.value) })}
-          />
-          {hasError('ssn') && <div className="invalid-feedback">{getFieldError('ssn')}</div>}
+          {/* The same SSN field as the profile's: masked at rest, edited on a click. */}
+          <SsnInput id="owner-ssn" value={owner.ssn} onChange={(ssn) => setOwner({ ...owner, ssn })} invalid={hasError('ssn')} />
+          {hasError('ssn') && <div className="invalid-feedback d-block">{getFieldError('ssn')}</div>}
         </div>
 
         <div className="col-md-6">
@@ -381,7 +377,7 @@ export default function OwnershipInformationStep({
             <input
               type="tel"
               className={`form-control ${hasError('phone_number') ? 'is-invalid' : ''}`}
-              placeholder="(123) 456-7890"
+              placeholder="(555) 555-5555"
               value={owner.phoneNumber}
               onChange={(e) => setOwner({ ...owner, phoneNumber: formatPhoneNumber(e.target.value) })}
               maxLength={14}

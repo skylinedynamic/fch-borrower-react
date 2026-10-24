@@ -118,7 +118,7 @@ describe('OwnershipInformationStep — SSN handling (PII, FCRA-relevant)', () =>
     const user = userEvent.setup()
     const { getSave } = renderStep()
 
-    const ssnInput = await screen.findByPlaceholderText('xxx-xx-xxxx')
+    const ssnInput = await screen.findByLabelText(/social security number/i)
     await user.type(ssnInput, '123456789')
 
     expect((ssnInput as HTMLInputElement).value).toBe('123-45-6789')
@@ -132,6 +132,14 @@ describe('OwnershipInformationStep — SSN handling (PII, FCRA-relevant)', () =>
     expect(receivedBody.ssn).not.toContain('-')
   })
 
+  it('shows a phone example a real US number could be', async () => {
+    renderStep()
+
+    // (123) 456-7890 is not one: an area code never starts with 1.
+    expect(await screen.findByPlaceholderText('(555) 555-5555')).toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('(123) 456-7890')).not.toBeInTheDocument()
+  })
+
   it('never logs the SSN to the console while typing or saving', async () => {
     server.use(
       http.get('*/borrower/funding-application/ownership-info', () => HttpResponse.json({ status: true, data: {} })),
@@ -143,7 +151,7 @@ describe('OwnershipInformationStep — SSN handling (PII, FCRA-relevant)', () =>
     const user = userEvent.setup()
     const { getSave } = renderStep()
 
-    const ssnInput = await screen.findByPlaceholderText('xxx-xx-xxxx')
+    const ssnInput = await screen.findByLabelText(/social security number/i)
     await user.type(ssnInput, '123456789')
     await getSave()!()
 
@@ -151,17 +159,20 @@ describe('OwnershipInformationStep — SSN handling (PII, FCRA-relevant)', () =>
     expect(allLoggedArgs.some((arg) => arg.includes('123456789') || arg.includes('123-45-6789'))).toBe(false)
   })
 
-  it('pre-fills and re-formats a full SSN returned by the API', async () => {
+  it('pre-fills a full SSN returned by the API masked, as on the profile, in full on the eye button', async () => {
     server.use(
       http.get('*/borrower/funding-application/ownership-info', () =>
         HttpResponse.json({ status: true, data: { ssn: '987654321', first_name: 'Jane' } })
       )
     )
+    const user = userEvent.setup()
 
     renderStep()
 
-    const ssnInput = await screen.findByPlaceholderText('xxx-xx-xxxx')
-    await waitFor(() => expect((ssnInput as HTMLInputElement).value).toBe('987-65-4321'))
+    const ssnInput = await screen.findByLabelText(/social security number/i)
+    await waitFor(() => expect((ssnInput as HTMLInputElement).value).toBe('***-**-4321'))
+    await user.click(screen.getByRole('button', { name: /show ssn/i }))
+    expect((ssnInput as HTMLInputElement).value).toBe('987-65-4321')
   })
 })
 
@@ -190,8 +201,8 @@ describe('OwnershipInformationStep — when the country list never loaded', () =
 
     renderStep()
 
-    const ssnInput = await screen.findByPlaceholderText('xxx-xx-xxxx')
-    await waitFor(() => expect((ssnInput as HTMLInputElement).value).toBe('987-65-4321'))
+    const ssnInput = await screen.findByLabelText(/social security number/i)
+    await waitFor(() => expect((ssnInput as HTMLInputElement).value).toBe('***-**-4321'))
   })
 
   it('defaults the country to the US once the list is there', async () => {
