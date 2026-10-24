@@ -256,7 +256,7 @@ describe('OwnershipInformationStep — save messages', () => {
       )
     )
     const { getSave } = renderStep()
-    await screen.findByPlaceholderText('xxx-xx-xxxx')
+    await screen.findByLabelText(/social security number/i)
 
     await expect(getSave()!()).resolves.toBe(false)
 
