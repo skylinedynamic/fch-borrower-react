@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FUNDING_ICON_MAP, FUNDING_REVIEW_STATUS, ENGINE_STATUS_LABELS, ENGINE_STATUS_VALUES, FACTOR_STATUS_VALUES } from '../../../config/funding';
+import { FUNDING_ICON_MAP, FUNDING_REVIEW_STATUS, ENGINE_STATUS_LABELS, ENGINE_STATUS_VALUES } from '../../../config/funding';
+import { eligibilityLabel, hasMissingReadinessFactors } from '../../../utils/fundingEligibility';
 import { getFundingColorStyles } from '../../../config/fundingColor';
 import '../../../../assets/css/funding.css';
 
@@ -291,10 +292,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
     const colors = resolveColor(icon_color);
 
     // Detect missing underwriting factors
-    const missingFactors = readiness_factors.filter(f => {
-        const s = f.status?.toLowerCase();
-        return s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED || s === FACTOR_STATUS_VALUES.WEAK;
-    });
+    const missingFactors = readiness_factors.filter(f => hasMissingReadinessFactors([f]));
     const hasMissing = missingFactors.length > 0;
 
     // Pending = already applied, awaiting review
@@ -309,7 +307,10 @@ const FundingCard: React.FC<FundingCardProps> = ({
 
     // Pill label & color (matching mockup yellow/brown for missing)
     const sec = getCSSVar('--secondary-color', '#1cbfca');
-    const displayLabel = isEngineLocked ? ENGINE_STATUS_LABELS.LOCKED : (hasMissing ? ENGINE_STATUS_LABELS.MISSING_INFO : isPending ? ENGINE_STATUS_LABELS.UNDER_REVIEW : ENGINE_STATUS_LABELS.LIKELY_ELIGIBLE);
+    // Same eligibility label as the detail page (BUG-026); a pending request
+    // shows Under Review on the card, which is blocked until it is decided.
+    const eligibility = eligibilityLabel({ engineStatus: engine_status, engineStatusLabel: engine_status_label, hasMissingFactors: hasMissing });
+    const displayLabel = isPending && !hasMissing && !isEngineLocked ? ENGINE_STATUS_LABELS.UNDER_REVIEW : eligibility;
     const pillBg    = isEngineLocked ? '#f3f4f6' : hasMissing ? '#fee2e2' : isPending ? '#f0f0ff' : `${sec}1a`;
     const pillColor = isEngineLocked ? '#4b5563' : hasMissing ? '#ef4444' : isPending ? '#4f52c8' : sec;
 
