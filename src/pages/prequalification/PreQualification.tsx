@@ -30,6 +30,7 @@ export default function PreQualification() {
     setPersonal,
     business,
     setBusiness,
+    startDateOnFile,
     support,
     setSupport,
     personalErrors,
@@ -135,6 +136,7 @@ export default function PreQualification() {
               onPrevious={() => handleTabClick(0)}
               errors={businessErrors}
               isSubmitting={submitBusinessInfoMutation.isPending}
+              startDateOnFile={startDateOnFile}
             />
           )}
         </div>

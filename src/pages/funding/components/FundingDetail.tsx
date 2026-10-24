@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { fetchFundingDetail, fetchReadinessFactors } from '../../../modules/funding/services';
 import { FUNDING_ICON_MAP, QUALIFY_REASONS_MAP, ENGINE_STATUS_LABELS, MATCH_LEVEL_LABELS, ENGINE_STATUS_VALUES, READINESS_FACTOR_LABELS, FACTOR_STATUS_VALUES, BADGE_LABELS, FACTOR_ICON_STYLES, META_ITEM_LABELS, READINESS_BADGE_STYLES } from '../../../config/funding';
 import { eligibilityLabel, hasMissingReadinessFactors } from '../../../utils/fundingEligibility';
+import { formatSpeedToFunds } from '../../../utils/formatters';
 import { getFundingColorStyles } from '../../../config/fundingColor';
 import { toast } from 'react-toastify';
 import { UncontrolledTooltip } from 'reactstrap';
@@ -277,7 +278,7 @@ const FundingDetail = () => {
     const metaItems = [
         { label: META_ITEM_LABELS.RECOMMENDED_RANGE, value: amount_range || '—' },
         { label: META_ITEM_LABELS.TERM, value: terms || '—' },
-        { label: META_ITEM_LABELS.SPEED_TO_FUNDS, value: speed_to_funds ? `${speed_to_funds} Days` : '—' },
+        { label: META_ITEM_LABELS.SPEED_TO_FUNDS, value: formatSpeedToFunds(speed_to_funds) },
         { label: META_ITEM_LABELS.USES, value: Array.isArray(uses) && uses.length > 0 ? uses.join(', ') : '—' },
     ];
 

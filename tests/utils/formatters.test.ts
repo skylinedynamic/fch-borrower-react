@@ -15,6 +15,7 @@ import {
   formatZipCode,
   formatNumber,
   unformatNumber,
+  formatSpeedToFunds,
 } from '../../src/utils/formatters'
 
 describe('formatSSN', () => {
@@ -158,5 +159,43 @@ describe('formatNumber / unformatNumber', () => {
   it('returns empty string for empty input', () => {
     expect(formatNumber('')).toBe('')
     expect(unformatNumber('')).toBe('')
+  })
+})
+
+/**
+ * BUG-025 (CP-FUND-07): the funding detail showed "1-5 Days Days". The value
+ * is free text that usually carries its own unit ("1-5 Days", "24-72 Hours"),
+ * and the page appended " Days" to it anyway.
+ */
+describe('formatSpeedToFunds', () => {
+  it.each([
+    ['1-5 Days', '1-5 Days'],
+    ['24-72 Hours', '24-72 Hours'],
+    ['2 Weeks', '2 Weeks'],
+    ['1 - 7 days', '1 - 7 days'],
+  ])('keeps a value that has its own unit: %s', (value, expected) => {
+    expect(formatSpeedToFunds(value)).toBe(expected)
+  })
+
+  it.each([
+    ['1-5', '1-5 Days'],
+    ['7', '7 Days'],
+    [' 3 - 7 ', '3 - 7 Days'],
+  ])('adds Days to a bare number or range: %s', (value, expected) => {
+    expect(formatSpeedToFunds(value)).toBe(expected)
+  })
+
+  it.each([
+    ['1-5 Days Days', '1-5 Days'],
+    ['24-72 Hours Days', '24-72 Hours'],
+  ])('repairs a unit doubled by an earlier save: %s', (value, expected) => {
+    expect(formatSpeedToFunds(value)).toBe(expected)
+  })
+
+  it('returns the fallback when there is no value', () => {
+    expect(formatSpeedToFunds(null)).toBe('—')
+    expect(formatSpeedToFunds(undefined)).toBe('—')
+    expect(formatSpeedToFunds('  ')).toBe('—')
+    expect(formatSpeedToFunds('', '1 - 7 Days')).toBe('1 - 7 Days')
   })
 })

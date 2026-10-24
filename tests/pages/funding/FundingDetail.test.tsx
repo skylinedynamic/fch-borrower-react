@@ -91,6 +91,31 @@ describe('FundingDetail eligibility label', () => {
   })
 })
 
+/**
+ * Defect (BUG-025, CP-FUND-07): SPEED TO FUNDS showed "1-5 Days Days" - the
+ * stored value already has its unit and the page appended " Days" again.
+ */
+describe('FundingDetail speed to funds', () => {
+  it('shows a value that has its own unit once', async () => {
+    renderDetail({ speed_to_funds: '1-5 Days' })
+
+    expect(await screen.findByText('1-5 Days')).toBeInTheDocument()
+    expect(screen.queryByText(/Days Days/)).not.toBeInTheDocument()
+  })
+
+  it('does not put Days after a value in hours', async () => {
+    renderDetail({ speed_to_funds: '24-72 Hours' })
+
+    expect(await screen.findByText('24-72 Hours')).toBeInTheDocument()
+  })
+
+  it('adds Days to a bare range', async () => {
+    renderDetail({ speed_to_funds: '3-7' })
+
+    expect(await screen.findByText('3-7 Days')).toBeInTheDocument()
+  })
+})
+
 describe('FundingDetail call to action', () => {
   /**
    * Defect: an On Hold application for this option turned the card into

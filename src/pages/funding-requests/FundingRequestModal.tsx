@@ -7,6 +7,7 @@ import FundingRequestSkeleton from './FundingRequestSkeleton'
 import { useBrandingStore } from '../../store/brandingStore'
 import { getFileConfig } from '../../config/fileTypeConfig'
 import { FUNDING_REVIEW_STATUS } from '../../config/funding'
+import { formatSpeedToFunds } from '../../utils/formatters'
 import '../../../assets/css/funding-requests.css'
 interface FundingRequestModalProps {
     show: boolean
@@ -122,7 +123,7 @@ export default function FundingRequestModal({ show, onHide, review }: FundingReq
                                                             }).join(' - ')
                                                             : 'N/A'}
                                                     </td>
-                                                    <td className="text-end">{displayReview.estimated_speed ? displayReview.estimated_speed.replace('Days Days', 'Days') : '1 - 7 Days'}</td>
+                                                    <td className="text-end">{formatSpeedToFunds(displayReview.estimated_speed, '1 - 7 Days')}</td>
                                                 </tr>
                                             </tbody>
                                         </table>

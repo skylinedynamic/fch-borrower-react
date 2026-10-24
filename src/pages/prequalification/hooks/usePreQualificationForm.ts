@@ -39,9 +39,14 @@ export const usePreQualificationForm = () => {
     industryType: '',
     businessStructure: '',
     yearsInBusiness: '',
+    businessStartDate: '',
     annualRevenue: '',
     monthlyRevenue: '',
   })
+  // Whether the borrower's profile already has a business start date. Without
+  // one the Business Details step asks for it (BUG-037); with one it is only
+  // changed in the profile (by change request), never from here.
+  const [startDateOnFile, setStartDateOnFile] = useState(false)
 
   const [support, setSupport] = useState<FinancialSupport>({
     fundingRequestedAmount: '',
@@ -86,11 +91,14 @@ export const usePreQualificationForm = () => {
       stateOfIncorporation: apiData.state_of_incorporation || '',
     })
 
+    setStartDateOnFile(Boolean(apiData.business_start_date))
+
     setBusiness({
       businessName: apiData.business_name || '',
       industryType: apiData.industry_type || '',
       businessStructure: apiData.business_structure || '',
       yearsInBusiness: apiData.years_in_business || '',
+      businessStartDate: apiData.business_start_date || '',
       annualRevenue: apiData.annual_revenue ? formatCurrency(apiData.annual_revenue.toString()) : '',
       monthlyRevenue: apiData.monthly_revenue ? formatCurrency(apiData.monthly_revenue.toString()) : '',
     })
@@ -128,6 +136,7 @@ export const usePreQualificationForm = () => {
         industryType: apiData.industry_type || '',
         businessStructure: apiData.business_structure || '',
         yearsInBusiness: apiData.years_in_business || '',
+        businessStartDate: apiData.business_start_date || '',
         annualRevenue: apiData.annual_revenue ? formatCurrency(apiData.annual_revenue.toString()) : '',
         monthlyRevenue: apiData.monthly_revenue ? formatCurrency(apiData.monthly_revenue.toString()) : '',
       }
@@ -255,7 +264,8 @@ export const usePreQualificationForm = () => {
         business_structure: business.businessStructure,
         monthly_revenue: monthlyRevenue,
         annual_revenue: annualRevenue,
-        years_in_business: business.yearsInBusiness
+        years_in_business: business.yearsInBusiness || null,
+        ...(startDateOnFile ? {} : { business_start_date: business.businessStartDate || null }),
       }))
       if (response?.id) {
         setPreQualId(response.id)
@@ -277,7 +287,8 @@ export const usePreQualificationForm = () => {
           'business_structure': 'businessStructure',
           'monthly_revenue': 'monthlyRevenue',
           'annual_revenue': 'annualRevenue',
-          'years_in_business': 'yearsInBusiness'
+          'years_in_business': 'yearsInBusiness',
+          'business_start_date': 'businessStartDate'
         }
         Object.keys(apiErrors).forEach(key => {
           const mappedKey = errorKeyMap[key] || key
@@ -477,6 +488,7 @@ export const usePreQualificationForm = () => {
     setPersonal,
     business,
     setBusiness,
+    startDateOnFile,
     support,
     setSupport,
     personalErrors,
