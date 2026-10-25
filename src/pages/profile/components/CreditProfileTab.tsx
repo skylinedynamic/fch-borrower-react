@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
 import { toast } from 'react-toastify'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from '../../../lib/query'
 import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
 import { useAuth } from '../../../hooks/useAuth'
@@ -73,8 +75,14 @@ const DetailItem = ({ label, value, icon }: DetailItemProps) => (
 
 const CITY_NOT_LISTED = '__not_listed__'
 
-export default function CreditProfileTab() {
+interface CreditProfileTabProps {
+  /** Called once a credit profile request has been accepted, so the page can move the borrower on. */
+  onSubmitted?: () => void
+}
+
+export default function CreditProfileTab({ onSubmitted }: CreditProfileTabProps = {}) {
   const { user, refreshUser } = useAuth()
+  const queryClient = useQueryClient()
   const [loading, setLoading] = useState(false)
   const [initialized, setInitialized] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -324,6 +332,10 @@ function zipError(value: string): string | null {
       return
     }
 
+    // Moving the borrower on (to the Step-By-Step Guide) is for the first
+    // submission; editing and resubmitting a request already in stays here.
+    const firstSubmission = !submittedData
+
     try {
       setSubmitting(true)
       // Sent with the form, not implied by it. The API refuses without both and
@@ -336,8 +348,11 @@ function zipError(value: string): string | null {
         ...consent,
       })
       toast.success(res.data?.message || 'Credit profile request submitted successfully.')
+      // Moves the Getting Started walkthrough on to "waiting for verification".
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.completion() })
       // On success: fetch the saved record and show details view
       await fetchSubmittedDetails()
+      if (firstSubmission) onSubmitted?.()
     } catch (err: any) {
       // Every failure on this form is reported in the form.
       //

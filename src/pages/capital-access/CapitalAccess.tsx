@@ -83,7 +83,7 @@ export default function CapitalAccess() {
                         </p>
                       </div>
                       <Link
-                        to={`/capital-access/${overview.current_play.id}/roadmap`}
+                        to={`/credit-card-stacking/${overview.current_play.id}/roadmap`}
                         className="ca-btn ca-btn-primary"
                         style={{ minWidth: '160px', background: 'var(--primary-color, #405189)', borderColor: 'var(--primary-color, #405189)' }}
                       >

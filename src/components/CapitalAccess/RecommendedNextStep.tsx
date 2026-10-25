@@ -26,7 +26,7 @@ export default function RecommendedNextStep({ disabled = false }: RecommendedNex
         </button>
       ) : (
         <Link
-          to="/capital-access/strategy"
+          to="/credit-card-stacking/strategy"
           className="ca-btn ca-btn-primary"
           style={{ minWidth: '180px' }}
         >

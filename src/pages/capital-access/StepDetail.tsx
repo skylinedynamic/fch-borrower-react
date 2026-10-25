@@ -58,7 +58,7 @@ export default function StepDetail() {
   }, [step]);
 
   if (isError) {
-    return <Navigate to={`/capital-access/${strategyId}/roadmap`} />;
+    return <Navigate to={`/credit-card-stacking/${strategyId}/roadmap`} />;
   }
 
   if (isLoading || !step) {
@@ -87,7 +87,7 @@ export default function StepDetail() {
   const isDelayLocked = step.play.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' && !step.play.isCompleted;
 
   if (!step.play.isAccessible || isDelayLocked) {
-    return <Navigate to="/capital-access/strategy" />;
+    return <Navigate to="/credit-card-stacking/strategy" />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,7 +106,7 @@ export default function StepDetail() {
         notes: notes || null,
         status,
       });
-      navigate(`/capital-access/${step.play.id}/roadmap`);
+      navigate(`/credit-card-stacking/${step.play.id}/roadmap`);
     } catch (err: any) {
       if (err.response?.data?.errors?.credit_limit) {
         setValidationError(err.response.data.errors.credit_limit);
@@ -171,7 +171,7 @@ export default function StepDetail() {
           {/* ── Page Header ── */}
           <div className="d-flex align-items-center gap-3 mb-4">
             <Link
-              to={`/capital-access/${step.play.id}/roadmap`}
+              to={`/credit-card-stacking/${step.play.id}/roadmap`}
               className="ca-back-btn"
               title="Back to Roadmap"
             >
@@ -387,7 +387,7 @@ export default function StepDetail() {
                     {/* Footer actions */}
                     <div className="d-flex justify-content-end mt-4 pt-3 border-top">
                       <Link
-                        to={`/capital-access/${step.play.id}/roadmap`}
+                        to={`/credit-card-stacking/${step.play.id}/roadmap`}
                         className="ca-btn ca-btn-primary ca-btn-min-w"
                       >
                         <i className="ri-arrow-left-line me-1"></i> Back to Roadmap
@@ -509,7 +509,7 @@ export default function StepDetail() {
                       {/* ── Form Actions ── */}
                       <div className="d-flex justify-content-end gap-3 pt-3 border-top">
                         <Link
-                          to={`/capital-access/${step.play.id}/roadmap`}
+                          to={`/credit-card-stacking/${step.play.id}/roadmap`}
                           className="ca-btn ca-btn-outline ca-btn-min-w"
                         >
                           Cancel

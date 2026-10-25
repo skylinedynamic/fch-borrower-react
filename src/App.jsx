@@ -32,6 +32,7 @@ import PreFlightChecklist from '../src/pages/capital-access/PreFlightChecklist.t
 import PlayRoadmap from '../src/pages/capital-access/PlayRoadmap.tsx'
 import StepDetail from '../src/pages/capital-access/StepDetail.tsx'
 import PlayCompletion from '../src/pages/capital-access/PlayCompletion.tsx'
+import PrefixRedirect from './components/Common/PrefixRedirect'
 import ResourceHub from '../src/pages/resources/ResourceHub.jsx'
 import ResourceDetail from '../src/pages/resources/ResourceDetail.jsx'
 import Funding from '../src/pages/funding/Funding.tsx'
@@ -138,7 +139,9 @@ export default function App() {
               <Route path="resources" element={<CreditResources />} />
             </Route>
 
-            <Route path="capital-access" element={<CapitalAccessGuard />}>
+            {/* Capital Access was renamed; keep its old links working. */}
+            <Route path="capital-access/*" element={<PrefixRedirect to="/credit-card-stacking" />} />
+            <Route path="credit-card-stacking" element={<CapitalAccessGuard />}>
               <Route index element={<CapitalAccess />} />
               <Route path="strategy" element={<StrategySelection />} />
               {/* CapitalAccessStrategyGuard validates the :id against the user's recommended strategy */}

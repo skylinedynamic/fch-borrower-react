@@ -138,7 +138,8 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
       onSuccess: async (response) => {
         toast.success(response.message || 'Personal information saved successfully')
         await refreshUser()
-        // onSave() // Call parent onSave if needed
+        // On to the next section still to complete.
+        onSave()
       },
       onError: (error: any) => {
         // Handle validation errors from server

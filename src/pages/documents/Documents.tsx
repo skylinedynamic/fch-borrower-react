@@ -13,6 +13,7 @@ import { DocumentSection } from './components/DocumentSection'
 import { FileManagerModal } from '../../components/FileManagerModal/FileManagerModal'
 import { DocumentSectionLoader } from '../../components/Loader/DocumentSectionLoader'
 import DeleteConfirmationModal from '../../components/GlobalModal/DeleteConfirmModal'
+import { useOnboardingPopupStore } from '../../store/onboardingPopupStore'
 
 
 export default function Documents() {
@@ -20,6 +21,15 @@ export default function Documents() {
   const [uploads, setUploads] = useState<Record<string, FileSystemItem[]>>({})
   const [uploadingSections, setUploadingSections] = useState<Record<string, boolean>>({})
   const queryClient = useQueryClient()
+
+  // Uploading here moves the Getting Started walkthrough on; its next popup is
+  // about another page, so it doesn't open by itself over this one (the Next
+  // step button still opens it).
+  const { holdPage: holdOnboardingPopup, releasePage: releaseOnboardingPopup } = useOnboardingPopupStore()
+  useEffect(() => {
+    holdOnboardingPopup()
+    return releaseOnboardingPopup
+  }, [holdOnboardingPopup, releaseOnboardingPopup])
 
   const [loading, setLoading] = useState(true)
   const [showFileManager, setShowFileManager] = useState(false)
@@ -104,6 +114,8 @@ export default function Documents() {
           })
 
           await queryClient.invalidateQueries({ queryKey: queryKeys.documents.list() })
+          // Uploading documents is a Getting Started step for funding-only borrowers.
+          queryClient.invalidateQueries({ queryKey: queryKeys.profile.completion() })
           toast.success(`${selectedFiles.length} file(s) attached to ${currentSection}`)
         } catch (error) {
           console.error('Failed to attach files', error)

@@ -49,7 +49,7 @@ export default function StrategySelection() {
           <div className="row pb-1 mb-3">
             <div className="col-12">
               <div className="d-flex align-items-center gap-3 py-2 w-100">
-                <Link to="/capital-access" className="ca-back-btn" title="Back to Overview">
+                <Link to="/credit-card-stacking" className="ca-back-btn" title="Back to Overview">
                   <i className="ri-arrow-left-line fs-16"></i>
                 </Link>
                 <div>
@@ -71,7 +71,7 @@ export default function StrategySelection() {
               </div>
               <h5 className="ca-empty-state-title">No Capital Access Strategies Available</h5>
               <p className="ca-empty-state-desc mb-3">There are no funding strategies available at this time.</p>
-              <Link to="/capital-access" className="ca-btn ca-btn-outline">
+              <Link to="/credit-card-stacking" className="ca-btn ca-btn-outline">
                 <i className="ri-arrow-left-line"></i> Back to Overview
               </Link>
             </div>
@@ -163,7 +163,7 @@ export default function StrategySelection() {
                             Locked — {delayTime?.text ?? 'soon'}
                           </button>
                         ) : (
-                          <Link to={`/capital-access/${topPlay.id}/overview`} className="ca-btn ca-btn-primary" style={{ minWidth: '180px' }}>
+                          <Link to={`/credit-card-stacking/${topPlay.id}/overview`} className="ca-btn ca-btn-primary" style={{ minWidth: '180px' }}>
                             View Strategy <i className="ri-arrow-right-line ms-1"></i>
                           </Link>
                         )}
@@ -222,7 +222,7 @@ export default function StrategySelection() {
                         return (
                           <Link
                             key={play.id}
-                            to={`/capital-access/${play.id}/overview`}
+                            to={`/credit-card-stacking/${play.id}/overview`}
                             className="ca-strategy-row-premium text-decoration-none"
                           >
                             <div className="d-flex align-items-center gap-3 flex-grow-1" style={{ minWidth: 0 }}>
@@ -275,7 +275,7 @@ export default function StrategySelection() {
                     {completedPlays.map(play => (
                       <Link
                         key={play.id}
-                        to={`/capital-access/${play.id}/roadmap`}
+                        to={`/credit-card-stacking/${play.id}/roadmap`}
                         className="ca-strategy-row-premium text-decoration-none"
                         style={{ borderLeft: '4px solid #10b981', background: '#f0fdf4' }}
                       >

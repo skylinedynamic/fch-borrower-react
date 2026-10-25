@@ -7,7 +7,7 @@ export default function PlayCompletion() {
   const location = useLocation();
 
   if (!location.state || !location.state.play) {
-    return <Navigate to="/capital-access/strategy" />;
+    return <Navigate to="/credit-card-stacking/strategy" />;
   }
 
   const { play } = location.state;
@@ -86,10 +86,10 @@ export default function PlayCompletion() {
 
               {/* Actions */}
               <div className="d-flex gap-3 justify-content-center">
-                <Link to={`/capital-access/${play.id}/roadmap`} className="ca-btn ca-btn-outline">
+                <Link to={`/credit-card-stacking/${play.id}/roadmap`} className="ca-btn ca-btn-outline">
                   <i className="ri-road-map-line"></i> View Roadmap
                 </Link>
-                <Link to="/capital-access/strategy" className="ca-btn ca-btn-primary">
+                <Link to="/credit-card-stacking/strategy" className="ca-btn ca-btn-primary">
                   Next Play <i className="ri-arrow-right-line"></i>
                 </Link>
               </div>

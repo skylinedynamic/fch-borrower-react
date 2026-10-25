@@ -385,7 +385,7 @@ export default function Dashboard() {
                                             </div>
                                             <button
                                                 className="ca-dw-cta-btn"
-                                                onClick={() => navigate('/capital-access')}
+                                                onClick={() => navigate('/credit-card-stacking')}
                                             >
                                                 {currentPlay ? 'Resume Strategy' : 'Choose Strategy'}
                                                 <i className="ri-arrow-right-line"></i>
