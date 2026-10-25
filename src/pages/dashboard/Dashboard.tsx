@@ -15,6 +15,7 @@ import ApprovedRequestCard from './components/ApprovedRequestCard'
 import UpcomingMeetingsCard from './components/UpcomingMeetingsCard'
 import InvoicesCard from './components/InvoicesCard'
 import SupportCard from './components/SupportCard'
+import PreQualificationDetailsModal from '../myapplication/components/PreQualificationDetailsModal'
 import {
   countPendingInvoices,
   formatUsd,
@@ -60,6 +61,10 @@ export default function Dashboard() {
   const isRestricted = isSubscriptionRestricted(userSubscription)
 
   const [activeRequestIndex, setActiveRequestIndex] = useState(0)
+  // The pre-qualification whose details are open, as on My Applications. The id
+  // stays while the modal closes, so its content doesn't vanish mid-fade.
+  const [preQualificationId, setPreQualificationId] = useState<number | null>(null)
+  const [preQualificationOpen, setPreQualificationOpen] = useState(false)
 
   const { data: dashboardData, isLoading, error } = useDashboard()
   // The same cached query as the layout's banner: no extra request.
@@ -124,7 +129,7 @@ export default function Dashboard() {
           name={user?.name}
           score={overview?.readiness_score ?? 0}
           status={overview?.readiness_status ?? 'N/A'}
-          totalAccess={overview?.estimated_total_access ?? '$0'}
+          totalAccess={overview?.estimated_total_access_compact || overview?.estimated_total_access || '$0'}
           hasActivePlay={!!overview?.current_play}
           onOpenCapitalAccess={awaitingPayment ? undefined : () => navigate('/credit-card-stacking')}
         />
@@ -133,7 +138,7 @@ export default function Dashboard() {
 
         {approvedCard}
 
-        <div className="row g-3 mb-3">
+        <div className="row g-3">
           <div className="col-xl-6 d-flex db-stretch">
             <CreditProfileCard fico={toFicoDisplay(data?.fico_score)} tier={data?.tier} />
           </div>
@@ -142,12 +147,12 @@ export default function Dashboard() {
           </div>
           {invoices.length > 0 && (
             <div className="col-xl-3 col-md-6 d-flex db-stretch">
-              <InvoicesCard invoices={invoices} />
+              <InvoicesCard invoices={invoices} onViewAll={() => navigate('/invoices')} />
             </div>
           )}
         </div>
 
-        <div className="row g-3 mb-3">
+        <div className="row g-3">
           <div className="col-xl-6 d-flex db-stretch">
             <ApplicationsTable
               widget="pre-qualifications"
@@ -158,6 +163,10 @@ export default function Dashboard() {
               emptyTitle="No Pre-Qualification Applications"
               emptyMessage="No applications available at this time."
               onViewAll={() => navigate('/my-applications')}
+              onRowOpen={(row) => {
+                setPreQualificationId(row.id)
+                setPreQualificationOpen(true)
+              }}
             />
           </div>
           <div className="col-xl-6 d-flex db-stretch">
@@ -171,12 +180,19 @@ export default function Dashboard() {
               emptyTitle="No Funding Applications"
               emptyMessage="No recent funding applications available."
               onViewAll={() => navigate('/my-applications')}
+              rowLink={(row) => `/my-applications/funding/${row.id}`}
             />
           </div>
         </div>
 
         <SupportCard onContact={() => navigate('/appointment')} />
       </div>
+
+      <PreQualificationDetailsModal
+        isOpen={preQualificationOpen}
+        toggle={() => setPreQualificationOpen(false)}
+        requestId={preQualificationId}
+      />
     </div>
   )
 }

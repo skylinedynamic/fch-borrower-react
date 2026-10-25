@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import DashboardCard, { EmptyState, StatusPill, ViewAllButton } from './DashboardCard'
 
 export interface ApplicationColumn<Row> {
@@ -21,9 +22,17 @@ interface ApplicationsTableProps<Row extends { id: number; status: string; statu
   emptyTitle: string
   emptyMessage: string
   onViewAll: () => void
+  /** Where a row leads: its details page. */
+  rowLink?: (row: Row) => string
+  /** Or what opening a row does, when its details aren't a page (a modal). */
+  onRowOpen?: (row: Row) => void
 }
 
-/** A compact "latest N" table with a status column and a link to the full list. */
+/**
+ * A compact "latest N" table with a status column and a link to the full list.
+ * With `rowLink` or `onRowOpen`, each row opens its details: the first cell is
+ * a real link or button, stretched over the whole row.
+ */
 export default function ApplicationsTable<Row extends { id: number; status: string; status_class: string }>({
   widget,
   title,
@@ -34,7 +43,30 @@ export default function ApplicationsTable<Row extends { id: number; status: stri
   emptyTitle,
   emptyMessage,
   onViewAll,
+  rowLink,
+  onRowOpen,
 }: ApplicationsTableProps<Row>) {
+  const opens = Boolean(rowLink || onRowOpen)
+  const cell = (row: Row, col: ApplicationColumn<Row>) => {
+    const content = col.render(row)
+    if (!col.primary) return content
+    if (rowLink) {
+      return (
+        <Link to={rowLink(row)} className="db-row-link stretched-link">
+          {content}
+        </Link>
+      )
+    }
+    if (onRowOpen) {
+      return (
+        <button type="button" className="db-row-link stretched-link" onClick={() => onRowOpen(row)}>
+          {content}
+        </button>
+      )
+    }
+    return content
+  }
+
   return (
     <DashboardCard
       widget={widget}
@@ -61,13 +93,13 @@ export default function ApplicationsTable<Row extends { id: number; status: stri
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={row.id}>
+                <tr key={row.id} className={opens ? 'is-clickable' : undefined}>
                   {columns.map((col) => (
                     <td
                       key={col.header}
                       className={`${col.primary ? 'db-cell-primary' : ''} ${col.align === 'end' ? 'text-end db-num' : ''} ${col.nowrap ? 'text-nowrap' : ''}`}
                     >
-                      {col.render(row)}
+                      {cell(row, col)}
                     </td>
                   ))}
                   <td className="text-end">

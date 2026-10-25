@@ -1,5 +1,9 @@
 import { test, expect, openFromSidebar, pageHeading } from '../../support/fixtures'
 
+// A loaded funding card: the loading skeleton draws placeholder .funding-card
+// boxes too, but only real cards carry an id (funding-card-<id>).
+const REAL_CARD = '.funding-card[id^="funding-card-"]'
+
 test.describe('Sidebar › Funding', () => {
   test.beforeEach(async ({ page }) => {
     await openFromSidebar(page, 'Funding', /\/funding$/)
@@ -9,7 +13,7 @@ test.describe('Sidebar › Funding', () => {
     // GET /borrower/funding takes ~12s on the local backend.
     await expect(pageHeading(page, 'Funding Options')).toBeVisible({ timeout: 60_000 })
     await expect(page.locator('.page-content')).not.toContainText('No funding options found')
-    await expect(page.locator('.funding-card').first()).toBeVisible()
+    await expect(page.locator(REAL_CARD).first()).toBeVisible()
   })
 
   // E2E-005: this endpoint used to run ~4,200 queries (~12s on its own, 30s+
@@ -26,7 +30,7 @@ test.describe('Sidebar › Funding', () => {
 
   test('opening an available funding option shows its detail page', async ({ page }) => {
     // Pending / engine-locked cards are intentionally not clickable.
-    const card = page.locator('.funding-card:not(.funding-card-disabled):not(.funding-card-locked)').first()
+    const card = page.locator(REAL_CARD + ':not(.funding-card-disabled):not(.funding-card-locked)').first()
     await expect(card).toBeVisible({ timeout: 60_000 })
     await card.click()
 
@@ -35,8 +39,8 @@ test.describe('Sidebar › Funding', () => {
   })
 
   test('a disabled (pending / engine-locked) card does not navigate', async ({ page }) => {
-    await expect(page.locator('.funding-card').first()).toBeVisible({ timeout: 60_000 })
-    const disabled = page.locator('.funding-card.funding-card-disabled').first()
+    await expect(page.locator(REAL_CARD).first()).toBeVisible({ timeout: 60_000 })
+    const disabled = page.locator(REAL_CARD + '.funding-card-disabled').first()
     test.skip((await disabled.count()) === 0, 'No disabled funding cards for this borrower')
 
     await disabled.click()

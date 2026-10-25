@@ -1,6 +1,6 @@
 import React from 'react'
 
-/** Full-width call to action at the foot of the dashboard. */
+/** Full-width call to action at the foot of the dashboard: book time with the team. */
 export default function SupportCard({ onContact }: { onContact: () => void }) {
   return (
     <section className="db-support" data-widget="support" aria-labelledby="db-support-title">
@@ -14,8 +14,8 @@ export default function SupportCard({ onContact }: { onContact: () => void }) {
         <p className="db-support-text">Contact our support team for any queries regarding your applications.</p>
       </div>
       <button type="button" className="db-support-btn" onClick={onContact}>
-        <i className="ri-chat-smile-2-line" aria-hidden="true"></i>
-        Contact Support
+        <i className="ri-calendar-event-line" aria-hidden="true"></i>
+        Make an Appointment
       </button>
     </section>
   )

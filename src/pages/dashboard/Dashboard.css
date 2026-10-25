@@ -26,6 +26,8 @@
 
   /* Neutrals */
   --db-radius: 4px;
+  /* The one gap between blocks, across and down. */
+  --db-gap: 16px;
   --db-surface: var(--vz-card-bg, #fff);
   --db-surface-2: #f5f7fb;
   --db-border: #e6e9f0;
@@ -35,19 +37,13 @@
   --db-shadow: 0 2px 6px rgba(27, 34, 53, 0.05), 0 8px 24px rgba(27, 34, 53, 0.05);
   --db-shadow-hover: 0 12px 32px rgba(27, 34, 53, 0.12);
 
-  /* Fixed palette for cards, KPIs and banners */
+  /* Colour for the sections meant to catch the eye: approved requests, help */
   --db-success-a: #10c9a6;
   --db-success-b: #068e77;
-  --db-warning-a: #ff9f43;
-  --db-warning-b: #e8590c;
   --db-violet-a: #7c6cf2;
   --db-violet-b: #4f3fd1;
   --db-info-a: #3fa9f5;
-  --db-info-b: #1769c2;
-  --db-indigo-a: #5b6ee8;
-  --db-indigo-b: #3343b8;
-  --db-danger-a: #ff6b6b;
-  --db-danger-b: #d63939;
+  --db-approved-tint: #e6f7f2;
 
   /* Meaning-carrying colours */
   --db-good: #0ab39c;
@@ -63,6 +59,21 @@
 
 /* ---------- Equal-height rows ---------- */
 
+/* Bootstrap rows of cards keep the same gap as everything else: the portal's
+   custom.min.css cuts every row's gutter to 30% (about 10px). */
+.db-page .row {
+  --vz-gutter-y: var(--db-gap);
+  margin-right: calc(var(--db-gap) / -2);
+  margin-bottom: var(--db-gap);
+  margin-left: calc(var(--db-gap) / -2);
+}
+
+.db-page .row>* {
+  padding-right: calc(var(--db-gap) / 2);
+  padding-left: calc(var(--db-gap) / 2);
+}
+
+
 /* Each card fills its column, so a row's cards end level. */
 .db-stretch>.db-card {
   flex: 1 1 auto;
@@ -77,6 +88,12 @@
 /* Short content (an empty state) sits in the middle of a stretched card. */
 .db-stretch>.db-card>.db-card-body>.db-empty {
   margin: auto 0;
+}
+
+/* A card's own button (Schedule Meeting, View All Invoices) sits at its foot,
+   so the buttons across a row line up whatever is above them. */
+.db-stretch>.db-card>.db-card-body>.db-outline-btn {
+  margin-top: auto;
 }
 
 /* ---------- Pending invoice alert (semantic: money owed) ---------- */
@@ -205,7 +222,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
   gap: 28px;
-  margin: 20px 0;
+  margin: var(--db-gap) 0;
   padding: 32px;
   overflow: hidden;
   border-radius: var(--db-radius);
@@ -504,15 +521,20 @@
 .db-kpis {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: var(--db-gap);
+  margin-bottom: var(--db-gap);
 }
 
+/* The portal's navy on white: the figures carry the card, not its colour. */
 .db-kpi {
   position: relative;
   overflow: hidden;
   padding: 20px 22px;
+  border: 1px solid var(--db-border);
+  border-top: 3px solid var(--db-brand);
   border-radius: var(--db-radius);
+  color: var(--db-text);
+  background: var(--db-surface);
   box-shadow: var(--db-shadow);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -522,33 +544,14 @@
   box-shadow: var(--db-shadow-hover);
 }
 
-.db-kpi {
-  color: #fff;
-}
-
-.db-kpi.tone-success {
-  background: linear-gradient(135deg, var(--db-success-a), var(--db-success-b));
-}
-
-.db-kpi.tone-warning {
-  background: linear-gradient(135deg, var(--db-warning-a), var(--db-warning-b));
-}
-
-.db-kpi.tone-violet {
-  background: linear-gradient(135deg, var(--db-violet-a), var(--db-violet-b));
-}
-
-.db-kpi.tone-info {
-  background: linear-gradient(135deg, var(--db-info-a), var(--db-info-b));
-}
-
 .db-kpi-watermark {
   position: absolute;
   right: -14px;
   bottom: -22px;
   font-size: 104px;
   line-height: 1;
-  opacity: 0.14;
+  color: var(--db-brand);
+  opacity: 0.04;
   pointer-events: none;
 }
 
@@ -565,6 +568,7 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  color: var(--db-muted);
 }
 
 .db-kpi-icon {
@@ -576,7 +580,8 @@
   align-items: center;
   justify-content: center;
   font-size: 21px;
-  background: rgba(255, 255, 255, 0.22);
+  color: var(--db-brand-ink);
+  background: rgba(var(--db-brand-rgb), 0.08);
 }
 
 .db-kpi-value {
@@ -623,37 +628,9 @@
   align-items: center;
   justify-content: center;
   font-size: 19px;
-  color: #fff;
-}
-
-.db-card-icon.tone-indigo {
-  background: linear-gradient(135deg, var(--db-indigo-a), var(--db-indigo-b));
-  box-shadow: 0 6px 14px rgba(51, 67, 184, 0.3);
-}
-
-.db-card-icon.tone-success {
-  background: linear-gradient(135deg, var(--db-success-a), var(--db-success-b));
-  box-shadow: 0 6px 14px rgba(6, 142, 119, 0.3);
-}
-
-.db-card-icon.tone-warning {
-  background: linear-gradient(135deg, var(--db-warning-a), var(--db-warning-b));
-  box-shadow: 0 6px 14px rgba(232, 89, 12, 0.3);
-}
-
-.db-card-icon.tone-violet {
-  background: linear-gradient(135deg, var(--db-violet-a), var(--db-violet-b));
-  box-shadow: 0 6px 14px rgba(79, 63, 209, 0.3);
-}
-
-.db-card-icon.tone-info {
-  background: linear-gradient(135deg, var(--db-info-a), var(--db-info-b));
-  box-shadow: 0 6px 14px rgba(23, 105, 194, 0.3);
-}
-
-.db-card-icon.tone-danger {
-  background: linear-gradient(135deg, var(--db-danger-a), var(--db-danger-b));
-  box-shadow: 0 6px 14px rgba(214, 57, 57, 0.3);
+  /* One quiet style for every card, whatever its tone. */
+  color: var(--db-brand-ink);
+  background: rgba(var(--db-brand-rgb), 0.08);
 }
 
 .db-card-heading {
@@ -781,15 +758,15 @@
   display: flex;
   align-items: center;
   gap: 24px;
-  margin-bottom: 20px;
+  margin-bottom: var(--db-gap);
   padding: 20px 24px;
   overflow: hidden;
+  border-left: 4px solid var(--db-success-a);
   border-radius: var(--db-radius);
-  color: #fff;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.22), transparent 45%),
-    linear-gradient(110deg, var(--db-success-b), var(--db-success-a));
-  box-shadow: 0 14px 30px rgba(6, 142, 119, 0.28);
+  color: var(--db-text);
+  /* A light green tint: marked out without shouting. */
+  background: linear-gradient(110deg, var(--db-approved-tint), #f5fcfa);
+  box-shadow: var(--db-shadow);
 }
 
 .db-approved-head {
@@ -809,7 +786,8 @@
   align-items: center;
   justify-content: center;
   font-size: 26px;
-  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  background: var(--db-success-b);
 }
 
 .db-approved-eyebrow {
@@ -818,8 +796,7 @@
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: inherit;
-  opacity: 0.8;
+  color: var(--db-success-b);
 }
 
 .db-approved-title {
@@ -832,7 +809,7 @@
 .db-approved-text {
   margin: 2px 0 0;
   font-size: 13px;
-  opacity: 0.9;
+  color: var(--db-body);
 }
 
 .db-approved-facts {
@@ -846,7 +823,7 @@
   min-width: 130px;
   padding: 10px 14px;
   border-radius: var(--db-radius);
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .db-approved-facts dt {
@@ -854,7 +831,7 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  opacity: 0.85;
+  color: var(--db-muted);
 }
 
 .db-approved-facts dd {
@@ -884,7 +861,6 @@
   white-space: nowrap;
   color: var(--db-on-brand);
   background: var(--db-brand);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
   transition: transform 0.15s ease;
 }
 
@@ -909,12 +885,13 @@
   border-radius: var(--db-radius);
   font-size: 12px;
   font-weight: 700;
-  color: inherit;
-  background: rgba(255, 255, 255, 0.16);
+  /* Solid, so they show on the light tint. */
+  color: #fff;
+  background: var(--db-success-b);
 }
 
 .db-pager-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.28);
+  background: color-mix(in srgb, var(--db-success-b) 80%, #000);
 }
 
 .db-pager-btn:disabled {
@@ -930,8 +907,19 @@
 
 /* ---------- Credit profile (score + tier) ---------- */
 
+/* Score and tier are two cards side by side, with a gap: the section itself
+   only lays them out, so it drops the card shell it shares with the others. */
 .db-profile {
   flex-direction: row;
+  gap: var(--db-gap);
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.db-profile:hover {
+  box-shadow: none;
 }
 
 .db-profile-half {
@@ -940,11 +928,15 @@
   display: flex;
   flex-direction: column;
   padding: 18px 20px 20px;
+  border: 1px solid var(--db-border);
+  border-radius: var(--db-radius);
+  background: var(--db-surface);
+  box-shadow: var(--db-shadow);
+  transition: box-shadow 0.2s ease;
 }
 
-.db-profile-tier {
-  border-left: 1px solid var(--db-border);
-  background: linear-gradient(180deg, #fffaf3, var(--db-surface) 70%);
+.db-profile-half:hover {
+  box-shadow: var(--db-shadow-hover);
 }
 
 .db-section-label {
@@ -1027,8 +1019,8 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--db-success-b);
-  background: rgba(16, 201, 166, 0.12);
+  color: var(--db-brand-ink);
+  background: rgba(var(--db-brand-rgb), 0.08);
 }
 
 .db-gauge.is-empty .db-gauge-label {
@@ -1063,9 +1055,8 @@
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  color: #fff;
-  background: linear-gradient(135deg, #ffc94d, #f08c00);
-  box-shadow: 0 8px 18px rgba(240, 140, 0, 0.35);
+  color: var(--db-on-brand);
+  background: var(--db-brand);
 }
 
 .db-tier-name {
@@ -1079,9 +1070,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  border-left: 3px solid var(--db-warning-a);
+  border-left: 3px solid var(--db-brand);
   border-radius: var(--db-radius);
-  background: #fff7ed;
+  background: var(--db-surface-2);
 }
 
 .db-stat-label {
@@ -1094,14 +1085,14 @@
 }
 
 .db-stat-label i {
-  color: var(--db-warning-b);
+  color: var(--db-brand-ink);
   font-size: 16px;
 }
 
 .db-stat-value {
   font-size: 20px;
   font-weight: 800;
-  color: var(--db-warning-b);
+  color: var(--db-text);
 }
 
 /* ---------- Tables ---------- */
@@ -1179,7 +1170,37 @@
 
 .db-table tbody tr:hover {
   background: #f9fafc;
-  box-shadow: inset 3px 0 0 var(--db-indigo-a);
+  box-shadow: inset 3px 0 0 var(--db-brand);
+}
+
+/* A row that opens its details: its first cell's link or button is stretched
+   over the row (Bootstrap's .stretched-link), so the whole row is the target. */
+.db-table tbody tr.is-clickable {
+  position: relative;
+  cursor: pointer;
+}
+
+.db-row-link {
+  padding: 0;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  background: none;
+  text-decoration: none;
+}
+
+.db-row-link:hover {
+  color: var(--db-brand-ink);
+}
+
+.db-row-link:focus-visible {
+  outline: none;
+}
+
+.db-row-link:focus-visible::after {
+  outline: 2px solid rgba(var(--db-brand-rgb), 0.6);
+  outline-offset: -2px;
 }
 
 .db-cell-primary {
@@ -1193,84 +1214,97 @@
   color: var(--db-text) !important;
 }
 
-/* ---------- Invoices (status edge is semantic) ---------- */
+/* ---------- Invoices (table rows) ---------- */
 
+/* Laid out like the meetings list beside it: a framed list of compact rows
+   that scrolls past five, number then amount and date, status on the right. */
 .db-invoices {
-  margin: 0;
+  max-height: 230px;
+  margin: 0 0 14px;
   padding: 0;
+  overflow-y: auto;
   list-style: none;
+  border: 1px solid var(--db-border);
+  border-radius: var(--db-radius);
 }
 
 .db-invoice {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
-  margin-bottom: 8px;
-  border-left: 3px solid var(--db-border);
-  border-radius: var(--db-radius);
-  background: var(--db-surface-2);
+  padding: 8px 12px;
+  transition: background-color 0.15s ease;
 }
 
-.db-invoice:last-child {
-  margin-bottom: 0;
+/* The whole row opens the invoice (its number is a stretched link). */
+.db-invoice:hover {
+  background: rgba(var(--db-brand-rgb), 0.05);
 }
 
-.db-invoice.tone-success {
-  border-left-color: var(--db-good);
+.db-invoice+.db-invoice {
+  border-top: 1px solid var(--db-border);
 }
 
-.db-invoice.tone-danger {
-  border-left-color: var(--db-bad);
-}
-
-.db-invoice.tone-warning {
-  border-left-color: #f7b84b;
-}
-
-.db-invoice-icon {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--db-radius);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  color: var(--db-muted);
-  background: #fff;
+.db-invoice-main {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .db-invoice-id {
+  display: block;
   overflow: hidden;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
   text-overflow: ellipsis;
+  text-decoration: none;
   color: var(--db-text);
 }
 
+.db-invoice-id:hover {
+  color: var(--db-brand-ink);
+}
+
+.db-invoice-id:focus-visible {
+  outline: none;
+}
+
+.db-invoice-id:focus-visible::after {
+  outline: 2px solid rgba(var(--db-brand-rgb), 0.6);
+  outline-offset: -2px;
+}
+
 .db-invoice-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 2px;
+  margin-top: 1px;
+  overflow: hidden;
+  font-size: 10px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--db-muted);
 }
 
 .db-invoice-amount {
-  font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--db-body);
 }
 
+/* Status in a fixed column, so the pills line up row to row. */
+.db-invoice .db-pill {
+  flex-shrink: 0;
+  min-width: 64px;
+  justify-content: center;
+}
+
 /* ---------- Meetings ---------- */
 
-/* Compact rows, so five meetings fit without stretching the card. */
+/* Compact rows in a list that scrolls, so many meetings don't stretch the card. */
 .db-meetings {
+  max-height: 230px;
   margin: 0 0 14px;
   padding: 0;
+  overflow-y: auto;
   list-style: none;
   border: 1px solid var(--db-border);
   border-radius: var(--db-radius);
@@ -1289,7 +1323,7 @@
 }
 
 .db-meeting:hover {
-  background: rgba(63, 169, 245, 0.1);
+  background: rgba(var(--db-brand-rgb), 0.05);
 }
 
 .db-date-tile {
@@ -1309,8 +1343,8 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #fff;
-  background: linear-gradient(135deg, var(--db-info-a), var(--db-info-b));
+  color: var(--db-on-brand);
+  background: var(--db-brand);
 }
 
 .db-date-day {
@@ -1342,7 +1376,7 @@
 
 .db-meeting-type {
   font-weight: 600;
-  color: #2385ba;
+  color: var(--db-brand-ink);
 }
 
 /* ---------- Support strip ---------- */
@@ -1424,7 +1458,6 @@
   outline-color: var(--db-on-brand);
 }
 
-.db-approved button:focus-visible,
 .db-support button:focus-visible,
 .db-alert button:focus-visible {
   outline-color: #fff;
@@ -1482,11 +1515,6 @@
 
   .db-profile {
     flex-direction: column;
-  }
-
-  .db-profile-tier {
-    border-left: 0;
-    border-top: 1px solid var(--db-border);
   }
 
   .db-approved-facts,

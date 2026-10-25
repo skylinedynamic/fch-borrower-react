@@ -70,9 +70,6 @@ export default function CreditProfileCard({ fico, tier }: CreditProfileCardProps
 
         <div className="db-profile-tier-body">
           <div className="db-tier">
-            <span className="db-tier-badge" aria-hidden="true">
-              <i className="ri-vip-crown-fill"></i>
-            </span>
             <div className="min-w-0">
               <div className="db-tier-name">{tier?.name || 'N/A'}</div>
               <div className="db-muted">{tier?.title || 'N/A'}</div>

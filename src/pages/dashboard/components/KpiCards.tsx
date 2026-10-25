@@ -23,7 +23,7 @@ const toKpis = (stats: DashboardStats): Kpi[] => [
   },
   {
     title: 'Total Requested Amount',
-    // Formatted by the API: $37.2M, $45,000.
+    // Formatted by the API: $37.2M, $45K.
     value: stats.total_requested_amount_formatted || '$0',
     icon: 'ri-wallet-3-line',
     tone: 'violet',

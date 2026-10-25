@@ -26,8 +26,8 @@ const baseData = {
     total_requested_amount: 50000,
     total_funded_amount: 10000,
     // The API formats the amounts the top cards show.
-    total_requested_amount_formatted: '$50,000',
-    total_funded_amount_formatted: '$10,000',
+    total_requested_amount_formatted: '$50K',
+    total_funded_amount_formatted: '$10K',
   },
   latest_funding_applications: [] as unknown[],
   latest_pre_qualifications: [] as unknown[],
@@ -37,7 +37,7 @@ const baseData = {
   fico_score: null as number | null,
 }
 
-const baseOverview = { readiness_score: 55, readiness_status: 'Fair', factors: [], estimated_total_access: '$20,000', current_play: null }
+const baseOverview = { readiness_score: 55, readiness_status: 'Fair', factors: [], estimated_total_access: '$20,000.00', estimated_total_access_compact: '$20K', current_play: null }
 
 interface ApprovedRequest {
   id: number
@@ -81,6 +81,8 @@ function renderDashboard() {
     <Routes>
       <Route path="/" element={<Dashboard />} />
       <Route path="/invoices" element={<Landing name="Invoices" />} />
+      <Route path="/invoices/:id" element={<Landing name="Invoice Details" />} />
+      <Route path="/my-applications/funding/:id" element={<Landing name="Funding Application Details" />} />
       <Route path="/credit-card-stacking" element={<Landing name="Credit Card Stacking" />} />
       <Route path="/my-applications" element={<Landing name="My Applications" />} />
       <Route path="/appointment" element={<Landing name="Appointment" />} />
@@ -137,8 +139,8 @@ describe('Dashboard', () => {
       for (const [label, value] of [
         ['Funding Applications', '2'],
         ['Total Funding Requests', '3'],
-        ['Total Requested Amount', '$50,000'],
-        ['Total Funded Amount', '$10,000'],
+        ['Total Requested Amount', '$50K'],
+        ['Total Funded Amount', '$10K'],
       ]) {
         const card = screen.getByText(label).closest('[data-kpi]') as HTMLElement
         expect(card).not.toBeNull()
@@ -245,10 +247,21 @@ describe('Dashboard', () => {
       const widget = screen.getByText('Funding Readiness Overview').closest('[data-widget="capital-access"]') as HTMLElement
       expect(widget).toHaveTextContent('55')
       expect(widget).toHaveTextContent('Fair')
-      expect(widget).toHaveTextContent('$20,000')
+      expect(widget).toHaveTextContent('$20K')
 
       await user.click(within(widget).getByRole('button', { name: /choose strategy/i }))
       expect(await screen.findByText('Credit Card Stacking page')).toBeInTheDocument()
+    })
+
+    it('shows the estimated access the way the top cards show amounts, as the API formats it', async () => {
+      signIn()
+      serve({}, { estimated_total_access: '$4,530,000.00', estimated_total_access_compact: '$4.53M' })
+      renderDashboard()
+      await loaded()
+
+      const widget = screen.getByText('Funding Readiness Overview').closest('[data-widget="capital-access"]') as HTMLElement
+      expect(widget).toHaveTextContent('$4.53M')
+      expect(widget).not.toHaveTextContent('$4,530,000.00')
     })
 
     describe('before the borrower has paid', () => {
@@ -363,6 +376,50 @@ describe('Dashboard', () => {
       }
     })
 
+    it('opens a funding application from its row', async () => {
+      const user = userEvent.setup()
+      signIn()
+      serve({
+        latest_funding_applications: [
+          { id: 2, purpose_of_funds: 'Equipment', entity_type: 'Corporation', industry_type: 'Manufacturing', requested_amount: '80000', total_funded_amount: '40000', formatted_created_at: 'Sep 20, 2026', status: 'In Review', status_class: 'warning' },
+        ],
+      })
+      renderDashboard()
+      await loaded()
+
+      const funding = screen.getByText('Recent Funding Applications').closest('[data-widget="funding-applications"]') as HTMLElement
+      const link = within(funding).getByRole('link', { name: 'Equipment' })
+      expect(link).toHaveAttribute('href', '/my-applications/funding/2')
+      expect(link).toHaveClass('stretched-link')
+      await user.click(link)
+      expect(await screen.findByText('Funding Application Details page')).toBeInTheDocument()
+    })
+
+    it("opens a pre-qualification's details from its row, as My Applications does", async () => {
+      const user = userEvent.setup()
+      signIn()
+      serve({
+        latest_pre_qualifications: [
+          { id: 1, purpose_of_funding: 'Working Capital', industry_type: 'Retail', business_structure: 'LLC', funding_requested_amount: '25000', formatted_created_at: 'Oct 01, 2026', status: 'Approved', status_class: 'success' },
+        ],
+      })
+      server.use(
+        http.get('*/borrower/pre-qualification/1', () =>
+          HttpResponse.json({ status: true, data: { id: 1, status: 'submitted', purpose_of_funding: 'Working Capital' } })
+        )
+      )
+      renderDashboard()
+      await loaded()
+
+      const preQual = screen.getByText('Pre-Qualification Applications').closest('[data-widget="pre-qualifications"]') as HTMLElement
+      const open = within(preQual).getByRole('button', { name: 'Working Capital' })
+      expect(open).toHaveClass('stretched-link')
+      await user.click(open)
+
+      const dialog = await screen.findByRole('dialog')
+      expect(dialog).toHaveTextContent('Pre-Qualification Details')
+    })
+
     it('says when there are none, and links through to all applications', async () => {
       const user = userEvent.setup()
       signIn()
@@ -455,6 +512,20 @@ describe('Dashboard', () => {
       expect(screen.getByText('No Upcoming Meetings')).toBeInTheDocument()
     })
 
+    it("keeps Schedule Meeting at the card's foot, with or without meetings", async () => {
+      // A direct child of the card body, pinned to its bottom by the
+      // stylesheet; inside the centred empty state it floated mid-card.
+      signIn()
+      serve()
+      renderDashboard()
+      await loaded()
+
+      const button = within(screen.getByText('Upcoming Meetings').closest('[data-widget="meetings"]') as HTMLElement)
+        .getByRole('button', { name: /schedule meeting/i })
+      expect(button.parentElement).toHaveClass('db-card-body')
+      expect(button.closest('.db-empty')).toBeNull()
+    })
+
     it('lists invoices only when there are some', async () => {
       signIn({}, { subscription_status: 'active' })
       serve({ invoices: [{ id: 1, invoice_id: 'INV-001', status: 'Paid', payment_amount: '1250', currency_symbol: '$' }] })
@@ -473,14 +544,61 @@ describe('Dashboard', () => {
       expect(document.querySelector('[data-widget="invoices"]')).toBeNull()
     })
 
-    it('points the borrower to support', async () => {
+    it('lists each invoice like a meeting row: number, then amount and date, then status', async () => {
+      signIn({}, { subscription_status: 'active' })
+      serve({
+        invoices: [
+          { id: 1, invoice_id: 'INV-001', status: 'Unpaid', payment_amount: '1', currency_symbol: '$', formatted_created_at: 'Oct 25, 2026' },
+          { id: 2, invoice_id: 'INV-002', status: 'Paid', payment_amount: '2497', currency_symbol: '$', formatted_created_at: '' },
+        ],
+      })
+      renderDashboard()
+      await loaded()
+
+      const rows = Array.from(document.querySelectorAll('[data-widget="invoices"] .db-invoice'))
+      // No date to show: just the amount.
+      expect(rows.map((r) => r.textContent)).toEqual(['INV-001$1.00 · Oct 25, 2026Unpaid', 'INV-002$2,497.00Paid'])
+      // No coloured status edge: the status pill carries the state.
+      for (const row of rows) expect(row.className).toBe('db-invoice')
+    })
+
+    it('opens an invoice from its row', async () => {
+      const user = userEvent.setup()
+      signIn({}, { subscription_status: 'active' })
+      serve({ invoices: [{ id: 42, invoice_id: 'INV-001', status: 'Paid', payment_amount: '1250', currency_symbol: '$' }] })
+      renderDashboard()
+      await loaded()
+
+      const card = screen.getByText('Invoices').closest('[data-widget="invoices"]') as HTMLElement
+      const link = within(card).getByRole('link', { name: 'INV-001' })
+      expect(link).toHaveAttribute('href', '/invoices/42')
+      // The whole row is the link's click area.
+      expect(link).toHaveClass('stretched-link')
+      await user.click(link)
+      expect(await screen.findByText('Invoice Details page')).toBeInTheDocument()
+    })
+
+    it('opens all invoices from the Invoices card', async () => {
+      const user = userEvent.setup()
+      signIn({}, { subscription_status: 'active' })
+      serve({ invoices: [{ id: 1, invoice_id: 'INV-001', status: 'Paid', payment_amount: '1250', currency_symbol: '$' }] })
+      renderDashboard()
+      await loaded()
+
+      const card = screen.getByText('Invoices').closest('[data-widget="invoices"]') as HTMLElement
+      await user.click(within(card).getByRole('button', { name: 'View All Invoices' }))
+      expect(await screen.findByText('Invoices page')).toBeInTheDocument()
+    })
+
+    it('offers to make an appointment for help, on the Appointment page', async () => {
       const user = userEvent.setup()
       signIn()
       serve()
       renderDashboard()
       await loaded()
 
-      await user.click(screen.getByRole('button', { name: /contact support/i }))
+      expect(screen.queryByRole('button', { name: /contact support/i })).toBeNull()
+      await user.click(screen.getByRole('button', { name: 'Make an Appointment' }))
       expect(await screen.findByText('Appointment page')).toBeInTheDocument()
     })
   })
