@@ -33,6 +33,11 @@ export const queryKeys = {
     personalInfo: () => [...queryKeys.profile.all, 'personalInfo'] as const,
     businessDetails: () => [...queryKeys.profile.all, 'businessDetails'] as const,
     financialInfo: () => [...queryKeys.profile.all, 'financialInfo'] as const,
+    completion: () => [...queryKeys.profile.all, 'completion'] as const,
+  },
+  funding: {
+    all: ['funding'] as const,
+    list: (params: Record<string, unknown> = {}) => [...queryKeys.funding.all, 'list', params] as const,
   },
   preQualification: {
     all: ['preQualification'] as const,

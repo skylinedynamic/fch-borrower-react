@@ -1,0 +1,85 @@
+/* The top of Documents: upload every document, then on to Funding. */
+
+.docs-prompt {
+  --docs-prompt-accent: #e5243b;
+  --docs-prompt-accent-rgb: 229, 36, 59;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  border: 1.5px solid var(--docs-prompt-accent);
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(var(--docs-prompt-accent-rgb), 0.08);
+}
+
+.docs-prompt.is-done {
+  --docs-prompt-accent: #0ab39c;
+  --docs-prompt-accent-rgb: 10, 179, 156;
+}
+
+.docs-prompt-text {
+  min-width: 0;
+}
+
+.docs-prompt-label {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--docs-prompt-accent);
+}
+
+.docs-prompt-message {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1b2235;
+}
+
+.docs-prompt-count {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.docs-prompt-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--brand-primary, #001f3f);
+  box-shadow: 0 0 0 3px rgba(var(--docs-prompt-accent-rgb), 0.18);
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.docs-prompt-btn:hover,
+.docs-prompt-btn:focus-visible {
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 4px rgba(var(--docs-prompt-accent-rgb), 0.25);
+}
+
+@media (max-width: 575.98px) {
+  .docs-prompt {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .docs-prompt-btn {
+    justify-content: center;
+    white-space: normal;
+  }
+}

@@ -1,9 +1,42 @@
 import { test as base, expect, type Page } from '@playwright/test'
+import { API_BASE_URL } from './env'
+
+// The key the portal remembers the step whose Getting Started popup it already
+// opened this session under (src/modules/onboarding/storage.ts).
+const ONBOARDING_SESSION_KEY = 'fch:onboarding:session-step:'
 
 // Records uncaught page errors and 5xx API responses for the whole test, and
 // fails the test if any happened. 4xx is left alone: several pages probe
 // endpoints that legitimately answer 404/403 for this borrower.
-export const test = base.extend<{ runtimeErrors: string[] }>({
+export const test = base.extend<{ runtimeErrors: string[]; dismissGettingStarted: void }>({
+  // The Getting Started popup opens by itself once per step per login, on
+  // whatever page the borrower is on, and covers it mid-test. Each spec starts
+  // as if it had been shown already for the borrower's current step, so it
+  // stays closed; if it opens anyway (the step moved on), it is put off
+  // ("Later"). Its own spec (topbar/getting-started) doesn't use these fixtures.
+  dismissGettingStarted: [
+    async ({ page, request }, use) => {
+      const state = await page.context().storageState()
+      const auth = state.origins.flatMap((o) => o.localStorage).find((item) => item.name === 'auth')
+      const { token, user } = auth ? (JSON.parse(auth.value).state ?? {}) : {}
+      if (token && user?.id != null) {
+        const res = await request.get(`${API_BASE_URL}/borrower/profile/completion`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        })
+        const step = res.ok() ? (await res.json())?.data?.onboarding?.current_step : null
+        if (step) {
+          await page.addInitScript(([key, value]) => sessionStorage.setItem(key, value), [`${ONBOARDING_SESSION_KEY}${user.id}`, step])
+        }
+      }
+
+      const popup = page.getByRole('dialog').filter({ hasText: /Getting started · Step/ })
+      await page.addLocatorHandler(popup, async () => {
+        await popup.getByRole('button', { name: 'Later' }).click()
+      })
+      await use()
+    },
+    { auto: true },
+  ],
   runtimeErrors: [
     async ({ page }, use) => {
       const errors: string[] = []

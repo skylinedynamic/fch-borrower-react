@@ -86,7 +86,8 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
       onSuccess: (response) => {
         if (response.status) {
           toast.success(response.message)
-          //onSave()
+          // On to the next section still to complete.
+          onSave()
         } else {
           toast.error(response.message)
           if (response.errors) {

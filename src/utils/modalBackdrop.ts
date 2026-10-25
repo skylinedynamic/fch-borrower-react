@@ -15,12 +15,23 @@
  * A backdrop is only stray when no modal is currently shown, so that is the
  * whole test: if anything is open, leave everything alone.
  */
+
+/**
+ * A modal is open once it is shown, and also while it is still fading in:
+ * Reactstrap puts the modal (display: block) and its backdrop in the page a
+ * moment before it adds `show`. A closed modal kept in the markup is hidden.
+ */
+const isAnyModalOpen = (): boolean =>
+  Array.from(document.querySelectorAll<HTMLElement>('.modal')).some(
+    (modal) => modal.classList.contains('show') || modal.style.display === 'block'
+  )
+
 export function clearStrayModalBackdrops(): void {
   // Fires from timers and unmount handlers, where the document can already be
   // gone in a torn-down test environment.
   if (typeof document === 'undefined') return
 
-  if (document.querySelector('.modal.show')) return
+  if (isAnyModalOpen()) return
 
   document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove())
   document.body.classList.remove('modal-open')

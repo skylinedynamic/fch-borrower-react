@@ -8,4 +8,19 @@ test.describe('Sidebar › Billing Details', () => {
     // Skeleton placeholders are replaced by the real cards.
     await expect(page.locator('.page-content .billing-card-amount').first()).toBeVisible()
   })
+
+  // BUG-101: in the built app Change did nothing - the dialog waited for a
+  // `window.bootstrap` global the bundle never sets. Opened and closed only.
+  test('Change opens the payment method dialog with the gateways', async ({ page }) => {
+    await openFromSidebar(page, 'Billing Details', /\/billing-details$/)
+    // The name starts with the icon font's glyph.
+    await page.getByRole('button', { name: /^\W*Change$/ }).click()
+
+    const dialog = page.locator('.modal.show').filter({ hasText: 'Change Default Payment Method' })
+    await expect(dialog).toBeVisible()
+    await expect(dialog.getByText('Available Payment Gateways')).toBeVisible()
+
+    await dialog.locator('.btn-close').click()
+    await expect(dialog).toBeHidden()
+  })
 })

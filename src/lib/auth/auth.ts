@@ -3,6 +3,7 @@ import { getUserDetails } from './authApi'
 import { refreshUser as refreshUserService } from '../../modules/auth-profile'
 import { clearBrandTheme } from '../../utils/brandingTheme'
 import { disconnectEcho } from '../realtime/echo'
+import { clearOnboardingSession } from '../../modules/onboarding/storage'
 
 const COOKIE_NAME = 'auth_session_active'
 
@@ -71,6 +72,9 @@ export function setAuth(token?: string | null, user?: AuthUser | null, rememberM
 export function clearAuth(): void {
   clearAuthState()
   eraseCookie(COOKIE_NAME)
+
+  // The Getting Started popup opens once per step per login.
+  clearOnboardingSession()
 
   // Close the real-time socket; it is authorized as the user signing out.
   disconnectEcho()

@@ -13,7 +13,8 @@ import {
     PAYMENT_STATUS_SUCCEEDED,
     PAYMENT_STATUS_REJECTED,
     PAYMENT_STATUS_FAILED,
-    PAYMENT_STATUS_PAID
+    PAYMENT_STATUS_PAID,
+    PAYMENT_VERIFICATION_FIELDS
 } from '../../config/paymentConfig';
 import { ENTITY_TYPE_PARTNER, ENTITY_TYPE_BORROWER } from '../../config/appConfig';
 import DetailsSkeletonLoader from '../../components/Loader/DetailsSkeletonLoader';
@@ -339,16 +340,14 @@ export default function PaymentDetails() {
                                                             <h5 className="fs-14 mb-0 text-danger">{rawDetails.rejected_at}</h5>
                                                         </div>
                                                     )}
-                                                    {Object.entries(rawDetails).map(([key, val]) => {
-                                                        if (['approved_by', 'approved_at', 'approval_note', 'bank_detail_id', 'approved_by_id', 'rejected_by', 'rejected_at', 'rejected_by_id', 'rejection_reason', 'decision', 'note', 'reason'].includes(key)) return null;
-                                                        if (val === null || val === undefined || val === '') return null;
-                                                        const displayVal = typeof val === 'object'
-                                                            ? JSON.stringify(val)
-                                                            : (key === 'mode' && typeof val === 'string' ? val.charAt(0).toUpperCase() + val.slice(1).toLowerCase() : String(val));
+                                                    {/* Only the named fields - never every key the payment's details hold (BUG-062). */}
+                                                    {PAYMENT_VERIFICATION_FIELDS.map(({ key, label }) => {
+                                                        const val = rawDetails[key];
+                                                        if (val === null || val === undefined || val === '' || typeof val === 'object') return null;
                                                         return (
                                                             <div className="col-lg-3 col-sm-6 mb-3" key={key}>
-                                                                <p className="text-muted mb-1 text-uppercase fw-semibold fs-12">{key.replace(/_/g, ' ')}</p>
-                                                                <h5 className={`fs-14 mb-0 ${key === 'mode' ? 'text-capitalize' : ''}`}>{displayVal}</h5>
+                                                                <p className="text-muted mb-1 text-uppercase fw-semibold fs-12">{label}</p>
+                                                                <h5 className="fs-14 mb-0">{String(val)}</h5>
                                                             </div>
                                                         );
                                                     })}

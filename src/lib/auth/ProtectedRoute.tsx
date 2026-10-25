@@ -6,7 +6,7 @@ import { NOTIFICATIONS_ROUTE } from '../../config/notifications'
 
 // Paths that are blocked while on the Limited Free Edition (free trial)
 const FREE_TRIAL_LOCKED_PATHS = [
-  '/capital-access',
+  '/credit-card-stacking',
   '/invoices',
   '/payments',
   '/resources',

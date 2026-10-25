@@ -15,6 +15,51 @@ export interface ProfileCompletionStatus {
     is_complete: boolean
     missing_fields: string[]
   }
+  /** The borrower's Getting Started step, worked out by the API (OnboardingStepService). */
+  onboarding?: ProfileOnboardingStatus
+  /** Whether Credit Card Stacking is open, and what it waits on (the API decides). */
+  credit_card_stacking?: CreditCardStackingAccess
+}
+
+export interface CreditCardStackingAccess {
+  /** The credit profile is verified and Tier 0 is complete. */
+  unlocked: boolean
+  /** Verified, with its iSoftPull report uploaded. */
+  credit_profile_verified: boolean
+  tier_0_completed: boolean
+}
+
+type OnboardingStepName =
+  | 'complete_profile'
+  | 'credit_profile'
+  | 'verify_all'
+  | 'results_ready'
+  | 'upload_documents'
+  | 'completed'
+
+/**
+ * What a borrower with their results ready can choose to look at (mirrors
+ * OnboardingStepService::PATHS in the API).
+ */
+export type OnboardingPathId = 'card_stacking' | 'single_card' | 'funding' | 'advisor'
+
+export interface ProfileOnboardingStatus {
+  /** Which journey: the full one for paid clients, or the short free-trial one (profile and credit profile). */
+  flow?: 'paid' | 'free_trial'
+  /** Null until the borrower has paid and completed their profile. */
+  current_step: OnboardingStepName | null
+  /** Steps really done; a skipped step doesn't count. */
+  completed_steps: number
+  total_steps: number
+  /**
+   * Whether Tier 0 and the credit profile really are verified. False on the
+   * last step when the borrower got there by skipping.
+   */
+  results_ready?: boolean
+  /** Skipped steps not yet really done: postponed, still to do. */
+  pending_steps?: OnboardingStepName[]
+  /** What the borrower chose once their results were ready; null until they choose. */
+  selected_path?: OnboardingPathId | null
 }
 
 export interface ProfileCompletionResponse {
@@ -55,6 +100,42 @@ export const saveFinancialInfo = async (payload: SaveFinancialInfoRequest): Prom
 
 export const fetchProfileCompletion = async (): Promise<ProfileCompletionResponse> => {
   const { data } = await apiClient.get<ProfileCompletionResponse>('/borrower/profile/completion')
+  return data
+}
+
+export interface CompleteOnboardingResponse {
+  status: boolean
+  message: string
+  data: ProfileOnboardingStatus
+}
+
+/**
+ * Tells the API the borrower has opened Credit Card Stacking: the last Getting
+ * Started step once their results are ready. Any other step is left as it is.
+ */
+export const completeOnboarding = async (): Promise<CompleteOnboardingResponse> => {
+  const { data } = await apiClient.post<CompleteOnboardingResponse>('/borrower/profile/onboarding/complete')
+  return data
+}
+
+/** Goes back to a Getting Started step the borrower skipped: it becomes the current step again. */
+export const resumeOnboardingStep = async (step: string): Promise<CompleteOnboardingResponse> => {
+  const { data } = await apiClient.post<CompleteOnboardingResponse>('/borrower/profile/onboarding/resume', { step })
+  return data
+}
+
+/**
+ * With the results ready, saves what the borrower is looking for (or changes
+ * it). The API refuses until the results really are ready.
+ */
+export const chooseOnboardingPath = async (path: OnboardingPathId): Promise<CompleteOnboardingResponse> => {
+  const { data } = await apiClient.post<CompleteOnboardingResponse>('/borrower/profile/onboarding/path', { path })
+  return data
+}
+
+/** Skips the Getting Started step the borrower is on (only some steps allow it). */
+export const skipOnboardingStep = async (step: string): Promise<CompleteOnboardingResponse> => {
+  const { data } = await apiClient.post<CompleteOnboardingResponse>('/borrower/profile/onboarding/skip', { step })
   return data
 }
 
