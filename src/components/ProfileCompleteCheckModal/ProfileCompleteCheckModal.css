@@ -1,0 +1,174 @@
+/**
+ * Complete Your Profile, as in the borrower walkthrough's first-login gate:
+ * the sections still to finish, the first one pulsing with "Start here".
+ * Older base styles for this modal live in assets/css/custom.min.css
+ * (#profileCompleteModal); everything here uses its own pcg- classes.
+ */
+
+#profileCompleteModal .modal-content {
+  overflow: hidden;
+  border: 0;
+  border-radius: 4px;
+}
+
+#profileCompleteModal .pcg-head {
+  padding: 20px 22px;
+  border-bottom: 0;
+  background: var(--primary-color, #0b1a3a);
+}
+
+#profileCompleteModal .pcg-head .modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+#profileCompleteModal .pcg-body {
+  padding: 18px 16px 16px;
+  text-align: center;
+  background: #f7f8fa;
+}
+
+#profileCompleteModal .pcg-warn {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  font-weight: 700;
+  color: #3a2a00;
+  background: #f5c542;
+}
+
+#profileCompleteModal .pcg-title {
+  margin: 12px 0 6px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #1b2130;
+}
+
+#profileCompleteModal .pcg-subtitle {
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: #667085;
+}
+
+#profileCompleteModal .pcg-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px 14px;
+  border: 1px solid #dfe3ea;
+  border-radius: 4px;
+  text-align: left;
+  font: inherit;
+  color: #1b2130;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+#profileCompleteModal .pcg-row:hover {
+  border-color: var(--primary-color, #0b1a3a);
+}
+
+#profileCompleteModal .pcg-row:focus-visible {
+  outline: 2px solid var(--primary-color, #0b1a3a);
+  outline-offset: 2px;
+}
+
+#profileCompleteModal .pcg-icon {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border: 1px solid #cfd4dc;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  color: var(--primary-color, #0b1a3a);
+}
+
+#profileCompleteModal .pcg-text {
+  flex: 1;
+  min-width: 0;
+}
+
+#profileCompleteModal .pcg-name {
+  font-size: 14px;
+}
+
+#profileCompleteModal .pcg-pill {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #e4e7ec;
+}
+
+#profileCompleteModal .pcg-fields {
+  margin: 6px 0 0;
+  padding-left: 16px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #667085;
+}
+
+#profileCompleteModal .pcg-more {
+  font-size: 12px;
+  color: #667085;
+}
+
+#profileCompleteModal .pcg-arrow {
+  flex: none;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+/* The section to start with: a red halo that pulses, and a blinking tag. */
+#profileCompleteModal .pcg-row.is-next {
+  border-color: #f2a7ad;
+  animation: pcg-halo 1.3s ease-in-out infinite;
+}
+
+#profileCompleteModal .pcg-start {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #e0202e;
+  animation: pcg-blink 1s steps(2, start) infinite;
+}
+
+@keyframes pcg-halo {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(224, 32, 46, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 9px rgba(224, 32, 46, 0);
+  }
+}
+
+@keyframes pcg-blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #profileCompleteModal .pcg-row.is-next,
+  #profileCompleteModal .pcg-start {
+    animation: none;
+  }
+}
