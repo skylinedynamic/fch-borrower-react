@@ -50,11 +50,13 @@ describe('PaymentProviderSelector', () => {
     expect(toastError).toHaveBeenCalledWith('Server unavailable')
   })
 
-  it('shows an empty state when there are no active providers', async () => {
+  it('says online payment is not available when no method can take one', async () => {
+    // The API only lists methods that are set up (a Stripe without usable keys
+    // is left out), so an empty list means there is nothing to pay with here.
     fetchPartnerPaymentMethods.mockResolvedValue({ status: true, data: [] })
 
     render(<PaymentProviderSelector invoice={{ id: 5 }} onSelect={vi.fn()} />)
 
-    expect(await screen.findByText('No active payment providers are available.')).toBeInTheDocument()
+    expect(await screen.findByText("Online payment isn't available for this invoice right now. Please contact support to arrange payment.")).toBeInTheDocument()
   })
 })

@@ -6,10 +6,10 @@ import CapitalAccessStrategyGuard from '../../../src/lib/auth/CapitalAccessStrat
 describe('CapitalAccessStrategyGuard', () => {
   it('always renders its nested route (access checks moved to page level)', () => {
     render(
-      <MemoryRouter initialEntries={['/capital-access/1']}>
+      <MemoryRouter initialEntries={['/credit-card-stacking/1']}>
         <Routes>
           <Route element={<CapitalAccessStrategyGuard />}>
-            <Route path="/capital-access/:id" element={<div>Strategy Detail</div>} />
+            <Route path="/credit-card-stacking/:id" element={<div>Strategy Detail</div>} />
           </Route>
         </Routes>
       </MemoryRouter>

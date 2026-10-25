@@ -1,9 +1,11 @@
 export interface DashboardStats {
     funding_applications: number;
+    /** Funding requests that weren't canceled. */
+    funding_requests: number;
     pre_qualifications: number;
     total_requested_amount: number;
     total_funded_amount: number;
-    /** As the top cards show them, formatted by the API: "$37.2M", "$45,000". */
+    /** As the top cards show them, formatted by the API: "$37.2M", "$45K". */
     total_requested_amount_formatted: string;
     total_funded_amount_formatted: string;
 }
@@ -96,7 +98,9 @@ export interface DashboardData {
     latest_pre_qualifications: PreQualification[];
     upcoming_meeting: Meeting[];
     invoices: DashboardInvoice[];
-    tier: Tier
+    tier: Tier | null;
+    /** Null until the borrower's credit profile has been verified. */
+    fico_score?: number | string | null;
 }
 
 export interface DashboardResponse {

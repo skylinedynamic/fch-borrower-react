@@ -58,6 +58,36 @@ describe('clearStrayModalBackdrops', () => {
     expect(document.body.classList.contains('modal-open')).toBe(true)
   })
 
+  it('leaves the backdrop alone while a modal is still fading in', () => {
+    // Reactstrap mounts the modal (display: block) and its backdrop first and
+    // adds `show` a moment later. The walkthrough popup opening as the Profile
+    // page changes tab lost its overlay in that moment.
+    const entering = document.createElement('div')
+    entering.className = 'modal fade'
+    entering.style.display = 'block'
+    document.body.appendChild(entering)
+    addBackdrop()
+    document.body.classList.add('modal-open')
+
+    clearStrayModalBackdrops()
+
+    expect(document.querySelectorAll('.modal-backdrop')).toHaveLength(1)
+    expect(document.body.classList.contains('modal-open')).toBe(true)
+  })
+
+  it('still clears up when the only modal in the page is a hidden one', () => {
+    // e.g. a Bootstrap modal kept in the markup, closed.
+    const hidden = document.createElement('div')
+    hidden.className = 'modal fade'
+    hidden.style.display = 'none'
+    document.body.appendChild(hidden)
+    addBackdrop()
+
+    clearStrayModalBackdrops()
+
+    expect(document.querySelectorAll('.modal-backdrop')).toHaveLength(0)
+  })
+
   it('does not touch body scroll state while a modal is shown', () => {
     // Removing modal-open here would let the page behind scroll under the modal.
     addOpenModal()

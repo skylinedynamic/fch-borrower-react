@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  SSN_DIGITS,
   formatSSN,
   unformatSSN,
   maskSSN,
@@ -35,6 +36,13 @@ describe('formatSSN', () => {
 
   it('truncates input longer than 9 digits', () => {
     expect(formatSSN('1234567890123')).toBe('123-45-6789')
+  })
+
+  it('stops at SSN_DIGITS, the length of a full SSN', () => {
+    // Only how the number is written; whether it is a valid SSN is the API's
+    // call (App\Rules\Ssn).
+    expect(SSN_DIGITS).toBe(9)
+    expect(formatSSN('9'.repeat(SSN_DIGITS + 3)).replace(/\D/g, '')).toHaveLength(SSN_DIGITS)
   })
 
   it('returns empty string for empty input', () => {

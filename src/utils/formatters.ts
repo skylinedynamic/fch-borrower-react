@@ -94,13 +94,19 @@ export const unformatCurrency = (value: string): string => {
 }
 
 /**
+ * How many digits a full SSN has - how the field is written, not a check of
+ * the number (that is the API's App\Rules\Ssn).
+ */
+export const SSN_DIGITS = 9
+
+/**
  * Formats the SSN input to ensure only digits and max 9 characters in ###-###-### format
  * @param value The raw input string
  * @returns The formatted string
  */
 export const formatSSN = (value: string): string => {
   if (!value) return ''
-  const digits = value.replace(/\D/g, '').slice(0, 9)
+  const digits = value.replace(/\D/g, '').slice(0, SSN_DIGITS)
   if (digits.length <= 3) return digits
   if (digits.length <= 5) return `${digits.slice(0, 3)}-${digits.slice(3)}`
   return `${digits.slice(0, 3)}-${digits.slice(3, 5)}-${digits.slice(5, 9)}`

@@ -7,23 +7,50 @@ import FundingCard from './components/FundingCard';
 import FundingLoader from '../../components/Loader/FundingLoader';
 import CustomDropdown from '../../components/Common/CustomDropdown';
 import { toast } from 'react-toastify';
+import FundingHowItWorks, { FundingArrivalNote } from './components/FundingHowItWorks';
+import { ficoBand, ficoRatio, readinessRatio } from './fundingStats';
+import './Funding.css';
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
-interface StatCardProps { icon: string; label: string; value: string; color: string; subValue?: string; }
+interface StatCardProps {
+    icon: string;
+    label: string;
+    value: string;
+    color: string;
+    subValue?: string;
+    /** What the figure means, under it. */
+    caption?: string | null;
+    /** Where the figure sits on its range, shown as a meter. */
+    meter?: { ratio: number; now: number; min: number; max: number } | null;
+}
 
-const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color, subValue }) => (
-    <div className="col-6 col-md-6 col-xl-3 funding-stat-card-col">
-        <div className="card shadow-sm border-0 rounded-2 bg-white card-animate h-100">
-            <div className="card-body py-3 px-4 d-flex align-items-center funding-stat-card-body">
-                <div className={`avatar-md bg-${color}-subtle rounded d-flex align-items-center justify-content-center me-3 flex-shrink-0 funding-stat-card-icon`}>
-                    <i className={`${icon} text-${color} fs-24 funding-stat-card-icon-i`}></i>
+const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color, subValue, caption, meter }) => (
+    <div className={`fp-stat tone-${color}`}>
+        <div className="fp-stat-head">
+            <p className="fp-stat-label">
+                {label} {subValue && <span className="fp-stat-sub">{subValue}</span>}
+            </p>
+            <span className="fp-stat-icon" aria-hidden="true">
+                <i className={icon}></i>
+            </span>
+        </div>
+        <p className="fp-stat-value">{value}</p>
+        <div className="fp-stat-foot">
+            {meter ? (
+                <div
+                    className="fp-stat-meter"
+                    role="meter"
+                    aria-label={label}
+                    aria-valuenow={meter.now}
+                    aria-valuemin={meter.min}
+                    aria-valuemax={meter.max}
+                >
+                    <span style={{ width: `${Math.round(meter.ratio * 100)}%` }}></span>
                 </div>
-                <div>
-                    <p className="text-muted mb-0 fs-13 fw-medium text-uppercase funding-stat-card-label">{label}</p>
-                    <h4 className="mb-0 fw-bold text-dark fs-22 lh-1 funding-stat-card-value mt-1">{value}</h4>
-                    {subValue && <small className="text-muted d-block mt-1 fs-11 fw-medium">{subValue}</small>}
-                </div>
-            </div>
+            ) : (
+                <span className="fp-stat-meter is-empty" aria-hidden="true"></span>
+            )}
+            {caption && <span className="fp-stat-caption">{caption}</span>}
         </div>
     </div>
 );
@@ -42,13 +69,29 @@ interface StatConfig {
     color: string;
     format: (v: any) => string;
     subValue?: string;
+    caption: (v: any) => string | null;
+    meter?: (v: any) => StatCardProps['meter'];
 }
 
 const STAT_CONFIG: StatConfig[] = [
-    { key: 'funding_readiness_score', label: 'Funding Readiness Score', icon: 'ri-bar-chart-fill', color: 'primary', format: formatReadiness },
-    { key: 'fico_score', label: 'Personal Credit Score', subValue: '(FICO)', icon: 'ri-dashboard-line', color: 'info', format: formatFico },
-    { key: 'monthly_revenue', label: 'Monthly Revenue', icon: 'ri-money-dollar-circle-line', color: 'success', format: formatRevenue },
-    { key: 'time_in_business', label: 'Time in Business', icon: 'ri-calendar-line', color: 'warning', format: formatTimeInBusiness },
+    {
+        key: 'funding_readiness_score', label: 'Funding Readiness Score', icon: 'ri-bar-chart-fill', color: 'primary', format: formatReadiness,
+        caption: () => 'Out of 100',
+        meter: (v) => {
+            const ratio = readinessRatio(v);
+            return { ratio, now: Math.round(ratio * 100), min: 0, max: 100 };
+        },
+    },
+    {
+        key: 'fico_score', label: 'Personal Credit Score', subValue: '(FICO)', icon: 'ri-dashboard-3-line', color: 'info', format: formatFico,
+        caption: (v) => ficoBand(v),
+        meter: (v) => {
+            const ratio = ficoRatio(v);
+            return ratio === null ? null : { ratio, now: Number(v), min: 300, max: 850 };
+        },
+    },
+    { key: 'monthly_revenue', label: 'Monthly Revenue', icon: 'ri-money-dollar-circle-line', color: 'success', format: formatRevenue, caption: () => 'Per month' },
+    { key: 'time_in_business', label: 'Time in Business', icon: 'ri-calendar-check-line', color: 'warning', format: formatTimeInBusiness, caption: () => 'In business' },
 ];
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
@@ -109,138 +152,102 @@ const Funding = () => {
     return (
         <div className="page-content funding-page">
             <div className="container-fluid">
+                <div className="fp-shell">
 
-                {/* ── Breadcrumb ──────────────────────────────────────────── */}
-                <div className="row page-subheader-sticky bg-body">
-                    <div className="col-12">
-                        <div className="d-flex align-items-center justify-content-between py-2">
-                            <div className="flex-grow-1">
-                                <h4 className="fs-18 mb-1 mt-0">Funding Options</h4>
-                                <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb m-0">
-                                        <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>
-                                        <li className="breadcrumb-item active fw-medium" aria-current="page">Funding Options</li>
-                                    </ol>
-                                </nav>
-                            </div>
+                    <FundingArrivalNote />
+
+                    {/* ── Header, with the overview figures under it ──────────── */}
+                    <header className="fp-hero">
+                        <nav aria-label="breadcrumb">
+                            <ol className="breadcrumb fp-breadcrumb">
+                                <li className="breadcrumb-item"><Link to="/">Dashboard</Link></li>
+                                <li className="breadcrumb-item active" aria-current="page">Funding Options</li>
+                            </ol>
+                        </nav>
+                        <h4 className="fp-title">Funding Options</h4>
+                        <p className="fp-lead">Compare the programs open to your business and start a funding request.</p>
+                    </header>
+
+                    <section className="fp-stats" aria-label="Your funding overview">
+                        {STAT_CONFIG.map((cfg) => (
+                            <StatCard
+                                key={cfg.key}
+                                icon={cfg.icon}
+                                color={cfg.color}
+                                label={cfg.labelKey && stats[cfg.labelKey] ? stats[cfg.labelKey] : cfg.label}
+                                value={cfg.format(stats[cfg.key])}
+                                subValue={cfg.subValue}
+                                caption={cfg.caption(stats[cfg.key])}
+                                meter={cfg.meter?.(stats[cfg.key])}
+                            />
+                        ))}
+                    </section>
+
+                    {/* ── The stages of a request ─────────────────────────────── */}
+                    <FundingHowItWorks />
+
+                    {/* ── Search & Filter ─────────────────────────────────────── */}
+                    <div className="fp-toolbar">
+                        <div className="fp-search">
+                            <i className="ri-search-line" aria-hidden="true"></i>
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Search here..."
+                                aria-label="Search funding options"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="fp-category">
+                            <CustomDropdown
+                                options={allTypes.map(t => ({ id: t.id.toString(), name: t.name }))}
+                                value={activeType}
+                                onChange={(val) => { setActiveType(val.toString()); }}
+                                optionLabel="name"
+                                optionValue="id"
+                                placeholder="All Product Categories"
+                                className="rounded-2 fs-13 w-100"
+                                searchable={true}
+                            />
+                        </div>
+
+                        <div className="fp-actions">
+                            <button type="button" className="fp-btn fp-btn-primary" onClick={applyFilters}>
+                                <i className="ri-equalizer-line" aria-hidden="true"></i> Filters
+                            </button>
+                            {hasFilter && (
+                                <button type="button" className="fp-btn fp-btn-ghost" onClick={clearAll}>
+                                    <i className="ri-close-line" aria-hidden="true"></i> Clear
+                                </button>
+                            )}
                         </div>
                     </div>
-                </div>
 
-                {/* ── Stat Cards ──────────────────────────────────────────── */}
-                <div className="row g-4 funding-stats-row">
-                    {STAT_CONFIG.map((cfg) => (
-                        <StatCard
-                            key={cfg.key}
-                            icon={cfg.icon}
-                            color={cfg.color}
-                            label={cfg.labelKey && stats[cfg.labelKey] ? stats[cfg.labelKey] : cfg.label}
-                            value={cfg.format(stats[cfg.key])}
-                            subValue={cfg.subValue}
-                        />
-                    ))}
-                </div>
-
-                {/* ── Search & Filter Bar ────────────────────────────────────────── */}
-                <div className="row mb-3 funding-filter-row">
-                    <div className="col-12">
-                        <div className="card shadow-sm border-0 bg-white mb-2">
-                            <div className="card-body p-3">
-                                <div className="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-3">
-                                    <div className="flex-grow-1">
-                                        <div className="row g-3">
-                                            {/* Search Field (col-9) */}
-                                            <div className="col-12 col-md-9">
-                                                <div className="input-group vendor-filter-input-group border-0 transition-all shadow-sm-hover bg-light rounded" style={{ backgroundColor: '#f3f6f9' }}>
-                                                    <span className="input-group-text bg-transparent border-0 pe-1">
-                                                        <i className="ri-search-line text-muted opacity-75"></i>
-                                                    </span>
-                                                    <input
-                                                        type="text"
-                                                        className="form-control bg-transparent border-0 ps-1 fs-13 shadow-none"
-                                                        placeholder="Search here..."
-                                                        value={searchQuery}
-                                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            {/* Category Dropdown (col-3) */}
-                                            <div className="col-12 col-md-3">
-                                                <div className="h-100">
-                                                    <CustomDropdown
-                                                        options={allTypes.map(t => ({ id: t.id.toString(), name: t.name }))}
-                                                        value={activeType}
-                                                        onChange={(val) => { setActiveType(val.toString()); }}
-                                                        optionLabel="name"
-                                                        optionValue="id"
-                                                        placeholder="All Product Categories"
-                                                        className="border-0 rounded-2 fs-13 vendor-filter-bg h-100 w-100"
-                                                        searchable={true}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Action Buttons */}
-                                    <div className="d-flex gap-2 flex-shrink-0">
-                                        <button
-                                            className="btn btn-warning d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13 shadow-sm text-white"
-                                            onClick={applyFilters}
-                                        >
-                                            <i className="ri-equalizer-fill align-bottom"></i> Filters
-                                        </button>
-                                        {hasFilter && (
-                                            <button
-                                                className="btn-clear d-flex align-items-center justify-content-center gap-2 px-3 transition-all fs-13"
-                                                onClick={clearAll}
-                                            >
-                                                <i className="ri-close-line align-bottom"></i> Clear
-                                            </button>
-                                        )}
-                                    </div>
+                    {/* ── Programs ────────────────────────────────────────────── */}
+                    {filteredGroups.length === 0 ? (
+                        <div className="fp-empty">
+                            <span className="fp-empty-icon" aria-hidden="true">
+                                <i className="ri-search-eye-line" />
+                            </span>
+                            <h4 className="fp-empty-title">No funding options found</h4>
+                            <p className="fp-empty-text">Try adjusting your search or filter to see more results.</p>
+                            <button type="button" onClick={clearAll} className="fp-btn fp-btn-primary">Reset Filters</button>
+                        </div>
+                    ) : (
+                        filteredGroups.map((group: any) => (
+                            <section key={group.id} className="fp-group" aria-labelledby={`fp-group-${group.id}`}>
+                                <div className="fp-group-head">
+                                    <h5 id={`fp-group-${group.id}`} className="fp-group-title">{group.name}</h5>
+                                    <span className="fp-group-count">{group.sequencings.length}</span>
+                                    <span className="fp-group-rule" aria-hidden="true"></span>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                {/* ── Empty State ──────────────────────────────────────────── */}
-                {filteredGroups.length === 0 ? (
-                    <div className="row">
-                        <div className="col-12">
-                            <div className="card border-0 shadow-sm">
-                                <div className="card-body text-center d-flex flex-column justify-content-center align-items-center funding-empty-state">
-                                    <div className="funding-empty-state-icon">
-                                        <i className="ri-search-eye-line text-muted" />
-                                    </div>
-                                    <h4 className="fw-bold text-dark mb-2 fs-4">No funding options found</h4>
-                                    <p className="text-muted fs-15 mb-4">Try adjusting your search or filter to see more results.</p>
-                                    <button onClick={clearAll} className="btn btn-dark px-4 py-2 fw-medium shadow-sm">Reset Filters</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    filteredGroups.map((group: any) => (
-                        <div key={group.id} className="mb-4">
-                            {/* Group header */}
-                            <div className="d-flex align-items-center gap-2 mb-3">
-                                <h5 className="mb-0 fw-bold fs-15 text-dark">{group.name}</h5>
-                                <span className="funding-group-count">
-                                    {group.sequencings.length}
-                                </span>
-                            </div>
-
-                            {/* Cards grid */}
-                            <div className="row g-3 funding-cards-row">
-                                {group.sequencings.map((seq: any) => (
-                                    <div
-                                        key={seq.id}
-                                        className="col-xxl-3 col-xl-4 col-lg-4 col-md-6 d-flex align-items-stretch"
-                                    >
+                                <div className="fp-grid">
+                                    {group.sequencings.map((seq: any) => (
                                         <FundingCard
+                                            key={seq.id}
                                             id={seq.id}
                                             icon={seq.icon}
                                             icon_color={seq.icon_color}
@@ -254,13 +261,13 @@ const Funding = () => {
                                             latest_review_status={seq.latest_review_status}
                                             readiness_factors={seq.readiness_factors}
                                         />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))
-                )}
+                                    ))}
+                                </div>
+                            </section>
+                        ))
+                    )}
 
+                </div>
             </div>
         </div>
     );

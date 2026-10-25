@@ -23,6 +23,8 @@ export const useDeleteDocument = () => {
     mutationFn: deleteDocument,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.documents.list() })
+      // Documents are a Getting Started step for funding-only borrowers.
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.completion() })
     }
   })
 }

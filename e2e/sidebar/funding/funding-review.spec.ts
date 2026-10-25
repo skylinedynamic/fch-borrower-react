@@ -1,5 +1,9 @@
 import { test, expect, pageHeading } from '../../support/fixtures'
 
+// A loaded funding card: the loading skeleton draws placeholder .funding-card
+// boxes too, but only real cards carry an id (funding-card-<id>).
+const REAL_CARD = '.funding-card[id^="funding-card-"]'
+
 // /funding/:id/review - the funding request wizard. It either opens, or
 // redirects with a toast when the borrower already applied / isn't eligible /
 // already has an approved request. Read-only: nothing is submitted.
@@ -11,7 +15,7 @@ test.describe('Sidebar › Funding › request wizard', () => {
 
   test('a funding option detail page offers the action that fits its state', async ({ page }) => {
     await page.goto('/funding')
-    const card = page.locator('.funding-card:not(.funding-card-disabled):not(.funding-card-locked)').first()
+    const card = page.locator(REAL_CARD + ':not(.funding-card-disabled):not(.funding-card-locked)').first()
     await expect(card).toBeVisible({ timeout: 60_000 })
     await card.click()
     await expect(page).toHaveURL(/\/funding\/\d+$/)
@@ -39,7 +43,7 @@ test.describe('Sidebar › Funding › request wizard', () => {
 
   test('/funding/:id/review opens the wizard or one of its documented redirects', async ({ page }) => {
     await page.goto('/funding')
-    const card = page.locator('.funding-card:not(.funding-card-disabled):not(.funding-card-locked)').first()
+    const card = page.locator(REAL_CARD + ':not(.funding-card-disabled):not(.funding-card-locked)').first()
     await expect(card).toBeVisible({ timeout: 60_000 })
     await card.click()
     const id = page.url().match(/\/funding\/(\d+)$/)?.[1]

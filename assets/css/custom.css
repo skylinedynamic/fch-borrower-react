@@ -872,6 +872,13 @@ File: Custom Css File
     background-color: #212529 !important;
 }
 
+/* The light gray tile behind a details page's header icon (Payment / Invoice
+   details), as in the partner portal. Without it the tile fell back to the
+   theme's dark primary and hid the primary-coloured icon. */
+.bg-gray-subtle {
+    background-color: #e8e7e7 !important;
+}
+
 .status-dot-inner {
     width: 6px;
     height: 6px;
@@ -892,6 +899,12 @@ File: Custom Css File
 .locked-field-padding {
     padding-right: 120px !important;
     /* Space for Change Request button */
+}
+
+/* A locked field's invalid icon would sit under the Change Request button;
+   the red border and the message below already carry the error. */
+.locked-field-padding.is-invalid {
+    background-image: none !important;
 }
 
 /* Ensure CustomDropdown matches input height and style */
@@ -916,15 +929,20 @@ File: Custom Css File
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Position adjustment for buttons inside relative containers */
+/* Position adjustment for buttons inside relative containers.
+   Sized and placed against the field (37.5px tall, 4px inset) rather than the
+   container: the container also holds the field's error message, so centring
+   on it - and custom.min.css's `height: calc(100% - 8px)` - stretched the
+   button down over the message. */
 .position-relative .change-request-btn {
     right: 4px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
+    top: 4px !important;
+    height: calc(37.5px - 8px) !important;
+    transform: none !important;
 }
 
 .position-relative .change-request-btn:hover {
-    transform: translateY(-52%) !important;
+    transform: translateY(-1px) !important;
 }
 
 .sk-w-30p {

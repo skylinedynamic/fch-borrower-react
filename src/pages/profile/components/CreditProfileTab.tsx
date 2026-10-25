@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef } from 'react'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
 import { toast } from 'react-toastify'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from '../../../lib/query'
 import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
 import { useAuth } from '../../../hooks/useAuth'
 import { countries } from '../../../modules/location'
 import { apiClient } from '../../../lib/http/apiClient'
-import { formatPhoneNumber, formatZipCode, formatSSN, unformatSSN, maskSSN, formatDate } from '../../../utils/formatters'
-import { SSN_DIGITS, ssnError } from '../../../utils/validators'
+import { formatPhoneNumber, formatZipCode, formatSSN, unformatSSN, maskSSN, formatDate, SSN_DIGITS } from '../../../utils/formatters'
 import SsnInput from '../../../components/SsnInput/SsnInput'
 import { usePersonalInfo } from '../../../modules/profile'
 import TabLoader from '../../../components/Loader/TabLoader'
@@ -73,8 +74,14 @@ const DetailItem = ({ label, value, icon }: DetailItemProps) => (
 
 const CITY_NOT_LISTED = '__not_listed__'
 
-export default function CreditProfileTab() {
+interface CreditProfileTabProps {
+  /** Called once a credit profile request has been accepted, so the page can move the borrower on. */
+  onSubmitted?: () => void
+}
+
+export default function CreditProfileTab({ onSubmitted }: CreditProfileTabProps = {}) {
   const { user, refreshUser } = useAuth()
+  const queryClient = useQueryClient()
   const [loading, setLoading] = useState(false)
   const [initialized, setInitialized] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -168,7 +175,7 @@ export default function CreditProfileTab() {
         city: submittedData.city || prev.city,
         state: submittedData.state || prev.state,
         zip: submittedData.zip || prev.zip,
-        ssn: submittedData.ssn || prev.ssn,
+        ssn: submittedData.ssn ? formatSSN(submittedData.ssn) : prev.ssn,
         date_of_birth: submittedData.date_of_birth ? submittedData.date_of_birth.substring(0, 10) : prev.date_of_birth,
         phone: submittedData.phone || prev.phone,
         email: submittedData.email || prev.email,
@@ -276,14 +283,6 @@ export default function CreditProfileTab() {
     }
   }
 
-const ZIP_DIGITS = 5
-
-function zipError(value: string): string | null {
-  return value.replace(/\D/g, '').length === ZIP_DIGITS
-    ? null
-    : 'Enter a 5-digit ZIP code, e.g. 10001.'
-}
-
   const update = (key: keyof FormState, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }))
     // Clear the server error for this field as the user corrects it
@@ -310,19 +309,12 @@ function zipError(value: string): string | null {
     evt.preventDefault()
     setErrors({})
 
-    // Checked before anything is sent: this request triggers a credit pull, and
-    // the two fields it is keyed on are the two worth being certain of.
-    const clientErrors: Record<string, string> = {}
-    const ssnProblem = ssnError(formData.ssn)
-    const zipProblem = zipError(formData.zip)
+    // Whether the SSN and ZIP are valid is the API's call (App\Rules\Ssn,
+    // App\Rules\UsPostalCode); its 422 lands on the fields below.
 
-    if (ssnProblem) clientErrors.ssn = ssnProblem
-    if (zipProblem) clientErrors.zip = zipProblem
-
-    if (Object.keys(clientErrors).length > 0) {
-      setErrors(clientErrors)
-      return
-    }
+    // Moving the borrower on (to the Step-By-Step Guide) is for the first
+    // submission; editing and resubmitting a request already in stays here.
+    const firstSubmission = !submittedData
 
     try {
       setSubmitting(true)
@@ -336,8 +328,11 @@ function zipError(value: string): string | null {
         ...consent,
       })
       toast.success(res.data?.message || 'Credit profile request submitted successfully.')
+      // Moves the Getting Started walkthrough on to "waiting for verification".
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.completion() })
       // On success: fetch the saved record and show details view
       await fetchSubmittedDetails()
+      if (firstSubmission) onSubmitted?.()
     } catch (err: any) {
       // Every failure on this form is reported in the form.
       //

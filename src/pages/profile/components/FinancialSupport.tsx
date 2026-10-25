@@ -128,6 +128,8 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
       onSuccess: (response) => {
         if (response.status) {
           toast.success(response.message)
+          // On to the next section still to complete.
+          onSave()
         } else {
           toast.error(response.message)
           if (response.errors) {

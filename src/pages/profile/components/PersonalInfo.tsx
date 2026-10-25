@@ -9,9 +9,9 @@ import TabLoader from '../../../components/Loader/TabLoader'
 import { formatCalendarDate } from '../../../utils/dates'
 import { countries as countriesData } from '../../../modules/location'
 
-import { formatPhoneNumber, unformatPhoneNumber, formatZipCode, formatSSN, unformatSSN } from '../../../utils/formatters'
-import { SSN_DIGITS, ssnError } from '../../../utils/validators'
+import { formatPhoneNumber, unformatPhoneNumber, formatZipCode, formatSSN, unformatSSN, SSN_DIGITS } from '../../../utils/formatters'
 import SsnField from './SsnField'
+import PendingEmailNotice from './PendingEmailNotice'
 import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
 import { useAuth } from '../../../hooks/useAuth'
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
@@ -120,12 +120,9 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
     // Clear previous errors
     setValidationErrors({})
 
+    // Whether the SSN is valid is the API's call (App\Rules\Ssn); its 422
+    // lands on the field like any other error.
     const { ssn, ...rest } = data
-    const ssnProblem = ssn ? ssnError(ssn) : null
-    if (ssnProblem) {
-      setValidationErrors({ ssn: [ssnProblem] })
-      return
-    }
 
     // Ensure country_code is set. A blank SSN is left out so the one on file stays.
     const payload: SavePersonalInfoRequest = {
@@ -138,7 +135,8 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
       onSuccess: async (response) => {
         toast.success(response.message || 'Personal information saved successfully')
         await refreshUser()
-        // onSave() // Call parent onSave if needed
+        // On to the next section still to complete.
+        onSave()
       },
       onError: (error: any) => {
         // Handle validation errors from server
@@ -359,6 +357,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
           {hasError('email') && (
             <div className="invalid-feedback d-block">{getFieldError('email')}</div>
           )}
+          <PendingEmailNotice pendingEmail={apiData?.pending_email} />
         </div>
         <div className="col-md-6">
           <label className="form-label">Phone Number <span className="text-danger">*</span></label>

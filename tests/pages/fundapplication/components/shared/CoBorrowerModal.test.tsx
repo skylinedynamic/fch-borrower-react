@@ -85,9 +85,21 @@ describe('CoBorrowerModal — SSN handling', () => {
     const user = userEvent.setup()
     renderModal(draft)
 
-    const ssnInput = screen.getByPlaceholderText('xxx-xx-xxxx')
+    const ssnInput = screen.getByLabelText(/social security number/i)
     await user.type(ssnInput, '987654321')
     expect((ssnInput as HTMLInputElement).value).toBe('987-65-4321')
+  })
+
+  it('shows a co-borrower SSN masked once the field is left, in full on the eye button', async () => {
+    // The same SSN field as the profile's: ***-**-1234 at rest.
+    const user = userEvent.setup()
+    renderModal({ ...draft, ssn: '987-65-4321' })
+
+    const ssnInput = screen.getByLabelText(/social security number/i) as HTMLInputElement
+    expect(ssnInput.value).toBe('***-**-4321')
+    // The modal sits outside the accessibility tree until Bootstrap shows it.
+    await user.click(screen.getByRole('button', { name: /show ssn/i, hidden: true }))
+    expect(ssnInput.value).toBe('987-65-4321')
   })
 
   it('shows field-level validation errors on a 422 response and does not call onSubmit', async () => {
@@ -104,5 +116,38 @@ describe('CoBorrowerModal — SSN handling', () => {
 
     expect(await screen.findByText('This SSN is already in use.')).toBeInTheDocument()
     expect(onSubmit).not.toHaveBeenCalled()
+  })
+})
+
+describe('CoBorrowerModal — phone fields', () => {
+  it('shows a phone example a real US number could be', () => {
+    renderModal(draft)
+
+    // (123) 456-7890 is not one: an area code never starts with 1.
+    expect(screen.queryAllByPlaceholderText('(123) 456-7890')).toHaveLength(0)
+    expect(screen.getAllByPlaceholderText('(555) 555-5555')).toHaveLength(2)
+  })
+
+  it("drops a field's error once the field is edited, so an emptied phone shows none", async () => {
+    server.use(
+      http.post('*/borrower/myapplication/funding-application/co-borrower-validation', () =>
+        HttpResponse.json(
+          { message: 'Validation failed', errors: { home_phone: 'Enter a valid 10-digit US phone number, e.g. (555) 234-5678.', email: 'The email field is required.' } },
+          { status: 422 }
+        )
+      )
+    )
+    const user = userEvent.setup()
+    renderModal({ ...draft, homePhone: '(555) 21' })
+
+    await user.click(screen.getByRole('button', { name: /Add Co-Borrower/i, hidden: true }))
+    expect(await screen.findByText(/Enter a valid 10-digit US phone number/)).toBeInTheDocument()
+
+    const homePhone = screen.getAllByPlaceholderText('(555) 555-5555')[1]
+    await user.clear(homePhone)
+
+    expect(screen.queryByText(/Enter a valid 10-digit US phone number/)).not.toBeInTheDocument()
+    // Only the field that was edited: the email's error stays until it is fixed.
+    expect(screen.getByText('The email field is required.')).toBeInTheDocument()
   })
 })

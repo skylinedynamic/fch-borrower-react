@@ -42,7 +42,7 @@ Add new findings at the bottom with the next ID; update **Status** when somethin
 | Pre Qualification | `e2e/sidebar/pre-qualification/` | 5-step wizard, prefilled Personal Info (read-only, no submit) |
 | Funding Request | `e2e/sidebar/funding-request/` | stats + filters, badge, row → detail, `/funding-request` redirect |
 | My Applications | `e2e/sidebar/my-applications/` | both tables, advisor panel, "Apply New Prequalification" |
-| Capital Access | `e2e/sidebar/capital-access/` | guard lets user in, welcome, strategy guard rejects unknown id |
+| Credit Card Stacking | `e2e/sidebar/credit-card-stacking/` | guard lets user in, welcome, strategy guard rejects unknown id |
 | Invoices | `e2e/sidebar/invoices/` | columns, search → empty → Clear, row → invoice detail |
 | Payments | `e2e/sidebar/payments/` | columns, row → payment detail |
 | Billing Details | `e2e/sidebar/billing-details/` | summary cards finish loading (read-only) |
@@ -63,7 +63,7 @@ Add new findings at the bottom with the next ID; update **Status** when somethin
 | Dashboard | `e2e/sidebar/dashboard/dashboard-widgets.spec.ts` | Resume Strategy, both View All, Schedule Meeting, Contact Support, score/tier/meeting cards |
 | Funding Request | `e2e/sidebar/funding-request/fund-application.spec.ts` | Process Funding Application → wizard, Step 1 prefilled, /fund-application without id |
 | My Applications | `e2e/sidebar/my-applications/application-detail.spec.ts` | row → detail → breadcrumb back, unknown id → "Application not found" |
-| Capital Access | `e2e/sidebar/capital-access/capital-access-flow.spec.ts` | active play → roadmap, strategy hero card, overview / pre-flight / roadmap, roadmap step → detail, completion, unusable id redirected |
+| Credit Card Stacking | `e2e/sidebar/credit-card-stacking/credit-card-stacking-flow.spec.ts` | active play → roadmap, strategy hero card, overview / pre-flight / roadmap, roadmap step → detail, completion, unusable id redirected |
 | Funding | `e2e/sidebar/funding/funding-review.spec.ts` | detail → request wizard (or its documented redirect), unknown id → "Funding Detail Not Found" → Go Back |
 | Resource Hub | `e2e/sidebar/resource-hub/resource-detail.spec.ts` | Business Services detail, no-content item → "coming soon" |
 | — (guest) | `e2e/auth/password-reset.spec.ts` | Forgot password link, unknown-address request, back to login, reset without token refused, password rules |
@@ -83,7 +83,7 @@ Run against the E2E borrower with the owner's approval (2026-10-13). Each one ei
 | Document upload / remove | `e2e/sidebar/documents/document-upload.spec.ts` | upload → attach → remove → file deleted from the File Manager |
 | Appointment create / delete | `e2e/sidebar/appointment/appointment-create.spec.ts` | created on a future weekday, then deleted |
 | Invoice payment (Stripe test card 4242…) | `e2e/sidebar/invoices/invoice-payment.spec.ts` | a $1 unpaid invoice from the local-only `E2EUnpaidInvoiceSeeder` is paid in Stripe sandbox (found E2E-014) |
-| Capital Access step submit | `e2e/sidebar/capital-access/step-submit.spec.ts` | saves the next open step as Pending; if it is schedule-locked, asserts the API refuses it with 403 (found E2E-016) |
+| Credit Card Stacking step submit | `e2e/sidebar/credit-card-stacking/step-submit.spec.ts` | saves the next open step as Pending; if it is schedule-locked, asserts the API refuses it with 403 (found E2E-016) |
 | Funding application Save & Next | `e2e/sidebar/funding-request/fund-application-save.spec.ts` | step 1 saved with its prefilled values |
 | Funding request submit | `e2e/sidebar/funding/funding-request-submit.spec.ts` | a real request for underwriting. **Uses up one funding option per run** (it becomes "already applied"); the test fails with a clear message once none is left |
 | Pre-qualification submit | `e2e/sidebar/pre-qualification/prequal-submit.spec.ts` | every step saved, then submitted; **calls the real OpenAI pre-qualification agent (cost per run)**; waits for the underwriting result (found E2E-018) |

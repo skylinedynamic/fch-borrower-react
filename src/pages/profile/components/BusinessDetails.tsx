@@ -25,9 +25,8 @@ interface BusinessDetailsProps {
 /**
  * An EIN is nine digits. XX-XXXXXXX is how it is written down, not part of the
  * number - which is why the payload carries the digits and the field shows the
- * hyphen. Kept together so the placeholder, the mask and the check agree.
+ * hyphen. Whether it is a valid EIN is the API's call (App\Rules\BusinessEin).
  */
-const EIN_DIGITS = 9
 const EIN_WRITTEN = '12-3456789'
 
 export default function BusinessDetails({ data, onChange, onSave, onBack }: BusinessDetailsProps) {
@@ -69,18 +68,9 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
   const handleSave = () => {
     setErrors({})
 
-    // An EIN is nine digits; the hyphen the field adds is only how it is
-    // written. Checked here as well as on the server so a borrower who is one
-    // digit short hears about it while the form is still in front of them,
-    // rather than losing the save to a 422.
+    // The hyphen the field adds is only how an EIN is written; the API gets the
+    // digits and decides whether they are an EIN.
     const ein = unformatEIN(data.business_ein)
-
-    if (ein.length !== EIN_DIGITS) {
-      // An array, matching the shape the server's own 422 arrives in, so the
-      // field below renders it the same way either source produced it.
-      setErrors({ business_ein: [`EIN must be 9 digits (${EIN_WRITTEN})`] })
-      return
-    }
 
     const payload = {
       ...data,
@@ -96,7 +86,8 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
       onSuccess: (response) => {
         if (response.status) {
           toast.success(response.message)
-          //onSave()
+          // On to the next section still to complete.
+          onSave()
         } else {
           toast.error(response.message)
           if (response.errors) {
@@ -256,7 +247,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
           <div className="position-relative">
             <input
               type="text"
-              placeholder="12-3456789"
+              placeholder={EIN_WRITTEN}
               value={data.business_ein}
               onChange={(e) => onChange({ ...data, business_ein: formatEIN(e.target.value) })}
               className={`form-control ${errors.business_ein ? 'is-invalid' : ''} ${isFieldLocked('business_ein') ? 'bg-light border-dashed locked-field-padding' : ''}`}
@@ -288,7 +279,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               <input
                 type="tel"
                 className={`form-control ${errors.business_phone ? 'is-invalid' : ''} ${isFieldLocked('business_phone') ? 'bg-light border-dashed locked-field-padding' : ''}`}
-                placeholder="(123) 456-7890"
+                placeholder="(555) 555-5555"
                 value={data.business_phone}
                 onChange={(e) => onChange({ ...data, business_phone: formatPhoneNumber(e.target.value) })}
                 maxLength={14}
