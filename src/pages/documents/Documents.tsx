@@ -9,11 +9,15 @@ import type { FileSystemItem } from '../../modules/filemanager/types'
 import { useDocumentTypes, useBorrowerDocuments, useDeleteDocument, type BorrowerDocument } from '../../modules/documents'
 import { getUser } from '../../lib/auth/auth'
 import { DocumentStats } from './components/DocumentStats'
-import { DocumentSection } from './components/DocumentSection'
+import { DocumentCategoryButton, DocumentCategoryDetail, DocumentCategoryItem } from './components/DocumentCategory'
+import { useWideScreen } from './hooks/useWideScreen'
+import { isOptionalDocumentCategory } from '../../config/documents'
+import DocumentsFundingPrompt from './components/DocumentsFundingPrompt'
+import { useOnboardingPopupStore } from '../../store/onboardingPopupStore'
 import { FileManagerModal } from '../../components/FileManagerModal/FileManagerModal'
 import { DocumentSectionLoader } from '../../components/Loader/DocumentSectionLoader'
 import DeleteConfirmationModal from '../../components/GlobalModal/DeleteConfirmModal'
-import { useOnboardingPopupStore } from '../../store/onboardingPopupStore'
+import './Documents.css'
 
 
 export default function Documents() {
@@ -21,10 +25,12 @@ export default function Documents() {
   const [uploads, setUploads] = useState<Record<string, FileSystemItem[]>>({})
   const [uploadingSections, setUploadingSections] = useState<Record<string, boolean>>({})
   const queryClient = useQueryClient()
+  // Split view (list beside the open category) on wide screens, in place on narrow ones.
+  const wide = useWideScreen()
 
-  // Uploading here moves the Getting Started walkthrough on; its next popup is
-  // about another page, so it doesn't open by itself over this one (the Next
-  // step button still opens it).
+  // Uploading here moves the Getting Started walkthrough on; its next popup
+  // is about another page, so it doesn't open by itself over this one (the
+  // Next step button still opens it). The prompt below says what's next here.
   const { holdPage: holdOnboardingPopup, releasePage: releaseOnboardingPopup } = useOnboardingPopupStore()
   useEffect(() => {
     holdOnboardingPopup()
@@ -91,8 +97,14 @@ export default function Documents() {
     const entries = Object.entries(uploads)
     const count = entries.reduce((acc, [, files]) => acc + files.filter(f => !f.isDirectory).length, 0)
     const size = entries.reduce((acc, [, files]) => acc + files.reduce((a, f) => a + (f.size || 0), 0), 0)
-    return { count, size }
+    // Funding needs every category but the optional ones (Others).
+    const required = entries.filter(([name]) => !isOptionalDocumentCategory(name))
+    const filled = required.filter(([, files]) => files.length > 0).length
+    return { count, size, filled, required: required.length }
   }, [uploads])
+
+  // The first category still without a document, for the prompt's "Upload …" button.
+  const nextMissing = sections.find((sec) => !isOptionalDocumentCategory(sec) && !uploads[sec]?.length) ?? null
 
   const toggleFileManager = (section?: string, selectMode: boolean = false) => {
     if (section) {
@@ -177,46 +189,79 @@ export default function Documents() {
       />
 
       <div className="container-fluid min-vh-70 pt-4">
-        {loading ? (
-          <div className="text-center mb-3">
-            <div className="d-flex flex-column align-items-center">
-              <div className="skeleton-line" style={{ width: 180, height: 24, borderRadius: 8 }}></div>
-              <div className="skeleton-line mt-2" style={{ width: 480, height: 14, borderRadius: 8 }}></div>
-              <div className="skeleton-line mt-2" style={{ width: 420, height: 14, borderRadius: 8 }}></div>
-              <div className="d-flex gap-2 mt-2">
-                <div className="skeleton-line" style={{ width: 80, height: 22, borderRadius: 10 }}></div>
-                <div className="skeleton-line" style={{ width: 100, height: 22, borderRadius: 10 }}></div>
-              </div>
+        <div className="docs-shell">
+          {loading ? (
+            <div className="docs-hero">
+              <div className="skeleton-line" style={{ width: 200, height: 24, borderRadius: 4 }}></div>
+              <div className="skeleton-line mt-2" style={{ width: 340, maxWidth: '100%', height: 14, borderRadius: 4 }}></div>
+              <div className="skeleton-line mt-3" style={{ width: '100%', height: 56, borderRadius: 4 }}></div>
             </div>
-          </div>
-        ) : (
-          <DocumentStats />
-        )}
+          ) : (
+            <DocumentStats documentCount={totals.count} filledCount={totals.filled} categoryCount={totals.required} />
+          )}
 
-        <div className="row">
-          <div className="col-11 mx-auto">
-            <div className="card doc-panel">
-              <div className="card-body">
-                {loading ? (
-                  <DocumentSectionLoader />
-                ) : (
-                  <div className="accordion" id="docsAccordion">
-                    {sections.map((sec) => (
-                      <DocumentSection
-                        key={sec}
-                        section={sec}
-                        files={uploads[sec] || []}
-                        isOpen={openSection === sec}
-                        isUploading={uploadingSections[sec] || false}
-                        onToggle={() => toggleSection(sec)}
-                        onOpenFileManager={toggleFileManager}
-                        onRemoveFile={handleRemoveFile}
-                      />
-                    ))}
-                  </div>
-                )}
+          {!loading && (
+            <DocumentsFundingPrompt
+              filled={totals.filled}
+              total={totals.required}
+              nextMissing={nextMissing}
+              onUploadNext={() => nextMissing && setOpenSection(nextMissing)}
+            />
+          )}
+
+          <div className="docs-board">
+            {loading ? (
+              <div className="docs-board-loading">
+                <DocumentSectionLoader />
               </div>
-            </div>
+            ) : wide ? (
+              <div className="docs-split">
+                <nav className="docs-split-nav" aria-label="Document categories">
+                  <div className="docs-split-nav-head">Categories</div>
+                  {sections.map((sec) => (
+                    <DocumentCategoryButton
+                      key={sec}
+                      section={sec}
+                      files={uploads[sec] || []}
+                      isOpen={openSection === sec}
+                      onToggle={() => toggleSection(sec)}
+                      layout="split"
+                    />
+                  ))}
+                </nav>
+                <div className="docs-split-pane">
+                  {openSection && sections.includes(openSection) ? (
+                    <DocumentCategoryDetail
+                      section={openSection}
+                      files={uploads[openSection] || []}
+                      isUploading={uploadingSections[openSection] || false}
+                      onOpenFileManager={toggleFileManager}
+                      onRemoveFile={handleRemoveFile}
+                    />
+                  ) : (
+                    <div className="docs-split-empty">
+                      <i className="ri-folder-open-line" aria-hidden="true"></i>
+                      <p>Select a category to upload or view its documents.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="docs-stacked" id="docsAccordion">
+                {sections.map((sec) => (
+                  <DocumentCategoryItem
+                    key={sec}
+                    section={sec}
+                    files={uploads[sec] || []}
+                    isOpen={openSection === sec}
+                    isUploading={uploadingSections[sec] || false}
+                    onToggle={() => toggleSection(sec)}
+                    onOpenFileManager={toggleFileManager}
+                    onRemoveFile={handleRemoveFile}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

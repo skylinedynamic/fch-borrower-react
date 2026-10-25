@@ -16,7 +16,7 @@ import Tier0SubmittedModal from './Tier0SubmittedModal'
 import { useOnboardingPopupStore } from '../../../../store/onboardingPopupStore'
 import PointerFinger from './PointerFinger'
 import { isAwaitingSubmission, supportsVerifyAll, toVerificationBatches } from '../taskVerification'
-import './VerifyAll.css'
+import '../CreditGuide.css'
 
 interface TierAccordionProps {
   tier: Tier
@@ -39,6 +39,16 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
   const [submittedCount, setSubmittedCount] = useState(0)
   const { hold: holdOnboardingPopup, release: releaseOnboardingPopup } = useOnboardingPopupStore()
   const verifyTierTasksMutation = useVerifyTierTasks()
+
+  const progressPercent = totalCount > 0 ? Math.min(100, Math.round((completedCount / totalCount) * 100)) : 0
+  const state: 'locked' | 'complete' | 'active' | 'open' = isLocked
+    ? 'locked'
+    : totalCount > 0 && completedCount >= totalCount
+      ? 'complete'
+      : isCurrentTier
+        ? 'active'
+        : 'open'
+  const stateLabel = { locked: 'Locked', complete: 'Completed', active: 'In progress', open: 'Available' }[state]
 
   const canSubmit = !!(isFirstTier || isCurrentTier)
   const awaitingSubmission = tier.tasks.filter(isAwaitingSubmission)
@@ -84,56 +94,57 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
   }
 
   return (
-    <div className={`tier mb-4 ${isOpen ? 'open' : ''}`}>
+    <div className={`cg-tier is-${state} ${isOpen ? 'is-open' : ''}`} data-tier={tier.id}>
       {/* Header */}
       <div
-        className={`tier-accordion-header p-3 d-flex align-items-center justify-content-between ${isLocked ? 'cursor-default' : 'cursor-pointer'}`}
+        className="cg-tier-head"
+        role="button"
+        tabIndex={0}
+        aria-expanded={isOpen}
+        aria-disabled={isLocked ? true : undefined}
         onClick={onToggle}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onToggle()
+          }
+        }}
       >
-        <div className="d-flex flex-column gap-1">
-          <div className="d-flex align-items-center gap-2">
-            <h5 className="tier-title m-0">
+        <span className="cg-tier-badge" aria-hidden="true">
+          {isLocked ? <i className="ri-lock-2-line"></i> : state === 'complete' ? <i className="ri-check-double-line"></i> : tier.code || tier.name}
+        </span>
+
+        <div className="cg-tier-heading">
+          <div className="cg-tier-titleline">
+            <h2 className="cg-tier-title">
               {tier.name}: {tier.title}
-            </h5>
+            </h2>
             {tier.description && (
-              <span
-                className="info-badge"
-                data-bs-toggle="tooltip"
-                title={tier.description}
-              >
-                <i className="ri-flashlight-fill"></i>
+              <span className="cg-tier-info" data-bs-toggle="tooltip" title={tier.description}>
+                <i className="ri-information-line" aria-hidden="true"></i>
               </span>
             )}
           </div>
-          {tier.subtitle && (
-            <div className="tier-desc">
-              {tier.subtitle}
-            </div>
-          )}
+          {tier.subtitle && <div className="cg-tier-subtitle">{tier.subtitle}</div>}
         </div>
 
-
-        <div className="d-flex align-items-center gap-3">
-          <span className="count-badge">
-            {completedCount}/{totalCount}
-          </span>
-          {!isLocked && (
-            <i
-              className="ri-arrow-down-s-line arrow-icon"
-              style={{
-                transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)'
-              }}
-            ></i>
-          )}
-          {isLocked && (
-            <i className="ri-lock-line text-muted fs-18"></i>
-          )}
+        <div className="cg-tier-meta">
+          <span className={`cg-chip is-${state}`}>{stateLabel}</span>
+          <div className="cg-tier-progress">
+            <span className="cg-tier-count">
+              {completedCount}/{totalCount}
+            </span>
+            <span className="cg-meter" aria-hidden="true">
+              <span className="cg-meter-fill" style={{ width: `${progressPercent}%` }}></span>
+            </span>
+          </div>
+          <i className={`ri-arrow-down-s-line cg-tier-caret ${isOpen ? 'is-open' : ''}`} aria-hidden="true"></i>
         </div>
       </div>
 
       {/* Body */}
       {isOpen && (
-        <div className="tier-body p-3">
+        <div className="cg-tier-body">
 
           {showVerifyAll && (
             <div className={`cg-verify-all ${guided ? 'is-guided' : ''}`} ref={verifyAllRef}>
@@ -165,7 +176,7 @@ export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, o
           )}
 
           {/* Task List */}
-          <div className="tier-tasks d-flex flex-column gap-2">
+          <div className="cg-tier-tasks">
             {tier.tasks.map((task, index) => {
               const commonProps = {
                 key: task.id,

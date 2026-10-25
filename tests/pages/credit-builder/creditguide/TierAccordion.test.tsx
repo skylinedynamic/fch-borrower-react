@@ -213,16 +213,14 @@ describe('Step by Step Guide - pointing at Verify All', () => {
   })
 })
 
-// A task is submitted from its "Pending Verification" badge; it confirms in
-// the same modal Verify All uses.
-describe('Step by Step Guide - submitting one task', () => {
+describe('Step by Step Guide - task buttons', () => {
   it('submits a single task for verification after confirming', async () => {
     const user = userEvent.setup()
     const bodies = captureVerifyRequests()
     renderTier(tier0())
 
-    const row = screen.getByText('Register an EIN').closest('.tier-task-item') as HTMLElement
-    await user.click(within(row).getByText(/pending verification/i))
+    const row = screen.getByText('Register an EIN').closest('[data-task]') as HTMLElement
+    await user.click(within(row).getByRole('button', { name: /submit for verification/i }))
 
     const dialog = await screen.findByRole('dialog')
     expect(dialog).toHaveTextContent('Register an EIN')
@@ -236,18 +234,41 @@ describe('Step by Step Guide - submitting one task', () => {
     const bodies = captureVerifyRequests()
     renderTier(tier0())
 
-    const row = screen.getByText('Register an EIN').closest('.tier-task-item') as HTMLElement
-    await user.click(within(row).getByText(/pending verification/i))
+    const row = screen.getByText('Register an EIN').closest('[data-task]') as HTMLElement
+    await user.click(within(row).getByRole('button', { name: /submit for verification/i }))
     await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /cancel/i }))
 
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
     expect(bodies).toHaveLength(0)
   })
 
+  it('uses the task’s own button label when the admin set one', () => {
+    renderTier(tier('T0', [task(11, 'Register an EIN', { button_title: 'I have an EIN' })]))
+
+    const row = screen.getByText('Register an EIN').closest('[data-task]') as HTMLElement
+    expect(within(row).getByRole('button', { name: /i have an ein/i })).toBeInTheDocument()
+  })
+
+  it('shows the state of tasks that are not waiting on the borrower', () => {
+    renderTier(tier0())
+
+    const inReview = screen.getByText('Get a business phone number').closest('[data-task]') as HTMLElement
+    expect(inReview).toHaveTextContent(/in review/i)
+    expect(within(inReview).queryByRole('button')).toBeNull()
+
+    const verified = screen.getByText('Register with D&B').closest('[data-task]') as HTMLElement
+    expect(verified).toHaveTextContent(/verified/i)
+    expect(within(verified).queryByRole('button')).toBeNull()
+
+    const rejected = screen.getByText('Business website').closest('[data-task]') as HTMLElement
+    expect(rejected).toHaveTextContent(/rejected/i)
+    expect(within(rejected).getByRole('button', { name: /submit again/i })).toBeInTheDocument()
+  })
+
   it('offers no submit button on a tier the borrower cannot work on yet', () => {
     renderTier(tier0(), { isCurrentTier: false, isFirstTier: false })
 
-    const row = screen.getByText('Register an EIN').closest('.tier-task-item') as HTMLElement
+    const row = screen.getByText('Register an EIN').closest('[data-task]') as HTMLElement
     expect(within(row).queryByRole('button')).toBeNull()
     expect(row).toHaveTextContent(/pending/i)
   })
@@ -255,8 +276,8 @@ describe('Step by Step Guide - submitting one task', () => {
 
 describe('Step by Step Guide - once Tier 0 tasks are submitted', () => {
   const submitOne = async (user: ReturnType<typeof userEvent.setup>, title = 'Register an EIN') => {
-    const row = screen.getByText(title).closest('.tier-task-item') as HTMLElement
-    await user.click(within(row).getByText(/pending verification/i))
+    const row = screen.getByText(title).closest('[data-task]') as HTMLElement
+    await user.click(within(row).getByRole('button', { name: /submit for verification/i }))
     await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /^submit for verification$/i }))
   }
 

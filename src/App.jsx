@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { Routes, Route, Outlet, Navigate } from 'react-router-dom'
 import Layout from '../src/components/Layout/Layout.jsx'
-import Dashboard from '../src/pages/dashboard/Dashboard.jsx'
+import Dashboard from '../src/pages/dashboard/Dashboard'
 import SignIn from '../src/pages/singin/SignIn.jsx'
 import ForgotPassword from '../src/pages/singin/ForgotPassword.jsx'
 import ResetPassword from '../src/pages/singin/ResetPassword.jsx'

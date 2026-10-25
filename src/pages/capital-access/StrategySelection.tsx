@@ -53,7 +53,7 @@ export default function StrategySelection() {
                   <i className="ri-arrow-left-line fs-16"></i>
                 </Link>
                 <div>
-                  <h4 className="fs-22 mb-1 fw-bold text-dark">Capital Access Strategy</h4>
+                  <h4 className="fs-22 mb-1 fw-bold text-dark">Credit Card Stacking Strategy</h4>
                   <p className="ca-page-subtitle mb-0">
                     Choose a strategy that fits your business funding goals. Each play is a structured sequence of card applications designed to maximize your credit access.
                   </p>
@@ -69,7 +69,7 @@ export default function StrategySelection() {
               <div className="ca-empty-state-icon">
                 <i className="ri-search-eye-line"></i>
               </div>
-              <h5 className="ca-empty-state-title">No Capital Access Strategies Available</h5>
+              <h5 className="ca-empty-state-title">No Credit Card Stacking Strategies Available</h5>
               <p className="ca-empty-state-desc mb-3">There are no funding strategies available at this time.</p>
               <Link to="/credit-card-stacking" className="ca-btn ca-btn-outline">
                 <i className="ri-arrow-left-line"></i> Back to Overview

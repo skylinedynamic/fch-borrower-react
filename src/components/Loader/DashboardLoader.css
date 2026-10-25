@@ -1,0 +1,67 @@
+/**
+ * Dashboard skeleton. The layout comes from Dashboard.css (the loader reuses
+ * its classes); this file only adds the shimmering placeholder blocks.
+ */
+
+.db-sk {
+  display: block;
+  max-width: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(27, 34, 53, 0.06) 25%, rgba(27, 34, 53, 0.11) 50%, rgba(27, 34, 53, 0.06) 75%);
+  background-size: 200% 100%;
+  animation: db-sk-shimmer 1.5s infinite ease-in-out;
+}
+
+/* On the brand-coloured hero and the support strip the shimmer is a light wash. */
+.db-sk.on-dark {
+  background: linear-gradient(
+    90deg,
+    rgba(var(--db-on-brand-rgb, 255, 255, 255), 0.14) 25%,
+    rgba(var(--db-on-brand-rgb, 255, 255, 255), 0.26) 50%,
+    rgba(var(--db-on-brand-rgb, 255, 255, 255), 0.14) 75%
+  );
+  background-size: 200% 100%;
+}
+
+.db-sk.is-round {
+  border-radius: 50%;
+}
+
+@keyframes db-sk-shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* A KPI card that is still loading: white, where the real ones are coloured. */
+.db-kpi.is-skeleton {
+  color: inherit;
+  border: 1px solid var(--db-border);
+  background: var(--db-surface);
+}
+
+.db-kpi.is-skeleton:hover {
+  transform: none;
+  box-shadow: var(--db-shadow);
+}
+
+/* The credit score's half-circle. */
+.db-sk-gauge {
+  width: 220px;
+  height: 110px;
+  margin: 8px auto 16px;
+}
+
+.db-sk-gauge-arc {
+  border-radius: 220px 220px 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .db-sk {
+    animation: none;
+  }
+}

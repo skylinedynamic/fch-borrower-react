@@ -133,23 +133,23 @@ const MissingTooltip: React.FC<{ factors: ReadinessFactor[]; visible: boolean }>
                 <i className="ri-error-warning-fill fc-icon-warning" />
                 <span>Missing Requirements</span>
             </div>
-            
+
             <p className="funding-missing-tooltip-desc">
                 This funding option is currently locked because the following requirement(s) are not met.
             </p>
-            
+
             <div className="funding-missing-tooltip-divider" />
-            
+
             <ul className="funding-missing-tooltip-list">
                 {factors.map((f, i) => {
                     const label = f.label;
                     const req = f.required_value;
                     const act = f.borrower_value;
-                    
+
                     const lowerLabel = label.toLowerCase();
                     let actVal = act;
                     let reqVal = req;
-                    
+
                     if (req !== undefined && req !== null) {
                         if (lowerLabel.includes('revenue') || lowerLabel.includes('deposit') || lowerLabel.includes('balance')) {
                             const fmt = (val: any) => {
@@ -196,9 +196,9 @@ const MissingTooltip: React.FC<{ factors: ReadinessFactor[]; visible: boolean }>
                     );
                 })}
             </ul>
-            
+
             <div className="funding-missing-tooltip-divider" />
-            
+
             <div className="funding-missing-tooltip-footer-info">
                 <i className="ri-information-fill fc-icon-info-md" />
                 <span>Update the missing requirement(s) above to unlock this funding option.</span>
@@ -222,9 +222,9 @@ const PendingTooltip: React.FC<{ visible: boolean }> = ({ visible }) => {
             <p className="funding-missing-tooltip-desc">
                 You have already submitted a funding request for this funding option.
             </p>
-            
+
             <div className="funding-missing-tooltip-divider" />
-            
+
             <ul className="funding-missing-tooltip-list">
                 <li className="funding-missing-tooltip-item">
                     <div className="d-flex align-items-start gap-2">
@@ -233,9 +233,9 @@ const PendingTooltip: React.FC<{ visible: boolean }> = ({ visible }) => {
                     </div>
                 </li>
             </ul>
-            
+
             <div className="funding-missing-tooltip-divider" />
-            
+
             <div className="funding-missing-tooltip-footer-info">
                 <i className="ri-information-fill fc-icon-info-md" />
                 <span>Please wait for approval or rejection before submitting a new request.</span>
@@ -253,13 +253,13 @@ const EngineLockedTooltip: React.FC<{ visible: boolean }> = ({ visible }) => {
                 <i className="ri-lock-fill fc-icon-lock" />
                 <span>Locked</span>
             </div>
-            
+
             <p className="funding-missing-tooltip-desc">
                 This funding option is currently locked because no underwriting logic is configured.
             </p>
-            
+
             <div className="funding-missing-tooltip-divider" />
-            
+
             <div className="funding-missing-tooltip-footer-info">
                 <i className="ri-information-fill fc-icon-info-md" />
                 <span>Please wait until requirements are set up.</span>
@@ -299,7 +299,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
 
     // Pending = already applied, awaiting review
     const isPending = latest_review_status === FUNDING_REVIEW_STATUS.PENDING;
-    
+
     // Engine locked = no lender visibilities configured
     const isEngineLocked = engine_status === ENGINE_STATUS_VALUES.LOCKED;
 
@@ -310,7 +310,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
     // Pill label & color (matching mockup yellow/brown for missing)
     const sec = getCSSVar('--secondary-color', '#1cbfca');
     const displayLabel = isEngineLocked ? ENGINE_STATUS_LABELS.LOCKED : (hasMissing ? ENGINE_STATUS_LABELS.MISSING_INFO : isPending ? ENGINE_STATUS_LABELS.UNDER_REVIEW : ENGINE_STATUS_LABELS.LIKELY_ELIGIBLE);
-    const pillBg    = isEngineLocked ? '#f3f4f6' : hasMissing ? '#fee2e2' : isPending ? '#f0f0ff' : `${sec}1a`;
+    const pillBg = isEngineLocked ? '#f3f4f6' : hasMissing ? '#fee2e2' : isPending ? '#f0f0ff' : `${sec}1a`;
     const pillColor = isEngineLocked ? '#4b5563' : hasMissing ? '#ef4444' : isPending ? '#4f52c8' : sec;
 
     // Ensure action_url is a valid path or external URL, otherwise fallback to default
@@ -395,7 +395,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
 
                     {/* Arrow Button (always right-arrow as per mockup) */}
                     <div className="funding-card-arrow">
-                        <i className="ri-arrow-right-s-line" />
+                        <i className="ri-arrow-right-line" />
                     </div>
                 </div>
             </div>

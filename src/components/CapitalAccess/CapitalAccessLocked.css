@@ -1,0 +1,515 @@
+/* Credit Card Stacking while locked: a page head, then one card with what is
+   locked and how far along the borrower is, the four requirements as a
+   connected stepper, and who to ask. Also used by CapitalAccessLockedLoader. */
+
+.cal-shell {
+  --cal-radius: 4px;
+  --cal-border: var(--vz-border-color, #e9ebec);
+  --cal-ink: #141b2d;
+  --cal-body: #4b5266;
+  --cal-muted: #6b7286;
+  --cal-soft: #f6f7f9;
+  --cal-brand: var(--brand-primary, var(--vz-primary, #001f3f));
+  --cal-brand-rgb: var(--brand-primary-rgb, 0, 31, 63);
+  --cal-success: #0ab39c;
+  --cal-success-ink: #078a78;
+  --cal-info: #1769c2;
+  --cal-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.05);
+  width: 100%;
+  padding: 0 0 32px;
+}
+
+/* -- page head ----------------------------------------------------------------- */
+
+.cal-head {
+  margin: 16px 0 20px;
+}
+
+.cal-page-title {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--cal-ink);
+}
+
+.cal-page-subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: var(--cal-muted);
+}
+
+/* -- the card --------------------------------------------------------------------- */
+
+.cal-card {
+  overflow: hidden;
+  border: 1px solid var(--cal-border);
+  border-radius: var(--cal-radius);
+  background: #fff;
+  box-shadow: var(--cal-shadow);
+}
+
+/* What is locked: lock, words, and the progress ring. */
+.cal-summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  padding: 28px 32px;
+  background:
+    radial-gradient(circle at 100% 0, rgba(var(--cal-brand-rgb), 0.06) 0, rgba(var(--cal-brand-rgb), 0) 40%),
+    #fff;
+}
+
+.cal-lock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--cal-radius);
+  background: rgba(var(--cal-brand-rgb), 0.07);
+  box-shadow: inset 0 0 0 1px rgba(var(--cal-brand-rgb), 0.12);
+  font-size: 34px;
+  color: var(--cal-brand);
+}
+
+.cal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 8px;
+  padding: 3px 9px;
+  border-radius: var(--cal-radius);
+  background: rgba(240, 101, 72, 0.1);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #c2412b;
+}
+
+.cal-title {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--cal-ink);
+}
+
+.cal-text {
+  max-width: 720px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--cal-body);
+}
+
+.cal-text strong {
+  color: var(--cal-ink);
+}
+
+.cal-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding-left: 24px;
+  border-left: 1px solid var(--cal-border);
+}
+
+.cal-ring {
+  position: relative;
+  width: 76px;
+  height: 76px;
+}
+
+.cal-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.cal-ring circle {
+  fill: none;
+  stroke-width: 6;
+}
+
+.cal-ring-track {
+  stroke: var(--cal-soft);
+}
+
+.cal-ring-fill {
+  stroke: var(--cal-success);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.4s ease;
+}
+
+.cal-ring-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--cal-ink);
+}
+
+.cal-progress-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--cal-muted);
+}
+
+/* -- why it is still locked: a stepper ---------------------------------------- */
+
+.cal-steps {
+  padding: 24px 32px 28px;
+  border-top: 1px solid var(--cal-border);
+}
+
+.cal-steps-head {
+  margin-bottom: 20px;
+}
+
+.cal-steps-title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--cal-ink);
+}
+
+.cal-steps-intro {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--cal-muted);
+}
+
+.cal-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cal-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* The line from this marker to the next. */
+.cal-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 17px;
+  left: 44px;
+  right: -12px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--cal-border);
+}
+
+.cal-item.is-done:not(:last-child)::after {
+  background: var(--cal-success);
+}
+
+.cal-item-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.cal-marker {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--cal-border);
+  border-radius: 50%;
+  background: #fff;
+  font-size: 16px;
+  color: var(--cal-muted);
+}
+
+.cal-item.is-done .cal-marker {
+  border-color: var(--cal-success);
+  background: var(--cal-success);
+  color: #fff;
+}
+
+.cal-item.is-current .cal-marker {
+  border-color: var(--cal-info);
+  box-shadow: 0 0 0 4px rgba(23, 105, 194, 0.12);
+  color: var(--cal-info);
+}
+
+/* Step number and state sit on the line, on a white ground. */
+.cal-item-step,
+.cal-state {
+  padding: 2px 8px;
+  border-radius: var(--cal-radius);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.cal-item-step {
+  background: #fff;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cal-muted);
+}
+
+.cal-state {
+  margin-left: auto;
+  margin-right: 12px;
+  background: var(--cal-soft);
+  color: var(--cal-muted);
+}
+
+.cal-item.is-done .cal-state {
+  background: #e3f7f4;
+  color: var(--cal-success-ink);
+}
+
+.cal-item.is-current .cal-state {
+  background: #e6f0fa;
+  color: var(--cal-info);
+}
+
+.cal-item-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border: 1px solid var(--cal-border);
+  border-radius: var(--cal-radius);
+  background: var(--cal-soft);
+}
+
+.cal-item.is-current .cal-item-body {
+  border-color: rgba(23, 105, 194, 0.35);
+  background: #f5f9fe;
+  box-shadow: 0 8px 20px -14px rgba(23, 105, 194, 0.5);
+}
+
+.cal-item.is-done .cal-item-body {
+  background: #fff;
+}
+
+.cal-item-title {
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--cal-ink);
+}
+
+.cal-item.is-upcoming .cal-item-title {
+  color: var(--cal-body);
+}
+
+.cal-item-text {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--cal-muted);
+}
+
+.cal-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 37.5px;
+  margin-top: 14px;
+  padding: 0 14px;
+  border-radius: var(--cal-radius);
+  background: var(--cal-brand);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #fff;
+  transition: box-shadow 0.15s ease;
+}
+
+.cal-action:hover,
+.cal-action:focus-visible {
+  box-shadow: 0 6px 14px -6px rgba(var(--cal-brand-rgb), 0.6);
+  color: #fff;
+}
+
+/* -- who to ask ---------------------------------------------------------------- */
+
+.cal-help {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 32px;
+  border-top: 1px solid var(--cal-border);
+  background: var(--cal-soft);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--cal-body);
+}
+
+.cal-help > i {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--cal-border);
+  font-size: 16px;
+  color: var(--cal-brand);
+}
+
+.cal-help p {
+  margin: 0;
+}
+
+.cal-help strong {
+  color: var(--cal-ink);
+}
+
+/* -- smaller screens ----------------------------------------------------------- */
+
+@media (max-width: 1199.98px) {
+  /* Two steps a row; the line only joins a pair. */
+  .cal-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 22px;
+  }
+
+  .cal-item:nth-child(2n)::after {
+    display: none;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .cal-summary {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 18px;
+    padding: 22px 20px;
+  }
+
+  .cal-progress {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    gap: 12px;
+    padding: 14px 0 0;
+    border-top: 1px solid var(--cal-border);
+    border-left: 0;
+  }
+
+  .cal-ring {
+    width: 52px;
+    height: 52px;
+  }
+
+  .cal-ring-text {
+    font-size: 14px;
+  }
+
+  .cal-steps {
+    padding: 20px;
+  }
+
+  .cal-help {
+    padding: 14px 20px;
+  }
+
+  /* One step a row: the marker on the left, joined top to bottom. */
+  .cal-list {
+    grid-template-columns: 1fr;
+    row-gap: 0;
+  }
+
+  .cal-item {
+    flex-direction: row;
+    gap: 14px;
+    padding-bottom: 16px;
+  }
+
+  .cal-item:last-child {
+    padding-bottom: 0;
+  }
+
+  .cal-item:not(:last-child)::after,
+  .cal-item:nth-child(2n):not(:last-child)::after {
+    display: block;
+    top: 40px;
+    bottom: 4px;
+    left: 17px;
+    right: auto;
+    width: 2px;
+    height: auto;
+  }
+
+  .cal-item-top {
+    margin-bottom: 0;
+    align-self: flex-start;
+  }
+
+  /* The marker says it; the number and pill would crowd the column. */
+  .cal-item-step,
+  .cal-state {
+    display: none;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .cal-page-title {
+    font-size: 19px;
+  }
+
+  .cal-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .cal-lock {
+    width: 56px;
+    height: 56px;
+    font-size: 26px;
+  }
+
+  .cal-title {
+    font-size: 18px;
+  }
+
+  .cal-action {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* -- loading (CapitalAccessLockedLoader) ------------------------------------- */
+
+/* funding.css squares every skeleton line with !important. */
+.cal-shell .skeleton-line.cal-sk-round {
+  border-radius: 50% !important;
+}
+
+/* As tall as a step with its text, so the card does not jump. */
+.cal-sk-body {
+  min-height: 128px;
+  background: #fff;
+}
+
+@media (max-width: 767.98px) {
+  .cal-sk-body {
+    min-height: 96px;
+  }
+}
