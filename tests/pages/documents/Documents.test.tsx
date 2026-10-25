@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { http, HttpResponse } from 'msw'
+import userEvent from '@testing-library/user-event'
 import { renderWithProviders, screen, within } from '../../test-utils'
 import { server } from '../../mocks/server'
 import Documents from '../../../src/pages/documents/Documents'
@@ -74,31 +75,40 @@ describe('Documents page - review status', () => {
       )
     )
 
+  // The page shows one category at a time: open it from the list, then read its files.
+  const openCategory = async (user: ReturnType<typeof userEvent.setup>, name: string) => {
+    await user.click(await screen.findByRole('button', { name: new RegExp(name) }))
+  }
+  const fileRow = (name: string) => screen.getAllByText(name)[0].closest('.docs-file') as HTMLElement
+
   it('shows Rejected with the reason, Accepted, and Pending review on each file', async () => {
     serveReviewed()
+    const user = userEvent.setup()
     renderWithProviders(<Documents />)
 
-    const rejected = (await screen.findByText('march-statement.pdf')).closest('.list-group-item') as HTMLElement
+    await openCategory(user, 'Business Bank Statements')
+    const rejected = fileRow('march-statement.pdf')
     expect(within(rejected).getByText('Rejected')).toBeInTheDocument()
     expect(within(rejected).getByText(/Statement is older than 90 days/)).toBeInTheDocument()
     expect(within(rejected).getByText(/upload a new file/i)).toBeInTheDocument()
 
-    const accepted = screen.getByText('licence.jpg').closest('.list-group-item') as HTMLElement
+    await openCategory(user, 'Driver License')
+    const accepted = fileRow('licence.jpg')
     expect(within(accepted).getByText('Accepted')).toBeInTheDocument()
     expect(within(accepted).queryByText(/Reason/)).not.toBeInTheDocument()
 
-    const pending = screen.getByText('tax-2025.pdf').closest('.list-group-item') as HTMLElement
-    expect(within(pending).getByText('Pending review')).toBeInTheDocument()
+    await openCategory(user, 'Tax Returns')
+    expect(within(fileRow('tax-2025.pdf')).getByText('Pending review')).toBeInTheDocument()
   })
 
-  it('no longer marks a rejected section with the same green tick as an accepted one', async () => {
+  // The review shows on each file only: the category list and the heading keep
+  // saying "Uploaded" as before.
+  it('leaves the category list and heading as they were - the review is on each file', async () => {
     serveReviewed()
     renderWithProviders(<Documents />)
 
-    const rejectedHeader = (await screen.findByRole('button', { name: /Business Bank Statements/ }))
-    const acceptedHeader = screen.getByRole('button', { name: /Driver License/ })
-    expect(rejectedHeader.querySelector('.text-danger')).not.toBeNull()
-    expect(rejectedHeader.querySelector('.ri-check-fill')).toBeNull()
-    expect(acceptedHeader.querySelector('.ri-check-fill.text-success')).not.toBeNull()
+    const category = await screen.findByRole('button', { name: /Business Bank Statements/ })
+    expect(category.querySelector('.docs-category-status.is-done .ri-check-line')).not.toBeNull()
+    expect(category).not.toHaveTextContent(/Rejected|Accepted/)
   })
 })
