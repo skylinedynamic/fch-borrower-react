@@ -20,7 +20,9 @@ export default function BorrowerActivitySidebar({ funding_application_id, pre_qu
     const fetchActivities = async () => {
         setLoading(true)
         try {
-            const res = await getBorrowerActivityLogs({ funding_application_id, pre_qualification_id, page: 1, limit: 50 })
+            // include_client_notes: also the notes added on the client's own page
+            // with visibility "Everyone" (BUG-103) - the server decides which.
+            const res = await getBorrowerActivityLogs({ funding_application_id, pre_qualification_id, include_client_notes: true, page: 1, limit: 50 })
             setActivities(res.data || [])
         } catch (err) {
             console.error('Failed to fetch activity logs', err)

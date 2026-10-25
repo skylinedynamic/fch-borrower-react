@@ -986,6 +986,10 @@ export default function FundingRequestDetailPage() {
                                                                     <span className={`badge ${getDocumentStatusBadgeClass(doc.status)}`}>
                                                                         {doc.status || 'Uploaded'}
                                                                     </span>
+                                                                    {/* The reason, in the open - the reviewer was told it is shared with the borrower (BUG-087). */}
+                                                                    {doc.status === 'Rejected' && doc.rejection_reason && (
+                                                                        <small className="d-block text-danger mt-1">Reason: {doc.rejection_reason}</small>
+                                                                    )}
                                                                 </td>
                                                                 <td className="text-center text-muted fs-12">
                                                                     {formatDateTime(doc.created_at)}

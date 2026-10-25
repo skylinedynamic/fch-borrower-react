@@ -15,6 +15,7 @@ import {
   FileIcon,
   getFileIcon
 } from '../../../components/FileManagerModal/Icons'
+import { DOCUMENT_STATUS, getDocumentStatusBadgeClass } from '../../../config/fileTypeConfig'
 
 interface DocumentSectionProps {
   section: string
@@ -39,6 +40,24 @@ export const DocumentSection: React.FC<DocumentSectionProps> = ({
     if (n >= 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(1)} MB`
     if (n >= 1024) return `${(n / 1024).toFixed(1)} KB`
     return `${n} B`
+  }
+
+  // The review the host or partner gave each file (BUG-087): the client used to
+  // get the same green tick for an accepted and a rejected document.
+  const reviewBadge = (status?: string) => {
+    if (status === DOCUMENT_STATUS.ACCEPTED) return { label: 'Accepted', className: getDocumentStatusBadgeClass(status) }
+    if (status === DOCUMENT_STATUS.REJECTED) return { label: 'Rejected', className: getDocumentStatusBadgeClass(status) }
+    return { label: 'Pending review', className: getDocumentStatusBadgeClass(DOCUMENT_STATUS.PENDING) }
+  }
+
+  // The section header: red while any file is rejected, the green tick only
+  // once every file is accepted, a clock while they wait for review.
+  const sectionIcon = () => {
+    const uploaded = files.filter(f => !f.isDirectory)
+    if (!uploaded.length) return null
+    if (uploaded.some(f => f.reviewStatus === DOCUMENT_STATUS.REJECTED)) return <i className="ri-close-circle-fill text-danger" title="Rejected"></i>
+    if (uploaded.every(f => f.reviewStatus === DOCUMENT_STATUS.ACCEPTED)) return <i className="ri-check-fill text-success" title="Accepted"></i>
+    return <i className="ri-time-line text-muted" title="Pending review"></i>
   }
 
   const renderFileIcon = (file: FileSystemItem) => {
@@ -80,9 +99,7 @@ export const DocumentSection: React.FC<DocumentSectionProps> = ({
           onClick={onToggle}
           aria-expanded={isOpen}
         >
-          <span className="status-icon me-2">
-            {files.length ? <i className="ri-check-fill text-success"></i> : null}
-          </span>
+          <span className="status-icon me-2">{sectionIcon()}</span>
           <span>{section}</span>
         </button>
       </h2>
@@ -124,6 +141,15 @@ export const DocumentSection: React.FC<DocumentSectionProps> = ({
                       {renderFileIcon(f)}
                       <div className="d-flex flex-column">
                         <span className="fw-medium">{f.name}</span>
+                        <span>
+                          <span className={`badge ${reviewBadge(f.reviewStatus).className}`}>{reviewBadge(f.reviewStatus).label}</span>
+                        </span>
+                        {f.reviewStatus === DOCUMENT_STATUS.REJECTED && (
+                          <small className="text-danger mt-1">
+                            {f.rejectionReason ? <>Reason: {f.rejectionReason}. </> : null}
+                            Please upload a new file for this document.
+                          </small>
+                        )}
                       </div>
                     </div>
                     <button
