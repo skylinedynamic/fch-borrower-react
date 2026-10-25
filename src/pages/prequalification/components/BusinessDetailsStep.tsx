@@ -3,6 +3,13 @@ import type { BusinessDetails, FinancialSupport } from '../../../modules/pre-qua
 import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { entityTypes, industryTypes } from '../../../data/profile'
 import { formatCurrency } from '../../../utils/formatters'
+import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
+import { Link } from 'react-router-dom'
+import Flatpickr from 'react-flatpickr'
+import 'flatpickr/dist/flatpickr.css'
+
+/** Profile > Business Details, where the business start date lives. */
+const PROFILE_BUSINESS_TAB = '/profile?tab=1'
 
 interface BusinessDetailsStepProps {
   business: BusinessDetails
@@ -13,9 +20,13 @@ interface BusinessDetailsStepProps {
   onPrevious: () => void
   errors?: Record<string, string>
   isSubmitting?: boolean
+  /** The profile has a business start date; without one this step asks for it (BUG-037). */
+  startDateOnFile?: boolean
 }
 
-export default function BusinessDetailsStep({ business, support, setBusiness, setSupport, onNext, onPrevious, errors = {}, isSubmitting = false }: BusinessDetailsStepProps) {
+export default function BusinessDetailsStep({ business, support, setBusiness, setSupport, onNext, onPrevious, errors = {}, isSubmitting = false, startDateOnFile = true }: BusinessDetailsStepProps) {
+  // "Time in Business is required" comes back on years_in_business when no date was picked.
+  const startDateError = errors.businessStartDate || errors.yearsInBusiness
   const handleMonthlyRevenueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCurrency(e.target.value)
     setBusiness({ ...business, monthlyRevenue: formatted })
@@ -83,19 +94,45 @@ export default function BusinessDetailsStep({ business, support, setBusiness, se
         />
         {errors.businessStructure && <div className="invalid-feedback d-block">{errors.businessStructure}</div>}
       </div>
-      <div className="col-md-6">
-        <label className="form-label">Time in Business <span className="text-danger">*</span></label>
-        <input
-          type="text"
-          className="form-control bg-light"
-          value={business.yearsInBusiness || 'Please set business start date in profile'}
-          disabled
-        />
-        <small className="text-muted d-block mt-1">
-          Calculated from your Business Start Date
-        </small>
-        {errors.yearsInBusiness && <div className="invalid-feedback d-block">{errors.yearsInBusiness}</div>}
-      </div>
+      {startDateOnFile ? (
+        <div className="col-md-6">
+          <label className="form-label">Time in Business <span className="text-danger">*</span></label>
+          <input
+            type="text"
+            className="form-control bg-light"
+            value={business.yearsInBusiness}
+            disabled
+          />
+          <small className="text-muted d-block mt-1">
+            Calculated from your Business Start Date. To change it, go to your <Link to={PROFILE_BUSINESS_TAB}>profile</Link>.
+          </small>
+          {errors.yearsInBusiness && <div className="invalid-feedback d-block">{errors.yearsInBusiness}</div>}
+        </div>
+      ) : (
+        <div className="col-md-6">
+          <label className="form-label">Business Start Date <span className="text-danger">*</span></label>
+          <Flatpickr
+            className={`form-control ${startDateError ? 'is-invalid' : ''}`}
+            value={business.businessStartDate || ''}
+            onChange={(_dates, dateStr) => setBusiness({ ...business, businessStartDate: dateStr })}
+            options={{
+              dateFormat: 'Y-m-d',
+              altInput: true,
+              altFormat: 'j M, Y',
+              maxDate: 'today',
+              monthSelectorType: 'dropdown',
+              disableMobile: true,
+              plugins: [yearDropdownPlugin(1900)],
+            } as any}
+            placeholder="Select business start date"
+            disabled={isSubmitting}
+          />
+          <small className="text-muted d-block mt-1">
+            Time in Business is worked out from it. It is also saved to your <Link to={PROFILE_BUSINESS_TAB}>profile</Link>.
+          </small>
+          {startDateError && <div className="invalid-feedback d-block">{startDateError}</div>}
+        </div>
+      )}
       <div className="col-md-6">
         <label className="form-label">Monthly Revenue <span className="text-danger">*</span></label>
         <input

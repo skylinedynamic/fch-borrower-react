@@ -5,7 +5,7 @@ import type { FundingApplication } from '../../../modules/my-application/types'
 import { TableRowsLoader } from '../../../components/Loader/TableRowsLoader'
 import GlobalPagination from '../../../components/Paginations/GlobalPagination'
 import FundingApplicationDetailsModal from './FundingApplicationDetailsModal'
-import { FUNDING_APPLICATION_STATUS_CLASS_MAP } from '../../../config/funding'
+import { FUNDING_APPLICATION_STATUS, FUNDING_APPLICATION_STATUS_CLASS_MAP } from '../../../config/funding'
 
 export default function FundingApplications() {
   const navigate = useNavigate()
@@ -20,6 +20,12 @@ export default function FundingApplications() {
 
   // Map API data to table rows
   const rows = data?.data || []
+
+  // An application the borrower started but has not submitted (On Hold) is
+  // continued from its funding request, as on the Funding Request list - it
+  // has nothing to view yet (BUG-027).
+  const continueUrl = (app: FundingApplication) =>
+    app.status === FUNDING_APPLICATION_STATUS.ON_HOLD && app.funding_request_id ? `/fund-application/${app.funding_request_id}` : null
 
   return (
     <>
@@ -51,7 +57,7 @@ export default function FundingApplications() {
                       rows.map((app: FundingApplication) => (
                         <tr 
                           key={app.id} 
-                          onClick={() => navigate(`/my-applications/funding/${app.id}`)}
+                          onClick={() => navigate(continueUrl(app) ?? `/my-applications/funding/${app.id}`)}
                           style={{ cursor: 'pointer' }}
                           className="fr-table-row-hover"
                         >
@@ -62,9 +68,19 @@ export default function FundingApplications() {
                           <td>{app.requested_amount || 'N/A'}</td>
                           <td><span className={statusClass(app.status)}>{app.status}</span></td>
                           <td className="text-end" onClick={(e) => e.stopPropagation()}>
-                            <Link to={`/my-applications/funding/${app.id}`} className="btn btn-light btn-sm fr-download-btn">
-                              <i className="ri-eye-line align-middle"></i>
-                            </Link>
+                            {continueUrl(app) ? (
+                              <Link
+                                to={continueUrl(app) as string}
+                                className="btn btn-success btn-sm text-nowrap d-inline-flex align-items-center"
+                                title="Continue Application"
+                              >
+                                Continue Application <i className="ri-arrow-right-line ms-1"></i>
+                              </Link>
+                            ) : (
+                              <Link to={`/my-applications/funding/${app.id}`} className="btn btn-light btn-sm fr-download-btn">
+                                <i className="ri-eye-line align-middle"></i>
+                              </Link>
+                            )}
                           </td>
                         </tr>
                       ))

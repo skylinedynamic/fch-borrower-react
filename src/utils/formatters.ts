@@ -224,3 +224,17 @@ export const unformatNumber = (value: string): string => {
   if (!value) return ''
   return value.replace(/\D/g, '')
 }
+
+/**
+ * Formats a funding option's "speed to funds" (free text such as "1-5 Days" or
+ * "24-72 Hours"). Adds "Days" only to a bare number or range, and drops a
+ * "Days" an earlier save appended after a unit (BUG-025: "1-5 Days Days").
+ * @param value The stored speed to funds
+ * @param fallback What to show when there is no value
+ * @returns The display string
+ */
+export const formatSpeedToFunds = (value: string | null | undefined, fallback = '—'): string => {
+  const speed = (value ?? '').trim().replace(/\b(days?|hours?|weeks?|months?)(\s+days)+$/i, '$1')
+  if (!speed) return fallback
+  return /[a-z]/i.test(speed) ? speed : `${speed} Days`
+}

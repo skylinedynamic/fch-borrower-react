@@ -20,6 +20,7 @@ import { queryKeys } from '../../lib/query';
 import { useBusinessDetails, useFinancialInfo } from '../../modules/profile/queries';
 import type { BusinessDetailsData, FinancialInfoData } from '../../modules/profile/types';
 import { FUNDING_WIZARD_STEPS, FACTOR_STATUS_VALUES } from '../../config/funding';
+import { formatSpeedToFunds } from '../../utils/formatters';
 import { useBrandingStore } from '../../store/brandingStore';
 const steps = FUNDING_WIZARD_STEPS;
 
@@ -343,9 +344,7 @@ const FundingRequestWizard = () => {
                 requested_amount: formData.requested_amount,
                 use_of_funds: Array.isArray(formData.use_of_funds) ? formData.use_of_funds.join(', ') : formData.use_of_funds,
                 documents_uploaded: requiredDocTypes.filter(t => !missingDocs.includes(t.name)).map(t => t.name),
-                estimated_speed: fundingDetail.speed_to_funds
-                    ? (fundingDetail.speed_to_funds.toLowerCase().includes('day') ? fundingDetail.speed_to_funds : `${fundingDetail.speed_to_funds} Days`)
-                    : '1 - 7 Days'
+                estimated_speed: formatSpeedToFunds(fundingDetail.speed_to_funds, '1 - 7 Days')
             });
             const reviewData = response.data.data;
             setSubmitDate(reviewData?.updated_at || reviewData?.created_at || new Date().toLocaleString());
@@ -490,7 +489,7 @@ const FundingRequestWizard = () => {
                                                 <div>
                                                     <p className="fs-11 fw-bold text-uppercase mb-1 funding-wizard-text-light funding-wizard-letter-spacing">Est. Speed to Funds</p>
                                                     <h6 className="fw-bold m-0 fs-14 d-flex align-items-center gap-1 funding-wizard-text-dark">
-                                                        {fundingDetail.speed_to_funds ? (fundingDetail.speed_to_funds.toLowerCase().includes('day') ? fundingDetail.speed_to_funds : `${fundingDetail.speed_to_funds} Days`) : '7-14 Days'}
+                                                        {formatSpeedToFunds(fundingDetail.speed_to_funds, '7-14 Days')}
                                                         <i className="ri-information-line fs-14 funding-wizard-text-light"></i>
                                                     </h6>
                                                 </div>
@@ -753,7 +752,7 @@ const FundingRequestWizard = () => {
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
                                                         <span className="text-muted fs-13 funding-wizard-w-45">Estimated Speed to Funds</span>
-                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{fundingDetail.speed_to_funds ? `${fundingDetail.speed_to_funds} Days` : '1 - 7 Days'}</span>
+                                                        <span className="fw-medium fs-13 text-dark text-end funding-wizard-w-55">{formatSpeedToFunds(fundingDetail.speed_to_funds, '1 - 7 Days')}</span>
                                                     </div>
                                                     <div className="d-flex justify-content-between align-items-start">
                                                         <span className="text-muted fs-13 funding-wizard-w-45">Recommended Range</span>

@@ -70,6 +70,52 @@ const expectOnlyANewRequest = async () => {
   expect(screen.getByText(/start your funding request/i)).toBeInTheDocument()
 }
 
+/**
+ * Defect (BUG-026, CP-FUND-04): the detail page and the card disagreed on the
+ * eligibility label. Both use the same rule: Failed while underwriting factors
+ * are missing, otherwise the engine's own label.
+ */
+describe('FundingDetail eligibility label', () => {
+  it('shows the engine label when nothing is missing', async () => {
+    renderDetail({ engine_status: 'Review', engine_status_label: 'Manual Review Required' })
+
+    expect(await screen.findByText('Manual Review Required')).toBeInTheDocument()
+  })
+
+  it('says Failed while underwriting factors are missing, as the card does', async () => {
+    const { container } = renderDetail({ engine_status: 'Warning', engine_status_label: 'Conditional', readiness_factors: [{ label: 'Time in Business', status: 'Failed' }] })
+
+    await screen.findByText('Time in Business')
+    expect(container.querySelector('.funding-detail-badge')).toHaveTextContent(/^Failed$/)
+    expect(screen.queryByText('Conditional')).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * Defect (BUG-025, CP-FUND-07): SPEED TO FUNDS showed "1-5 Days Days" - the
+ * stored value already has its unit and the page appended " Days" again.
+ */
+describe('FundingDetail speed to funds', () => {
+  it('shows a value that has its own unit once', async () => {
+    renderDetail({ speed_to_funds: '1-5 Days' })
+
+    expect(await screen.findByText('1-5 Days')).toBeInTheDocument()
+    expect(screen.queryByText(/Days Days/)).not.toBeInTheDocument()
+  })
+
+  it('does not put Days after a value in hours', async () => {
+    renderDetail({ speed_to_funds: '24-72 Hours' })
+
+    expect(await screen.findByText('24-72 Hours')).toBeInTheDocument()
+  })
+
+  it('adds Days to a bare range', async () => {
+    renderDetail({ speed_to_funds: '3-7' })
+
+    expect(await screen.findByText('3-7 Days')).toBeInTheDocument()
+  })
+})
+
 describe('FundingDetail call to action', () => {
   /**
    * Defect: an On Hold application for this option turned the card into
