@@ -1,28 +1,21 @@
 import React from 'react'
+import '../../pages/credit-builder/creditguide/CreditGuide.css'
 
+/** Placeholder tier cards for the Step by Step Guide while its tasks load. */
 export default function TierTaskListLoader() {
   return (
-    <div className="credit-guide-page">
-      {/* Stats Skeleton */}
-      <div className="stats mb-3">
-        {[...Array(4)].map((_, i) => (
-          <div className="stat" key={i}>
-            <div className="skeleton-line" style={{ width: '60%', height: 20, borderRadius: 4, marginBottom: 4 }}></div>
-            <div className="skeleton-line" style={{ width: '80%', height: 14, borderRadius: 4 }}></div>
-          </div>
-        ))}
-      </div>
-
-      {/* Tier Skeletons */}
-      {[...Array(5)].map((_, i) => (
-        <div className="tier mt-3" key={i} style={{ background: '#fff', border: '1px solid #e5e7eb' }}>
-          <div className="tier-head" style={{ background: '#f8f9fa', cursor: 'default' }}>
-            <div className="tier-info" style={{ flex: 1 }}>
-              <div className="skeleton-line" style={{ width: '40%', height: 18, borderRadius: 4, marginBottom: 8 }}></div>
-              <div className="skeleton-line" style={{ width: '90%', height: 14, borderRadius: 4 }}></div>
+    <div className="cg-tiers" aria-hidden="true">
+      {[...Array(4)].map((_, i) => (
+        <div className="cg-tier is-open" key={i}>
+          <div className="cg-tier-head" style={{ cursor: 'default' }}>
+            <span className="cg-sk" style={{ width: 44, height: 44 }}></span>
+            <div className="cg-tier-heading">
+              <span className="cg-sk d-block mb-2" style={{ width: '38%', height: 16 }}></span>
+              <span className="cg-sk d-block" style={{ width: '70%', height: 12 }}></span>
             </div>
-            <div className="tier-meta">
-              <div className="skeleton-line" style={{ width: 50, height: 24, borderRadius: 999 }}></div>
+            <div className="cg-tier-meta">
+              <span className="cg-sk" style={{ width: 78, height: 24 }}></span>
+              <span className="cg-sk" style={{ width: 92, height: 24 }}></span>
             </div>
           </div>
         </div>

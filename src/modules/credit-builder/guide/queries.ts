@@ -17,6 +17,9 @@ export const useVerifyTierTasks = () => {
     mutationFn: verifyTierTasks,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.creditBuilder.tierTaskList() })
+      // Submitting Tier 0 is a Getting Started step: the walkthrough moves on
+      // (and its popup opens) without waiting for a page reload.
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.completion() })
     },
   })
 }

@@ -6,13 +6,13 @@ import { API_BASE_URL } from '../../support/env'
 // roadmap's schedule (Day N / time-of-day window). So:
 //  - if an open step exists, it is saved as "Pending" through the UI;
 //  - if the next step is locked, the API must refuse a direct submit (E2E-016).
-test.describe('Sidebar › Capital Access (step submit)', () => {
+test.describe('Sidebar › Credit Card Stacking (step submit)', () => {
   test('saves an open step, or the API refuses a locked one', async ({ page }) => {
     test.setTimeout(300_000)
-    await page.goto('/capital-access')
+    await page.goto('/credit-card-stacking')
     const roadmapLink = page.locator('.page-content a[href*="/roadmap"]').first()
     await expect(roadmapLink).toBeVisible({ timeout: 90_000 })
-    const playId = (await roadmapLink.getAttribute('href'))?.match(/capital-access\/(\d+)\/roadmap/)?.[1]
+    const playId = (await roadmapLink.getAttribute('href'))?.match(/credit-card-stacking\/(\d+)\/roadmap/)?.[1]
 
     const roadmapRes = page.waitForResponse((r) => r.url().includes(`/strategies/${playId}/roadmap`))
     await roadmapLink.click()
@@ -22,7 +22,7 @@ test.describe('Sidebar › Capital Access (step submit)', () => {
     const next = roadmap.find((s) => s.application_status !== 'Approved')
     expect(next, 'Every step of the current play is approved').toBeTruthy()
 
-    await page.goto(`/capital-access/${playId}/step/${next!.id}`)
+    await page.goto(`/credit-card-stacking/${playId}/step/${next!.id}`)
     await expect(page.locator('.page-content h4').first()).toBeVisible({ timeout: 60_000 })
     await page.waitForLoadState('networkidle').catch(() => {})
     const formOpen = await page.locator('.ca-status-selector-card').first().isVisible().catch(() => false)
@@ -42,7 +42,7 @@ test.describe('Sidebar › Capital Access (step submit)', () => {
       // Locked in the UI: the API must agree.
       const token = await page.evaluate(() => JSON.parse(localStorage.getItem('auth') || '{}')?.state?.token)
       const timezone = await page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone)
-      const res = await page.request.post(`${API_BASE_URL}/borrower/capital-access/strategies/${playId}/step/${next!.id}/submit`, {
+      const res = await page.request.post(`${API_BASE_URL}/borrower/credit-card-stacking/strategies/${playId}/step/${next!.id}/submit`, {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'X-Timezone': timezone },
         data: { status: 'Pending', notes: 'E2E lock check' },
       })

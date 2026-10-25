@@ -12,6 +12,8 @@ import avatarDefault from '../../../assets/images/users/avatar-1.jpg'
 import { useActiveFundingRequests } from '../../modules/dashboard'
 import { useUnreadNotificationCount, formatUnreadCount } from '../../modules/notifications'
 import { NOTIFICATIONS_ROUTE } from '../../config/notifications'
+import { ONBOARDING_MENU } from '../../config/onboardingSteps'
+import OnboardingMenuArrow, { useOnboardingMenuArrow } from '../Onboarding/OnboardingMenuArrow'
 
 export default function Sidebar() {
   const navigate = useNavigate()
@@ -51,6 +53,12 @@ export default function Sidebar() {
   const activeApprovedRequestCount = activeFundingRequests?.data?.active_approved_funding_request_count || 0
   // Same cached query as the header bell, so this adds no extra request.
   const { data: unreadNotificationCount = 0 } = useUnreadNotificationCount()
+
+  // The Getting Started walkthrough's arrow: which menu item to open next.
+  const onboardingArrow = useOnboardingMenuArrow()
+  const arrowTagFor = (target) => (onboardingArrow?.target === target ? onboardingArrow.tag : null)
+  // The walkthrough target inside the Credit Builder group, if any: the guide or Credit Accounts.
+  const creditBuilderArrowTag = arrowTagFor(ONBOARDING_MENU.STEP_GUIDE) || arrowTagFor(ONBOARDING_MENU.CREDIT_ACCOUNTS)
 
   // Cleaned up unused context
   const [creditOpen, setCreditOpen] = useState(() => {
@@ -117,8 +125,8 @@ export default function Sidebar() {
     }
   }
 
-  const LinkItem = ({ to, label, icon, restricted, end, highlight, badge, badgeBlink }) => (
-    <li className="nav-item">
+  const LinkItem = ({ to, label, icon, restricted, end, highlight, badge, badgeBlink, arrowTag }) => (
+    <li className={`nav-item${arrowTag ? ' onb-menu-target' : ''}`}>
       <NavLink
         end={end}
         className={({ isActive }) => `nav-link menu-link${isActive ? (highlight ? ' active bg-warning text-dark fw-bold' : ' active') : ''}`}
@@ -136,6 +144,7 @@ export default function Sidebar() {
           {label}
           {restricted && <i className="ri-lock-line align-middle ms-1"></i>}
           {badge && <span className={`badge ms-auto rounded-pill bg-danger ${badgeBlink ? 'animate-blink' : ''}`}>{badge}</span>}
+          {arrowTag && <OnboardingMenuArrow tag={arrowTag} />}
         </span>
       </NavLink>
     </li>
@@ -204,8 +213,8 @@ export default function Sidebar() {
             />
             <LinkItem to="/my-applications" label="My Applications" icon="ri-file-list-line" restricted={isRestricted} />
 
-            {/* Capital Access — locked on free trial */}
-            <LinkItem to="/capital-access" label="Capital Access" icon="ri-funds-line" restricted={isFreeTierModule || isRestricted} />
+            {/* Credit Card Stacking — locked on free trial */}
+            <LinkItem to="/credit-card-stacking" label="Credit Card Stacking" icon="ri-bank-card-line" restricted={isFreeTierModule || isRestricted} arrowTag={arrowTagFor(ONBOARDING_MENU.CREDIT_CARD_STACKING)} />
 
             {/* Invoices — locked on free trial */}
             <LinkItem to="/invoices" label="Invoices" icon="ri-article-line" restricted={isFreeTierModule} />
@@ -216,16 +225,16 @@ export default function Sidebar() {
             {/* Billing Details — locked on free trial */}
             <LinkItem to="/billing-details" label="Billing Details" icon="ri-bank-card-line" restricted={isFreeTierModule || isRestricted} />
 
-            <LinkItem to="/documents" label="Documents" icon="ri-file-2-line" restricted={isRestricted} />
+            <LinkItem to="/documents" label="Documents" icon="ri-file-2-line" restricted={isRestricted} arrowTag={arrowTagFor(ONBOARDING_MENU.DOCUMENTS)} />
 
             {/* Resource Hub — locked on free trial */}
             <LinkItem to="/resources" label="Resource Hub" icon="ri-book-read-line" restricted={isFreeTierModule || isRestricted} />
 
-            <LinkItem to="/appointment" label="Appointment" icon="ri-calendar-2-line" restricted={isRestricted} />
+            <LinkItem to="/appointment" label="Appointment" icon="ri-calendar-2-line" restricted={isRestricted} arrowTag={arrowTagFor(ONBOARDING_MENU.APPOINTMENT)} />
 
-            <LinkItem to="/funding" label="Funding" icon="ri-money-dollar-circle-line" restricted={isRestricted} />
+            <LinkItem to="/funding" label="Funding" icon="ri-money-dollar-circle-line" restricted={isRestricted} arrowTag={arrowTagFor(ONBOARDING_MENU.FUNDING)} />
             {/* Credit Builder — locked on free trial */}
-            <li className="nav-item">
+            <li className={`nav-item${creditBuilderArrowTag && !creditOpen ? ' onb-menu-target' : ''}`}>
               <button
                 type="button"
                 className={`nav-link menu-link btn material-shadow-none w-100 text-start`}
@@ -237,6 +246,8 @@ export default function Sidebar() {
                 aria-controls="creditBuilderMenu"
               >
                 <i className="ri-building-2-line"></i> <span>Credit Builder {(isRestricted || isFreeTierModule) && <i className="ri-lock-line align-middle ms-1"></i>}</span>
+                {/* The guide and Credit Accounts are inside this group: point at the group until it is open. */}
+                {!creditOpen && creditBuilderArrowTag && <OnboardingMenuArrow tag={creditBuilderArrowTag} />}
                 <i className={`ri-arrow-down-s-line float-end submenu-caret ${creditOpen ? 'open' : ''}`}></i>
               </button>
               <ul id="creditBuilderMenu" className={`navbar-nav submenu-collapse ${creditOpen ? 'open' : ''}`}>
@@ -247,19 +258,23 @@ export default function Sidebar() {
                     onClick={(e) => { if (isFreeTierModule) { e.preventDefault(); return; } isMobile && closeSidebar(); }}
                   ><i className="ri-subtract-line"></i> <span>Overview</span></NavLink>
                 </li>
-                <li className="nav-item">
+                <li className={`nav-item${arrowTagFor(ONBOARDING_MENU.STEP_GUIDE) ? ' onb-menu-target' : ''}`}>
                   <NavLink
                     className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'}
                     to="/credit-builder/guide"
                     onClick={(e) => { if (isFreeTierModule) { e.preventDefault(); return; } isMobile && closeSidebar(); }}
-                  ><i className="ri-subtract-line"></i> <span>Step-By-Step Guide</span></NavLink>
+                  ><i className="ri-subtract-line"></i> <span>Step-By-Step Guide</span>
+                    {creditOpen && arrowTagFor(ONBOARDING_MENU.STEP_GUIDE) && <OnboardingMenuArrow tag={arrowTagFor(ONBOARDING_MENU.STEP_GUIDE)} />}
+                  </NavLink>
                 </li>
-                <li className="nav-item">
+                <li className={`nav-item${arrowTagFor(ONBOARDING_MENU.CREDIT_ACCOUNTS) ? ' onb-menu-target' : ''}`}>
                   <NavLink
                     className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'}
                     to="/credit-builder/credit-accounts"
                     onClick={(e) => { if (isFreeTierModule) { e.preventDefault(); return; } isMobile && closeSidebar(); }}
-                  ><i className="ri-subtract-line"></i> <span>Credit Accounts</span></NavLink>
+                  ><i className="ri-subtract-line"></i> <span>Credit Accounts</span>
+                    {creditOpen && arrowTagFor(ONBOARDING_MENU.CREDIT_ACCOUNTS) && <OnboardingMenuArrow tag={arrowTagFor(ONBOARDING_MENU.CREDIT_ACCOUNTS)} />}
+                  </NavLink>
                 </li>
               </ul>
             </li>
@@ -272,7 +287,7 @@ export default function Sidebar() {
               badge={unreadNotificationCount > 0 ? formatUnreadCount(unreadNotificationCount) : undefined}
             />
 
-            <LinkItem to="/profile" label="Profile" icon="ri-account-circle-line" restricted={isRestricted} />
+            <LinkItem to="/profile" label="Profile" icon="ri-account-circle-line" restricted={isRestricted} arrowTag={arrowTagFor(ONBOARDING_MENU.PROFILE)} />
 
             <li className="nav-item">
               <a className="nav-link menu-link" href="#" onClick={handleLogout}>
