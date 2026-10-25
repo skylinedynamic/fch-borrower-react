@@ -262,7 +262,10 @@ export default function FundApplication() {
 
   // Fetch funding request and documents (tab-wise lazy loading)
   const currentReqId = fundingRequestId || id || null
-  const { data: fundingData, isLoading: isFundingDataLoading } = useFundingRequest(currentReqId)
+  const { data: fundingData, isLoading: isFundingDataLoading, error: fundingDataError } = useFundingRequest(currentReqId)
+  // The API answers 404 for a funding request that is not this borrower's
+  // (BUG-082): the wizard is not shown for it at all.
+  const isForeignRequest = (fundingDataError as any)?.response?.status === 404
   const fundingApplicationId = fundingData?.id ?? null
   const { data: documentsData } = useFundingApplicationDocuments(fundingApplicationId, {
     enabled: !!fundingApplicationId,
@@ -727,6 +730,25 @@ export default function FundApplication() {
       <progress className="progress-micro" value={completedCount} max={stepsTotal}></progress>
     </div>
   )
+
+  // Same card as Funding Requests > a request that is not found.
+  if (isForeignRequest) {
+    return (
+      <div className="page-content">
+        <div className="container-fluid">
+          <div className="card border-0 shadow-sm">
+            <div className="card-body text-center py-5">
+              <i className="ri-file-unknow-line fs-1 text-muted d-block mb-3" />
+              <h6 className="fw-semibold text-dark mb-1">Request not found</h6>
+              <button onClick={() => navigate('/funding-requests')} className="btn btn-dark btn-sm mt-3">
+                Back to Funding Requests
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="page-content fundapplication-page">

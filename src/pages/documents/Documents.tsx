@@ -43,6 +43,8 @@ export default function Documents() {
     size: 0,
     updatedAt: new Date().toISOString(),
     documentId: doc.id, // Include document ID for deletion
+    reviewStatus: doc.status,
+    rejectionReason: doc.rejection_reason ?? null,
   })
 
   useEffect(() => {
