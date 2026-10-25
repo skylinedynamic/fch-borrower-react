@@ -110,7 +110,8 @@ const ProfileCompleteCheckModal = () => {
       centered
       size="md"
     >
-      <ModalHeader toggle={() => setmodal_backdrop(false)}>
+      {/* No close button: the way out is to pick a section to complete. */}
+      <ModalHeader>
         <h5 className="modal-title mb-3">
           <i className="ri-user-settings-line me-2"></i>
           Complete Your Profile
