@@ -1,141 +1,108 @@
 import React from 'react';
 
-// ─── Reusable skeleton card — IDENTICAL layout every time ────────────────────
-// All width/height values are fixed so every card skeleton is the same height.
-const SkeletonCard = () => (
-    <div
-        style={{
-            display: 'flex',
-            alignItems: 'stretch',
-            gap: 14,
-            background: '#fff',
-            border: '1px solid #e8ecf0',
-            borderRadius: 4,
-            padding: '16px 18px',
-            width: '100%',
-            minHeight: 110,
-        }}
-    >
-        {/* Icon placeholder */}
-        <div
-            className="skeleton-line flex-shrink-0"
-            style={{ width: 44, height: 44, borderRadius: 12, alignSelf: 'center' }}
-        />
+// Mirrors the Funding Options page (styles in pages/funding/Funding.css): the
+// banner with the four overview cards, how funding works, the toolbar and the
+// program cards, so nothing shifts when the data arrives.
 
-        {/* Text content — FIXED heights so all cards are identical */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-            {/* Title line */}
-            <div className="skeleton-line" style={{ width: '72%', height: 14, borderRadius: 4 }} />
+const Line = ({ w, h, r = 4, className = '' }: { w: number | string; h: number; r?: number; className?: string }) => (
+    <div className={`skeleton-line ${className}`} style={{ width: w, height: h, borderRadius: r }} />
+);
 
-            {/* Subtitle — 2 lines, same fixed widths always */}
-            <div style={{ margin: '8px 0' }}>
-                <div className="skeleton-line mb-1" style={{ width: '90%', height: 11, borderRadius: 4 }} />
-                <div className="skeleton-line" style={{ width: '75%', height: 11, borderRadius: 4 }} />
-            </div>
-
-            {/* Tags row */}
-            <div className="d-flex gap-2">
-                <div className="skeleton-line" style={{ width: 80, height: 20, borderRadius: 20 }} />
-                <div className="skeleton-line" style={{ width: 60, height: 20, borderRadius: 20 }} />
-            </div>
+const SkeletonStat = () => (
+    <div className="fp-stat">
+        <div className="fp-stat-head">
+            <Line w="55%" h={11} />
+            <Line w={44} h={44} className="flex-shrink-0" />
         </div>
-
-        {/* Arrow placeholder */}
-        <div
-            className="skeleton-line flex-shrink-0"
-            style={{ width: 30, height: 30, borderRadius: '50%', alignSelf: 'center' }}
-        />
+        <div style={{ marginTop: 'auto', paddingTop: 14 }}>
+            <Line w="45%" h={24} />
+        </div>
+        <div className="fp-stat-foot">
+            <Line w="100%" h={6} r={6} />
+            <Line w="35%" h={11} />
+        </div>
     </div>
 );
 
-// ─── Reusable group skeleton ──────────────────────────────────────────────────
-const SkeletonGroup = ({ cards = 4, titleWidth = 200 }: { cards?: number; titleWidth?: number }) => (
-    <div className="mb-4">
-        {/* Group header */}
-        <div className="d-flex align-items-center gap-2 mb-3">
-            <div className="skeleton-line" style={{ width: titleWidth, height: 18, borderRadius: 4 }} />
-            <div className="skeleton-line" style={{ width: 26, height: 20, borderRadius: 20 }} />
-        </div>
-
-        {/* Cards grid */}
-        <div className="row g-3">
-            {Array.from({ length: cards }).map((_, i) => (
-                <div
-                    className="col-xxl-3 col-xl-4 col-lg-4 col-md-6 d-flex align-items-stretch"
-                    key={i}
-                >
-                    <SkeletonCard />
+const SkeletonCard = () => (
+    <div className="fc-card-wrap">
+        <div className="funding-card">
+            <div className="funding-card-top">
+                <Line w={40} h={40} className="flex-shrink-0" />
+                <Line w="65%" h={14} />
+                <div style={{ gridColumn: '1 / -1' }}>
+                    <Line w="80%" h={11} />
                 </div>
+            </div>
+            <div className="funding-card-bottom">
+                <div className="funding-card-meta">
+                    <Line w={130} h={17} />
+                    <Line w={92} h={22} />
+                </div>
+                <Line w={34} h={34} r={17} />
+            </div>
+        </div>
+    </div>
+);
+
+const SkeletonGroup = ({ cards = 4, titleWidth = 200 }: { cards?: number; titleWidth?: number }) => (
+    <section className="fp-group">
+        <div className="fp-group-head">
+            <Line w={titleWidth} h={18} />
+            <Line w={26} h={22} />
+            <span className="fp-group-rule" aria-hidden="true"></span>
+        </div>
+        <div className="fp-grid">
+            {Array.from({ length: cards }).map((_, i) => (
+                <SkeletonCard key={i} />
             ))}
         </div>
-    </div>
+    </section>
 );
 
-// ─── Main Loader ──────────────────────────────────────────────────────────────
-const FundingLoader = () => {
-    return (
-        <div className="page-content">
-            <div className="container-fluid">
+const FundingLoader = () => (
+    <div className="page-content funding-page">
+        <div className="container-fluid">
+            <div className="fp-shell" aria-hidden="true">
+                {/* ── Banner and overview cards ───────────────────────────── */}
+                <div className="fp-hero fp-hero-skeleton">
+                    <Line w={170} h={12} className="mb-4" />
+                    <Line w={230} h={26} className="mb-3" />
+                    <Line w="min(420px, 80%)" h={13} />
+                </div>
+                <div className="fp-stats">
+                    {[1, 2, 3, 4].map((i) => <SkeletonStat key={i} />)}
+                </div>
 
-                {/* ── Subheader / Title Skeleton ─────────────────────────── */}
-                <div className="row page-subheader-sticky bg-body" style={{ marginBottom: 0 }}>
-                    <div className="col-12">
-                        <div className="d-flex align-items-center py-2">
-                            <div>
-                                <div className="skeleton-line mb-2" style={{ width: 180, height: 22, borderRadius: 4 }} />
-                                <div className="d-flex align-items-center gap-2">
-                                    <div className="skeleton-line" style={{ width: 72, height: 13, borderRadius: 4 }} />
-                                    <div className="skeleton-line" style={{ width: 8, height: 13, borderRadius: 4 }} />
-                                    <div className="skeleton-line" style={{ width: 110, height: 13, borderRadius: 4 }} />
+                {/* ── How funding works ───────────────────────────────────── */}
+                <div className="funding-how card border">
+                    <div className="card-body">
+                        <div className="d-flex align-items-center justify-content-between mb-3">
+                            <Line w={150} h={16} />
+                            <Line w={150} h={30} />
+                        </div>
+                        <div className="d-flex gap-3">
+                            {[1, 2, 3, 4, 5, 6].map((i) => (
+                                <div key={i} style={{ flex: 1 }}>
+                                    <Line w="100%" h={74} />
                                 </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </div>
 
-                {/* ── Stat Cards Skeleton ────────────────────────────────── */}
-                <div className="row g-4">
-                    {[1, 2, 3, 4].map(i => (
-                        <div className="col-xl-3 col-md-6" key={i}>
-                            <div className="card shadow-sm border-0 rounded-2 bg-white">
-                                <div className="card-body py-3 px-4 d-flex align-items-center">
-                                    <div
-                                        className="skeleton-line me-3 flex-shrink-0"
-                                        style={{ width: 52, height: 52, borderRadius: 8 }}
-                                    />
-                                    <div className="flex-grow-1">
-                                        <div className="skeleton-line mb-2" style={{ width: '55%', height: 11, borderRadius: 4 }} />
-                                        <div className="skeleton-line" style={{ width: '40%', height: 22, borderRadius: 4 }} />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                {/* ── Toolbar ─────────────────────────────────────────────── */}
+                <div className="fp-toolbar">
+                    <div className="fp-search"><Line w="100%" h={37.5} /></div>
+                    <div className="fp-category"><Line w="100%" h={37.5} /></div>
+                    <div className="fp-actions"><Line w={100} h={37.5} /></div>
                 </div>
 
-                {/* ── Filter Bar Skeleton ────────────────────────────────── */}
-                <div className="row mb-2">
-                  <div className="col-12">
-                    <div className="card shadow-sm border-0 bg-white mb-2">
-                      <div className="card-body p-3">
-                        <div className="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-3">
-                            <div className="skeleton-line" style={{ flex: '1 1 200px', height: 40, borderRadius: 6 }} />
-                            <div className="skeleton-line flex-shrink-0" style={{ width: 220, height: 40, borderRadius: 6 }} />
-                            <div className="skeleton-line flex-shrink-0" style={{ width: 100, height: 40, borderRadius: 6 }} />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* ── Group Skeletons — all use the same SkeletonCard ───── */}
-                <SkeletonGroup cards={4} titleWidth={220} />
-                <SkeletonGroup cards={4} titleWidth={180} />
-                <SkeletonGroup cards={4} titleWidth={200} />
-
+                <SkeletonGroup titleWidth={150} />
+                <SkeletonGroup titleWidth={130} />
             </div>
         </div>
-    );
-};
+    </div>
+);
 
 export default FundingLoader;

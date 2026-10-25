@@ -82,7 +82,7 @@ describe('ProtectedRoute', () => {
       user: { id: 1 },
       userSubscription: { is_free_trail: true },
     })
-    renderAt('/capital-access')
+    renderAt('/credit-card-stacking')
     expect(screen.getByText('Dashboard Page')).toBeInTheDocument()
   })
 

@@ -153,7 +153,10 @@ export interface CapitalAccessOverview {
   readiness_status: string;
   readiness_status_color?: string;
   factors: FactorDetail[];
+  /** In full: "$920,000.00". */
   estimated_total_access: string;
+  /** As the dashboard's top cards show amounts, formatted by the API: "$920K", "$4.53M". */
+  estimated_total_access_compact?: string;
   exposure_breakdown?: ExposureBreakdownItem[];
   current_play?: { id: number; name: string; } | null;
   reason_code?: string | null;

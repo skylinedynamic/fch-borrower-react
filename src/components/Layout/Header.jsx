@@ -7,6 +7,7 @@ import avatarDefault from '../../../assets/images/users/avatar-default.jpg'
 import { resolveBrandLogo } from '../../utils/brandLogo'
 import BrandLogo from './BrandLogo'
 import NotificationBell from './NotificationBell'
+import OnboardingSuggestion from '../Onboarding/OnboardingSuggestion'
 
 import { useNavigate, Link } from 'react-router-dom'
 
@@ -110,6 +111,8 @@ export default function Header() {
           </div>
 
           <div className="d-flex align-items-center">
+            {/* Getting Started: the next step, before the user's name and avatar. */}
+            <OnboardingSuggestion />
             <NotificationBell />
             <div className="dropdown ms-sm-3 header-item topbar-user">
               <button type="button" className="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

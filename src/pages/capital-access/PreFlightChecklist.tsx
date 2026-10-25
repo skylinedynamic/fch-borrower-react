@@ -16,7 +16,7 @@ export default function PreFlightChecklist() {
             <div className="row pb-1 mb-3">
               <div className="col-12">
                 <div className="d-flex align-items-center gap-3 py-2 w-100">
-                  <Link to="/capital-access/strategy" className="ca-back-btn" title="Back to Overview">
+                  <Link to="/credit-card-stacking/strategy" className="ca-back-btn" title="Back to Overview">
                     <i className="ri-arrow-left-line fs-16"></i>
                   </Link>
                   <div>
@@ -38,7 +38,7 @@ export default function PreFlightChecklist() {
   const isDelayLocked = play?.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' && !play?.isCompleted;
 
   if (isError || !play || !play.isAccessible || isDelayLocked) {
-    return <Navigate to="/capital-access/strategy" />;
+    return <Navigate to="/credit-card-stacking/strategy" />;
   }
 
   const allComplete = play.checklist ? play.checklist.every((item: any) => item.complete !== false) : false;
@@ -54,7 +54,7 @@ export default function PreFlightChecklist() {
           <div className="row pb-1 mb-3">
             <div className="col-12">
               <div className="d-flex align-items-center gap-3 py-2 w-100">
-                <Link to={play.id ? `/capital-access/${play.id}/overview` : "/capital-access/strategy"} className="ca-back-btn" title="Back to Overview">
+                <Link to={play.id ? `/credit-card-stacking/${play.id}/overview` : "/credit-card-stacking/strategy"} className="ca-back-btn" title="Back to Overview">
                   <i className="ri-arrow-left-line fs-16"></i>
                 </Link>
                 <div>
@@ -102,7 +102,7 @@ export default function PreFlightChecklist() {
                 </div>
 
                 <div className="d-flex align-items-center justify-content-end w-100">
-                  <Link to="/capital-access/strategy" className="ca-btn ca-btn-outline ca-btn-min-w">
+                  <Link to="/credit-card-stacking/strategy" className="ca-btn ca-btn-outline ca-btn-min-w">
                     <i className="ri-arrow-left-line"></i> Back to Strategies
                   </Link>
                 </div>
@@ -190,11 +190,11 @@ export default function PreFlightChecklist() {
                 <hr className="ca-divider my-4" />
 
                 <div className="d-flex align-items-center justify-content-end gap-3 w-100">
-                    <Link to={`/capital-access/${play.id}/overview`} className="ca-btn ca-btn-outline ca-btn-min-w">
+                    <Link to={`/credit-card-stacking/${play.id}/overview`} className="ca-btn ca-btn-outline ca-btn-min-w">
                     <i className="ri-arrow-left-line"></i> Back
                   </Link>
                   {allComplete ? (
-                    <Link to={`/capital-access/${play.id}/roadmap`} className="ca-btn ca-btn-primary ca-btn-min-w">
+                    <Link to={`/credit-card-stacking/${play.id}/roadmap`} className="ca-btn ca-btn-primary ca-btn-min-w">
                       View Roadmap <i className="ri-map-2-line"></i>
                     </Link>
                   ) : (

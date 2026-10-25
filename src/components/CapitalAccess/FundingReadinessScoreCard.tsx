@@ -20,7 +20,7 @@ export default function FundingReadinessScoreCard({
         <div className="ca-metric-header">
           <div className="ca-metric-title-block">
             <h6 className="ca-metric-card-label">
-              Capital Access Readiness Scores
+              Credit Card Stacking Readiness Scores
             </h6>
             <div className="ca-score-display">
               <span
