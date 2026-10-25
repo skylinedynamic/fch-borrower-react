@@ -1,0 +1,87 @@
+/**
+ * The "Funding Request Approved" strip under the topbar. A light green tint
+ * with a solid green icon and button: it is the borrower's next step, so it is
+ * marked out on any page, but stays one quiet line.
+ */
+.gfb {
+  position: fixed;
+  top: 70px;
+  right: 0;
+  z-index: 999;
+  color: #0b4f44;
+  background: linear-gradient(90deg, #cdeee4, #e0f5ee);
+  box-shadow: 0 2px 6px rgba(27, 34, 53, 0.05);
+}
+
+.gfb-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 12px;
+  padding: 12px 20px;
+}
+
+.gfb-icon {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #fff;
+  background: #0ab39c;
+}
+
+.gfb-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.gfb-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #068e77;
+}
+
+.gfb-sub {
+  color: #3d5a54;
+}
+
+.gfb-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border: 0;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: #0ab39c;
+  transition: background-color 0.15s ease;
+}
+
+.gfb-btn:hover {
+  background: #068e77;
+}
+
+.gfb-btn:focus-visible {
+  outline: 2px solid #068e77;
+  outline-offset: 2px;
+}
+
+@media (max-width: 575.98px) {
+  .gfb-text {
+    justify-content: center;
+    text-align: center;
+  }
+}

@@ -332,3 +332,22 @@ export const FUNDING_REVIEW_GUIDELINE_CARDS = [
         icon: 'ri-stop-circle-line'
     }
 ];
+
+/**
+ * What a funding request goes through, in order, shown on the Funding page
+ * so the borrower knows the stages before starting one. Pre-qualification is
+ * deliberately not among them: it is optional, before or after anything.
+ */
+export const FUNDING_STAGES = [
+    'Choose a program',
+    'Submit a funding request',
+    'Underwriting reviews the request',
+    'Complete the funding application',
+    'Underwriting processes the application',
+    'Lender decision and funding, if approved',
+] as const;
+
+/** Router state a link sets when the Getting Started walkthrough sends the borrower to Funding. */
+export interface FundingArrivalState {
+    fromWalkthrough?: boolean;
+}

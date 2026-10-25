@@ -872,6 +872,13 @@ File: Custom Css File
     background-color: #212529 !important;
 }
 
+/* The light gray tile behind a details page's header icon (Payment / Invoice
+   details), as in the partner portal. Without it the tile fell back to the
+   theme's dark primary and hid the primary-coloured icon. */
+.bg-gray-subtle {
+    background-color: #e8e7e7 !important;
+}
+
 .status-dot-inner {
     width: 6px;
     height: 6px;

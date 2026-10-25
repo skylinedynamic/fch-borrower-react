@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import Modal from 'bootstrap/js/dist/modal';
 import { Link, useNavigate } from 'react-router-dom';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { getStripe } from '../../lib/stripe';
@@ -176,7 +177,7 @@ const ChangePaymentMethodModal = ({
   onUpdated: () => void;
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
-  const modalInstanceRef = useRef<any>(null);
+  const modalInstanceRef = useRef<Modal | null>(null);
 
   const [providers, setProviders] = useState<PaymentProviderItem[]>([]);
   const [loadingProviders, setLoadingProviders] = useState<boolean>(true);
@@ -186,8 +187,9 @@ const ChangePaymentMethodModal = ({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (modalRef.current && (window as any).bootstrap) {
-      modalInstanceRef.current = new (window as any).bootstrap.Modal(modalRef.current, {
+    // The bundled Modal: the production build has no `window.bootstrap` global (BUG-101).
+    if (modalRef.current) {
+      modalInstanceRef.current = new Modal(modalRef.current, {
         backdrop: 'static',
         keyboard: false,
       });
@@ -456,11 +458,12 @@ const SubscriptionDetailsModal = ({
   onCancelClick: () => void;
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
-  const modalInstanceRef = useRef<any>(null);
+  const modalInstanceRef = useRef<Modal | null>(null);
 
   useEffect(() => {
-    if (modalRef.current && (window as any).bootstrap) {
-      modalInstanceRef.current = new (window as any).bootstrap.Modal(modalRef.current, {
+    // The bundled Modal: the production build has no `window.bootstrap` global (BUG-101).
+    if (modalRef.current) {
+      modalInstanceRef.current = new Modal(modalRef.current, {
         backdrop: 'static',
         keyboard: false,
       });

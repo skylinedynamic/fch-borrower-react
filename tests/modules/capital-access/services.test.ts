@@ -16,7 +16,8 @@ describe('fetchCapitalAccessOverview', () => {
       readiness_score: 72,
       readiness_status: 'Good',
       factors: [],
-      estimated_total_access: '$50,000',
+      estimated_total_access: '$50,000.00',
+      estimated_total_access_compact: '$50K',
     }
     server.use(
       http.get('*/borrower/capital-access/overview', () =>

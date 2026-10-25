@@ -5,6 +5,8 @@ import AdvisorLoader from '../../../src/components/Loader/AdvisorLoader'
 import { AgreementSignModalLoader } from '../../../src/components/Loader/AgreementLoader'
 import BillingDetailsLoader from '../../../src/components/Loader/BillingDetailsLoader'
 import CapitalAccessLoader from '../../../src/components/Loader/CapitalAccessLoader'
+import CapitalAccessLockedLoader from '../../../src/components/Loader/CapitalAccessLockedLoader'
+import CapitalAccessOverviewLoader from '../../../src/components/Loader/CapitalAccessOverviewLoader'
 import CreditProgressLoader from '../../../src/components/Loader/CreditProgressLoader'
 import DashboardLoader from '../../../src/components/Loader/DashboardLoader'
 import DetailsSkeletonLoader from '../../../src/components/Loader/DetailsSkeletonLoader'
@@ -44,6 +46,8 @@ const loaders: Array<[string, () => React.ReactElement]> = [
   ['DocumentSectionLoader', () => <DocumentSectionLoader />],
   ['DocumentUploadSkeleton', () => <DocumentUploadSkeleton />],
   ['ErrorState', () => <ErrorState />],
+  ['CapitalAccessLockedLoader', () => <CapitalAccessLockedLoader />],
+  ['CapitalAccessOverviewLoader', () => <CapitalAccessOverviewLoader />],
   ['FilterLoader', () => <FilterLoader />],
   ['FormSkeleton', () => <FormSkeleton />],
   ['FundingLoader', () => <FundingLoader />],
