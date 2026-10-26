@@ -35,7 +35,8 @@ export default function ProtectedRoute() {
     const isAllowed = location.pathname === '/' || allowedPaths.some(path => location.pathname.startsWith(path))
     
     if (!isAllowed) {
-      return <Navigate to="/dashboard" replace />
+      // The sidebar reads restrictedFrom and explains why (BUG-033).
+      return <Navigate to="/dashboard" replace state={{ restrictedFrom: location.pathname }} />
     }
   }
 

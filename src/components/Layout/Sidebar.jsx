@@ -4,7 +4,8 @@ import { clearAuth } from '../../lib/auth'
 import { logout } from '../../modules/auth/services'
 import { useAuthStore } from '../../store/auth'
 import { useBrandingStore } from '../../store/brandingStore'
-import { isSubscriptionRestricted, isFreeTrialLocked } from '../../lib/auth/subscriptionUtils'
+import { isSubscriptionRestricted, isFreeTrialLocked, getRestrictionReason } from '../../lib/auth/subscriptionUtils'
+import RestrictedAccessModal from './RestrictedAccessModal'
 import { PARTNER_TYPES } from '../../config/partnerTypeOptions'
 import { resolveBrandLogo } from '../../utils/brandLogo'
 import BrandLogo from './BrandLogo'
@@ -25,6 +26,13 @@ export default function Sidebar() {
   const user = useAuthStore((state) => state.user)
   const userSubscription = useAuthStore((state) => state.userSubscription)
   const isRestricted = isSubscriptionRestricted(userSubscription)
+  // A locked menu (or a locked page the guard sent back here) explains itself
+  // in a modal instead of doing nothing (BUG-033).
+  const restrictionReason = getRestrictionReason(userSubscription)
+  const [restrictedOpen, setRestrictedOpen] = useState(false)
+  useEffect(() => {
+    if (location.state?.restrictedFrom && restrictionReason) setRestrictedOpen(true)
+  }, [location.key, restrictionReason])
 
   const isFreeTrial = !!userSubscription?.is_free_trail;
   // Modules locked exclusively during the Limited Free Edition (free trial)
@@ -134,6 +142,7 @@ export default function Sidebar() {
         onClick={(e) => {
           if (restricted) {
             e.preventDefault();
+            if (isRestricted) setRestrictedOpen(true);
           } else if (isMobile) {
             closeSidebar();
           }
@@ -239,6 +248,7 @@ export default function Sidebar() {
                 type="button"
                 className={`nav-link menu-link btn material-shadow-none w-100 text-start`}
                 onClick={() => {
+                  if (isRestricted) setRestrictedOpen(true);
                   if (isRestricted || isFreeTierModule) return;
                   setCreditOpen((s) => !s);
                 }}
@@ -314,6 +324,8 @@ export default function Sidebar() {
       )}
 
       <div className="sidebar-background"></div>
+
+      <RestrictedAccessModal reason={restrictionReason} isOpen={restrictedOpen} onClose={() => setRestrictedOpen(false)} />
     </div>
   )
 }
