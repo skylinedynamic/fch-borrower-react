@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useState } from 'react'
 import { http, HttpResponse } from 'msw'
 import { render, screen, waitFor } from '@testing-library/react'
@@ -8,6 +8,7 @@ import { server } from '../../../mocks/server'
 import { createTestQueryClient } from '../../../test-utils'
 import FinancialSupport from '../../../../src/pages/profile/components/FinancialSupport'
 import { LOCKED_FINANCIAL_FIELDS } from '../../../../src/config/profileLockFields'
+import { countries, clearLocationCache } from '../../../../src/modules/location'
 
 vi.mock('react-toastify', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 vi.mock('react-flatpickr', () => ({
@@ -81,6 +82,34 @@ describe('Profile — Financial tab', () => {
   afterEach(() => {
     server.resetHandlers()
     vi.restoreAllMocks()
+  })
+
+  // BUG-077: a client with no stored currency had to pick USD again to save.
+  describe('currency', () => {
+    beforeEach(() => {
+      countries.splice(0, countries.length,
+        { name: 'United States', code: 'US', currency: 'USD', phone_code: '+1', flag: '', states: [] },
+        { name: 'Canada', code: 'CA', currency: 'CAD', phone_code: '+1', flag: '', states: [] },
+      )
+    })
+    afterEach(() => clearLocationCache())
+
+  it('starts the currency at USD when none is stored', async () => {
+    serveFinancial({ currency: null })
+
+    renderTab()
+
+    expect(await screen.findByText(/^USD - /)).toBeInTheDocument()
+    expect(screen.queryByText('Select currency')).not.toBeInTheDocument()
+  })
+
+  it('keeps the stored currency', async () => {
+    serveFinancial({ currency: 'CAD' })
+
+    renderTab()
+
+    expect(await screen.findByText(/^CAD - /)).toBeInTheDocument()
+  })
   })
 
   it('shows the figures the API already holds', async () => {
