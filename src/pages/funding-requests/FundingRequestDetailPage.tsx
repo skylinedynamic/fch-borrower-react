@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { getBorrowerFundingRequest } from '../../modules/funding-requests/services'
+import { getBorrowerFundingRequest, attachFundingRequestDocuments, deleteFundingRequestDocument } from '../../modules/funding-requests/services'
+import { useDocumentTypes } from '../../modules/documents/queries'
+import { FileManagerModal } from '../../components/FileManagerModal/FileManagerModal'
+import DeleteConfirmationModal from '../../components/GlobalModal/DeleteConfirmModal'
+import type { FileSystemItem } from '../../modules/filemanager/types'
+import { getUser } from '../../lib/auth/auth'
 import { getBorrowerActivityLogs, downloadActivityAttachment } from '../../modules/activity-log/services'
 import { downloadBorrowerDocument } from '../../modules/documents/services'
 import { downloadBlob, downloadFileFromUrl, handleFileDownload } from '../../utils/fileDownload'
@@ -419,11 +424,16 @@ export default function FundingRequestDetailPage() {
 
     const activityRef = useRef<HTMLDivElement>(null)
 
-    // Load request details
-    useEffect(() => {
-        if (!id) return
-        setLoading(true)
-        getBorrowerFundingRequest(Number(id))
+    // Documents can be added and removed here while the request is Pending (BUG-088).
+    const { data: documentTypes } = useDocumentTypes()
+    const [uploadDocType, setUploadDocType] = useState<{ id: number; name: string } | null>(null)
+    const [documentToDelete, setDocumentToDelete] = useState<{ id: number; name: string } | null>(null)
+    const [savingDocuments, setSavingDocuments] = useState(false)
+
+    const loadRequest = useCallback((showLoader = true) => {
+        if (!id) return Promise.resolve()
+        if (showLoader) setLoading(true)
+        return getBorrowerFundingRequest(Number(id))
             .then(res => {
                 if (res.success) setReview(res.data)
                 else toast.error(res.message || 'Failed to load details')
@@ -431,6 +441,49 @@ export default function FundingRequestDetailPage() {
             .catch(() => toast.error('Failed to load details'))
             .finally(() => setLoading(false))
     }, [id])
+
+    // Load request details
+    useEffect(() => { loadRequest() }, [loadRequest])
+
+    const canManageDocuments = review?.status === FUNDING_REVIEW_STATUS.PENDING
+    const sequenceId = review?.funding_sequence?.id
+
+    // The request lists documents by type name; the API matches straight and
+    // curly apostrophes alike, so the lookup does too.
+    const documentTypeFor = (name: string) => {
+        const key = (s: string) => s.replace(/[’‘]/g, "'")
+        return documentTypes?.find(type => key(type.name) === key(name)) ?? null
+    }
+
+    const handleAttachDocuments = async (selectedFiles: FileSystemItem[]) => {
+        if (!uploadDocType || !sequenceId) return
+        setSavingDocuments(true)
+        try {
+            await attachFundingRequestDocuments(selectedFiles.map(f => f.path), uploadDocType.id, sequenceId)
+            toast.success(`Files attached to ${uploadDocType.name}`)
+            setUploadDocType(null)
+            await loadRequest(false)
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || 'Failed to attach files')
+        } finally {
+            setSavingDocuments(false)
+        }
+    }
+
+    const confirmDeleteDocument = async () => {
+        if (!documentToDelete || !sequenceId) return
+        setSavingDocuments(true)
+        try {
+            await deleteFundingRequestDocument(documentToDelete.id, sequenceId)
+            toast.success('Document deleted')
+            setDocumentToDelete(null)
+            await loadRequest(false)
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || 'Failed to delete document')
+        } finally {
+            setSavingDocuments(false)
+        }
+    }
 
     // Load activity logs
     const loadActivities = useCallback((page: number, append = false) => {
@@ -698,6 +751,26 @@ export default function FundingRequestDetailPage() {
                 .activity-scroll-container::-webkit-scrollbar-thumb:hover { background: #adb5bd; }
                 `
             }} />
+            {canManageDocuments && (
+                <>
+                    <FileManagerModal
+                        isOpen={!!uploadDocType}
+                        toggle={() => setUploadDocType(null)}
+                        section={uploadDocType?.name}
+                        selectionMode
+                        onSelectFiles={handleAttachDocuments}
+                        entityType="borrowers"
+                        entityId={getUser()?.entity_id}
+                    />
+                    <DeleteConfirmationModal
+                        show={!!documentToDelete}
+                        onClose={() => setDocumentToDelete(null)}
+                        onConfirm={confirmDeleteDocument}
+                        loading={savingDocuments}
+                        text={`Are you sure you want to delete "${documentToDelete?.name}"? It is removed from your Documents as well.`}
+                    />
+                </>
+            )}
             <div className="page-content funding-requests-page">
                 <div className="container-fluid">
 
@@ -937,6 +1010,17 @@ export default function FundingRequestDetailPage() {
                                                                 <span className="ms-2 badge bg-primary-subtle text-primary">
                                                                     {files.length} {files.length === 1 ? 'file' : 'files'}
                                                                 </span>
+                                                                {canManageDocuments && documentTypeFor(title) && (
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn btn-sm btn-soft-primary float-end py-0"
+                                                                        aria-label={`Upload ${title}`}
+                                                                        disabled={savingDocuments}
+                                                                        onClick={() => setUploadDocType(documentTypeFor(title))}
+                                                                    >
+                                                                        <i className="ri-upload-2-line me-1"></i>Upload
+                                                                    </button>
+                                                                )}
                                                             </td>
                                                         </tr>
                                                     {(docs as any[]).map((doc: any, idx: number) => {
@@ -999,6 +1083,18 @@ export default function FundingRequestDetailPage() {
                                                                         <button className="btn btn-sm btn-light border d-flex align-items-center justify-content-center fr-download-btn" onClick={handleDownload} title="Download">
                                                                             <i className="ri-download-2-line fs-14"></i>
                                                                         </button>
+                                                                        {canManageDocuments && doc.file_name && !String(doc.id).startsWith('missing_') && (
+                                                                            <button
+                                                                                type="button"
+                                                                                className="btn btn-sm btn-light border text-danger d-flex align-items-center justify-content-center"
+                                                                                title="Remove"
+                                                                                aria-label={`Remove ${doc.file_name}`}
+                                                                                disabled={savingDocuments}
+                                                                                onClick={() => setDocumentToDelete({ id: Number(doc.id), name: doc.file_name })}
+                                                                            >
+                                                                                <i className="ri-delete-bin-line fs-14"></i>
+                                                                            </button>
+                                                                        )}
                                                                     </div>
                                                                 </td>
                                                             </tr>

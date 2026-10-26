@@ -3,13 +3,17 @@ import { http, HttpResponse } from 'msw'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders, screen, waitFor } from '../../../../test-utils'
 import { server } from '../../../../mocks/server'
+import { toast } from 'react-toastify'
 import EditConfirmationModal from '../../../../../src/pages/fundapplication/components/shared/EditConfirmationModal'
 import { useSaveBusinessInfo } from '../../../../../src/modules/funding-application/queries'
 import { isEditConfirmationCancelled } from '../../../../../src/modules/funding-application/editConfirmation'
+import { SAVE_CANCELLED_MESSAGE } from '../../../../../src/modules/funding-application/saveFeedback'
 import {
   useEditConfirmationStore,
   setEditRequiresConfirmation,
 } from '../../../../../src/store/fundApplication/editConfirmationStore'
+
+vi.mock('react-toastify', () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }))
 
 // The shared ConfirmationModal drives Bootstrap's real Modal class, whose
 // transition callbacks fire after the test's component has unmounted and throw
@@ -169,6 +173,19 @@ describe('EditConfirmationModal (borrower)', () => {
     await userEvent.click(cancelButton())
 
     expect(isOpen()).toBe(false)
+    expect(requests).toBe(0)
+  })
+
+  // BUG-117: Cancel on the dialog shown when the application is opened left
+  // with no word at all; the borrower is told nothing was saved.
+  it('says the changes were not saved when the warning is declined on open', async () => {
+    setEditRequiresConfirmation(true)
+
+    renderWithProviders(<SaveHarness />)
+    await waitFor(() => expect(isOpen()).toBe(true))
+    await userEvent.click(cancelButton())
+
+    await waitFor(() => expect(toast.info).toHaveBeenCalledWith(SAVE_CANCELLED_MESSAGE, expect.anything()))
     expect(requests).toBe(0)
   })
 

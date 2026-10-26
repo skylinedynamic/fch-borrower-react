@@ -20,6 +20,7 @@ import { FUNDING_PURPOSE_OTHER, purposeOfFundingOptions, timeframeOptions, witho
 import { useFundingRequest, useFundingApplicationDocuments } from '../../modules/funding-application/queries'
 import { setEditRequiresConfirmation, setEditConfirmationResolving, resetEditConfirmation } from '../../store/fundApplication/editConfirmationStore'
 import { formatCurrency } from '../../utils/formatters'
+import { STEP_INDICES, isWizardStepComplete } from './stepProgress'
 
 // Types & Utils
 import {
@@ -82,17 +83,6 @@ const matchTimeframe = (raw: string | null | undefined): string => {
 }
 
 // Constants
-const STEP_INDICES = {
-  BUSINESS_INFO: 0,
-  OWNERSHIP_INFO: 1,
-  FINANCIAL_INFO: 2,
-  FUNDING_REQUEST: 3,
-  DOCUMENT_UPLOAD: 4,
-  DISCLOSURES: 5,
-  FEDERAL_COMPLIANCE: 6,
-  ATTESTATION: 7,
-} as const
-
 const INITIAL_LOADING_DELAY_MS = 700
 
 // Federal compliance question keys for validation
@@ -481,42 +471,17 @@ export default function FundApplication() {
     setHighestVisitedStep(prev => Math.max(prev, activeStep))
   }, [activeStep])
 
+  // The server no longer accepts changes (e.g. Matched to Lender, Closed): the
+  // wizard opens read-only and says why, rather than letting the borrower type
+  // and only refusing on submit (BUG-071).
+  const isLocked = fundingData?.is_editable === false
+  const lockedReason = fundingData?.locked_reason || 'This application can no longer be changed.'
+
   // Check if a step is complete (for progress display)
   const isStepComplete = useCallback(
-    (stepIndex: number): boolean => {
-      // Helper to check if a step is explicitly saved in the database
-      const isStepSaved = (idx: number) => {
-        if (idx === STEP_INDICES.BUSINESS_INFO) return !!fundingData?.is_business_info_saved;
-        if (idx === STEP_INDICES.OWNERSHIP_INFO) return !!fundingData?.is_ownership_info_saved;
-        if (idx === STEP_INDICES.FINANCIAL_INFO) return !!fundingData?.is_financial_info_saved;
-        if (idx === STEP_INDICES.FUNDING_REQUEST) return !!fundingData?.is_funding_request_saved;
-        if (idx === STEP_INDICES.DISCLOSURES) return !!fundingData?.is_disclosures_saved;
-        if (idx === STEP_INDICES.FEDERAL_COMPLIANCE) return !!fundingData?.is_federal_compliance_saved;
-        if (idx === STEP_INDICES.ATTESTATION) return !!fundingData?.signature_data;
-        return true;
-      };
-
-      // Enforce strict linear progression: a step cannot be complete if ANY previous step is unsaved
-      for (let i = 0; i < stepIndex; i++) {
-        if (!isStepSaved(i)) return false;
-        // If we are currently on the tab, enforce validation
-        if (activeStep === i && !isStepValid(i)) return false;
-      }
-
-      // Document upload shows checkmark if it has files or user progressed past this step
-      if (stepIndex === STEP_INDICES.DOCUMENT_UPLOAD) {
-        return Boolean((documentsData && documentsData.length > 0) || highestVisitedStep > STEP_INDICES.DOCUMENT_UPLOAD || activeStep > STEP_INDICES.DOCUMENT_UPLOAD)
-      }
-      
-      if (!isStepSaved(stepIndex)) return false;
-      // A signed application stays complete while its signing step is open:
-      // that form starts empty for a new signature, which is not a missing one.
-      const alreadySigned = stepIndex === STEP_INDICES.ATTESTATION && Boolean(fundingData?.signature_data);
-      if (activeStep === stepIndex && !alreadySigned && !isStepValid(stepIndex)) return false;
-
-      return true;
-    },
-    [activeStep, highestVisitedStep, documentsData, isStepValid, fundingData]
+    (stepIndex: number): boolean =>
+      isWizardStepComplete(stepIndex, { fundingData, activeStep, highestVisitedStep, isStepValid }),
+    [activeStep, highestVisitedStep, isStepValid, fundingData]
   )
 
   // Progress calculations
@@ -542,8 +507,9 @@ export default function FundApplication() {
       if (targetIndex > maxAllowedIdx) return
 
 
-      // If navigating backwards, do not save
-      if (targetIndex < activeStep) {
+      // If navigating backwards, or the application is locked (read-only, so
+      // nothing to save and the server would refuse it), do not save
+      if (targetIndex < activeStep || isLocked) {
         setActiveStep(targetIndex)
         return
       }
@@ -562,7 +528,7 @@ export default function FundApplication() {
       // Fallback
       setActiveStep(targetIndex)
     },
-    [activeStep, maxAllowedIdx]
+    [activeStep, maxAllowedIdx, isLocked]
   )
 
   // Handle mobile accordion click
@@ -824,9 +790,17 @@ export default function FundApplication() {
                 </span>
               </div>
               <div className="card-body">
+                {isLocked && (
+                  <div className="alert alert-info d-flex align-items-start gap-2" role="status">
+                    <i className="ri-lock-line fs-16"></i>
+                    <span>{lockedReason}</span>
+                  </div>
+                )}
                 {tabs.map((_, idx) => (
                   <div key={idx} style={{ display: activeStep === idx ? 'block' : 'none' }}>
-                    {renderStep(idx, activeStep === idx)}
+                    <fieldset disabled={isLocked} className="border-0 p-0 m-0">
+                      {renderStep(idx, activeStep === idx)}
+                    </fieldset>
                   </div>
                 ))}
               </div>
@@ -862,7 +836,15 @@ export default function FundApplication() {
                           <i className={`ri-arrow-${isOpen ? 'up' : 'down'}-s-line ms-auto`}></i>
                         </button>
                         <div className="p-3" style={{ display: isOpen ? 'block' : 'none' }}>
-                          {renderStep(idx, isOpen)}
+                          {isLocked && (
+                            <div className="alert alert-info d-flex align-items-start gap-2" role="status">
+                              <i className="ri-lock-line fs-16"></i>
+                              <span>{lockedReason}</span>
+                            </div>
+                          )}
+                          <fieldset disabled={isLocked} className="border-0 p-0 m-0">
+                            {renderStep(idx, isOpen)}
+                          </fieldset>
                         </div>
                       </li>
                     )

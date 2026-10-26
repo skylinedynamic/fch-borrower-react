@@ -43,16 +43,6 @@ export default function MyApplication() {
           </div>
 
 
-          <div className="col-12 d-xl-none order-3">
-            <div className="card app-card mt-0 ad-card">
-              <div className="card-header">
-                <span className="card-title fw-semibold">Advertisements</span>
-              </div>
-              <div className="card-body d-flex align-items-center justify-content-center">
-                <div className="ad-placeholder">Ad space</div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
