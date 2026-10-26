@@ -57,7 +57,7 @@ export default function CapitalAccessLocked() {
                 </h3>
                 <p className="cal-text">
                   To view your personalized <strong>Credit Card Stacking Readiness Scores</strong>, explore{' '}
-                  <strong>Estimated Total Access</strong>, and execute strategic funding plays, your credit profile
+                  <strong>Estimated Remaining Access</strong>, and execute strategic funding plays, your credit profile
                   needs to be verified and your Tier 0 tasks completed.
                 </p>
               </div>
