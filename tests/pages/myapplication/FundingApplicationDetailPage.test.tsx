@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { renderWithProviders, screen } from '../../test-utils'
+import { renderWithProviders, screen, within } from '../../test-utils'
 import FundingApplicationDetailPage from '../../../src/pages/myapplication/FundingApplicationDetailPage'
 import { FUNDING_APPLICATION_STATUS, FUNDING_REVIEW_STATUS } from '../../../src/config/funding'
 
@@ -10,7 +10,7 @@ vi.mock('../../../src/modules/my-application', async (original) => ({
   useFundingApplicationDetail: () => ({ data: { data: detail.application }, isLoading: false }),
 }))
 
-vi.mock('../../../src/components/Common/BorrowerActivitySidebar', () => ({ default: () => null }))
+vi.mock('../../../src/pages/myapplication/components/detail/ApplicationActivity', () => ({ default: () => null }))
 
 // A submitted application on an approved request that the server still allows to be edited.
 const editable = {
@@ -92,3 +92,52 @@ describe('FundingApplicationDetailPage — funding types', () => {
     expect(screen.getByText('Additional Funding Types').parentElement).toHaveTextContent('N/A')
   })
 })
+
+describe('FundingApplicationDetailPage — overview', () => {
+  it('opens with the status, the amount asked for and where the application stands', () => {
+    detail.application = { ...editable, status: FUNDING_APPLICATION_STATUS.UNDERWRITING_REVIEW, requested_amount: '$50,000.00', purpose_of_funds: 'Equipment' }
+    renderWithProviders(<FundingApplicationDetailPage />)
+
+    expect(screen.getByRole('heading', { name: 'Funding Application Details' })).toBeInTheDocument()
+    const facts = screen.getByRole('group', { name: 'Requested amount' })
+    expect(within(facts).getByText('$50,000.00')).toBeInTheDocument()
+
+    const tracker = screen.getByRole('list', { name: 'Application progress' })
+    expect(within(tracker).getByText('Underwriting').closest('li')).toHaveAttribute('aria-current', 'step')
+  })
+
+  it('shows the status as a chip in its tone', () => {
+    detail.application = { ...editable, status: FUNDING_APPLICATION_STATUS.PENDING }
+    renderWithProviders(<FundingApplicationDetailPage />)
+
+    expect(screen.getByLabelText(`Status: ${FUNDING_APPLICATION_STATUS.PENDING}`)).toHaveClass('ma-status-chip', 'is-warning')
+  })
+
+  it('says when the client has to act', () => {
+    detail.application = { ...editable, status: FUNDING_APPLICATION_STATUS.MISSING_DOCUMENTS }
+    renderWithProviders(<FundingApplicationDetailPage />)
+
+    expect(screen.getByText(/Action needed/)).toBeInTheDocument()
+  })
+
+  it('shows a denied application as denied', () => {
+    detail.application = { ...editable, status: FUNDING_APPLICATION_STATUS.DENIED }
+    renderWithProviders(<FundingApplicationDetailPage />)
+
+    expect(screen.getByText('Application denied')).toBeInTheDocument()
+  })
+
+  it('lists the uploaded documents with a download for each', () => {
+    detail.application = {
+      ...editable,
+      documents: [{ type: 'Bank Statements', files: [{ id: 5, original_name: 'march.pdf', status: 'Approved', created_at: '2026-10-20T10:00:00Z' }] }],
+    }
+    renderWithProviders(<FundingApplicationDetailPage />)
+
+    const docs = screen.getByRole('region', { name: /Uploaded Documents/ })
+    expect(within(docs).getByText('Bank Statements')).toBeInTheDocument()
+    expect(within(docs).getByText('march.pdf')).toBeInTheDocument()
+    expect(within(docs).getByRole('button', { name: 'Download march.pdf' })).toBeInTheDocument()
+  })
+})
+
