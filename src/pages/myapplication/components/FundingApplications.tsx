@@ -61,7 +61,7 @@ export default function FundingApplications() {
                           style={{ cursor: 'pointer' }}
                           className="fr-table-row-hover"
                         >
-                          <td>{app.purpose_of_funds || 'N/A'}</td>
+                          <td>{app.preferred_funding_type || 'N/A'}</td>
                           <td>{app.entity_type || 'N/A'}</td>
                           <td>{app.industry_type || 'N/A'}</td>
                           <td>{app.date || 'N/A'}</td>

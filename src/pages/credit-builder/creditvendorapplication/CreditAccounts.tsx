@@ -6,6 +6,7 @@ import VendorCardLoader from '../../../components/Loader/VendorCardLoader'
 import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { creditAccountStatusOptions } from '../../../config/creditAccountStatusOptions'
 import { toast } from 'react-toastify'
+import { pgRequiredLabel } from '../../../utils/creditAccounts'
 import { refreshUser as refreshUserService } from '../../../modules/auth-profile/services'
 
 const API_STORAGE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace('/api/v1', '/storage/')
@@ -256,12 +257,15 @@ export default function CreditAccounts() {
                   {/* Visual Header with Subtle Gradient Background */}
                   <div className="v-card-visual position-relative h-130px">
 
-                    {/* Approval Level - Modern Tag Style */}
-                    <div className="position-absolute top-0 start-0 m-0 z-2">
-                      <span className={`approval-tag-modern tag-${(v.approval_level || '').toLowerCase()}`}>
-                        {v.approval_level || 'N/A'}
-                      </span>
-                    </div>
+                    {/* Approval Level - Modern Tag Style. No tag when it is unset,
+                        rather than an "N/A" that reads as a difficulty (BUG-084). */}
+                    {v.approval_level && (
+                      <div className="position-absolute top-0 start-0 m-0 z-2">
+                        <span className={`approval-tag-modern tag-${v.approval_level.toLowerCase()}`}>
+                          {v.approval_level}
+                        </span>
+                      </div>
+                    )}
 
                     <div className="position-absolute top-0 end-0 m-3 z-2 d-flex align-items-center gap-2">
                       {/* Manual Status Dropdown */}
@@ -353,7 +357,7 @@ export default function CreditAccounts() {
                           <div className="p-2 border border-light border-dashed rounded-2 d-flex flex-column gap-2">
                             <div className="d-flex justify-content-between align-items-start">
                               <span className="text-muted fs-12 fw-medium d-flex align-items-center gap-1"><i className="ri-shield-user-line text-primary fs-13"></i> PG Required</span>
-                              <span className="text-muted fs-12 text-end" style={{ maxWidth: '60%' }}>{(v.personal_guarantee && v.personal_guarantee.trim() !== '') ? v.personal_guarantee : 'Not Required'}</span>
+                              <span className="text-muted fs-12 text-end" style={{ maxWidth: '60%' }}>{pgRequiredLabel(v.personal_guarantee)}</span>
                             </div>
                             <div className="d-flex justify-content-between align-items-start">
                               <span className="text-muted fs-12 fw-medium d-flex align-items-center gap-1"><i className="ri-briefcase-4-line text-warning fs-13"></i>Credit Profile</span>

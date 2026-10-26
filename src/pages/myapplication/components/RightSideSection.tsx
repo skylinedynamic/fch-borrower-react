@@ -56,15 +56,6 @@ export default function RightSideSection({ loading }: RightSideSectionProps) {
           )}
         </div>
       </div>
-
-      <div className="card app-card mt-3 ad-card d-none d-xl-block">
-        <div className="card-header">
-          <span className="card-title fw-semibold">Advertisements</span>
-        </div>
-        <div className="card-body d-flex align-items-center justify-content-center">
-          <div className="ad-placeholder">Ad space</div>
-        </div>
-      </div>
     </>
   )
 }
