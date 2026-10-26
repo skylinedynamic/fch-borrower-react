@@ -37,6 +37,8 @@ export default function Sidebar() {
   const isFreeTrial = !!userSubscription?.is_free_trail;
   // Modules locked exclusively during the Limited Free Edition (free trial)
   const isFreeTierModule = isFreeTrialLocked(userSubscription);
+  // Credit Builder and each of its items carry the lock, like the other locked menus (BUG-110).
+  const creditBuilderLocked = isRestricted || isFreeTierModule;
 
   // Resolved logos for different sidebar states
   // Logos are chosen by the background they sit on. The legacy keys are read as a
@@ -255,7 +257,7 @@ export default function Sidebar() {
                 aria-expanded={creditOpen}
                 aria-controls="creditBuilderMenu"
               >
-                <i className="ri-building-2-line"></i> <span>Credit Builder {(isRestricted || isFreeTierModule) && <i className="ri-lock-line align-middle ms-1"></i>}</span>
+                <i className="ri-building-2-line"></i> <span>Credit Builder {creditBuilderLocked && <i className="ri-lock-line align-middle ms-1"></i>}</span>
                 {/* The guide and Credit Accounts are inside this group: point at the group until it is open. */}
                 {!creditOpen && creditBuilderArrowTag && <OnboardingMenuArrow tag={creditBuilderArrowTag} />}
                 <i className={`ri-arrow-down-s-line float-end submenu-caret ${creditOpen ? 'open' : ''}`}></i>
@@ -266,14 +268,14 @@ export default function Sidebar() {
                     className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'}
                     to="/credit-builder/overview"
                     onClick={(e) => { if (isFreeTierModule) { e.preventDefault(); return; } isMobile && closeSidebar(); }}
-                  ><i className="ri-subtract-line"></i> <span>Overview</span></NavLink>
+                  ><i className="ri-subtract-line"></i> <span>Overview</span>{creditBuilderLocked && <i className="ri-lock-line align-middle ms-1"></i>}</NavLink>
                 </li>
                 <li className={`nav-item${arrowTagFor(ONBOARDING_MENU.STEP_GUIDE) ? ' onb-menu-target' : ''}`}>
                   <NavLink
                     className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'}
                     to="/credit-builder/guide"
                     onClick={(e) => { if (isFreeTierModule) { e.preventDefault(); return; } isMobile && closeSidebar(); }}
-                  ><i className="ri-subtract-line"></i> <span>Step-By-Step Guide</span>
+                  ><i className="ri-subtract-line"></i> <span>Step-By-Step Guide</span>{creditBuilderLocked && <i className="ri-lock-line align-middle ms-1"></i>}
                     {creditOpen && arrowTagFor(ONBOARDING_MENU.STEP_GUIDE) && <OnboardingMenuArrow tag={arrowTagFor(ONBOARDING_MENU.STEP_GUIDE)} />}
                   </NavLink>
                 </li>
@@ -282,7 +284,7 @@ export default function Sidebar() {
                     className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'}
                     to="/credit-builder/credit-accounts"
                     onClick={(e) => { if (isFreeTierModule) { e.preventDefault(); return; } isMobile && closeSidebar(); }}
-                  ><i className="ri-subtract-line"></i> <span>Credit Accounts</span>
+                  ><i className="ri-subtract-line"></i> <span>Credit Accounts</span>{creditBuilderLocked && <i className="ri-lock-line align-middle ms-1"></i>}
                     {creditOpen && arrowTagFor(ONBOARDING_MENU.CREDIT_ACCOUNTS) && <OnboardingMenuArrow tag={arrowTagFor(ONBOARDING_MENU.CREDIT_ACCOUNTS)} />}
                   </NavLink>
                 </li>

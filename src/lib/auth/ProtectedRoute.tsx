@@ -9,6 +9,8 @@ const FREE_TRIAL_LOCKED_PATHS = [
   '/credit-card-stacking',
   '/invoices',
   '/payments',
+  // Locked in the menu too; reached by URL it opened with a "Server Error" (BUG-111).
+  '/billing-details',
   '/resources',
   '/credit-builder',
 ]

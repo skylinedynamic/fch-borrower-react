@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/auth'
 import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils'
 import { useActiveFundingRequests, useDashboard } from '../../modules/dashboard'
 import { useCapitalAccessOverview } from '../../modules/capital-access/queries'
+import { useProfileCompletion } from '../../modules/profile'
 import type { FundingApplication, PreQualification } from '../../modules/dashboard/types'
 import DashboardLoader from '../../components/Loader/DashboardLoader'
 import DashboardHero from './components/DashboardHero'
@@ -70,6 +71,10 @@ export default function Dashboard() {
   // The same cached query as the layout's banner: no extra request.
   const { data: activeFundingRequests } = useActiveFundingRequests()
   const { data: overview } = useCapitalAccessOverview()
+  // The same answer the Credit Card Stacking route is guarded on; locked only
+  // when the API says so, so a slow or failed check keeps the button.
+  const { data: completion } = useProfileCompletion()
+  const stackingLocked = completion?.credit_card_stacking?.unlocked === false
 
   if (isLoading) {
     return <DashboardLoader />
@@ -131,6 +136,7 @@ export default function Dashboard() {
           status={overview?.readiness_status ?? 'N/A'}
           totalAccess={overview?.estimated_total_access_compact || overview?.estimated_total_access || '$0'}
           hasActivePlay={!!overview?.current_play}
+          locked={stackingLocked}
           onOpenCapitalAccess={awaitingPayment ? undefined : () => navigate('/credit-card-stacking')}
         />
 
