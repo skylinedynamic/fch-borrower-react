@@ -1,0 +1,378 @@
+/* Funding while it waits for the credit report. The Funding Options banner
+   (Funding.css) stays; a raised panel sits on its bottom edge where the
+   overview figures go - the status on the left, the three steps on the
+   right - and faded program cards below hint at what opens. */
+
+.funding-locked-page {
+  --fl-info: #1769c2;
+  --fl-info-soft: #e6f0fa;
+  --fl-success: #0ab39c;
+  --fl-success-soft: #e3f7f4;
+  --fl-success-ink: #078a78;
+  --fl-warning-soft: #fef4e4;
+  --fl-warning-ink: #b06d06;
+}
+
+/* -- the panel ------------------------------------------------------------------ */
+
+.fl-panel {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  margin: -48px 24px 28px;
+  border: 1px solid var(--fp-border);
+  border-radius: var(--fp-radius);
+  background: #fff;
+  box-shadow: var(--fp-shadow-raised);
+}
+
+/* Centred in the panel's height: the icon on the left, the status, title,
+   text and button beside it, lined up at the top. */
+.fl-main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 28px 32px;
+}
+
+.fl-media {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.fl-main-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+/* In the banner's own colours, so it reads as part of the page. */
+.fl-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--fp-radius);
+  background: linear-gradient(120deg, var(--fp-brand) 0%, color-mix(in srgb, var(--fp-brand) 72%, #1769c2) 100%);
+  box-shadow: 0 3px 8px -4px rgba(var(--fp-brand-rgb), 0.5);
+  font-size: 23px;
+  color: #fff;
+}
+
+.fl-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 3px 10px;
+  border-radius: var(--fp-radius);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.fl-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.fl-badge.is-waiting {
+  background: var(--fl-info-soft);
+  color: var(--fl-info);
+}
+
+.fl-badge.is-waiting .fl-badge-dot {
+  animation: fl-pulse 1.8s ease-in-out infinite;
+}
+
+.fl-badge.is-action {
+  background: var(--fl-warning-soft);
+  color: var(--fl-warning-ink);
+}
+
+@keyframes fl-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fl-badge.is-waiting .fl-badge-dot {
+    animation: none;
+  }
+}
+
+.fl-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--fp-ink);
+}
+
+.fl-text {
+  max-width: 460px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--fp-body);
+}
+
+.fl-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 37.5px;
+  margin-top: 20px;
+  padding: 0 16px;
+  border-radius: var(--fp-radius);
+  background: var(--fp-brand);
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  transition: box-shadow 0.15s ease;
+}
+
+.fl-cta:hover,
+.fl-cta:focus-visible {
+  box-shadow: 0 6px 14px -6px rgba(var(--fp-brand-rgb), 0.6);
+  color: #fff;
+}
+
+/* -- the three steps: a vertical timeline --------------------------------------- */
+
+.fl-steps {
+  padding: 28px 32px;
+  border-left: 1px solid var(--fp-border);
+  background: var(--fp-soft);
+}
+
+.fl-steps-title {
+  margin: 0 0 18px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fp-muted);
+}
+
+.fl-timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fl-step {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding-bottom: 20px;
+}
+
+.fl-step:last-child {
+  padding-bottom: 0;
+}
+
+/* The line down to the next marker. */
+.fl-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 34px;
+  bottom: 4px;
+  left: 15px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--fp-border);
+}
+
+.fl-step.is-done:not(:last-child)::after {
+  background: var(--fl-success);
+}
+
+.fl-step-marker {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--fp-border);
+  border-radius: 50%;
+  background: #fff;
+  font-size: 15px;
+  color: var(--fp-muted);
+}
+
+.fl-step.is-done .fl-step-marker {
+  border-color: var(--fl-success);
+  background: var(--fl-success);
+  color: #fff;
+}
+
+.fl-step.is-current .fl-step-marker {
+  border-color: var(--fl-info);
+  box-shadow: 0 0 0 4px rgba(23, 105, 194, 0.12);
+  color: var(--fl-info);
+}
+
+.fl-step-body {
+  flex: 1;
+  min-width: 0;
+  padding-top: 5px;
+}
+
+.fl-step-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.fl-step-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fp-ink);
+}
+
+.fl-step.is-upcoming .fl-step-title {
+  color: var(--fp-body);
+}
+
+.fl-step-state {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: var(--fp-radius);
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--fp-border);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fp-muted);
+}
+
+.fl-step.is-done .fl-step-state {
+  background: var(--fl-success-soft);
+  box-shadow: none;
+  color: var(--fl-success-ink);
+}
+
+.fl-step.is-current .fl-step-state {
+  background: var(--fl-info-soft);
+  box-shadow: none;
+  color: var(--fl-info);
+}
+
+.fl-step-text {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--fp-muted);
+}
+
+/* -- faded preview of the program cards ---------------------------------------- */
+
+.fl-preview {
+  margin: 0 24px;
+  pointer-events: none;
+  user-select: none;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 95%);
+  mask-image: linear-gradient(180deg, #000 0%, transparent 95%);
+}
+
+.fl-ghost-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--fp-border);
+  border-radius: var(--fp-radius);
+  background: #fff;
+}
+
+.fl-ghost-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.fl-ghost-icon {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--fp-radius);
+  background: rgba(var(--fp-brand-rgb), 0.06);
+}
+
+.fl-ghost-line {
+  display: block;
+  height: 10px;
+  border-radius: var(--fp-radius);
+  background: #e9ecf1;
+}
+
+.fl-ghost-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--fp-border);
+}
+
+.fl-ghost-round {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #e9ecf1;
+}
+
+/* -- smaller screens ----------------------------------------------------------- */
+
+@media (max-width: 991.98px) {
+  .fl-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .fl-steps {
+    border-top: 1px solid var(--fp-border);
+    border-left: 0;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .fl-panel {
+    margin: -64px 12px 22px;
+  }
+
+  .fl-main,
+  .fl-steps {
+    padding: 22px 20px;
+  }
+
+  .fl-title {
+    font-size: 18px;
+  }
+
+  .fl-preview {
+    margin: 0 12px;
+  }
+}
+
+/* One preview card is enough on a phone. */
+@media (max-width: 575.98px) {
+  .fl-preview .fl-ghost-card:nth-child(n + 2) {
+    display: none;
+  }
+}

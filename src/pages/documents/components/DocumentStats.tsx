@@ -4,8 +4,9 @@ import { FILE_MANAGER_CONFIG } from '../../../modules/filemanager/config'
 interface DocumentStatsProps {
   /** Files uploaded, across every category. */
   documentCount: number
-  /** Categories with at least one file. */
+  /** Required categories with at least one file. */
   filledCount: number
+  /** The required categories. */
   categoryCount: number
 }
 
@@ -32,7 +33,7 @@ export const DocumentStats: React.FC<DocumentStatsProps> = ({ documentCount, fil
           <div className="docs-stat">
             <span className="docs-stat-label">Progress</span>
             <span className="docs-stat-value">
-              {filledCount} of {categoryCount} categories
+              {filledCount} of {categoryCount} required
             </span>
             <span className="docs-stat-track" aria-hidden="true">
               <span className="docs-stat-bar" style={{ width: `${percent}%` }}></span>

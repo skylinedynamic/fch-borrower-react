@@ -21,6 +21,19 @@ interface FinancialSupportProps {
   saving: boolean
 }
 
+/**
+ * A typed amount as a number, or null when the field is empty. Zero is a real
+ * amount; null lets the API refuse a required figure left empty.
+ */
+export const amountOrNull = (value: unknown): number | null => {
+  const digits = unformatCurrency(String(value ?? ''))
+  return digits === '' ? null : parseFloat(digits)
+}
+
+/** A stored amount as the field shows it, keeping a stored zero ('' only when there is none). */
+export const shownAmount = (value: unknown): string =>
+  value === null || value === undefined || value === '' ? '' : formatCurrency(value as string | number)
+
 export default function FinancialSupport({ data, onChange, onSave, onBack, saving }: FinancialSupportProps) {
   const { data: apiData, isSuccess, isLoading } = useFinancialInfo()
   const { mutate: saveFinancial, isPending } = useSaveFinancialInfo()
@@ -112,9 +125,11 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
     setErrors({})
     const payload: SaveFinancialInfoRequest = {
       currency: data.currency,
-      monthly_revenue: parseFloat(unformatCurrency(String(data.monthly_revenue || ''))) || 0,
-      annual_revenue: parseFloat(unformatCurrency(String(data.annual_revenue || ''))) || 0,
-      annual_personal_income: parseFloat(unformatCurrency(String(data.annual_personal_income || ''))) || 0,
+      // Required: sent empty (null) rather than as 0, so the API refuses it.
+      monthly_revenue: amountOrNull(data.monthly_revenue),
+      annual_revenue: amountOrNull(data.annual_revenue),
+      // Optional: left out when empty, like the other optional figures.
+      annual_personal_income: data.annual_personal_income ? parseFloat(unformatCurrency(String(data.annual_personal_income))) : undefined,
       average_monthly_deposits: data.average_monthly_deposits ? parseFloat(unformatCurrency(data.average_monthly_deposits)) : undefined,
       monthly_deposit_count: (data.monthly_deposit_count !== '' && data.monthly_deposit_count !== undefined && data.monthly_deposit_count !== null) ? parseInt(data.monthly_deposit_count, 10) : undefined,
       avg_bank_balance: data.avg_bank_balance ? parseFloat(unformatCurrency(data.avg_bank_balance)) : undefined,
@@ -153,8 +168,8 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
         ...data,
         currency: apiData.currency,
         years_in_business: apiData.years_in_business,
-        monthly_revenue: apiData.monthly_revenue ? formatCurrency(apiData.monthly_revenue) : '',
-        annual_revenue: apiData.annual_revenue ? formatCurrency(apiData.annual_revenue) : '',
+        monthly_revenue: shownAmount(apiData.monthly_revenue),
+        annual_revenue: shownAmount(apiData.annual_revenue),
         annual_personal_income: apiData.annual_personal_income ? formatCurrency(apiData.annual_personal_income) : '',
         average_monthly_deposits: apiData.average_monthly_deposits ? formatCurrency(apiData.average_monthly_deposits) : '',
         monthly_deposit_count: apiData.monthly_deposit_count ?? '',
@@ -263,7 +278,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           {errors.annual_revenue && <div className="invalid-feedback d-block">{errors.annual_revenue}</div>}
         </div>
         <div className="col-md-6">
-          <label className="form-label">Annual Personal Income <span className="text-danger">*</span></label>
+          <label className="form-label">Annual Personal Income</label>
           <div className="position-relative">
             <input
               type="text"
@@ -286,7 +301,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
           {errors.annual_personal_income && <div className="invalid-feedback d-block">{errors.annual_personal_income}</div>}
         </div>
         <div className="col-md-6">
-          <label className="form-label">Average Monthly Deposits <span className="text-danger">*</span></label>
+          <label className="form-label">Average Monthly Deposits</label>
           <div className="position-relative">
             <input
               type="text"

@@ -1,4 +1,5 @@
 import type { OnboardingPathId, ProfileOnboardingStatus } from '../modules/profile/services'
+import { REQUIRED_DOCUMENT_CATEGORIES } from './documents'
 
 export type { OnboardingPathId } from '../modules/profile/services'
 
@@ -212,7 +213,7 @@ export const ONBOARDING_STEPS: readonly OnboardingStepConfig[] = [
     label: 'Documents',
     title: 'Upload your documents',
     description:
-      'Go to Documents and upload a file in every document category, such as bank statements and your EIN letter. Others is optional.',
+      'Go to Documents and upload your four required documents. Every other category is optional.',
     icon: 'ri-folder-upload-line',
     ctaLabel: 'Upload documents',
     route: '/documents',
@@ -227,8 +228,8 @@ export const ONBOARDING_STEPS: readonly OnboardingStepConfig[] = [
     why: 'Lenders review your documents alongside your credit profile, so having them in early speeds up every funding request.',
     todo: [
       'Open Documents',
-      'Pick a document category and upload the file',
-      'Repeat until every category has a document (Others is optional)',
+      `Upload a file in each required category: ${REQUIRED_DOCUMENT_CATEGORIES.join(', ')}`,
+      'Every other category is optional: add those files if you have them',
     ],
     unlocks: [
       { icon: 'ri-funds-line', title: 'Faster funding requests', text: 'Lenders review your documents with every funding request, so yours are ready to go.' },
