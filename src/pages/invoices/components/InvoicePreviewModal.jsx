@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import Modal from 'bootstrap/js/dist/modal';
 import { hideAndDisposeModal } from '../../../utils/bootstrapModal';
 import { downloadInvoice, sendInvoice, fetchInvoiceDetails } from '../../../modules/invoice/services';
+// The API sends the invoice date as a calendar day (toDateOnly); read it as one (BUG-122).
+import { parseApiDate } from '../../../utils/dates';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '../../../store/auth/authStore';
 import { useBrandingStore } from '../../../store/brandingStore';
@@ -245,7 +247,7 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
                                                 </div>
                                                 <div className="col-lg-3 col-6">
                                                     <p className="text-muted mb-2 text-uppercase fw-semibold">Date</p>
-                                                    <h5 className="fs-14 mb-0"><span id="invoice-date">{displayInvoice.created_at ? new Date(displayInvoice.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}</span></h5>
+                                                    <h5 className="fs-14 mb-0"><span id="invoice-date">{parseApiDate(displayInvoice.created_at)?.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) ?? ''}</span></h5>
                                                 </div>
                                                 <div className="col-lg-3 col-6">
                                                     <p className="text-muted mb-2 text-uppercase fw-semibold">Payment Status</p>

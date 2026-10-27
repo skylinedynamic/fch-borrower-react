@@ -86,6 +86,17 @@ describe('ProtectedRoute', () => {
     expect(screen.getByText('Dashboard Page')).toBeInTheDocument()
   })
 
+  // BUG-111: Billing Details is locked in the menu, but its URL opened the page (and a "Server Error").
+  it('redirects a free-trial user away from Billing Details, like the other locked pages', () => {
+    useAuthStore.setState({
+      token: 'abc',
+      user: { id: 1 },
+      userSubscription: { is_free_trail: true },
+    })
+    renderAt('/billing-details')
+    expect(screen.getByText('Dashboard Page')).toBeInTheDocument()
+  })
+
   it('lets a free-trial user reach a path that is not locked', () => {
     useAuthStore.setState({
       token: 'abc',

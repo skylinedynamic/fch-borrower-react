@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { TableRowsLoader } from '../../../components/Loader/TableRowsLoader'
 import type { PreQualificationRequest, Meta } from '../../../modules/my-application/types'
 import PreQualificationDetailsModal from './PreQualificationDetailsModal'
+import SectionPagination from './SectionPagination'
 
 interface PreQualificationRequestsProps {
   loading: boolean
@@ -11,141 +13,88 @@ interface PreQualificationRequestsProps {
   onPageChange: (page: number) => void
 }
 
+const COLUMNS = ['Funding Type', 'Business Name', 'Industry', 'Date', 'Requested Amount', 'Status']
+
+const statusClass = (s: string) => {
+  switch (s.toLowerCase()) {
+    case 'submitted':
+    case 'approved': return 'badge bg-success-subtle text-success'
+    case 'pending': return 'badge bg-warning-subtle text-warning'
+    case 'rejected':
+    case 'declined': return 'badge bg-danger-subtle text-danger'
+    default: return 'badge bg-secondary-subtle text-secondary'
+  }
+}
+
 export default function PreQualificationRequests({ loading, data, meta, page, onPageChange }: PreQualificationRequestsProps) {
   const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null)
   const [detailsModalOpen, setDetailsModalOpen] = useState(false)
-
-  const toggleDetailsModal = () => setDetailsModalOpen(!detailsModalOpen)
 
   const handleViewDetails = (id: number) => {
     setSelectedRequestId(id)
     setDetailsModalOpen(true)
   }
 
-  const statusClass = (s: string) => {
-    switch (s.toLowerCase()) {
-      case 'submitted': return 'badge rounded-pill bg-success-subtle text-success'
-      case 'pending': return 'badge rounded-pill bg-warning-subtle text-warning'
-      default: return 'badge rounded-pill bg-secondary-subtle text-secondary'
-    }
-  }
-
   return (
     <>
-      <div className="card section-card app-card mb-0">
-        <div className="card-header d-flex align-items-center gap-2">
-          <i className="ri-file-list-3-line fs-20 align-middle text-warning"></i>
-          <span className="card-title fw-semibold">Prequalification Requests</span>
-        </div>
-        <div className="card-body">
-          <div className="table-responsive">
-            <table className="table align-middle table-hover table-striped">
+      <section className="ma-card" aria-labelledby="ma-prequal-title">
+        <header className="ma-card-head">
+          <span className="ma-card-icon" aria-hidden="true"><i className="ri-file-list-3-line"></i></span>
+          <div className="min-w-0">
+            <h5 id="ma-prequal-title" className="ma-card-title">Prequalification Requests</h5>
+            <p className="ma-card-subtitle">What you asked for, and what we found you qualify for</p>
+          </div>
+          {!loading && meta && <span className="ma-card-count">{meta.total} total</span>}
+        </header>
+
+        <div className="ma-card-body">
+          {!loading && data.length === 0 ? (
+            <div className="ma-empty">
+              <span className="ma-empty-icon" aria-hidden="true"><i className="ri-file-search-line"></i></span>
+              <p className="ma-empty-title">No prequalification requests yet</p>
+              <p className="ma-empty-text">Answer a few questions about your business to see which funding you may qualify for.</p>
+              <Link to="/pre-qualification" className="ma-action ma-action-primary">Start a prequalification</Link>
+            </div>
+          ) : (
+            <div className="ma-table-wrap">
+            <table className="ma-table">
               <thead>
                 <tr>
-                  <th>Funding Type</th>
-                  <th>Business Name</th>
-                  <th>Industry</th>
-                  <th>Date</th>
-                  <th>Requested Amount</th>
-                  <th>Status</th>
-                  <th className="text-end">Action</th>
+                  {COLUMNS.map((c) => <th key={c} scope="col">{c}</th>)}
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <TableRowsLoader rows={5} columns={7} />
+                  <TableRowsLoader rows={3} columns={6} />
                 ) : (
-                  <>
-                    {data.map((r) => (
-                      <tr key={r.id}>
-                        <td>{r.funding_type}</td>
-                        <td className="fw-semibold">{r.business_name}</td>
-                        <td>{r.industry}</td>
-                        <td>{r.date}</td>
-                        <td>{r.requested_amount}</td>
-                        <td><span className={statusClass(r.status)}>{r.status}</span></td>
-                        <td className="text-end">
-                          <button
-                            className="btn btn-sm btn-soft-primary btn-icon"
-                            onClick={() => handleViewDetails(r.id)}
-                            title="View Details"
-                          >
-                            <i className="ri-eye-line"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {data.length === 0 && (
-                      <tr>
-                        <td colSpan={7} className="text-center py-4 text-muted">
-                          No requests found
-                        </td>
-                      </tr>
-                    )}
-                  </>
+                  data.map((r) => (
+                    // The whole row opens the details; its title is the button for the keyboard.
+                    <tr key={r.id} className="ma-row-link" onClick={() => handleViewDetails(r.id)}>
+                      <td data-label="Funding Type">
+                        <button type="button" className="ma-row-title" onClick={(e) => { e.stopPropagation(); handleViewDetails(r.id) }}>
+                          {r.funding_type}
+                        </button>
+                      </td>
+                      <td data-label="Business Name" className="ma-cell-strong">{r.business_name}</td>
+                      <td data-label="Industry">{r.industry}</td>
+                      <td data-label="Date" className="ma-nowrap">{r.date}</td>
+                      <td data-label="Requested Amount"><span className="ma-amount">{r.requested_amount}</span></td>
+                      <td data-label="Status"><span className={statusClass(r.status)}>{r.status}</span></td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
-          </div>
-
-          {/* Pagination Section */}
-          {!loading && meta && meta.last_page > 1 && (
-            <div className="d-flex justify-content-end">
-              <nav aria-label="Prequalification pagination">
-                <ul className="pagination pagination-sm gap-1 mb-0">
-                  <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
-                    <button
-                      className="page-link border-0 shadow-sm d-flex align-items-center justify-content-center sk-w-28 sk-h-28 sk-rounded-6"
-                      onClick={() => onPageChange(Math.max(1, page - 1))}
-                      disabled={page === 1}
-                    >
-                      <i className="ri-arrow-left-s-line fs-16"></i>
-                    </button>
-                  </li>
-
-                  {Array.from({ length: meta.last_page }, (_, i) => i + 1)
-                    .filter(p => {
-                      const lastPage = meta.last_page || 1;
-                      return p === 1 || p === lastPage || (p >= page - 1 && p <= page + 1);
-                    })
-                    .map((p, i, arr) => (
-                      <React.Fragment key={p}>
-                        {i > 0 && arr[i - 1] !== p - 1 && (
-                          <li className="page-item disabled">
-                            <span className="page-link border-0 bg-transparent px-2 align-self-center">...</span>
-                          </li>
-                        )}
-                        <li className={`page-item ${page === p ? 'active' : ''}`}>
-                          <button
-                            className={`page-link border-0 shadow-sm d-flex align-items-center justify-content-center fw-bold sk-w-28 sk-h-28 sk-rounded-6 ${page === p ? 'bg-primary text-white' : 'bg-white text-dark'}`}
-                            onClick={() => onPageChange(p)}
-                          >
-                            {p}
-                          </button>
-                        </li>
-                      </React.Fragment>
-                    ))
-                  }
-
-                  <li className={`page-item ${page === meta.last_page ? 'disabled' : ''}`}>
-                    <button
-                      className="page-link border-0 shadow-sm d-flex align-items-center justify-content-center sk-w-28 sk-h-28 sk-rounded-6"
-                      onClick={() => onPageChange(Math.min(meta.last_page || 1, page + 1))}
-                      disabled={page === meta.last_page}
-                    >
-                      <i className="ri-arrow-right-s-line fs-16"></i>
-                    </button>
-                  </li>
-                </ul>
-              </nav>
             </div>
           )}
         </div>
-      </div>
+
+        {!loading && <SectionPagination meta={meta} page={page} onPageChange={onPageChange} label="Prequalification requests" />}
+      </section>
 
       <PreQualificationDetailsModal
         isOpen={detailsModalOpen}
-        toggle={toggleDetailsModal}
+        toggle={() => setDetailsModalOpen((open) => !open)}
         requestId={selectedRequestId}
       />
     </>

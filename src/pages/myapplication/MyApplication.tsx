@@ -1,33 +1,30 @@
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState } from 'react'
 import { usePreQualificationRequests } from '../../modules/my-application'
+import { useFundingApplications } from '../../modules/my-application/queries'
+import MyApplicationsHero from './components/MyApplicationsHero'
 import PreQualificationRequests from './components/PreQualificationRequests'
 import FundingApplications from './components/FundingApplications'
 import RightSideSection from './components/RightSideSection'
+import './MyApplications.css'
 
 export default function MyApplication() {
   const [prequalPage, setPrequalPage] = useState(1)
   const { data: prequalData, isLoading: prequalLoading } = usePreQualificationRequests(prequalPage)
-
-  const [loading, setLoading] = useState(true)
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 700)
-    return () => clearTimeout(t)
-  }, [])
+  // The list asks for the same first page, so the total costs no extra request.
+  const { data: fundingFirstPage } = useFundingApplications(1)
 
   return (
-    <div className="page-content myapplications-page">
+    <div className="page-content myapplications-page ma-page">
       <div className="container-fluid">
-        <div className="d-flex align-items-center justify-content-between py-2">
-          <div>
-            <h4 className="mb-1">My Applications</h4>
-            <div className="text-muted">Track your funding applications and their current status</div>
-          </div>
-          <Link to="/pre-qualification" className="btn primary-btn">Apply New Prequalification</Link>
-        </div>
+        <MyApplicationsHero prequalTotal={prequalData?.meta?.total} fundingTotal={fundingFirstPage?.meta?.total} />
 
         <div className="row g-4">
-          <div className="col-xl-8 col-xxl-9 order-1">
+          {/* Advisor above the lists as a compact strip; beside them from 1400px. */}
+          <div className="col-xxl-3 order-xxl-2">
+            <RightSideSection />
+          </div>
+
+          <div className="col-xxl-9 order-xxl-1 min-w-0">
             <PreQualificationRequests
               loading={prequalLoading}
               data={prequalData?.data || []}
@@ -37,15 +34,8 @@ export default function MyApplication() {
             />
             <FundingApplications />
           </div>
-
-          <div className="col-xl-4 col-xxl-3 order-2">
-            <RightSideSection loading={loading} />
-          </div>
-
-
         </div>
       </div>
     </div>
   )
 }
-

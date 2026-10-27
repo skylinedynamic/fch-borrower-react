@@ -30,8 +30,14 @@ interface TierAccordionProps {
 }
 
 export default function TierAccordion({ tier, isOpen, onToggle, isCurrentTier, onTaskClick, onCompleteTier, isFirstTier, isLocked }: TierAccordionProps) {
-  const completedCount = tier.tasks.filter(t => t.status === CREDIT_BUILDER_STATUS.VERIFIED).length
-  const totalCount = tier.task_to_complete ? tier.task_to_complete : tier.tasks.length
+  // Out of the tasks the tier needs: task_to_complete from Tier 1 on (doing
+  // one opens the next tier), every task in Tier 0. Doing more than needed
+  // reads complete - 1/1, never 2/1 - as on the Overview (BUG-024).
+  const verifiedCount = tier.tasks.filter(t => t.status === CREDIT_BUILDER_STATUS.VERIFIED).length
+  const totalCount = tier.task_to_complete && tier.tasks.length > 0
+    ? Math.min(tier.task_to_complete, tier.tasks.length)
+    : tier.task_to_complete || tier.tasks.length
+  const completedCount = Math.min(verifiedCount, totalCount)
   // The task(s) being confirmed: one from a step's button, or all of them from "Verify All".
   const [tasksToSubmit, setTasksToSubmit] = useState<TierTaskType[] | null>(null)
   const [submitting, setSubmitting] = useState(false)

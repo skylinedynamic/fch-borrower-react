@@ -19,6 +19,9 @@ test.describe('Sidebar › Invoices', () => {
     await page.getByPlaceholder('Search invoices...').fill('zz-e2e-no-such-invoice')
     await page.getByPlaceholder('Search invoices...').press('Enter')
     await expect(emptyTableMessage(page)).toBeVisible()
+    // BUG-066: says nothing matched, not the free-plan lock wording.
+    await expect(emptyTableMessage(page)).toContainText('No invoices match your search or filters.')
+    await expect(emptyTableMessage(page)).not.toContainText('Contact your partner')
 
     await page.getByRole('button', { name: 'Clear' }).click()
     await expect(page.getByPlaceholder('Search invoices...')).toHaveValue('')

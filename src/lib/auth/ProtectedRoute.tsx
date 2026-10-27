@@ -9,6 +9,8 @@ const FREE_TRIAL_LOCKED_PATHS = [
   '/credit-card-stacking',
   '/invoices',
   '/payments',
+  // Locked in the menu too; reached by URL it opened with a "Server Error" (BUG-111).
+  '/billing-details',
   '/resources',
   '/credit-builder',
 ]
@@ -35,7 +37,8 @@ export default function ProtectedRoute() {
     const isAllowed = location.pathname === '/' || allowedPaths.some(path => location.pathname.startsWith(path))
     
     if (!isAllowed) {
-      return <Navigate to="/dashboard" replace />
+      // The sidebar reads restrictedFrom and explains why (BUG-033).
+      return <Navigate to="/dashboard" replace state={{ restrictedFrom: location.pathname }} />
     }
   }
 

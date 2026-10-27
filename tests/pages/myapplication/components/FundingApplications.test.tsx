@@ -21,7 +21,8 @@ const mockList = (rows: any[]) =>
  * if it had been submitted.
  */
 describe('My Applications - Funding Applications', () => {
-  it('lists a started application as On Hold with Continue Application', async () => {
+  // The list has no Action column: the row's title is its link (My Applications redesign).
+  it('lists a started application as On Hold, its row continuing it from the funding request', async () => {
     mockList([
       { id: 9, status: 'On Hold', funding_request_id: 40, purpose_of_funds: 'Business Credit Building', preferred_funding_type: 'Line of Credit', date: '19 Oct 2026' },
       { id: 8, status: 'Closed (Completed)', funding_request_id: 31, purpose_of_funds: 'Working Capital', preferred_funding_type: 'Term Loan', date: '02 Oct 2026' },
@@ -31,11 +32,12 @@ describe('My Applications - Funding Applications', () => {
 
     const started = await screen.findByRole('row', { name: /Line of Credit/i })
     expect(within(started).getByText('On Hold')).toBeInTheDocument()
-    expect(within(started).getByRole('link', { name: /continue application/i })).toHaveAttribute('href', '/fund-application/40')
+    expect(within(started).getByRole('link', { name: 'Line of Credit' })).toHaveAttribute('href', '/fund-application/40')
 
     const closed = screen.getByRole('row', { name: /Term Loan/i })
-    expect(within(closed).queryByRole('link', { name: /continue application/i })).not.toBeInTheDocument()
-    expect(within(closed).getByRole('link')).toHaveAttribute('href', '/my-applications/funding/8')
+    expect(within(closed).getByRole('link', { name: 'Term Loan' })).toHaveAttribute('href', '/my-applications/funding/8')
+    expect(screen.queryByRole('columnheader', { name: 'Action' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
 })
 
