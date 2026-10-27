@@ -151,7 +151,8 @@ export default function OwnershipInformationStep({
         state: apiData.state || '',
         zip: apiData.zip_code || '',
         ownershipPct: apiData.ownership || '',
-        hasCoBorrower: apiData.has_co_borrower ?? false,
+        // A co-borrower on file ticks the box, so a saved list is never hidden (BUG-108).
+        hasCoBorrower: Boolean(apiData.has_co_borrower) || (apiData.co_borrowers?.length ?? 0) > 0,
         phoneNumber: apiData.phone_number || '',
       }))
 

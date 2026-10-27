@@ -90,7 +90,9 @@ describe('Layout: approved banner in real time', () => {
     act(() => fake.emitNotification(CHANNEL, liveNotification('borrower.funding_request.status_changed')))
 
     expect(await screen.findByText(/your funding request has been approved/i)).toBeInTheDocument()
-    expect(screen.getByText('$2,000 - $100,000')).toBeInTheDocument()
+    // The requested amount, not the option's range (BUG-068).
+    expect(screen.getByText('$40,000')).toBeInTheDocument()
+    expect(screen.queryByText('$2,000 - $100,000')).not.toBeInTheDocument()
     expect(activeCalls).toBe(2)
   })
 

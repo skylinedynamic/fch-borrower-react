@@ -41,7 +41,12 @@ export default function GlobalFundingBanner({ activeRequest, count = 0 }: Global
   if (location.pathname.startsWith('/fund-application')) return null
   if (!activeRequest || count === 0) return null
 
-  const estimatedRange = activeRequest.estimated_funding_range || activeRequest.requested_amount || FUNDING_REVIEW_STATUS.PENDING
+  // The amount the client requested (BUG-068) - not the funding option's full
+  // range, which read like an estimate made for this client.
+  const requested = Number(activeRequest.requested_amount)
+  const requestedAmount = activeRequest.requested_amount != null && activeRequest.requested_amount !== '' && Number.isFinite(requested)
+    ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(requested)
+    : activeRequest.estimated_funding_range || FUNDING_REVIEW_STATUS.PENDING
 
   return (
     <>
@@ -61,7 +66,7 @@ export default function GlobalFundingBanner({ activeRequest, count = 0 }: Global
             </strong>
             {count === 1 ? (
               <span className="gfb-sub">
-                Estimated Funding: <strong>{estimatedRange}</strong> — You’re ready to start your application.
+                Requested Amount: <strong>{requestedAmount}</strong> — You’re ready to start your application.
               </span>
             ) : (
               <span className="gfb-sub">You’re ready to start your applications.</span>

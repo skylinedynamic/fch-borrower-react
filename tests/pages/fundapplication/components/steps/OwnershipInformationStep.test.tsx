@@ -132,6 +132,23 @@ describe('OwnershipInformationStep — SSN handling (PII, FCRA-relevant)', () =>
     expect(receivedBody.ssn).not.toContain('-')
   })
 
+  /**
+   * Defect (BUG-108): a saved co-borrower stayed hidden on reopening the step -
+   * the box followed has_co_borrower alone, so a saved list with the flag off
+   * showed an unticked box and no table. A co-borrower on file ticks it.
+   */
+  it('ticks Has Co-Borrower and lists the co-borrowers on file', async () => {
+    server.use(
+      http.get('*/borrower/funding-application/ownership-info', () =>
+        HttpResponse.json({ status: true, data: { ownership_percentage: 60, has_co_borrower: false, co_borrowers: [{ id: 3, first_name: 'Kazi', last_name: 'Mia', role: 'Partner', ownership: 40, email: 'kazi@example.test', mobile_phone: '(767) 677-6767' }] } })
+      )
+    )
+    renderStep()
+
+    expect(await screen.findByText('Kazi')).toBeInTheDocument()
+    expect(screen.getByLabelText('Has Co-Borrower?')).toBeChecked()
+  })
+
   it('shows a phone example a real US number could be', async () => {
     renderStep()
 
