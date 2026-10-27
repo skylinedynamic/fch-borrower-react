@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import userEvent from '@testing-library/user-event'
+import { Route, Routes } from 'react-router-dom'
 import { renderWithProviders, screen } from '../../../test-utils'
 import FundingCard from '../../../../src/pages/funding/components/FundingCard'
 
@@ -44,24 +45,59 @@ describe('FundingCard with a pending funding request', () => {
     expect(screen.getByText('Funding Request Under Review')).toBeInTheDocument()
     expect(screen.getByText('You have already submitted a funding request for this funding option.')).toBeInTheDocument()
     expect(screen.getByText('Status: Pending Review')).toBeInTheDocument()
-    expect(screen.getByText('Please wait for approval or rejection before submitting a new request.')).toBeInTheDocument()
+    expect(screen.getByText('You can still start a new funding request for this option.')).toBeInTheDocument()
     expect(screen.queryByText(/application/i)).not.toBeInTheDocument()
   })
 
-  it('stays blocked: clicking does not open the funding option', async () => {
+  /**
+   * Defect (BUG-116): the card was greyed and did nothing on click, while
+   * /funding/:id offered Start Funding Request and the API accepted it. F131:
+   * every funding request is a new one, so the card opens the option too.
+   */
+  it('still opens the funding option, like its detail page', async () => {
     const user = userEvent.setup()
-    const { container } = renderCard()
+    const { container } = renderWithProviders(
+      <Routes>
+        <Route path="/" element={<FundingCard id={14} icon="briefcase" icon_color="blue" name="Working Capital Equipment" latest_review_status="Pending" />} />
+        <Route path="/funding/:id" element={<p>Funding option detail</p>} />
+      </Routes>
+    )
     const card = container.querySelector('#funding-card-14') as HTMLElement
 
-    expect(card).toHaveClass('funding-card-disabled')
+    expect(card).not.toHaveClass('funding-card-disabled')
     await user.click(card)
-    expect(window.location.pathname).not.toBe('/funding/14')
+    expect(screen.getByText('Funding option detail')).toBeInTheDocument()
   })
 
   it('shows the normal eligibility label once the request is no longer pending', () => {
-    renderCard({ latest_review_status: 'Approved' })
+    renderCard({ latest_review_status: 'Approved', engine_status: 'Active', engine_status_label: 'Eligible Now' })
 
-    expect(screen.getByText('Likely Eligible')).toBeInTheDocument()
+    expect(screen.getByText('Eligible Now')).toBeInTheDocument()
     expect(screen.queryByText('Under Review')).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * Defect (BUG-026, CP-FUND-04): the card always said "Likely Eligible" while
+ * the detail page showed the engine's label ("Eligible Now", "Manual Review
+ * Required", "Conditional"). The card shows the same label as the detail.
+ */
+describe('FundingCard eligibility label', () => {
+  it.each([
+    ['Active', 'Eligible Now'],
+    ['Review', 'Manual Review Required'],
+    ['Warning', 'Conditional'],
+  ])('shows the engine label for %s, as the detail page does', (engine_status, engine_status_label) => {
+    renderCard({ latest_review_status: null, engine_status, engine_status_label })
+
+    expect(screen.getByText(engine_status_label)).toBeInTheDocument()
+    expect(screen.queryByText('Likely Eligible')).not.toBeInTheDocument()
+  })
+
+  it('says Failed while underwriting factors are missing', () => {
+    renderCard({ latest_review_status: null, engine_status: 'Warning', engine_status_label: 'Conditional', readiness_factors: [{ label: 'Time in Business', status: 'Failed' }] })
+
+    expect(screen.getByText('Failed')).toBeInTheDocument()
+    expect(screen.queryByText('Conditional')).not.toBeInTheDocument()
   })
 })

@@ -239,3 +239,20 @@ describe('Funding application › Step 4: Funding Request › Purpose of Funds',
     expect(posted.purpose_note).toBeNull()
   })
 })
+
+/**
+ * BUG-071: the field read "Approved Funding" and showed "Term Loans" - it holds
+ * the approved funding *product* (FundingSequencingResource matches on that
+ * name), not an amount. It is labelled for what it holds.
+ */
+describe('Funding application › Step 4: Funding Request › Approved Funding Product', () => {
+  afterEach(() => server.resetHandlers())
+
+  it('is labelled as the approved product and shows its name', async () => {
+    serve({ ...apiFunding, approved_funding: 'Term Loans' })
+    renderStep()
+
+    expect(await screen.findByText('Approved Funding Product')).toBeInTheDocument()
+    expect(await screen.findByDisplayValue('Term Loans')).toBeInTheDocument()
+  })
+})

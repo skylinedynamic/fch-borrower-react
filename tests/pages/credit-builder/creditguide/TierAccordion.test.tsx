@@ -374,3 +374,27 @@ describe('Step by Step Guide - once Tier 0 tasks are submitted', () => {
     expect(useOnboardingPopupStore.getState().held).toBe(false)
   })
 })
+
+// BUG-024: from Tier 1 on a tier needs only task_to_complete of its tasks (1) -
+// doing one opens the next tier. The count is out of what it needs, and doing
+// more than that reads complete (1/1), never "2/1".
+describe('TierAccordion - a tier that needs fewer tasks than it lists', () => {
+  const vendorTier = (statuses: (TierTask['status'])[]) => ({
+    ...tier('T1', statuses.map((status, i) => task(21 + i, `Vendor ${i + 1}`, { status }))),
+    task_to_complete: 1,
+  })
+
+  it('counts out of the tasks it needs', () => {
+    renderTier(vendorTier([null, null, null]), { isFirstTier: false })
+
+    expect(screen.getByText('0/1')).toBeInTheDocument()
+  })
+
+  it('reads complete, not more than complete, when more were done', () => {
+    renderTier(vendorTier(['verified', 'verified', null]), { isFirstTier: false })
+
+    expect(screen.getByText('1/1')).toBeInTheDocument()
+    expect(screen.queryByText('2/1')).not.toBeInTheDocument()
+  })
+})
+

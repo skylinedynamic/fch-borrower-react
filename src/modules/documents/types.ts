@@ -17,6 +17,8 @@ export interface BorrowerDocument {
   file_name: string
   file_path: string
   url: string
+  status?: string
+  rejection_reason?: string | null
 }
 
 export interface BorrowerDocumentsData {

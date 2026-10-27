@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FUNDING_ICON_MAP, FUNDING_REVIEW_STATUS, ENGINE_STATUS_LABELS, ENGINE_STATUS_VALUES, FACTOR_STATUS_VALUES } from '../../../config/funding';
+import { FUNDING_ICON_MAP, FUNDING_REVIEW_STATUS, ENGINE_STATUS_LABELS, ENGINE_STATUS_VALUES } from '../../../config/funding';
+import { eligibilityLabel, hasMissingReadinessFactors } from '../../../utils/fundingEligibility';
 import { getFundingColorStyles } from '../../../config/fundingColor';
 import '../../../../assets/css/funding.css';
 
@@ -238,7 +239,7 @@ const PendingTooltip: React.FC<{ visible: boolean }> = ({ visible }) => {
 
             <div className="funding-missing-tooltip-footer-info">
                 <i className="ri-information-fill fc-icon-info-md" />
-                <span>Please wait for approval or rejection before submitting a new request.</span>
+                <span>You can still start a new funding request for this option.</span>
             </div>
         </div>
     );
@@ -291,10 +292,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
     const colors = resolveColor(icon_color);
 
     // Detect missing underwriting factors
-    const missingFactors = readiness_factors.filter(f => {
-        const s = f.status?.toLowerCase();
-        return s === FACTOR_STATUS_VALUES.FAILED || s === FACTOR_STATUS_VALUES.RESTRICTED || s === FACTOR_STATUS_VALUES.WEAK;
-    });
+    const missingFactors = readiness_factors.filter(f => hasMissingReadinessFactors([f]));
     const hasMissing = missingFactors.length > 0;
 
     // Pending = already applied, awaiting review
@@ -303,20 +301,25 @@ const FundingCard: React.FC<FundingCardProps> = ({
     // Engine locked = no lender visibilities configured
     const isEngineLocked = engine_status === ENGINE_STATUS_VALUES.LOCKED;
 
-    // For pending, it's fully disabled. For engine locked, it's also fully disabled.
-    const isFullyDisabled = (isPending && !hasMissing) || isEngineLocked;
+    // Only an engine-locked option is fully disabled. A pending request no
+    // longer blocks the card: every funding request is a new one (F131), and
+    // the detail page already offers Start Funding Request (BUG-116).
+    const isFullyDisabled = isEngineLocked;
     const isLocked = hasMissing || isEngineLocked;
 
     // Pill label & color (matching mockup yellow/brown for missing)
     const sec = getCSSVar('--secondary-color', '#1cbfca');
-    const displayLabel = isEngineLocked ? ENGINE_STATUS_LABELS.LOCKED : (hasMissing ? ENGINE_STATUS_LABELS.MISSING_INFO : isPending ? ENGINE_STATUS_LABELS.UNDER_REVIEW : ENGINE_STATUS_LABELS.LIKELY_ELIGIBLE);
-    const pillBg = isEngineLocked ? '#f3f4f6' : hasMissing ? '#fee2e2' : isPending ? '#f0f0ff' : `${sec}1a`;
+    // Same eligibility label as the detail page (BUG-026); a pending request
+    // shows Under Review on the card as information - the card stays usable.
+    const eligibility = eligibilityLabel({ engineStatus: engine_status, engineStatusLabel: engine_status_label, hasMissingFactors: hasMissing });
+    const displayLabel = isPending && !hasMissing && !isEngineLocked ? ENGINE_STATUS_LABELS.UNDER_REVIEW : eligibility;
+    const pillBg    = isEngineLocked ? '#f3f4f6' : hasMissing ? '#fee2e2' : isPending ? '#f0f0ff' : `${sec}1a`;
     const pillColor = isEngineLocked ? '#4b5563' : hasMissing ? '#ef4444' : isPending ? '#4f52c8' : sec;
 
     // Ensure action_url is a valid path or external URL, otherwise fallback to default
     const isValidUrl = action_url && (action_url.startsWith('/') || action_url.startsWith('http'));
     // If locked (missing factors), force them to the local details page to view the reason.
-    // If fully disabled (pending or engine locked), the click handler will block it anyway.
+    // If fully disabled (engine locked), the click handler will block it anyway.
     const destination = hasMissing && !isEngineLocked ? `/funding/${id}` : (isValidUrl ? action_url : `/funding/${id}`);
 
     return (
@@ -325,10 +328,10 @@ const FundingCard: React.FC<FundingCardProps> = ({
                 id={`funding-card-${id}`}
                 ref={cardRef}
                 className={`funding-card ${isFullyDisabled ? 'funding-card-disabled' : ''} ${isLocked ? 'funding-card-locked' : ''}`}
-                onMouseEnter={() => (isFullyDisabled || isLocked) && setTooltipVisible(true)}
+                onMouseEnter={() => (isFullyDisabled || isLocked || isPending) && setTooltipVisible(true)}
                 onMouseLeave={() => setTooltipVisible(false)}
                 onClick={(e) => {
-                    // Pending/Engine Locked cards are fully disabled, cannot click
+                    // Engine-locked cards are fully disabled, cannot click
                     if (isFullyDisabled) {
                         e.preventDefault();
                         return;

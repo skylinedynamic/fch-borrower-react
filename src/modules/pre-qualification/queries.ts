@@ -27,6 +27,8 @@ export const useSubmitBusinessInfo = () => {
     mutationFn: submitBusinessInfo,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.preQualification.all })
+      // The step may have saved the business start date to the profile (BUG-037).
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.all })
     }
   })
 }

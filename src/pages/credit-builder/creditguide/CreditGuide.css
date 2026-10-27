@@ -631,6 +631,14 @@
   color: var(--cg-green);
 }
 
+/* A rejected task's reason (BUG-083). */
+.cg-step-reason {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--cg-red);
+  overflow-wrap: anywhere;
+}
+
 .cg-step-action {
   flex-shrink: 0;
 }

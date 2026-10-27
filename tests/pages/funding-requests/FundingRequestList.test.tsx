@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
+import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
-import { renderWithProviders, screen, within } from '../../test-utils'
+import { renderWithProviders, screen, waitFor, within } from '../../test-utils'
 import { server } from '../../mocks/server'
 import FundingRequestList from '../../../src/pages/funding-requests/FundingRequestList'
 import { FUNDING_REVIEW_STATUS, FUNDING_APPLICATION_STATUS } from '../../../src/config/funding'
@@ -107,5 +108,40 @@ describe('FundingRequestList', () => {
 
     expect(within(row).getByRole('link', { name: /View Application/i })).toHaveAttribute('href', '/my-applications/funding/9')
     expect(within(row).queryByRole('link', { name: /Edit Application/i })).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * BUG-009 (CP-FREQ-05): QA saw the second (descending) click keep the
+ * ascending order on every column. Not reproducible on this build: the page
+ * asks for desc and shows rows in the order the API returns them. Pinned here.
+ */
+describe('FundingRequestList sorting', () => {
+  it('asks for ascending, then descending, and shows the rows in that order', async () => {
+    const asked: Array<[string, string]> = []
+    const rows = [
+      { id: 1, funding_type: 'Alpha Loan', requested_amount: 20000 },
+      { id: 2, funding_type: 'Bravo Loan', requested_amount: 50000 },
+    ]
+    server.use(
+      http.post('*/borrower/funding/requests/list', async ({ request }) => {
+        const body: any = await request.json()
+        asked.push([body.sort_field, body.sort_order])
+        return HttpResponse.json({ status: true, data: body.sort_order === 'asc' ? rows : [...rows].reverse(), meta: { total: 2 }, funding_types: [] })
+      })
+    )
+    const order = () => screen.getAllByRole('row').map((r) => r.textContent?.match(/Alpha|Bravo/)?.[0]).filter(Boolean)
+    const user = userEvent.setup()
+
+    renderWithProviders(<FundingRequestList />)
+    await screen.findByText('Alpha Loan')
+
+    await user.click(screen.getByText('Requested Amount'))
+    await waitFor(() => expect(asked).toContainEqual(['requested_amount', 'asc']))
+    await waitFor(() => expect(order()).toEqual(['Alpha', 'Bravo']))
+
+    await user.click(screen.getByText('Requested Amount'))
+    await waitFor(() => expect(asked).toContainEqual(['requested_amount', 'desc']))
+    await waitFor(() => expect(order()).toEqual(['Bravo', 'Alpha']))
   })
 })

@@ -20,7 +20,8 @@ export default function InvoiceTable({
     filters,
     sortField,
     sortOrder,
-    onRefresh
+    onRefresh,
+    isFiltered = false
 }) {
     const user = useAuthStore((state) => state.user);
     const navigate = useNavigate();
@@ -132,7 +133,11 @@ export default function InvoiceTable({
                 scrollable
                 scrollHeight="flex"
                 className="p-datatable-sm fs-13"
-                emptyMessage={<div className="text-center">No invoices found. Contact your partner to pay and unlock.</div>}
+                emptyMessage={
+                    <div className="text-center">
+                        {isFiltered ? 'No invoices match your search or filters.' : 'No invoices found.'}
+                    </div>
+                }
                 responsiveLayout="scroll"
                 onRowClick={(e) => navigate(`/invoices/${e.data.id}`)}
                 rowClassName={() => 'cursor-pointer'}
