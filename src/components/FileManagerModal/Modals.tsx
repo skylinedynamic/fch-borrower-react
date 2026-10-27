@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { FILE_MANAGER_CONFIG } from '../../modules/filemanager/config'
+import { FILE_MANAGER_ACCEPT, FILE_MANAGER_CONFIG, fileRejectionReason } from '../../modules/filemanager/config'
 
 interface NewFolderModalProps {
   isOpen: boolean
@@ -168,6 +168,7 @@ interface UploadModalProps {
 export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, uploadProgress, currentUploadingFile, uploadComplete }) => {
   const [isDragOver, setIsDragOver] = useState(false)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [rejections, setRejections] = useState<string[]>([])
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const isUploading = uploadProgress !== null
 
@@ -175,8 +176,22 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpl
   React.useEffect(() => {
     if (!isOpen) {
       setSelectedFiles([])
+      setRejections([])
     }
   }, [isOpen])
+
+  // Dropped or browsed, a file that cannot be uploaded is refused here, with the
+  // reason, rather than listed as selected and dropped silently later (BUG-044).
+  const addFiles = (newFiles: File[]) => {
+    const reasons = newFiles.map(fileRejectionReason)
+    const accepted = newFiles.filter((_, i) => reasons[i] === null)
+
+    setRejections(reasons.filter((reason): reason is string => reason !== null))
+    setSelectedFiles(prev => [
+      ...prev,
+      ...accepted.filter(newFile => !prev.some(existingFile => existingFile.name === newFile.name)),
+    ])
+  }
 
   if (!isOpen) return null
 
@@ -193,25 +208,13 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpl
     e.preventDefault()
     setIsDragOver(false)
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const newFiles = Array.from(e.dataTransfer.files)
-      setSelectedFiles(prev => {
-        const uniqueNewFiles = newFiles.filter(newFile => 
-          !prev.some(existingFile => existingFile.name === newFile.name)
-        )
-        return [...prev, ...uniqueNewFiles]
-      })
+      addFiles(Array.from(e.dataTransfer.files))
     }
   }
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const newFiles = Array.from(e.target.files)
-      setSelectedFiles(prev => {
-        const uniqueNewFiles = newFiles.filter(newFile => 
-          !prev.some(existingFile => existingFile.name === newFile.name)
-        )
-        return [...prev, ...uniqueNewFiles]
-      })
+      addFiles(Array.from(e.target.files))
       // Reset input so same files can be selected again if needed (though we just added them)
       if (fileInputRef.current) fileInputRef.current.value = ''
     }
@@ -288,9 +291,21 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpl
             ref={fileInputRef}
             type="file"
             multiple
+            accept={FILE_MANAGER_ACCEPT}
             onChange={handleFileSelect}
             className="fm-file-input-hidden"
           />
+
+          {!isUploading && !uploadComplete && rejections.length > 0 && (
+            <div className="alert alert-danger mt-3 mb-0 small" role="alert">
+              {rejections.map(reason => (
+                <div key={reason}>{reason}</div>
+              ))}
+              <div className="mt-1 text-muted">
+                Allowed types: {FILE_MANAGER_CONFIG.ALLOWED_EXTENSIONS.join(', ')}. Max {(FILE_MANAGER_CONFIG.MAX_FILE_SIZE / 1024 / 1024).toFixed(0)}MB each.
+              </div>
+            </div>
+          )}
 
           {!isUploading && !uploadComplete && selectedFiles.length > 0 && (
             <div className="mt-3">

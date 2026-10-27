@@ -2,6 +2,7 @@ import React from 'react'
 import { Collapse } from 'reactstrap'
 import type { FileSystemItem } from '../../../modules/filemanager/types'
 import { isOptionalDocumentCategory } from '../../../config/documents'
+import { DOCUMENT_STATUS, getDocumentStatusBadgeClass } from '../../../config/fileTypeConfig'
 import {
   PdfIcon,
   WordIcon,
@@ -58,6 +59,16 @@ const renderFileIcon = (file: FileSystemItem) => {
 }
 
 const uploadedFiles = (files: FileSystemItem[]) => files.filter(f => !f.isDirectory)
+
+/**
+ * One file's review badge (BUG-087): the client used to see no difference
+ * between an accepted and a rejected document. Shown on each file only.
+ */
+const fileReviewBadge = (status?: string) => {
+  if (status === DOCUMENT_STATUS.ACCEPTED) return { label: 'Accepted', className: getDocumentStatusBadgeClass(status) }
+  if (status === DOCUMENT_STATUS.REJECTED) return { label: 'Rejected', className: getDocumentStatusBadgeClass(status) }
+  return { label: 'Pending review', className: getDocumentStatusBadgeClass(DOCUMENT_STATUS.PENDING) }
+}
 
 const fileCountLabel = (count: number, optional: boolean) =>
   count ? `${count} file${count === 1 ? '' : 's'}` : optional ? 'Optional' : 'Not uploaded'
@@ -164,7 +175,16 @@ export const DocumentCategoryDetail: React.FC<DetailProps> = ({
                 <span className="docs-file-icon">{renderFileIcon(f)}</span>
                 <span className="docs-file-text">
                   <span className="docs-file-name" title={f.name}>{f.name}</span>
-                  {fileExtension(f.name) && <span className="docs-file-ext">{fileExtension(f.name)}</span>}
+                  <span className="docs-file-review">
+                    {fileExtension(f.name) && <span className="docs-file-ext">{fileExtension(f.name)}</span>}
+                    <span className={`badge ${fileReviewBadge(f.reviewStatus).className}`}>{fileReviewBadge(f.reviewStatus).label}</span>
+                  </span>
+                  {f.reviewStatus === DOCUMENT_STATUS.REJECTED && (
+                    <span className="docs-file-reason">
+                      {f.rejectionReason ? <>Reason: {f.rejectionReason}. </> : null}
+                      Please upload a new file for this document.
+                    </span>
+                  )}
                 </span>
                 <button
                   type="button"

@@ -60,7 +60,7 @@ export default function FundingApplications() {
                   return (
                     <tr key={app.id} className="ma-row-link" onClick={() => navigate(target)}>
                       <td data-label="Funding Type">
-                        <Link to={target} className="ma-row-title" onClick={(e) => e.stopPropagation()}>{app.purpose_of_funds || 'N/A'}</Link>
+                        <Link to={target} className="ma-row-title" onClick={(e) => e.stopPropagation()}>{app.preferred_funding_type || 'N/A'}</Link>
                       </td>
                       <td data-label="Entity Type">{app.entity_type || 'N/A'}</td>
                       <td data-label="Industry">{app.industry_type || 'N/A'}</td>

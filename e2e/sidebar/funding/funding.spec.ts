@@ -38,7 +38,8 @@ test.describe('Sidebar › Funding', () => {
     await expect(page.locator('.breadcrumb').getByRole('link', { name: 'Funding Options' })).toBeVisible()
   })
 
-  test('a disabled (pending / engine-locked) card does not navigate', async ({ page }) => {
+  // Only an engine-locked card is disabled; a pending request no longer blocks it (BUG-116).
+  test('a disabled (engine-locked) card does not navigate', async ({ page }) => {
     await expect(page.locator(REAL_CARD).first()).toBeVisible({ timeout: 60_000 })
     const disabled = page.locator(REAL_CARD + '.funding-card-disabled').first()
     test.skip((await disabled.count()) === 0, 'No disabled funding cards for this borrower')

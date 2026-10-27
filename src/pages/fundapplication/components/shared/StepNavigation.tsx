@@ -19,20 +19,26 @@ export default function StepNavigation({ onBack, onNext, isNextDisabled, isLastS
         <div></div>
       )}
       {onNext && (
-        <button id="btn-save-next" type="button" className="btn btn-primary" disabled={isNextDisabled || loading} onClick={onNext}>
-          {loading ? (
-            <>
-              <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-              Submitting...
-            </>
-          ) : isLastStep ? (
-            'Submit'
-          ) : (
-            <>
-              Save & Next <i className="ri-arrow-right-line ms-1"></i>
-            </>
+        <div className="d-flex flex-column align-items-end gap-1">
+          <button id="btn-save-next" type="button" className="btn btn-primary" disabled={isNextDisabled || loading} onClick={onNext}>
+            {loading ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                Submitting...
+              </>
+            ) : isLastStep ? (
+              'Submit'
+            ) : (
+              <>
+                Save & Next <i className="ri-arrow-right-line ms-1"></i>
+              </>
+            )}
+          </button>
+          {/* A greyed-out button alone left the borrower guessing (BUG-071). */}
+          {isNextDisabled && !loading && (
+            <small className="text-muted">Complete the required fields (*) to continue.</small>
           )}
-        </button>
+        </div>
       )}
     </div>
   )

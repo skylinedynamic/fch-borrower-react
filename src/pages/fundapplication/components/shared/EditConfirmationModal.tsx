@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import Modal from 'bootstrap/js/dist/modal'
+import { toast } from 'react-toastify'
+import { SAVE_CANCELLED_MESSAGE } from '../../../../modules/funding-application/saveFeedback'
 import { hideAndDisposeModal } from '../../../../utils/bootstrapModal'
 import {
   useEditConfirmationStore,
@@ -41,12 +43,16 @@ export default function EditConfirmationModal({ status, awaitingResign }: { stat
   const modalInstanceRef = useRef<Modal | null>(null)
 
   // An application that was already signed when it was opened asks straight
-  // away rather than waiting for the first save. Backing out leaves the wizard.
+  // away rather than waiting for the first save. Backing out leaves the wizard,
+  // saying so - a silent return read as if something had gone wrong (BUG-117).
   useEffect(() => {
     if (!promptOnOpen || !requiresConfirmation || hasConfirmed) return
 
     requestEditConfirmation().then(confirmed => {
-      if (!confirmed) navigate(-1)
+      if (confirmed) return
+
+      toast.info(SAVE_CANCELLED_MESSAGE, { toastId: 'funding-application-save-cancelled' })
+      navigate(-1)
     })
   }, [promptOnOpen, requiresConfirmation, hasConfirmed, navigate])
 

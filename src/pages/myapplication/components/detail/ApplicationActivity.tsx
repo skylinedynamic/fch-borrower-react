@@ -99,7 +99,9 @@ function ActivityItem({ log }: { log: ActivityLog }) {
 
 /** The Activity panel beside a funding application: a timeline, newest first, grouped by day. */
 export default function ApplicationActivity({ fundingApplicationId }: { fundingApplicationId?: number | string }) {
-  const { data: logs = [], isLoading } = useBorrowerActivityLogs({ funding_application_id: fundingApplicationId, page: 1, limit: 50 })
+  // include_client_notes: also the notes added on the client's own page with
+  // visibility "Everyone" (BUG-103) - the server decides which.
+  const { data: logs = [], isLoading } = useBorrowerActivityLogs({ funding_application_id: fundingApplicationId, include_client_notes: true, page: 1, limit: 50 })
 
   const days = useMemo(() => {
     const groups: { day: string; logs: ActivityLog[] }[] = []

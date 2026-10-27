@@ -21,7 +21,7 @@ const serve = ({ prequal = [], prequalTotal, funding = [], fundingTotal, advisor
   )
 
 const PREQUAL = { id: 11, funding_type: 'Working Capital', business_name: 'Acme Bakery LLC', industry: 'Food', date: '20 Oct 2026', requested_amount: '$50,000', status: 'Submitted' }
-const FUNDING = { id: 8, purpose_of_funds: 'Equipment', entity_type: 'LLC', industry_type: 'Food', date: '21 Oct 2026', requested_amount: '$20,000', status: 'Underwriting Review', funding_request_id: 41 }
+const FUNDING = { id: 8, purpose_of_funds: 'Equipment', preferred_funding_type: 'Term Loan', entity_type: 'LLC', industry_type: 'Food', date: '21 Oct 2026', requested_amount: '$20,000', status: 'Underwriting Review', funding_request_id: 41 }
 
 afterEach(() => server.resetHandlers())
 
@@ -54,7 +54,7 @@ describe('My Applications page', () => {
 
     const prequalRow = await screen.findByRole('row', { name: /Acme Bakery LLC/ })
     expect(within(prequalRow).getByText('Acme Bakery LLC').closest('td')).toHaveAttribute('data-label', 'Business Name')
-    const fundingRow = await screen.findByRole('row', { name: /Equipment/ })
+    const fundingRow = await screen.findByRole('row', { name: /Term Loan/ })
     expect(within(fundingRow).getByText('$20,000').closest('td')).toHaveAttribute('data-label', 'Requested Amount')
   })
 

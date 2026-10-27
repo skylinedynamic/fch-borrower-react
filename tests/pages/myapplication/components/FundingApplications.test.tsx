@@ -24,19 +24,34 @@ describe('My Applications - Funding Applications', () => {
   // The list has no Action column: the row's title is its link (My Applications redesign).
   it('lists a started application as On Hold, its row continuing it from the funding request', async () => {
     mockList([
-      { id: 9, status: 'On Hold', funding_request_id: 40, purpose_of_funds: 'Business Credit Building', date: '19 Oct 2026' },
-      { id: 8, status: 'Closed (Completed)', funding_request_id: 31, purpose_of_funds: 'Working Capital', date: '02 Oct 2026' },
+      { id: 9, status: 'On Hold', funding_request_id: 40, purpose_of_funds: 'Business Credit Building', preferred_funding_type: 'Line of Credit', date: '19 Oct 2026' },
+      { id: 8, status: 'Closed (Completed)', funding_request_id: 31, purpose_of_funds: 'Working Capital', preferred_funding_type: 'Term Loan', date: '02 Oct 2026' },
     ])
 
     renderWithProviders(<FundingApplications />)
 
-    const started = await screen.findByRole('row', { name: /Business Credit Building/i })
+    const started = await screen.findByRole('row', { name: /Line of Credit/i })
     expect(within(started).getByText('On Hold')).toBeInTheDocument()
-    expect(within(started).getByRole('link', { name: 'Business Credit Building' })).toHaveAttribute('href', '/fund-application/40')
+    expect(within(started).getByRole('link', { name: 'Line of Credit' })).toHaveAttribute('href', '/fund-application/40')
 
-    const closed = screen.getByRole('row', { name: /Working Capital/i })
-    expect(within(closed).getByRole('link', { name: 'Working Capital' })).toHaveAttribute('href', '/my-applications/funding/8')
+    const closed = screen.getByRole('row', { name: /Term Loan/i })
+    expect(within(closed).getByRole('link', { name: 'Term Loan' })).toHaveAttribute('href', '/my-applications/funding/8')
     expect(screen.queryByRole('columnheader', { name: 'Action' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * Defect (BUG-071): the Funding Type column showed the uses of funds
+ * ("Expansion, Hiring, ...") instead of the funding type chosen (Term Loan).
+ */
+describe('My Applications - Funding Type column', () => {
+  it('shows the preferred funding type, not the uses of funds', async () => {
+    mockList([{ id: 7, status: 'Submitted', funding_request_id: 30, purpose_of_funds: 'Expansion, Hiring', preferred_funding_type: 'Term Loan', date: '01 Oct 2026' }])
+
+    renderWithProviders(<FundingApplications />)
+
+    const row = await screen.findByRole('row', { name: /Term Loan/i })
+    expect(within(row).queryByText(/Expansion/)).not.toBeInTheDocument()
   })
 })

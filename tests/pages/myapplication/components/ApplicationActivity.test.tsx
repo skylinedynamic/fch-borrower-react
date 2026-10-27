@@ -63,3 +63,30 @@ describe('Application activity', () => {
     expect(await screen.findByText('No activity yet')).toBeInTheDocument()
   })
 })
+
+/**
+ * BUG-103 (from the old BorrowerActivitySidebar, which this panel replaced): a
+ * note the host or partner adds on the client's page with visibility
+ * "Everyone" is about the client, not one application, so the application's
+ * Activity panel never showed it. The panel asks for the client's notes too
+ * (include_client_notes); which ones the client may see stays the server's call.
+ */
+describe('Application activity - client notes', () => {
+  it("asks for the client's own notes along with the application's entries, and shows them", async () => {
+    let sent: Record<string, unknown> | null = null
+    server.use(
+      http.post('*/borrower/activity-logs/fetch-all-activities', async ({ request }) => {
+        sent = (await request.json()) as Record<string, unknown>
+        return HttpResponse.json({
+          status: true,
+          data: [{ id: 9, event_label: 'Everyone note for the client', created_at: '2026-10-19T19:55:00Z' }],
+        })
+      })
+    )
+
+    renderWithProviders(<ApplicationActivity fundingApplicationId={80} />)
+
+    expect(await screen.findByText('Everyone note for the client')).toBeInTheDocument()
+    expect(sent).toMatchObject({ funding_application_id: 80, include_client_notes: true })
+  })
+})

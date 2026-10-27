@@ -17,6 +17,8 @@ export interface ActivityLogParams {
   funding_request_id?: number | string
   funding_application_id?: number | string
   pre_qualification_id?: number | string
+  /** Also the client's own notes with visibility "Everyone" (BUG-103). */
+  include_client_notes?: boolean
   page?: number
   limit?: number
 }

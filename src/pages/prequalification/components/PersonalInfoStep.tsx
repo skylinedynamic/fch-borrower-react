@@ -31,7 +31,8 @@ export default function PersonalInfoStep({
 
 
   return (
-    <form className="row g-3" onSubmit={(e) => { e.preventDefault(); handleNextClick(); }}>
+    // noValidate: the API checks every field and returns all errors at once (BUG-017).
+    <form className="row g-3" noValidate onSubmit={(e) => { e.preventDefault(); handleNextClick(); }}>
       <div className="col-md-6">
         <label className="form-label">First Name <span className="text-danger">*</span></label>
         <input

@@ -177,9 +177,11 @@ export default function FundingRequestModal({ show, onHide, review }: FundingReq
                                                                         {doc.status === 'Accepted' ? (
                                                                             <span className="badge bg-success-subtle text-success">Accepted</span>
                                                                         ) : doc.status === FUNDING_REVIEW_STATUS.REJECTED ? (
-                                                                            <span className="badge bg-danger-subtle text-danger" title={doc.rejection_reason || 'Rejected'}>
-                                                                                Rejected {doc.rejection_reason && <i className="ri-information-line align-middle ms-1"></i>}
-                                                                            </span>
+                                                                            <>
+                                                                                <span className="badge bg-danger-subtle text-danger">Rejected</span>
+                                                                                {/* The reason, in the open - the reviewer was told it is shared with the borrower (BUG-087). */}
+                                                                                {doc.rejection_reason && <small className="d-block text-danger mt-1">Reason: {doc.rejection_reason}</small>}
+                                                                            </>
                                                                         ) : doc.status === 'Under Review' ? (
                                                                             <span className="badge bg-warning-subtle text-warning">Under Review</span>
                                                                         ) : (
