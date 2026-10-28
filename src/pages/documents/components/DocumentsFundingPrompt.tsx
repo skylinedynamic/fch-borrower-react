@@ -6,9 +6,9 @@ import './DocumentsFundingPrompt.css'
 const FUNDING_ROUTE = '/funding'
 
 interface DocumentsFundingPromptProps {
-  /** Categories with at least one document. */
+  /** Required categories with at least one document. */
   filled: number
-  /** Every document category. */
+  /** The required document categories. */
   total: number
   /** The first category still without a document; null once all are in. */
   nextMissing: string | null
@@ -17,9 +17,9 @@ interface DocumentsFundingPromptProps {
 }
 
 /**
- * The top of Documents: funding needs every document, so until all are in it
- * asks for them (with the way to the next one missing), then sends the
- * borrower on to apply.
+ * The top of Documents: funding needs the required documents, so until they
+ * are in it asks for them (with the way to the next one missing), then sends
+ * the borrower on to apply.
  */
 export default function DocumentsFundingPrompt({ filled, total, nextMissing, onUploadNext }: DocumentsFundingPromptProps) {
   if (total === 0) return null
@@ -35,9 +35,9 @@ export default function DocumentsFundingPrompt({ filled, total, nextMissing, onU
           <p className="docs-prompt-message">Your documents are in. You can apply for funding now.</p>
         ) : (
           <p className="docs-prompt-message">
-            Upload all your documents to apply for funding. Lenders review every one of them with your request.{' '}
+            Upload your required documents to apply for funding. Lenders review them with your request.{' '}
             <strong className="docs-prompt-count">
-              {filled} of {total} categories uploaded
+              {filled} of {total} required categories uploaded
             </strong>
           </p>
         )}

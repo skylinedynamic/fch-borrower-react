@@ -151,9 +151,10 @@ export type FinancialInfoResponse = {
 export type SaveFinancialInfoRequest = {
   currency: string
   years_in_business?: string
-  monthly_revenue: number
-  annual_revenue: number
-  annual_personal_income: number
+  /** Required; null (left empty) is sent so the API can refuse it. Zero is a real amount. */
+  monthly_revenue: number | null
+  annual_revenue: number | null
+  annual_personal_income?: number
   average_monthly_deposits?: number
   monthly_deposit_count?: number
   avg_bank_balance?: number

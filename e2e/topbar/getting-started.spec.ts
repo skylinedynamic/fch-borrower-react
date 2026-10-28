@@ -92,6 +92,19 @@ test.describe('Getting Started walkthrough', () => {
     await expect(arrowedItem).toContainText('Credit Builder')
   })
 
+  test('the documents step asks for the four required documents only', async ({ page }) => {
+    await signInOnStep(page, 'upload_documents')
+    await page.goto('/payments')
+
+    await expect(popup(page)).toContainText('Upload your documents')
+    await expect(popup(page)).toContainText('upload your four required documents')
+    for (const name of ["Driver's License", 'Voided Business Check', 'EIN / Corporation Docs', 'Business Bank Statements']) {
+      await expect(popup(page)).toContainText(name)
+    }
+    await expect(popup(page)).toContainText('Every other category is optional')
+    await expect(popup(page)).not.toContainText('every document category')
+  })
+
   test('shows nothing once the walkthrough is completed', async ({ page }) => {
     await signInOnStep(page, 'completed')
     await page.goto('/payments')

@@ -61,8 +61,11 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
-.fp-breadcrumb .breadcrumb-item a:hover {
-  color: #fff;
+/* White on hover: custom.css sets every breadcrumb link's hover to the brand
+   colour with !important, which disappears into this banner. */
+.funding-page .fp-breadcrumb .breadcrumb-item a:hover,
+.funding-page .fp-breadcrumb .breadcrumb-item a:focus-visible {
+  color: #fff !important;
 }
 
 .funding-page .fp-breadcrumb .breadcrumb-item.active {

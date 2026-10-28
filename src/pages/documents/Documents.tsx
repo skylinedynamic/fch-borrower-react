@@ -11,7 +11,7 @@ import { getUser } from '../../lib/auth/auth'
 import { DocumentStats } from './components/DocumentStats'
 import { DocumentCategoryButton, DocumentCategoryDetail, DocumentCategoryItem } from './components/DocumentCategory'
 import { useWideScreen } from './hooks/useWideScreen'
-import { isOptionalDocumentCategory } from '../../config/documents'
+import { isRequiredDocumentCategory } from '../../config/documents'
 import DocumentsFundingPrompt from './components/DocumentsFundingPrompt'
 import { useOnboardingPopupStore } from '../../store/onboardingPopupStore'
 import { FileManagerModal } from '../../components/FileManagerModal/FileManagerModal'
@@ -99,14 +99,14 @@ export default function Documents() {
     const entries = Object.entries(uploads)
     const count = entries.reduce((acc, [, files]) => acc + files.filter(f => !f.isDirectory).length, 0)
     const size = entries.reduce((acc, [, files]) => acc + files.reduce((a, f) => a + (f.size || 0), 0), 0)
-    // Funding needs every category but the optional ones (Others).
-    const required = entries.filter(([name]) => !isOptionalDocumentCategory(name))
+    // Only the required categories count (see config/documents).
+    const required = entries.filter(([name]) => isRequiredDocumentCategory(name))
     const filled = required.filter(([, files]) => files.length > 0).length
     return { count, size, filled, required: required.length }
   }, [uploads])
 
-  // The first category still without a document, for the prompt's "Upload …" button.
-  const nextMissing = sections.find((sec) => !isOptionalDocumentCategory(sec) && !uploads[sec]?.length) ?? null
+  // The first required category still without a document, for the prompt's "Upload …" button.
+  const nextMissing = sections.find((sec) => isRequiredDocumentCategory(sec) && !uploads[sec]?.length) ?? null
 
   const toggleFileManager = (section?: string, selectMode: boolean = false) => {
     if (section) {
