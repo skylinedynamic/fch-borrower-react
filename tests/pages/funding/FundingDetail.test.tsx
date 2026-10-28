@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import { Route, Routes } from 'react-router-dom'
-import { renderWithProviders, screen } from '../../test-utils'
+import { renderWithProviders, screen, within } from '../../test-utils'
 import { server } from '../../mocks/server'
 import FundingDetail from '../../../src/pages/funding/components/FundingDetail'
 
@@ -43,11 +43,11 @@ const detail = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 })
 
-const renderDetail = (overrides: Record<string, unknown> = {}) => {
+const renderDetail = (overrides: Record<string, unknown> = {}, readiness: Array<Record<string, unknown>> = []) => {
   server.use(
     http.get('*/borrower/funding/2', () => HttpResponse.json({ status: true, data: detail(overrides) })),
     http.get('*/common/funding-qualification/*/readiness-factors', () =>
-      HttpResponse.json({ status: true, data: [] })
+      HttpResponse.json({ status: true, data: readiness })
     )
   )
 
@@ -85,9 +85,56 @@ describe('FundingDetail eligibility label', () => {
   it('says Failed while underwriting factors are missing, as the card does', async () => {
     const { container } = renderDetail({ engine_status: 'Warning', engine_status_label: 'Conditional', readiness_factors: [{ label: 'Time in Business', status: 'Failed' }] })
 
-    await screen.findByText('Time in Business')
+    // Listed under Underwriting Factors and, being Failed, under What to Fix.
+    await screen.findAllByText('Time in Business')
     expect(container.querySelector('.funding-detail-badge')).toHaveTextContent(/^Failed$/)
     expect(screen.queryByText('Conditional')).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * Defect (BUG-134, CP-FUND-04): Term Loans said Failed, yet under the badge
+ * "High Match" and in "Why You May Qualify" "Business profile meets our
+ * lending standards" - while 7 of 8 underwriting factors were Failed. A Failed
+ * option gives one answer: no match label, and the panel says what to fix
+ * (the failed factors and the missing documents) instead of why it may qualify.
+ */
+describe('FundingDetail when the option is Failed', () => {
+  const termLoanFactors = [
+    { label: 'Revenue', status: 'Failed' },
+    { label: 'Time in Business', status: 'Failed' },
+    { label: 'Personal Credit', status: 'Weak' },
+    { label: 'Business Credit', status: 'Good' },
+  ]
+
+  it('shows no match label and no reasons it may qualify', async () => {
+    const { container } = renderDetail({ engine_status: 'Active', engine_status_label: 'Eligible Now' }, termLoanFactors)
+
+    await screen.findAllByText('Revenue')
+    expect(container.querySelector('.funding-detail-badge')).toHaveTextContent(/^Failed$/)
+    expect(screen.queryByText('High Match')).not.toBeInTheDocument()
+    expect(screen.queryByText(/why you may qualify/i)).not.toBeInTheDocument()
+    expect(screen.queryByText('Business profile meets our lending standards')).not.toBeInTheDocument()
+  })
+
+  it('lists what to fix: every failed or weak factor and the missing documents', async () => {
+    renderDetail({ engine_status: 'Active', missing_documents: ['Bank Statements'] }, termLoanFactors)
+
+    const panel = (await screen.findByRole('heading', { name: /what to fix/i })).closest('.funding-detail-panel') as HTMLElement
+    expect(within(panel).getByText('Revenue')).toBeInTheDocument()
+    expect(within(panel).getByText('Time in Business')).toBeInTheDocument()
+    expect(within(panel).getByText('Personal Credit')).toBeInTheDocument()
+    expect(within(panel).queryByText('Business Credit')).not.toBeInTheDocument()
+    expect(within(panel).getByText('Bank Statements')).toBeInTheDocument()
+  })
+
+  it('still shows the match label and the reasons when nothing is missing', async () => {
+    renderDetail({ engine_status: 'Active' }, [{ label: 'Business Credit', status: 'Good' }])
+
+    expect(await screen.findByText('Business profile meets our lending standards')).toBeInTheDocument()
+    expect(screen.getByText('High Match')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /why you may qualify/i })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /what to fix/i })).not.toBeInTheDocument()
   })
 })
 
