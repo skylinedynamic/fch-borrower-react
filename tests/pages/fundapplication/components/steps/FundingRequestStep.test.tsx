@@ -202,7 +202,13 @@ describe('Funding application › Step 4: Funding Request › Purpose of Funds',
 
     await user.click(picker(container, 'purpose_of_funds').querySelector('.p-multiselect-trigger') as HTMLElement)
     await user.type(await screen.findByPlaceholderText(/search purpose/i), 'Payroll')
-    await user.click(await screen.findByText('Payroll', { selector: '.p-multiselect-item span' }))
+    // Flaky under a loaded full run: "Payroll" is also in the unfiltered list,
+    // so it was found and clicked there just before the filtered list replaced
+    // it - the click hit a removed option. Click only once the list is filtered.
+    await waitFor(() =>
+      expect(Array.from(document.querySelectorAll('.p-multiselect-item span'), (el) => el.textContent)).toEqual(['Payroll'])
+    )
+    await user.click(screen.getByText('Payroll', { selector: '.p-multiselect-item span' }))
     await waitFor(() => expect(chipsOf(container, 'purpose_of_funds')).toEqual(['Working Capital', 'Payroll']))
 
     expect(await save()).toBe(true)

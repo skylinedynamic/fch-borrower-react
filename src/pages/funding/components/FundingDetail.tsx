@@ -286,6 +286,7 @@ const FundingDetail = () => {
 
     const activeFactors = dynamicReadiness.length > 0 ? dynamicReadiness : readiness_factors;
     const hasMissingFactors = hasMissingReadinessFactors(activeFactors);
+    const factorsToFix = activeFactors.filter((f: any) => hasMissingReadinessFactors([f]));
     // Same eligibility label as the funding card (BUG-026).
     const displayLabel = eligibilityLabel({ engineStatus: finalEngineStatus, engineStatusLabel: engine_status_label, hasMissingFactors });
     // Every funding request is a new one: an earlier request or application for
@@ -341,7 +342,8 @@ const FundingDetail = () => {
                                 <div className={`funding-detail-badge funding-detail-badge-${finalEngineStatus.toLowerCase().replace(' ', '-')}`}>
                                     {displayLabel}
                                 </div>
-                                {(finalEngineStatus === ENGINE_STATUS_VALUES.ACTIVE || finalEngineStatus === ENGINE_STATUS_VALUES.REVIEW) && (
+                                {/* A Failed option is no match (BUG-134). */}
+                                {!hasMissingFactors && (finalEngineStatus === ENGINE_STATUS_VALUES.ACTIVE || finalEngineStatus === ENGINE_STATUS_VALUES.REVIEW) && (
                                     <p className="funding-detail-match-label text-muted mb-0 mt-1">{MATCH_LEVEL_LABELS.HIGH_MATCH}</p>
                                 )}
                             </div>
@@ -360,13 +362,25 @@ const FundingDetail = () => {
                         {/* ── Two-column: Why You May Qualify + Underwriting Factors ── */}
                         <div className="row g-3 mb-3">
 
-                            {/* Why You May Qualify */}
+                            {/* Why You May Qualify - or, for a Failed option, What to Fix: listing
+                                the good factors as reasons it may qualify contradicted the
+                                Failed badge (BUG-134). */}
                             <div className="col-md-6">
                                 <div className="funding-detail-panel">
                                     <h6 className="funding-detail-panel-title">
-                                        Why You May Qualify
+                                        {hasMissingFactors ? 'What to Fix' : 'Why You May Qualify'}
                                     </h6>
-                                    {dynamicQualifyReasons.filter((r: any) => r.status === 'Good' || r.status === 'Strong').length > 0 ? (
+                                    {hasMissingFactors ? (
+                                        <ul className="funding-detail-list">
+                                            {factorsToFix.map((f: any, i: number) => (
+                                                <li key={i} className="funding-detail-list-item">
+                                                    <i className="ri-close-circle-fill funding-detail-list-icon warning" />
+                                                    <span>{f.label}</span>
+                                                    <span className="ms-auto text-muted fs-12">{f.status}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : dynamicQualifyReasons.filter((r: any) => r.status === 'Good' || r.status === 'Strong').length > 0 ? (
                                         <ul className="funding-detail-list">
                                             {dynamicQualifyReasons.filter((r: any) => r.status === 'Good' || r.status === 'Strong').map((r: any, i: number) => {
                                                 return (
