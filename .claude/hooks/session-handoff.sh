@@ -6,6 +6,11 @@
 # person) picking up this repo has context: what was done, why, what's open.
 set -uo pipefail
 
+# The `claude --resume -p` below is a session too: when it ends, SessionEnd runs
+# this hook again for the same session, which resumes it again - an endless
+# chain of empty notes. That inner run carries FCH_HANDOFF_HOOK, so stop there.
+[ -n "${FCH_HANDOFF_HOOK:-}" ] && exit 0
+
 input="$(cat)"
 session_id="$(printf '%s' "$input" | node -e '
   let d = "";
@@ -23,7 +28,7 @@ ts="$(date +%Y-%m-%d_%H-%M-%S)"
 short_id="${session_id:0:8}"
 out="$root/docs/handoff/${ts}_${short_id}.md"
 
-claude --resume "$session_id" -p "Write a concise session handoff note in Markdown for whoever (or whichever session) picks this work up next in this repo. Cover, only using this conversation: 1) what was done this session, 2) key decisions and why, 3) files/areas touched, 4) open next steps or blockers. Output ONLY the markdown content itself — no preamble, no code fences around it." > "$out" 2>/dev/null
+FCH_HANDOFF_HOOK=1 claude --resume "$session_id" -p "Write a concise session handoff note in Markdown for whoever (or whichever session) picks this work up next in this repo. Cover, only using this conversation: 1) what was done this session, 2) key decisions and why, 3) files/areas touched, 4) open next steps or blockers. Output ONLY the markdown content itself — no preamble, no code fences around it." > "$out" 2>/dev/null
 
 # Don't leave an empty file behind if the call produced nothing (e.g. resume failed).
 [ -s "$out" ] || rm -f "$out"

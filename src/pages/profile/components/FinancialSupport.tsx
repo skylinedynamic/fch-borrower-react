@@ -9,6 +9,7 @@ import TabLoader from '../../../components/Loader/TabLoader'
 import { formatCurrency, unformatCurrency } from '../../../utils/formatters'
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import { LOCKED_FINANCIAL_FIELDS } from '../../../config/profileLockFields'
+import { DEFAULT_BORROWER_CURRENCY } from '../../../config/appConfig'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/flatpickr.css'
 import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
@@ -151,7 +152,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
     if (isSuccess && apiData) {
       onChange({
         ...data,
-        currency: apiData.currency,
+        currency: apiData.currency || DEFAULT_BORROWER_CURRENCY,
         years_in_business: apiData.years_in_business,
         monthly_revenue: apiData.monthly_revenue ? formatCurrency(apiData.monthly_revenue) : '',
         annual_revenue: apiData.annual_revenue ? formatCurrency(apiData.annual_revenue) : '',

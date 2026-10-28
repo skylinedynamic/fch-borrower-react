@@ -3,6 +3,12 @@ import { render, screen, within } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { server } from '../../../mocks/server'
 import InvoicePreviewModal from '../../../../src/pages/invoices/components/InvoicePreviewModal'
+import * as dates from '../../../../src/utils/dates'
+
+vi.mock('../../../../src/utils/dates', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../src/utils/dates')>()
+  return { ...actual, parseApiDate: vi.fn(actual.parseApiDate) }
+})
 
 // Bootstrap's show/hide transitions run after jsdom has torn the node down.
 // Showing the modal only needs to do what Bootstrap does to the markup: drop
@@ -182,3 +188,17 @@ describe('InvoicePreviewModal', () => {
     expect(to.getByText('row@example.test')).toBeInTheDocument()
   })
 })
+
+// BUG-122: the invoice date is a calendar day (toDateOnly). `new Date('2026-10-20')`
+// is UTC midnight - the previous day anywhere behind UTC. The test workers share
+// one process time zone, so the modal is held to parseApiDate(), which keeps the day.
+describe('InvoicePreviewModal - the invoice date', () => {
+  it("reads the API's date as a calendar day, so no viewer sees another day", async () => {
+    respondWith({ id: 9, invoice_id: 'INV-20261020009', payment_amount: 1000, created_at: '2026-10-20', billed_from: host, billed_to: reseller })
+    renderModal({ id: 9 })
+
+    expect(await screen.findByText('20 Oct 2026')).toBeInTheDocument()
+    expect(dates.parseApiDate).toHaveBeenCalledWith('2026-10-20')
+  })
+})
+

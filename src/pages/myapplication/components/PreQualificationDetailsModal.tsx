@@ -1,8 +1,13 @@
 import React from 'react'
-import { Modal, ModalBody, ModalHeader, Badge, ModalFooter } from 'reactstrap'
+import { Modal, ModalBody } from 'reactstrap'
 import { usePreQualificationDetail } from '../../../modules/my-application/queries'
 import { GPT_STATUS, isIncorrectUnderwriting } from '../../../modules/my-application/types'
-import { PreQualificationDetailsLoader } from '../../../components/Loader/PreQualificationDetailsLoader'
+import type { PreQualificationDetail } from '../../../modules/my-application/types'
+import PrequalDetailLoader from './detail/PrequalDetailLoader'
+import DetailSection, { Field } from './detail/DetailSection'
+import KeyFact from './detail/KeyFact'
+import StatusChip, { toneFromBadgeClass } from './detail/StatusChip'
+import '../MyApplications.css'
 
 interface PreQualificationDetailsModalProps {
   isOpen: boolean
@@ -10,191 +15,158 @@ interface PreQualificationDetailsModalProps {
   requestId: number | null
 }
 
-const DetailItem = ({ label, value, icon, fullWidth = false }: { label: string; value: React.ReactNode; icon?: string; fullWidth?: boolean }) => (
-  <div className={`mb-3 ${fullWidth ? 'col-12' : 'col-sm-6'}`}>
-    <div className="d-flex align-items-center mb-1 text-muted">
-      {icon && <i className={`${icon} me-2`}></i>}
-      <span className="text-uppercase fw-bold fs-12 ls-05">{label}</span>
-    </div>
-    <div className="fs-14 fw-medium text-dark text-break">
-      {value || <span className="text-muted fst-italic">Not provided</span>}
-    </div>
-  </div>
-)
+const statusClass = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'submitted':
+    case 'approved': return 'bg-success-subtle text-success'
+    case 'pending': return 'bg-warning-subtle text-warning'
+    case 'rejected':
+    case 'declined': return 'bg-danger-subtle text-danger'
+    default: return 'bg-secondary-subtle text-secondary'
+  }
+}
 
-const SectionCard = ({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) => (
-  <div className="card border shadow-sm mb-4">
-    <div className="card-header bg-white border-bottom py-3">
-      <div className="d-flex align-items-center">
-        <div className="avatar-xs me-2">
-          <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
-            <i className={`${icon} fs-14`}></i>
-          </span>
+/** The review's state, in the client's words. */
+const reviewState = (data: PreQualificationDetail) => {
+  if (isIncorrectUnderwriting(data)) return { label: 'Incorrect', className: 'bg-danger-subtle text-danger' }
+  if (data.gpt_status === GPT_STATUS.COMPLETED) return { label: 'Completed', className: 'bg-success-subtle text-success' }
+  if (data.gpt_status === GPT_STATUS.FAILED) return { label: 'Failed', className: 'bg-warning-subtle text-warning' }
+  return { label: 'In Progress', className: 'bg-secondary-subtle text-secondary' }
+}
+
+function Outcome({ data }: { data: PreQualificationDetail }) {
+  const result = data.underwriting_result
+  const state = reviewState(data)
+  const summary = result?.funding_readiness_summary || data.validation_summary
+
+  return (
+    <section className="ma-card ma-outcome" aria-labelledby="ma-outcome-title">
+      <header className="ma-card-head">
+        <span className="ma-card-icon" aria-hidden="true"><i className="ri-shield-check-line"></i></span>
+        <div className="min-w-0">
+          <h5 id="ma-outcome-title" className="ma-card-title">Underwriting outcome</h5>
+          {data.gpt_generated_at && <p className="ma-card-subtitle">Reviewed {data.gpt_generated_at}</p>}
         </div>
-        <h6 className="mb-0 fs-16 fw-bold text-dark">{title}</h6>
+        <span className={`badge ma-status-pill ms-auto ${state.className}`}>{state.label}</span>
+      </header>
+
+      <div className="ma-outcome-body">
+        {summary && <p className="ma-outcome-summary">{summary}</p>}
+
+        {(!!result?.strengths?.length || !!result?.areas_requiring_attention?.length) && (
+          <div className="ma-outcome-lists">
+            {!!result?.strengths?.length && (
+              <div className="ma-outcome-list is-good">
+                <h6 id="ma-strengths">Strengths</h6>
+                <ul aria-labelledby="ma-strengths">
+                  {result.strengths.map((item, i) => (
+                    <li key={i}><i className="ri-checkbox-circle-fill" aria-hidden="true"></i>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {!!result?.areas_requiring_attention?.length && (
+              <div className="ma-outcome-list is-attention">
+                <h6 id="ma-attention">Needs attention</h6>
+                <ul aria-labelledby="ma-attention">
+                  {result.areas_requiring_attention.map((item, i) => (
+                    <li key={i}><i className="ri-error-warning-fill" aria-hidden="true"></i>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        {result?.important_notice && (
+          <p className="ma-outcome-notice"><i className="ri-information-line" aria-hidden="true"></i>{result.important_notice}</p>
+        )}
+
+        {/* Fixed compliance text - shown verbatim wherever the assessment is. */}
+        {(result?.final_disclosure || result?.disclaimer) && (
+          <div className="ma-outcome-fine">
+            {result?.final_disclosure && <p><strong>Final Disclosure.</strong> {result.final_disclosure}</p>}
+            {result?.disclaimer && <p><strong>Disclaimer.</strong> {result.disclaimer}</p>}
+          </div>
+        )}
       </div>
-    </div>
-    <div className="card-body pt-4">
-      <div className="row">
-        {children}
-      </div>
-    </div>
-  </div>
-)
+    </section>
+  )
+}
 
 export default function PreQualificationDetailsModal({ isOpen, toggle, requestId }: PreQualificationDetailsModalProps) {
   const { data: response, isLoading } = usePreQualificationDetail(requestId || 0)
   const data = response?.data
 
   return (
-    <Modal isOpen={isOpen} toggle={toggle} size="lg" centered scrollable className="zoomIn">
-      <ModalHeader toggle={toggle} className="border-bottom-0 pb-0">
-        Pre-Qualification Details
-        {data && <Badge color={data.status === 'submitted' ? 'success' : 'warning'} pill className="ms-2 fs-12 text-uppercase">{data.status}</Badge>}
-      </ModalHeader>
-      <ModalBody className="p-4 bg-light-subtle">
+    <Modal isOpen={isOpen} toggle={toggle} size="lg" centered scrollable className="ma-modal" labelledBy="ma-prequal-detail-title">
+      <ModalBody className="ma-modal-body">
+        <button type="button" className="btn-close ma-modal-close" onClick={toggle} aria-label="Close"></button>
+
         {isLoading ? (
-          <PreQualificationDetailsLoader />
+          <PrequalDetailLoader />
         ) : data ? (
           <>
-            {/* Underwriting outcome first — the borrower opens this modal to see
-                where their application stands, not to re-read what they typed.
-                Only the client-safe generation is ever exposed here. */}
-            {data.gpt_status && (
-              <SectionCard title="Underwriting Information" icon="pi pi-verified">
-                <DetailItem
-                  label="Underwriting Review Status"
-                  value={
-                    <Badge
-                      color={data.gpt_status === GPT_STATUS.FAILED ? 'warning' : isIncorrectUnderwriting(data) ? 'danger' : data.gpt_status === GPT_STATUS.COMPLETED ? 'success' : 'secondary'}
-                      pill
-                      className="fs-12 text-uppercase"
-                    >
-                      {data.gpt_status === GPT_STATUS.COMPLETED ? 'Completed' : isIncorrectUnderwriting(data) ? 'Incorrect' : data.gpt_status === GPT_STATUS.FAILED ? 'Failed' : 'In Progress'}
-                    </Badge>
-                  }
-                />
-                <DetailItem label="Submitted Date" value={data.gpt_generated_at} icon="pi pi-calendar" />
-
-                {/* Condensed view of the Client v4 assessment. The full nine
-                    sections live on the Funding Readiness step; this modal shows
-                    the summary and what the borrower still has to act on. */}
-                {(data.underwriting_result?.funding_readiness_summary || data.validation_summary) && (
-                  <DetailItem
-                    label="Funding Readiness Summary"
-                    value={data.underwriting_result?.funding_readiness_summary || data.validation_summary}
-                    fullWidth
-                  />
-                )}
-
-                {!!data.underwriting_result?.strengths?.length && (
-                  <DetailItem
-                    label="Strengths"
-                    fullWidth
-                    value={
-                      <ul className="mb-0 ps-3">
-                        {data.underwriting_result.strengths.map((item: string, idx: number) => (
-                          <li key={idx} className="py-1">{item}</li>
-                        ))}
-                      </ul>
-                    }
-                  />
-                )}
-
-                {!!data.underwriting_result?.areas_requiring_attention?.length && (
-                  <DetailItem
-                    label="Areas Requiring Attention"
-                    fullWidth
-                    value={
-                      <ul className="mb-0 ps-3">
-                        {data.underwriting_result.areas_requiring_attention.map((item: string, idx: number) => (
-                          <li key={idx} className="py-1">{item}</li>
-                        ))}
-                      </ul>
-                    }
-                  />
-                )}
-
-                {data.underwriting_result?.important_notice && (
-                  <DetailItem label="Important Notice" value={data.underwriting_result.important_notice} fullWidth />
-                )}
-
-                {/* Fixed compliance text — shown verbatim wherever the assessment is. */}
-                {data.underwriting_result?.final_disclosure && (
-                  <DetailItem label="Final Disclosure" value={data.underwriting_result.final_disclosure} fullWidth />
-                )}
-
-                {data.underwriting_result?.disclaimer && (
-                  <DetailItem label="Disclaimer" value={data.underwriting_result.disclaimer} fullWidth />
-                )}
-              </SectionCard>
-            )}
-
-            {/* Personal Information */}
-            <SectionCard title="Personal Information" icon="pi pi-user">
-              <DetailItem label="Full Name" value={`${data.first_name} ${data.last_name}`} fullWidth />
-              <DetailItem label="Email Address" value={data.email} icon="pi pi-envelope" />
-              <DetailItem label="Phone Number" value={data.phone_number} icon="pi pi-phone" />
-              <DetailItem label="Business Website" value={data.business_website} icon="pi pi-globe" fullWidth />
-              <DetailItem label="State of Inc." value={data.state_of_incorporation} icon="pi pi-map-marker" />
-            </SectionCard>
-
-            {/* Business Details */}
-            <SectionCard title="Business Details" icon="pi pi-building">
-              <DetailItem label="Business Name" value={data.business_name} fullWidth />
-              <DetailItem label="Industry Type" value={data.industry_type} icon="pi pi-briefcase" />
-              <DetailItem label="Business Structure" value={data.business_structure} icon="pi pi-sitemap" />
-              <DetailItem label="Time in Business" value={data.years_in_business} icon="pi pi-clock" />
-              <DetailItem label="Monthly Revenue" value={data.monthly_revenue} icon="pi pi-dollar" />
-              <DetailItem label="Annual Revenue" value={data.annual_revenue} icon="pi pi-money-bill" />
-            </SectionCard>
-
-            {/* Financial Overview */}
-            <SectionCard title="Financial Overview" icon="pi pi-wallet">
-              <DetailItem label="Requested Amount" value={data.funding_requested_amount} icon="pi pi-chart-line" />
-              <DetailItem label="Funding Urgency" value={data.funding_urgency} icon="pi pi-hourglass" />
-              <DetailItem label="Purpose of Funding" value={data.purpose_of_funding} fullWidth />
-              {data.purpose_note && (
-                <DetailItem label="Purpose Of Funding Note" value={data.purpose_note} fullWidth />
-              )}
-
-              <div className="col-12"><hr className="border-light my-3" /></div>
-
-              <DetailItem label="Personal Credit" value={data.personal_credit_score} />
-              <DetailItem label="Business Credit (Est.)" value={data.estimated_business_credit_score} />
-
-              <div className="col-12"><hr className="border-light my-3" /></div>
-
-              <DetailItem label="Existing Business Debt" value={data.existing_business_debt ? 'Yes' : 'No'} />
-              {data.existing_business_debt && (
-                <DetailItem label="Debt Balance" value={data.debt_balance} icon="pi pi-credit-card" />
-              )}
-            </SectionCard>
-
-            {/* Notes Section */}
-            {data.notes && (
-              <div className="card border shadow-sm border-warning-subtle">
-                <div className="card-body bg-warning-subtle text-warning-emphasis rounded p-3">
-                  <h6 className="fs-14 fw-bold mb-2"><i className="pi pi-info-circle me-2"></i>Additional Notes</h6>
-                  <p className="mb-0 fs-14">{data.notes}</p>
+            {/* The outcome first: the client opens this to see where they stand,
+                not to re-read what they typed. */}
+            <section className="ma-hero ma-detail-hero is-compact" aria-labelledby="ma-prequal-detail-title">
+              <div className="min-w-0">
+                <span className="ma-hero-eyebrow"><i className="ri-file-list-3-line" aria-hidden="true"></i> Pre-Qualification Details</span>
+                <h4 id="ma-prequal-detail-title" className="ma-hero-title">{data.business_name || data.purpose_of_funding || 'Pre-Qualification'}</h4>
+                <div className="ma-detail-actions">
+                  <StatusChip status={data.status} tone={toneFromBadgeClass(statusClass(data.status || ''))} />
                 </div>
               </div>
-            )}
+              <div className="ma-facts">
+                <KeyFact label="Requested amount" value={data.funding_requested_amount} icon="ri-money-dollar-circle-line" />
+                <KeyFact label="Urgency" value={data.funding_urgency} icon="ri-timer-line" />
+              </div>
+            </section>
+
+            <div className="ma-modal-content">
+              {data.gpt_status && <Outcome data={data} />}
+
+              <DetailSection title="Financial Overview" icon="ri-wallet-3-line">
+                <Field label="Purpose of Funding" value={data.purpose_of_funding} wide />
+                {data.purpose_note && <Field label="Purpose Note" value={data.purpose_note} wide />}
+                <Field label="Personal Credit" value={data.personal_credit_score} />
+                <Field label="Business Credit (Est.)" value={data.estimated_business_credit_score} />
+                <Field label="Existing Business Debt" value={data.existing_business_debt ? 'Yes' : 'No'} />
+                {!!data.existing_business_debt && <Field label="Debt Balance" value={data.debt_balance} />}
+              </DetailSection>
+
+              <DetailSection title="Business Details" icon="ri-building-line">
+                <Field label="Business Name" value={data.business_name} wide />
+                <Field label="Industry Type" value={data.industry_type} />
+                <Field label="Business Structure" value={data.business_structure} />
+                <Field label="Time in Business" value={data.years_in_business} />
+                <Field label="Monthly Revenue" value={data.monthly_revenue} />
+                <Field label="Annual Revenue" value={data.annual_revenue} />
+              </DetailSection>
+
+              <DetailSection title="Personal Information" icon="ri-user-line">
+                <Field label="Full Name" value={[data.first_name, data.last_name].filter(Boolean).join(' ')} />
+                <Field label="Email Address" value={data.email} />
+                <Field label="Phone Number" value={data.phone_number} />
+                <Field label="State of Inc." value={data.state_of_incorporation} />
+                <Field label="Business Website" value={data.business_website} wide />
+              </DetailSection>
+
+              {data.notes && (
+                <p className="ma-outcome-notice"><i className="ri-sticky-note-line" aria-hidden="true"></i>{data.notes}</p>
+              )}
+            </div>
           </>
         ) : (
-          <div className="text-center py-5">
-            <div className="avatar-lg mx-auto mb-3">
-              <div className="avatar-title bg-light text-primary rounded-circle fs-24">
-                <i className="pi pi-exclamation-circle"></i>
-              </div>
-            </div>
-            <h5 className="text-muted">No details available</h5>
+          <div className="ma-empty">
+            <span className="ma-empty-icon" aria-hidden="true"><i className="ri-error-warning-line"></i></span>
+            <p className="ma-empty-title">No details available</p>
           </div>
         )}
       </ModalBody>
-      <ModalFooter className="border-top-0 pt-0">
-        <button className="btn btn-light" onClick={toggle}>Close</button>
-      </ModalFooter>
+      <div className="ma-modal-footer">
+        <button type="button" className="ma-action" onClick={toggle}>Close</button>
+      </div>
     </Modal>
   )
 }

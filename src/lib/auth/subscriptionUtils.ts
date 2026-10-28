@@ -64,6 +64,36 @@ export function isSubscriptionRestricted(subscription: UserSubscription | null |
     return false;
 }
 
+/** Why a restricted borrower's menus are locked - picks the message they are shown. */
+export const RESTRICTION_REASON = {
+    /** The enrollment is still being set up (not yet paid for, or pending). */
+    ACTIVATION: 'activation',
+    /** The subscription has expired, been cancelled or run past its end date. */
+    INACTIVE: 'inactive',
+} as const;
+
+export type RestrictionReason = (typeof RESTRICTION_REASON)[keyof typeof RESTRICTION_REASON];
+
+const ENDED_STATUSES = [SUBSCRIPTION_STATUS_TYPES.EXPIRED, SUBSCRIPTION_STATUS_TYPES.CANCELLED].map((s) => s.toLowerCase());
+
+/**
+ * Why the borrower is restricted, or null when they are not (BUG-033).
+ */
+export function getRestrictionReason(subscription: UserSubscription | null | undefined): RestrictionReason | null {
+    if (!subscription || !isSubscriptionRestricted(subscription)) return null;
+
+    const status = String(subscription.subscription_status ?? '').toLowerCase().trim();
+    const endDate = toDate(subscription.subscription_end_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (ENDED_STATUSES.includes(status) || (endDate && today > endDate)) {
+        return RESTRICTION_REASON.INACTIVE;
+    }
+
+    return RESTRICTION_REASON.ACTIVATION;
+}
+
 /**
  * Returns true when the borrower is on the Limited Free Edition (free trial).
  * While on the free trial the following modules must be locked:

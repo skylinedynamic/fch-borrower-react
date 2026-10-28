@@ -2,7 +2,10 @@ import React from 'react'
 import type { ExposureBreakdownItem } from '../../modules/capital-access/types'
 
 interface EstimatedTotalAccessCardProps {
+  /** As shown - short ($1.4M) when the API sends it. */
   totalAccess: string
+  /** The full amount, on hover. */
+  totalAccessFull?: string
   exposureBreakdown?: ExposureBreakdownItem[]
   statusColor?: string
   reasonCode?: string | null
@@ -11,6 +14,7 @@ interface EstimatedTotalAccessCardProps {
 
 export default function EstimatedTotalAccessCard({
   totalAccess,
+  totalAccessFull,
   exposureBreakdown,
   statusColor,
   reasonCode,
@@ -33,12 +37,14 @@ export default function EstimatedTotalAccessCard({
       <div className="ca-metric-card h-100">
         <div className="ca-metric-header">
           <div className="ca-metric-title-block">
+            {/* The plays the client qualifies for, less those completed: what is left (BUG-031). */}
             <h6 className="ca-metric-card-label">
-              Estimated Total Access
+              Estimated Remaining Access
             </h6>
-            <div className="ca-access-value animate__animated animate__fadeIn">
+            <div className="ca-access-value animate__animated animate__fadeIn" title={totalAccessFull}>
               {totalAccess}
             </div>
+            <small className="text-muted d-block mt-1">From the plays you qualify for and have not completed yet</small>
           </div>
           <div className="ca-metric-icon-wrapper access-icon">
             <i className="ri-money-dollar-box-line"></i>
