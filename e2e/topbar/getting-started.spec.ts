@@ -11,7 +11,7 @@ const USER = { id: 1, name: 'Jane Borrower', email: 'jane@example.test', entity_
 
 // The Next step button pulses for attention; under reduced motion (which the
 // walkthrough's styles honour) it holds still long enough to be clicked.
-test.use({ storageState: { cookies: [], origins: [] }, reducedMotion: 'reduce' })
+test.use({ storageState: { cookies: [], origins: [] }, contextOptions: { reducedMotion: 'reduce' } })
 
 type Step = 'complete_profile' | 'credit_profile' | 'verify_all' | 'upload_documents' | 'results_ready' | 'completed'
 const COMPLETED: Record<Step, number> = { complete_profile: 0, credit_profile: 1, verify_all: 2, upload_documents: 3, results_ready: 4, completed: 5 }
