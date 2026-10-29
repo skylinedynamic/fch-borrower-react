@@ -23,7 +23,9 @@ An option with nothing missing still shows "High Match" and "Why You May Qualify
 ## Tests
 - Added to `tests/pages/funding/FundingDetail.test.tsx` (Defect: BUG-134): no match label and no qualify reasons when Failed; What to Fix lists the failed or weak factors and the missing documents, and not the Good ones; an eligible option is unchanged.
 - Updated: the BUG-026 test now waits with `findAllByText`, because a failed factor is now listed twice (in What to Fix and in Underwriting Factors).
-- Suites run: `tests/pages/funding`: 45 passed. Full suite: see the PR.
+- Fixed a flaky test, `tests/pages/fundapplication/components/steps/FundingRequestStep.test.tsx` ("takes several purposes..."). It failed only under the load of a full run: "Payroll" is also in the unfiltered list, so the test found and clicked it there just before the filtered list replaced it, and the click hit a removed option. It now waits until the list is filtered, then clicks. No app code changed.
+- Suites run: `tests/pages/funding`: 45 passed. `npm run typecheck`: 0 errors. `npm run test:coverage`: 173/173 files passed. `npm run build`: OK.
+- Merged to `stage` in PR #27, with no conflicts. Stage's redesigned My Applications reads the same `requested_amount` / `preferred_funding_type` / `purpose_of_funds` fields, so it shows the API's BUG-136 values too.
 
 ## Open / follow-up
 - "High Match" is still a fixed label for every eligible option. The API sends no match level, so Medium or Low Match never shows.
