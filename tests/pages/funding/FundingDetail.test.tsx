@@ -223,3 +223,93 @@ describe('FundingDetail call to action', () => {
     expect(screen.getByText(/not available for your profile/i)).toBeInTheDocument()
   })
 })
+
+/**
+ * Defect: a funding option blocked by the borrower's bank statement figures
+ * said only "Missing Info" - nothing told the borrower the bank statements were
+ * the problem or where to fix it. The API's message is shown with an upload link.
+ */
+describe('FundingDetail bank statement message', () => {
+  const failedDeposits = {
+    label: 'Minimum Monthly Deposits',
+    status: 'Failed',
+    group: 'banking',
+    borrower_value: 5000,
+    required_value: 60000,
+    message: 'Bank statements failed. Please upload proper bank statements.',
+    action: { label: 'Upload Bank Statements', path: '/documents' },
+  }
+
+  it('tells the borrower the bank statements failed and links to the upload page', async () => {
+    renderDetail({ latest_review_status: null, has_funding_application: false }, [failedDeposits])
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('Bank statements failed. Please upload proper bank statements.')
+    expect(screen.getByRole('link', { name: 'Upload Bank Statements' })).toHaveAttribute('href', '/documents')
+  })
+
+  it('shows no bank statement message when the banking checks pass', async () => {
+    renderDetail(
+      { latest_review_status: null, has_funding_application: false },
+      [{ label: 'Minimum Monthly Deposits', status: 'Strong', group: 'banking' }]
+    )
+
+    expect((await screen.findAllByRole('heading', { name: 'Business Credit Builder Cards' })).length).toBeGreaterThan(0)
+    expect(screen.queryByText(/bank statements failed/i)).not.toBeInTheDocument()
+  })
+})
+
+describe('FundingDetail Banking Activity reason', () => {
+  // One message: the alert says why and what to do (with the upload button);
+  // the Banking Activity row does not repeat it.
+  it('says why Banking Activity failed once, in the alert', async () => {
+    renderDetail({ latest_review_status: null, has_funding_application: false }, [{
+      label: 'Banking Activity',
+      status: 'Failed',
+      group: 'banking',
+      reason_code: 'rejected',
+      reason: 'Your Business Bank Statements were rejected.',
+      requirement: 'Upload your Business Bank Statements on the Documents page.',
+      message: 'Bank statements rejected. Please upload new business bank statements.',
+      action: { label: 'Upload Bank Statements', path: '/documents' },
+    }])
+
+    const alert = await screen.findByRole('alert')
+    expect(within(alert).getByRole('heading', { name: 'Bank statements rejected' })).toBeInTheDocument()
+    expect(alert).toHaveTextContent('Upload new business bank statements to continue.')
+    expect(screen.getAllByText(/rejected/i)).toHaveLength(1)
+    expect(screen.queryByText(/Required: Upload your Business Bank Statements/)).not.toBeInTheDocument()
+  })
+})
+
+// QA design: missing bank statements show a "Bank statements required" banner -
+// a heading, one line saying what to do and an Upload Bank Statements button
+// to Documents. Only failed banking checks show it.
+describe('FundingDetail bank statements banner', () => {
+  const missingStatements = {
+    label: 'Banking Activity',
+    status: 'Failed',
+    group: 'banking',
+    reason_code: 'not_uploaded',
+    reason: 'No Business Bank Statements uploaded yet.',
+    requirement: 'Upload your Business Bank Statements on the Documents page.',
+    message: 'Bank statements missing. Please upload your business bank statements.',
+    action: { label: 'Upload Bank Statements', path: '/documents' },
+  }
+
+  it('shows the required banner with the upload button when statements are missing', async () => {
+    renderDetail({ latest_review_status: null, has_funding_application: false }, [missingStatements])
+
+    const banner = await screen.findByRole('alert')
+    expect(within(banner).getByRole('heading', { name: 'Bank statements required' })).toBeInTheDocument()
+    expect(banner).toHaveTextContent('Upload your business bank statements to continue.')
+    expect(within(banner).getByRole('link', { name: 'Upload Bank Statements' })).toHaveAttribute('href', '/documents')
+  })
+
+  it('shows no banner when only a non-banking check failed', async () => {
+    renderDetail({ latest_review_status: null, has_funding_application: false }, [{ label: 'Personal Credit', status: 'Failed' }])
+
+    expect((await screen.findAllByRole('heading', { name: 'Business Credit Builder Cards' })).length).toBeGreaterThan(0)
+    expect(screen.queryByRole('heading', { name: /bank statements/i })).not.toBeInTheDocument()
+  })
+})
