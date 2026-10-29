@@ -12,6 +12,7 @@ import { DocumentStats } from './components/DocumentStats'
 import { DocumentCategoryButton, DocumentCategoryDetail, DocumentCategoryItem } from './components/DocumentCategory'
 import { useWideScreen } from './hooks/useWideScreen'
 import { isRequiredDocumentCategory } from '../../config/documents'
+import { documentCategoryState, isCategoryUploaded } from '../../utils/documentProgress'
 import DocumentsFundingPrompt from './components/DocumentsFundingPrompt'
 import { useOnboardingPopupStore } from '../../store/onboardingPopupStore'
 import { FileManagerModal } from '../../components/FileManagerModal/FileManagerModal'
@@ -99,14 +100,22 @@ export default function Documents() {
     const entries = Object.entries(uploads)
     const count = entries.reduce((acc, [, files]) => acc + files.filter(f => !f.isDirectory).length, 0)
     const size = entries.reduce((acc, [, files]) => acc + files.reduce((a, f) => a + (f.size || 0), 0), 0)
-    // Only the required categories count (see config/documents).
+    // Only the required categories count (see config/documents), and only with
+    // a file that isn't rejected (BUG-135).
     const required = entries.filter(([name]) => isRequiredDocumentCategory(name))
-    const filled = required.filter(([, files]) => files.length > 0).length
+    const filled = required.filter(([, files]) => isCategoryUploaded(documentCategoryState(files))).length
     return { count, size, filled, required: required.length }
   }, [uploads])
 
-  // The first required category still without a document, for the prompt's "Upload …" button.
-  const nextMissing = sections.find((sec) => isRequiredDocumentCategory(sec) && !uploads[sec]?.length) ?? null
+  // The first required category still without a usable document (none, or only
+  // rejected ones), for the prompt's "Upload …" button.
+  const nextMissing = sections.find((sec) => isRequiredDocumentCategory(sec) && !isCategoryUploaded(documentCategoryState(uploads[sec]))) ?? null
+
+  // Each required category and where it stands, for the hero's progress segments.
+  const requiredCategories = useMemo(
+    () => sections.filter(isRequiredDocumentCategory).map((name) => ({ name, state: documentCategoryState(uploads[name]) })),
+    [sections, uploads]
+  )
 
   const toggleFileManager = (section?: string, selectMode: boolean = false) => {
     if (section) {
@@ -193,22 +202,34 @@ export default function Documents() {
       <div className="container-fluid min-vh-70 pt-4">
         <div className="docs-shell">
           {loading ? (
-            <div className="docs-hero">
-              <div className="skeleton-line" style={{ width: 200, height: 24, borderRadius: 4 }}></div>
-              <div className="skeleton-line mt-2" style={{ width: 340, maxWidth: '100%', height: 14, borderRadius: 4 }}></div>
-              <div className="skeleton-line mt-3" style={{ width: '100%', height: 56, borderRadius: 4 }}></div>
+            <div className="docs-hero is-loading">
+              <div className="docs-hero-main">
+                <div className="skeleton-line" style={{ width: 200, height: 24, borderRadius: 4 }}></div>
+                <div className="skeleton-line" style={{ width: 380, maxWidth: '100%', height: 14, borderRadius: 4 }}></div>
+                <div className="skeleton-line" style={{ width: 300, maxWidth: '100%', height: 22, borderRadius: 4 }}></div>
+              </div>
+              <div className="docs-hero-progress">
+                <div className="skeleton-line" style={{ width: '60%', height: 18, borderRadius: 4 }}></div>
+                <div className="skeleton-line mt-3" style={{ width: '100%', height: 8, borderRadius: 4 }}></div>
+              </div>
             </div>
           ) : (
-            <DocumentStats documentCount={totals.count} filledCount={totals.filled} categoryCount={totals.required} />
-          )}
-
-          {!loading && (
-            <DocumentsFundingPrompt
-              filled={totals.filled}
-              total={totals.required}
-              nextMissing={nextMissing}
-              onUploadNext={() => nextMissing && setOpenSection(nextMissing)}
-            />
+            <>
+              <DocumentStats
+                documentCount={totals.count}
+                filledCount={totals.filled}
+                categoryCount={totals.required}
+                requiredCategories={requiredCategories}
+              />
+              {/* Its own section under the hero. */}
+              <DocumentsFundingPrompt
+                filled={totals.filled}
+                total={totals.required}
+                nextMissing={nextMissing}
+                categories={requiredCategories}
+                onUploadNext={() => nextMissing && setOpenSection(nextMissing)}
+              />
+            </>
           )}
 
           <div className="docs-board">
