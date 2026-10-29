@@ -83,12 +83,17 @@ export default function FundingApplicationDetailPage() {
   }
 
   // Same rule as the partner portal's Funding Application details page: the
-  // request is approved and the application is at status key 9 or below. The
-  // server works that out from the lifecycle key and sends it as is_editable.
+  // request is approved and the application is in one of the API's editable
+  // statuses (config `statuses.editable`). The server sends that as is_editable.
   const canEditApplication =
       application.funding_request_status === FUNDING_REVIEW_STATUS.APPROVED &&
       !!application.funding_request_id &&
       !!application.is_editable
+  // Status not in the editable list: tell the borrower so instead of just
+  // dropping the Edit button. The reason comes from the API.
+  const isLockedForEdit = !!application.id && application.is_editable === false
+  const lockedReason = application.locked_reason
+      || `This application can no longer be edited because it is "${application.status}". Contact your funding advisor if something needs to change.`
 
   return (
     <div className="page-content">
@@ -116,6 +121,16 @@ export default function FundingApplicationDetailPage() {
                                 <i className="ri-edit-line me-1"></i> Edit Application
                             </Link>
                         )}
+                        {isLockedForEdit && (
+                            <button
+                                type="button"
+                                className="btn btn-light fw-medium d-flex align-items-center gap-2 shadow-none px-4 py-2"
+                                disabled
+                                title={lockedReason}
+                            >
+                                <i className="ri-lock-line me-1"></i> Can't Edit Application
+                            </button>
+                        )}
                         <Link to="/my-applications" className="btn fr-back-btn px-3 shadow-none">
                             &larr; Back
                         </Link>
@@ -123,6 +138,13 @@ export default function FundingApplicationDetailPage() {
                 </div>
             </div>
         </div>
+
+        {isLockedForEdit && (
+          <div className="alert alert-warning d-flex align-items-start gap-2 mt-2 mb-0" role="status">
+            <i className="ri-lock-line fs-16"></i>
+            <div>{lockedReason}</div>
+          </div>
+        )}
 
         <div className="row g-4 mt-2">
           <div className="col-lg-8">

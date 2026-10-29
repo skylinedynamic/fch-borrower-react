@@ -1,22 +1,26 @@
 import { describe, expect, it } from 'vitest'
-import { FUNDING_APPLICATION_STATUS_OPTIONS, FUNDING_APPLICATION_STATUS_CLASS_MAP } from '../../src/config/funding'
+import {
+  FUNDING_APPLICATION_STATUS_OPTIONS,
+  FUNDING_APPLICATION_STATUS_CLASS_MAP,
+} from '../../src/config/funding'
 
-/** SCRUM-331: the Funding Application status dropdown, exactly in this order. */
+/**
+ * SCRUM-331: stage's 19 statuses in their stage order, then the seven new ones.
+ * The same order as the API (config/funding_application.php `statuses.order`).
+ */
 const EXPECTED = [
+  'On Hold',
   'Draft',
   'Submitted – Pending Review',
   'Submitted (Received)',
-  'Missing Documents (Action Required)',
-  'Pending Clarification',
-  'On Hold',
-  'In Verification',
   'Underwriting Review',
-  'Ready for Submission',
+  'Missing Documents (Action Required)',
+  'In Verification',
+  'Approved (Conditional)',
+  'Approved (Final)',
   'Matched to Lender',
   'Submitted to Lender',
   'Lender Reviewing',
-  'Approved (Conditional)',
-  'Approved (Final)',
   'Offer Issued',
   'Offer Accepted',
   'Contracting / Docs Out',
@@ -24,6 +28,8 @@ const EXPECTED = [
   'Funded',
   'Closed (Completed)',
   'Denied',
+  'Pending Clarification',
+  'Ready for Submission',
   'Withdrawn',
   'Offer Declined by Borrower',
   'Closed - No Response',
@@ -39,6 +45,7 @@ describe('funding application status dropdown', () => {
 
   it('gives every status a badge, Withdrawn and Denied their own', () => {
     for (const status of EXPECTED) expect(FUNDING_APPLICATION_STATUS_CLASS_MAP[status]).toBeTruthy()
+    expect(Object.keys(FUNDING_APPLICATION_STATUS_CLASS_MAP)).toHaveLength(EXPECTED.length)
     expect(FUNDING_APPLICATION_STATUS_CLASS_MAP.Withdrawn).toBe('bg-secondary-subtle text-secondary')
     expect(FUNDING_APPLICATION_STATUS_CLASS_MAP.Denied).toBe('bg-danger-subtle text-danger')
   })
