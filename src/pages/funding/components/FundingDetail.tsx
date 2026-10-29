@@ -5,6 +5,7 @@ import { FUNDING_ICON_MAP, QUALIFY_REASONS_MAP, ENGINE_STATUS_LABELS, MATCH_LEVE
 import { eligibilityLabel, hasMissingReadinessFactors } from '../../../utils/fundingEligibility';
 import { formatSpeedToFunds } from '../../../utils/formatters';
 import { getFundingColorStyles } from '../../../config/fundingColor';
+import { bankingGuidance } from '../../../utils/bankingGuidance';
 import { toast } from 'react-toastify';
 import { UncontrolledTooltip } from 'reactstrap';
 import '../../../../assets/css/funding.css';
@@ -285,6 +286,7 @@ const FundingDetail = () => {
     const ctaSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
     const activeFactors = dynamicReadiness.length > 0 ? dynamicReadiness : readiness_factors;
+    const bankStatementsGuidance = bankingGuidance(activeFactors);
     const hasMissingFactors = hasMissingReadinessFactors(activeFactors);
     const factorsToFix = activeFactors.filter((f: any) => hasMissingReadinessFactors([f]));
     // Same eligibility label as the funding card (BUG-026).
@@ -358,6 +360,25 @@ const FundingDetail = () => {
                                 </div>
                             ))}
                         </div>
+
+                        {/* ── Bank statements missing, rejected or short: say so and where to fix it ── */}
+                        {bankStatementsGuidance && (
+                            <div className="funding-bank-banner" role="alert">
+                                <div className="funding-bank-banner-icon" aria-hidden="true">
+                                    <i className="ri-bank-line" />
+                                    <i className="ri-error-warning-fill funding-bank-banner-badge" />
+                                </div>
+                                <div className="funding-bank-banner-text">
+                                    <h6 className="funding-bank-banner-title">{bankStatementsGuidance.title}</h6>
+                                    <p className="funding-bank-banner-detail">{bankStatementsGuidance.detail}</p>
+                                </div>
+                                {bankStatementsGuidance.action && (
+                                    <Link to={bankStatementsGuidance.action.path} className="btn btn-primary funding-bank-banner-action">
+                                        <i className="ri-upload-cloud-2-line me-2" />{bankStatementsGuidance.action.label}
+                                    </Link>
+                                )}
+                            </div>
+                        )}
 
                         {/* ── Two-column: Why You May Qualify + Underwriting Factors ── */}
                         <div className="row g-3 mb-3">
