@@ -605,15 +605,20 @@ describe('OnboardingSuggestion', () => {
       expect(within(dialog).queryByRole('button', { name: /skip/i })).toBeNull()
     })
 
-    it('asks for a document in every category, Others aside', async () => {
-      // The step stays until all of them are in (the API decides).
+    it('asks for the four required documents only, the rest being optional', async () => {
+      // The step stays until all four are in (the API decides).
       signInBorrower()
       mockOnboardingStep('upload_documents')
       renderSuggestion()
 
       const dialog = await screen.findByRole('dialog')
-      expect(dialog).toHaveTextContent(/every document category/i)
-      expect(dialog).toHaveTextContent(/others is optional/i)
+      expect(dialog).toHaveTextContent(/four required documents/i)
+      expect(dialog).toHaveTextContent(/driver's license/i)
+      expect(dialog).toHaveTextContent(/voided business check/i)
+      expect(dialog).toHaveTextContent(/ein \/ corporation docs/i)
+      expect(dialog).toHaveTextContent(/business bank statements/i)
+      expect(dialog).toHaveTextContent(/every other category is optional/i)
+      expect(dialog).not.toHaveTextContent(/every document category/i)
     })
   })
 

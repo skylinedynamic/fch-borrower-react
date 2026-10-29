@@ -16,6 +16,20 @@ test.describe('Sidebar › Documents', () => {
     }
   })
 
+  // Only these four need a document; the walkthrough's documents step and the
+  // page's progress count nothing else. Holds whatever the borrower has uploaded.
+  test('counts only the four required categories', async ({ page }) => {
+    await expect(page.locator('.page-content .docs-stat-value').first()).toHaveText(/^\d of 4 required$/)
+
+    for (const name of ['Driver’s License', 'Voided Business Check', 'EIN / Corporation Docs', 'Business Bank Statements']) {
+      await expect(category(page, name)).not.toContainText('Optional')
+    }
+    for (const name of ['Business Plan', 'Business Tax Returns', 'Others']) {
+      await expect(category(page, name)).toBeVisible()
+      await expect(category(page, name)).not.toContainText('Not uploaded')
+    }
+  })
+
   test('choosing a category opens its uploads', async ({ page }) => {
     const plan = category(page, 'Business Plan')
     await plan.click()
