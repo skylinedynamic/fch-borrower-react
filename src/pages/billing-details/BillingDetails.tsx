@@ -34,6 +34,7 @@ import {
   TRANSACTION_TYPE_DEBIT,
   TRANSACTION_TYPE_CREDIT,
   PROVIDER_STRIPE,
+  STRIPE_UNAVAILABLE_MESSAGE,
 } from '../../config/paymentConfig';
 
 // Inner Stripe Form component for card details
@@ -184,6 +185,8 @@ const ChangePaymentMethodModal = ({
   const [selectedProvider, setSelectedProvider] = useState<PaymentProviderItem | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [stripePromise, setStripePromise] = useState<any>(null);
+  // Stripe chosen but no card form can load (no publishable key).
+  const [stripeUnavailable, setStripeUnavailable] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -239,8 +242,10 @@ const ChangePaymentMethodModal = ({
     try {
       const promise = await getStripe(pubKey);
       setStripePromise(promise);
+      setStripeUnavailable(!promise);
     } catch (e) {
       console.error('Failed to init stripe', e);
+      setStripeUnavailable(true);
     }
   };
 
@@ -248,7 +253,8 @@ const ChangePaymentMethodModal = ({
     setLoadingProviders(true);
     try {
       const res = await fetchPaymentProviders();
-      const list = Array.isArray(res) ? res.filter((p) => p.status !== false) : [];
+      // Only gateways that are on and set up to take payments (BUG-130).
+      const list = Array.isArray(res) ? res.filter((p) => p.status !== false && p.can_take_payments !== false) : [];
       setProviders(list);
       if (list.length > 0) {
         const matching = list.find(
@@ -397,6 +403,8 @@ const ChangePaymentMethodModal = ({
                               onCancel={handleClose}
                             />
                           </Elements>
+                        ) : stripeUnavailable ? (
+                          <div className="alert alert-warning fs-13 mb-0 rounded-1">{STRIPE_UNAVAILABLE_MESSAGE}</div>
                         ) : (
                           <StripeFormLoader />
                         )}
