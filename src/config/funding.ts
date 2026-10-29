@@ -77,7 +77,7 @@ export const FUNDING_REVIEW_STATUS_OPTIONS = [
     { label: 'Cancelled', value: FUNDING_REVIEW_STATUS.CANCELED }
 ];
 
-// Stage's 19 statuses in their order, then the seven added for SCRUM-331.
+// Stage's statuses; SCRUM-331's two editable ones after In Verification, its closing ones after Denied.
 // The same order as the API (config/funding_application.php `statuses.order`).
 export const FUNDING_APPLICATION_STATUS = {
     ON_HOLD: 'On Hold',
@@ -87,6 +87,8 @@ export const FUNDING_APPLICATION_STATUS = {
     UNDERWRITING_REVIEW: 'Underwriting Review',
     MISSING_DOCUMENTS: 'Missing Documents (Action Required)',
     IN_VERIFICATION: 'In Verification',
+    PENDING_CLARIFICATION: 'Pending Clarification',
+    READY_FOR_SUBMISSION: 'Ready for Submission',
     APPROVED_CONDITIONAL: 'Approved (Conditional)',
     APPROVED_FINAL: 'Approved (Final)',
     MATCHED_TO_LENDER: 'Matched to Lender',
@@ -99,8 +101,6 @@ export const FUNDING_APPLICATION_STATUS = {
     FUNDED: 'Funded',
     CLOSED: 'Closed (Completed)',
     DENIED: 'Denied',
-    PENDING_CLARIFICATION: 'Pending Clarification',
-    READY_FOR_SUBMISSION: 'Ready for Submission',
     WITHDRAWN: 'Withdrawn',
     OFFER_DECLINED_BY_BORROWER: 'Offer Declined by Borrower',
     CLOSED_NO_RESPONSE: 'Closed - No Response',
