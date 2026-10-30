@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import Modal from 'bootstrap/js/dist/modal'
 import { hideAndDisposeModal } from '../../utils/bootstrapModal'
+import { clearStrayModalBackdrops } from '../../utils/modalBackdrop'
 
 interface ConfirmationModalProps {
   show: boolean
@@ -45,24 +46,11 @@ export default function ConfirmationModal({
   const modalRef = useRef<HTMLDivElement>(null)
   const modalInstanceRef = useRef<Modal | null>(null)
 
-  const cleanupModalEffects = () => {
-    // Scheduled below via setTimeout(..., 100/300) from the unmount cleanup,
-    // uncancelled - if the page (or, in tests, jsdom) is torn down before
-    // those fire, `document` is already gone by the time this callback runs.
-    if (typeof document === 'undefined') return
-
-    // Bail out while any modal is still open. This used to remove every
-    // .modal-backdrop in the document, which also took out overlays belonging to
-    // other modals - the profile completion modal is mounted globally, so on any
-    // page that renders this component its overlay was stripped and the page
-    // behind it showed undimmed. Only stray backdrops are cleared now.
-    if (document.querySelector('.modal.show')) return
-
-    document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove())
-    document.body.classList.remove('modal-open')
-    document.body.style.overflow = ''
-    document.body.style.paddingRight = ''
-  }
+  // Only stray backdrops: the globally mounted profile modal's overlay is left
+  // alone while it is open, including while it is still fading in. Checking for
+  // `.modal.show` alone missed that moment - this runs right after mount, as the
+  // page loads, and the profile modal lost its overlay on those pages.
+  const cleanupModalEffects = clearStrayModalBackdrops
 
   // Initialize Bootstrap Modal instance once
   useEffect(() => {
