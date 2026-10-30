@@ -7,6 +7,7 @@ import { INVOICE_STATUS_COLORS, INVOICE_STATUS_OPTIONS, STATUS_PAID, STATUS_PROC
 import InvoicePaymentModal from './InvoicePaymentModal';
 import InvoicePreviewModal from './InvoicePreviewModal';
 import { useAuthStore } from '../../../store/auth/authStore';
+import { ROWS_PER_PAGE_OPTIONS } from '../../../config/tableConfig';
 
 export default function InvoiceTable({
     data,
@@ -118,7 +119,7 @@ export default function InvoiceTable({
                 lazy
                 first={(page - 1) * perPage}
                 rows={perPage}
-                rowsPerPageOptions={[10, 25, 50, 100]}
+                rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
                 totalRecords={totalRecords}
                 onPage={onPage}
                 onSort={onSort}
