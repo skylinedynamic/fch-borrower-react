@@ -248,7 +248,9 @@ const ChangePaymentMethodModal = ({
     setLoadingProviders(true);
     try {
       const res = await fetchPaymentProviders();
-      const list = Array.isArray(res) ? res.filter((p) => p.status !== false) : [];
+      // Only a gateway that can take payments can be the default for
+      // auto-charges - the same rule as the invoice Pay Now dialog (BUG-151).
+      const list = Array.isArray(res) ? res.filter((p) => p.status !== false && p.can_take_payments === true) : [];
       setProviders(list);
       if (list.length > 0) {
         const matching = list.find(
@@ -326,6 +328,12 @@ const ChangePaymentMethodModal = ({
 
             {loadingProviders ? (
               <ModalProvidersLoader />
+            ) : providers.length === 0 ? (
+              // Nothing can take payments: say so, as Pay Now does, not an empty grid.
+              <div className="text-center py-4">
+                <i className="ri-bank-card-line fs-1 text-muted d-block mb-2"></i>
+                <p className="text-muted mb-0">No payment method is available right now. Please contact support to set up a payment method.</p>
+              </div>
             ) : (
               <div>
                 <label className="form-label fs-13 fw-semibold text-dark mb-3">

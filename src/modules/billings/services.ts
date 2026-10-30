@@ -9,6 +9,8 @@ export interface PaymentProviderItem {
   publishable_key?: string | null;
   // Backend (PartnerPaymentProviderResource) always casts this to a real boolean.
   status?: boolean;
+  /** Switched on and set up for its mode (e.g. Stripe with usable keys) - what Pay Now offers too (BUG-151). */
+  can_take_payments?: boolean;
 }
 
 export const fetchBillingDetails = async (): Promise<BillingDetailsData> => {

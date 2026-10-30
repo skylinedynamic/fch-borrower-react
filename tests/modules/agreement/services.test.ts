@@ -33,6 +33,18 @@ describe('agreement services', () => {
     expect(receivedBody).toEqual({ signature: 'data:image/png;base64,...' })
   })
 
+  it('submitAgreementSign sends the version of the agreement that was signed', async () => {
+    let receivedBody: unknown = null
+    server.use(
+      http.post('*/borrower/agreement-sign/submit', async ({ request }) => {
+        receivedBody = await request.json()
+        return HttpResponse.json({ status: true, message: 'Signed' })
+      })
+    )
+    await submitAgreementSign({ agreement_template_id: 7, agreement_template_version_id: 31, content_html: '<p>x</p>' })
+    expect(receivedBody).toEqual({ agreement_template_id: 7, agreement_template_version_id: 31, content_html: '<p>x</p>' })
+  })
+
   it('fetchSignedAgreementHtml uses the default (no userId) route when none is given', async () => {
     let calledPath = ''
     server.use(
