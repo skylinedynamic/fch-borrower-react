@@ -145,9 +145,13 @@ describe('Funding application › Step 4: Funding Request › Additional Funding
     const { container, save } = renderStep()
 
     await waitFor(() => expect(chipsOf(container, 'additional_funding_types')).toHaveLength(2))
-    expect(await save()).toBe(true)
-
-    expect(posted.additional_funding_types).toEqual(['SBA Loan', 'Line of Credit'])
+    // Failed in CI: the step registers its save in an effect that runs after
+    // the loaded values are on screen, so a save called at once could still be
+    // the one from before the load and send []. Retry until it is the new one.
+    await waitFor(async () => {
+      expect(await save()).toBe(true)
+      expect(posted.additional_funding_types).toEqual(['SBA Loan', 'Line of Credit'])
+    })
     expect(posted.preferred_funding_type).toBe('Term Loan')
   })
 
@@ -211,8 +215,11 @@ describe('Funding application › Step 4: Funding Request › Purpose of Funds',
     await user.click(screen.getByText('Payroll', { selector: '.p-multiselect-item span' }))
     await waitFor(() => expect(chipsOf(container, 'purpose_of_funds')).toEqual(['Working Capital', 'Payroll']))
 
-    expect(await save()).toBe(true)
-    expect(posted.purpose_of_funds).toBe('Working Capital, Payroll')
+    // Same effect timing as below: retry until the save after the pick runs.
+    await waitFor(async () => {
+      expect(await save()).toBe(true)
+      expect(posted.purpose_of_funds).toBe('Working Capital, Payroll')
+    })
     expect(posted.purpose_note).toBeNull()
   })
 
