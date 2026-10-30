@@ -44,12 +44,18 @@ export default function FundingApplicationDetailPage() {
   }
 
   // Same rule as the partner portal's Funding Application details page: the
-  // request is approved and the application is at status key 9 or below. The
-  // server works that out from the lifecycle key and sends it as is_editable.
+  // request is approved and the application is in one of the API's editable
+  // statuses (config `statuses.editable`). The server sends that as is_editable.
   const canEditApplication =
     application.funding_request_status === FUNDING_REVIEW_STATUS.APPROVED &&
     !!application.funding_request_id &&
     !!application.is_editable
+
+  // Status not in the editable list: tell the borrower so instead of just
+  // dropping the Edit button. The reason comes from the API.
+  const isLockedForEdit = !!application.id && application.is_editable === false
+  const lockedReason = application.locked_reason
+    || `This application can no longer be edited because it is "${application.status}". Contact your funding advisor if something needs to change.`
 
   const statusClass = FUNDING_APPLICATION_STATUS_CLASS_MAP[application.status] || 'bg-secondary-subtle text-secondary'
   const uses = Array.isArray(application.funding_sequence_uses) ? application.funding_sequence_uses.join(', ') : application.funding_sequence_uses
@@ -81,6 +87,11 @@ export default function FundingApplicationDetailPage() {
                   <i className="ri-edit-line" aria-hidden="true"></i>Edit Application
                 </Link>
               )}
+              {isLockedForEdit && (
+                <button type="button" className="ma-hero-link" disabled title={lockedReason}>
+                  <i className="ri-lock-line" aria-hidden="true"></i>Can't Edit Application
+                </button>
+              )}
               <Link to="/my-applications" className="ma-hero-link">
                 <i className="ri-arrow-left-line" aria-hidden="true"></i>Back
               </Link>
@@ -93,6 +104,13 @@ export default function FundingApplicationDetailPage() {
             <KeyFact label="Request status" value={application.funding_request_status} icon="ri-shield-check-line" />
           </div>
         </section>
+
+        {isLockedForEdit && (
+          <div className="alert alert-warning d-flex align-items-start gap-2 mb-4" role="status">
+            <i className="ri-lock-line fs-16" aria-hidden="true"></i>
+            <div>{lockedReason}</div>
+          </div>
+        )}
 
         <StageTracker status={application.status} />
 
