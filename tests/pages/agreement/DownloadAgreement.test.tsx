@@ -45,6 +45,28 @@ describe('DownloadAgreement', () => {
     expect(screen.queryByRole('button', { name: /Print/i })).toBeNull()
   })
 
+  /**
+   * A signed agreement made before the server built the record is HTML the
+   * signer's browser sent, so it may hold anything: it is shown in a frame
+   * where no script can run.
+   */
+  it('shows the signed agreement in a frame where no script can run', async () => {
+    params = { userId: '5' }
+    server.use(
+      http.get('*/borrower/agreement-sign/signed-html/5', () =>
+        HttpResponse.json({ status: true, data: { content_html: '<p>Terms</p><script>steal()</script>' } })
+      )
+    )
+
+    renderWithProviders(<DownloadAgreement />)
+
+    const frame = await screen.findByTitle('Agreement')
+    const sandbox = (frame.getAttribute('sandbox') ?? 'missing').split(/\s+/)
+    expect(sandbox).not.toContain('allow-scripts')
+    // Same origin so the page can size and print it; modals for the print dialog.
+    expect(sandbox).toEqual(expect.arrayContaining(['allow-same-origin', 'allow-modals']))
+  })
+
   it('still goes to /not-found when the agreement cannot be fetched', async () => {
     params = { userId: '999' }
     server.use(
