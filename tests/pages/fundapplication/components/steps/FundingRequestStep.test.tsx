@@ -202,7 +202,13 @@ describe('Funding application › Step 4: Funding Request › Purpose of Funds',
 
     await user.click(picker(container, 'purpose_of_funds').querySelector('.p-multiselect-trigger') as HTMLElement)
     await user.type(await screen.findByPlaceholderText(/search purpose/i), 'Payroll')
-    await user.click(await screen.findByText('Payroll', { selector: '.p-multiselect-item span' }))
+    // Flaky under a loaded full run: "Payroll" is also in the unfiltered list,
+    // so it was found and clicked there just before the filtered list replaced
+    // it - the click hit a removed option. Click only once the list is filtered.
+    await waitFor(() =>
+      expect(Array.from(document.querySelectorAll('.p-multiselect-item span'), (el) => el.textContent)).toEqual(['Payroll'])
+    )
+    await user.click(screen.getByText('Payroll', { selector: '.p-multiselect-item span' }))
     await waitFor(() => expect(chipsOf(container, 'purpose_of_funds')).toEqual(['Working Capital', 'Payroll']))
 
     expect(await save()).toBe(true)
@@ -213,11 +219,17 @@ describe('Funding application › Step 4: Funding Request › Purpose of Funds',
   it('asks for the note while Other is one of them, and sends it', async () => {
     let posted: any = null
     serve({ ...apiFunding, purpose_of_funds: 'Inventory, Other', purpose_note: 'Trade show booth' }, (body) => (posted = body))
-    const { save } = renderStep()
+    const { container, save } = renderStep()
 
     expect(await screen.findByDisplayValue('Trade show booth')).toBeInTheDocument()
-    expect(await save()).toBe(true)
-    expect(posted.purpose_of_funds).toBe('Inventory, Other')
+    await waitFor(() => expect(chipsOf(container, 'purpose_of_funds')).toEqual(['Inventory', 'Other']))
+    // Flaky in CI (slow, coverage on): the step registers its save in an
+    // effect that runs after the loaded values are on screen, so a save called
+    // at once could still be the one from before the load and send null.
+    await waitFor(async () => {
+      expect(await save()).toBe(true)
+      expect(posted.purpose_of_funds).toBe('Inventory, Other')
+    })
     expect(posted.purpose_note).toBe('Trade show booth')
   })
 
@@ -234,8 +246,12 @@ describe('Funding application › Step 4: Funding Request › Purpose of Funds',
     await user.click(otherChip.querySelector('.p-multiselect-token-icon') as Element)
 
     expect(screen.queryByDisplayValue('Trade show booth')).not.toBeInTheDocument()
-    expect(await save()).toBe(true)
-    expect(posted.purpose_of_funds).toBe('Inventory')
+    await waitFor(() => expect(chipsOf(container, 'purpose_of_funds')).toEqual(['Inventory']))
+    // Same effect timing as above: retry until the save after the removal runs.
+    await waitFor(async () => {
+      expect(await save()).toBe(true)
+      expect(posted.purpose_of_funds).toBe('Inventory')
+    })
     expect(posted.purpose_note).toBeNull()
   })
 })

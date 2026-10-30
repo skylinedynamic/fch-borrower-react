@@ -13,6 +13,7 @@ import {
     TRANSACTION_TYPE_DEBIT,
     TRANSACTION_TYPE_CREDIT
 } from '../../../config/paymentConfig';
+import { ROWS_PER_PAGE_OPTIONS } from '../../../config/tableConfig';
 
 export default function PaymentTable({
     data,
@@ -112,7 +113,7 @@ export default function PaymentTable({
                 lazy
                 first={(page - 1) * perPage}
                 rows={perPage}
-                rowsPerPageOptions={[10, 25, 50, 100]}
+                rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
                 totalRecords={totalRecords}
                 onPage={onPage}
                 onSort={onSort}

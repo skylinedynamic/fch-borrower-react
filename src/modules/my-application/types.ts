@@ -287,6 +287,8 @@ export interface FundingApplicationDetail extends FundingApplication {
   // lifecycle key still allows an edit (the server decides).
   funding_request_id?: number | null
   is_editable?: boolean
+  // Why the application can't be edited; null while it can.
+  locked_reason?: string | null
   funding_sequence_amount_range: string | null
   funding_request_status: string | null
   status_note: string | null

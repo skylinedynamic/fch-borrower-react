@@ -45,18 +45,33 @@ describe('FundingApplicationDetailPage — Edit Application', () => {
     expect(editLink()).not.toBeInTheDocument()
   })
 
-  // Status keys 1-9 are all editable; the server sends that as is_editable.
+  // The 11 editable statuses (API config `statuses.editable`); the server sends that as is_editable.
   it.each([
     FUNDING_APPLICATION_STATUS.ON_HOLD,
     FUNDING_APPLICATION_STATUS.DRAFT,
     FUNDING_APPLICATION_STATUS.PENDING,
     FUNDING_APPLICATION_STATUS.APPROVED_CONDITIONAL,
     FUNDING_APPLICATION_STATUS.APPROVED_FINAL,
-  ])('offers it at %s, because the status key is 9 or below', (status) => {
+    FUNDING_APPLICATION_STATUS.PENDING_CLARIFICATION,
+    FUNDING_APPLICATION_STATUS.READY_FOR_SUBMISSION,
+  ])('offers it at %s, an editable status', (status) => {
     detail.application = { ...editable, status }
     renderWithProviders(<FundingApplicationDetailPage />)
 
     expect(editLink()).toBeInTheDocument()
+  })
+
+  it.each([
+    FUNDING_APPLICATION_STATUS.WITHDRAWN,
+    FUNDING_APPLICATION_STATUS.OFFER_DECLINED_BY_BORROWER,
+    FUNDING_APPLICATION_STATUS.CLOSED_NO_RESPONSE,
+    FUNDING_APPLICATION_STATUS.CLOSED_INCOMPLETE_APPLICATION,
+    FUNDING_APPLICATION_STATUS.CLOSED_ERROR,
+  ])('hides it at %s, a new closing status', (status) => {
+    detail.application = { ...editable, status, is_editable: false }
+    renderWithProviders(<FundingApplicationDetailPage />)
+
+    expect(editLink()).not.toBeInTheDocument()
   })
 
   it('hides it when the funding request is not approved', () => {
@@ -141,3 +156,39 @@ describe('FundingApplicationDetailPage — overview', () => {
   })
 })
 
+describe("FundingApplicationDetailPage — Can't edit a locked application", () => {
+  const reason = 'This application can no longer be edited because it is "Withdrawn". Contact your funding advisor if something needs to change.'
+  const cantEdit = () => screen.queryByRole('button', { name: /can't edit application/i })
+
+  it('tells the borrower it can no longer be edited, and why', () => {
+    detail.application = { ...editable, status: FUNDING_APPLICATION_STATUS.WITHDRAWN, is_editable: false, locked_reason: reason }
+    renderWithProviders(<FundingApplicationDetailPage />)
+
+    expect(editLink()).not.toBeInTheDocument()
+    expect(cantEdit()).toBeDisabled()
+    expect(screen.getByRole('status')).toHaveTextContent(reason)
+  })
+
+  it.each([
+    FUNDING_APPLICATION_STATUS.MATCHED_TO_LENDER,
+    FUNDING_APPLICATION_STATUS.FUNDED,
+    FUNDING_APPLICATION_STATUS.OFFER_DECLINED_BY_BORROWER,
+    FUNDING_APPLICATION_STATUS.CLOSED_NO_RESPONSE,
+    FUNDING_APPLICATION_STATUS.CLOSED_INCOMPLETE_APPLICATION,
+    FUNDING_APPLICATION_STATUS.CLOSED_ERROR,
+  ])('says so at %s, naming the status when the server sends no reason', (status) => {
+    detail.application = { ...editable, status, is_editable: false }
+    renderWithProviders(<FundingApplicationDetailPage />)
+
+    expect(cantEdit()).toBeDisabled()
+    expect(screen.getByRole('status')).toHaveTextContent(`because it is "${status}"`)
+  })
+
+  it('says nothing of the kind while the application is editable', () => {
+    detail.application = { ...editable, status: FUNDING_APPLICATION_STATUS.PENDING_CLARIFICATION }
+    renderWithProviders(<FundingApplicationDetailPage />)
+
+    expect(cantEdit()).not.toBeInTheDocument()
+    expect(screen.queryByText(/can no longer be edited/i)).not.toBeInTheDocument()
+  })
+})
