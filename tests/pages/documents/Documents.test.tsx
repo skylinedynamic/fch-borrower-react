@@ -77,7 +77,8 @@ describe('Documents page - review status', () => {
 
   // The page shows one category at a time: open it from the list, then read its files.
   const openCategory = async (user: ReturnType<typeof userEvent.setup>, name: string) => {
-    await user.click(await screen.findByRole('button', { name: new RegExp(name) }))
+    // From the start of the name: the next-step button reads "Upload <category>".
+    await user.click(await screen.findByRole('button', { name: new RegExp(`^${name}`) }))
   }
   const fileRow = (name: string) => screen.getAllByText(name)[0].closest('.docs-file') as HTMLElement
 
@@ -101,14 +102,107 @@ describe('Documents page - review status', () => {
     expect(within(fileRow('tax-2025.pdf')).getByText('Pending review')).toBeInTheDocument()
   })
 
-  // The review shows on each file only: the category list and the heading keep
-  // saying "Uploaded" as before.
-  it('leaves the category list and heading as they were - the review is on each file', async () => {
+  // A category's list entry says where it stands: the green tick only once a
+  // file is accepted, a pending clock while it waits for review.
+  it('ticks an accepted category, and shows a pending one as Pending review', async () => {
     serveReviewed()
     renderWithProviders(<Documents />)
 
-    const category = await screen.findByRole('button', { name: /Business Bank Statements/ })
-    expect(category.querySelector('.docs-category-status.is-done .ri-check-line')).not.toBeNull()
-    expect(category).not.toHaveTextContent(/Rejected|Accepted/)
+    const accepted = await screen.findByRole('button', { name: /^Driver License/ })
+    expect(accepted.querySelector('.docs-category-status.is-done .ri-check-line')).not.toBeNull()
+
+    const pending = screen.getByRole('button', { name: /^Tax Returns/ })
+    expect(pending.querySelector('.docs-category-status.is-pending')).not.toBeNull()
+    expect(pending.querySelector('.docs-category-status.is-done')).toBeNull()
+    expect(pending).toHaveTextContent('Pending review')
+  })
+})
+
+/**
+ * BUG-135: a category whose only file was Rejected still counted as uploaded -
+ * green tick, "Uploaded", counted in "x of N", and Your next step moved on -
+ * so the client was never told to upload a new one. The server's onboarding
+ * step already left rejected documents out.
+ */
+describe('Documents page - a rejected file needs a new upload', () => {
+  const serve = (documents: Record<number, unknown[]>) =>
+    server.use(
+      http.get('*/borrower/documents/borrower-document-types', () =>
+        HttpResponse.json({
+          status: true,
+          data: [
+            { id: 1, name: "Driver's License", sort_order: 1 },
+            { id: 2, name: 'Voided Business Check', sort_order: 2 },
+            { id: 3, name: 'EIN / Corporation Docs', sort_order: 3 },
+            { id: 4, name: 'Business Bank Statements', sort_order: 4 },
+          ],
+        })
+      ),
+      http.get('*/borrower/documents', () => HttpResponse.json({ status: true, data: documents }))
+    )
+  const doc = (id: number, typeId: number, status: string) => ({
+    id, borrower_id: 5, document_type_id: typeId, file_name: `file-${id}.pdf`, file_path: `${id}.pdf`, url: '', status,
+    rejection_reason: status === 'Rejected' ? 'Not readable' : null,
+  })
+
+  it('shows the category as needing a re-upload, not counted, and points Your next step at it', async () => {
+    serve({ 1: [doc(11, 1, 'Accepted')], 2: [doc(12, 2, 'Rejected')] })
+    const user = userEvent.setup()
+    renderWithProviders(<Documents />)
+
+    const category = await screen.findByRole('button', { name: /^Voided Business Check/ })
+    expect(category.querySelector('.docs-category-status.is-done')).toBeNull()
+    expect(category).toHaveTextContent('Re-upload needed')
+
+    expect(screen.getByText('1 of 4 required categories uploaded')).toBeInTheDocument()
+    const next = screen.getByRole('button', { name: /Upload Voided Business Check/ })
+
+    // The next-step button opens that category, where the rejected file asks for a new one.
+    await user.click(next)
+    const detail = screen.getByRole('region', { name: 'Voided Business Check' })
+    expect(within(detail).getByText(/upload a new file/i)).toBeInTheDocument()
+    expect(within(detail).queryByText(/^Uploaded$/)).not.toBeInTheDocument()
+  })
+
+  it('counts a category again once it also has a file that is not rejected (shown as pending)', async () => {
+    serve({ 1: [doc(11, 1, 'Accepted')], 2: [doc(12, 2, 'Rejected'), doc(13, 2, 'Uploaded')] })
+    renderWithProviders(<Documents />)
+
+    const category = await screen.findByRole('button', { name: /^Voided Business Check/ })
+    expect(category.querySelector('.docs-category-status.is-pending')).not.toBeNull()
+    expect(screen.getByText('2 of 4 required categories uploaded')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Upload EIN \/ Corporation Docs/ })).toBeInTheDocument()
+  })
+
+  it('marks each required document in Your next step, the rejected one as the next', async () => {
+    serve({ 1: [doc(11, 1, 'Accepted')], 2: [doc(12, 2, 'Rejected')], 3: [doc(13, 3, 'Uploaded')] })
+    renderWithProviders(<Documents />)
+
+    const prompt = await screen.findByRole('region', { name: /your next step/i })
+    const steps = within(within(prompt).getByRole('list', { name: 'Required documents' })).getAllByRole('listitem')
+    expect(steps.map((s) => s.className)).toEqual([
+      'docs-prompt-step is-accepted',
+      'docs-prompt-step is-reupload is-next',
+      'docs-prompt-step is-pending',
+      'docs-prompt-step is-empty',
+    ])
+  })
+})
+
+
+describe('Documents page - the next step', () => {
+  it('is its own section under the hero, not inside it', async () => {
+    server.use(
+      http.get('*/borrower/documents/borrower-document-types', () =>
+        HttpResponse.json({ status: true, data: [{ id: 1, name: "Driver's License", sort_order: 1 }] })
+      ),
+      http.get('*/borrower/documents', () => HttpResponse.json({ status: true, data: {} }))
+    )
+    renderWithProviders(<Documents />)
+
+    const prompt = await screen.findByRole('region', { name: /your next step/i })
+    const hero = screen.getByRole('region', { name: 'Documents overview' })
+    expect(hero).not.toContainElement(prompt)
+    expect(hero.compareDocumentPosition(prompt) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 })
