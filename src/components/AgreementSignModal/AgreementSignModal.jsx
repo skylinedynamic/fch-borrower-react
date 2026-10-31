@@ -6,6 +6,9 @@ import { useCheckAgreementSign, useSubmitAgreementSign } from '../../modules/agr
 import { useBrandingStore } from '../../store/brandingStore'
 import { AgreementSignModalLoader } from '../Loader/AgreementLoader.jsx'
 import { withAppCalendar } from '../../utils/agreementCalendar'
+import { collectAgreementFields } from '../../utils/agreementFields'
+import { useGuidedSigning } from './useGuidedSigning'
+import SignatureDialog from './SignatureDialog'
 
 const AgreementSignModal = () => {
   const [visible, setVisible] = useState(false)
@@ -20,7 +23,9 @@ const AgreementSignModal = () => {
   
   const isFreeTrial = !!user?.is_free_trail || !!userSubscription?.is_free_trail
 
-  const { data: checkData, isLoading: loadingCheck } = useCheckAgreementSign()
+  const { data: checkData, isLoading: loadingCheck, refetch: refetchCheck } = useCheckAgreementSign()
+  const guide = useGuidedSigning(iframeRef, template ? `${template.id}:${template.version_id}:${template.template_html?.length}` : null)
+  const signerName = user?.name || [user?.first_name, user?.last_name].filter(Boolean).join(' ')
   const submitSignature = useSubmitAgreementSign()
 
   useEffect(() => {
@@ -47,14 +52,30 @@ const AgreementSignModal = () => {
         return;
       }
 
+      // Read before getFilledHTML(), which re-lays the page out on phones.
+      const fields = iframe.contentDocument ? collectAgreementFields(iframe.contentDocument) : {};
       const filledHtml = iframeWindow.getFilledHTML?.() || template.template_html;
 
       await submitSignature.mutateAsync({
         agreement_template_id: template.id,
+        agreement_template_version_id: template.version_id,
+        // The server builds the signed record from these. content_html is only for an API not yet updated.
+        fields,
         content_html: filledHtml
       })
       setIsSuccess(true)
     } catch (error) {
+      if (error?.response?.status === 409) {
+        // The wording changed after it was opened: show the current wording to review.
+        toast.error(error.response.data?.message || "This agreement has been updated. Please review it again.")
+        setIsAgreed(false)
+        refetchCheck()
+        return
+      }
+      if (error?.response?.status === 422 && error.response.data?.message) {
+        toast.error(error.response.data.message)
+        return
+      }
       toast.error("Failed to sign agreement. Please try again.")
     } finally {
       setIsLoading(false)
@@ -437,7 +458,7 @@ const AgreementSignModal = () => {
                   Your agreement has been successfully signed. You now have full access to all platform features.
                 </p>
                 <button 
-                  className="asm-btn-proceed" 
+                  className="btn btn-primary btn-lg asm-btn-proceed" 
                   onClick={() => {
                     setCredentials({
                       token: useAuthStore.getState().token,
@@ -453,14 +474,41 @@ const AgreementSignModal = () => {
               </div>
             ) : (
               <>
+                {guide.total > 0 && (
+                  <div className="asm-guide" aria-live="polite">
+                    <div className="asm-guide__status">
+                      <span className="asm-guide__icon" aria-hidden="true">
+                        <i className={guide.done === guide.total ? 'ri-checkbox-circle-fill' : 'ri-edit-circle-line'}></i>
+                      </span>
+                      <div>
+                        <div className="asm-guide__count"><strong>{guide.done} of {guide.total}</strong> required fields completed</div>
+                        <div className="asm-guide__bar"><span style={{ width: `${Math.round((guide.done / guide.total) * 100)}%` }}></span></div>
+                      </div>
+                    </div>
+                    {guide.done < guide.total ? (
+                      <button type="button" className="btn btn-primary asm-guide__next" onClick={guide.next}>
+                        {guide.started ? 'Next field' : 'Start'}
+                        <i className="ri-arrow-down-line" aria-hidden="true"></i>
+                      </button>
+                    ) : (
+                      <span className="asm-guide__ready"><i className="ri-check-line" aria-hidden="true"></i> Ready to sign</span>
+                    )}
+                  </div>
+                )}
+
                 <div className="asm-document-frame">
                   <iframe
                     ref={iframeRef}
                     className="asm-iframe"
                     title="Agreement Content"
                     srcDoc={iframeContent}
+                    onLoad={guide.onFrameLoad}
                   />
                 </div>
+
+                {guide.signingBlock && (
+                  <SignatureDialog name={signerName} onApply={guide.applySignature} onClose={guide.closeSignature} />
+                )}
 
                 <div className="asm-action-footer">
                   <div className="asm-action-flex">
@@ -478,7 +526,7 @@ const AgreementSignModal = () => {
                     </label>
 
                     <button
-                      className={`asm-btn-submit ${(!isAgreed || isLoading) ? 'asm-btn-disabled' : ''}`}
+                      className={`btn btn-primary asm-btn-submit ${(!isAgreed || isLoading) ? 'asm-btn-disabled' : ''}`}
                       disabled={!isAgreed || isLoading}
                       onClick={handleSign}
                     >

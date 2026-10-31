@@ -145,3 +145,43 @@ describe('FundingRequestList sorting', () => {
     await waitFor(() => expect(order()).toEqual(['Bravo', 'Alpha']))
   })
 })
+
+/**
+ * BUG-149: the list paged 10 at a time with no rows-per-page selector, while
+ * Invoices and Payments offer 10/25/50/100. It offers the same choices, and a
+ * choice asks the API for that many rows.
+ */
+describe('FundingRequestList rows per page', () => {
+  it('offers 10/25/50/100 rows per page and asks the API for the one chosen', async () => {
+    const perPages: number[] = []
+    const rows = Array.from({ length: 11 }, (_, i) => ({ id: i + 1, funding_type: `Loan ${i + 1}`, requested_amount: 1000 }))
+    server.use(
+      http.post('*/borrower/funding/requests/list', async ({ request }) => {
+        const body: any = await request.json()
+        perPages.push(body.per_page)
+        return HttpResponse.json({ status: true, data: rows.slice(0, body.per_page), meta: { total: rows.length }, funding_types: [] })
+      })
+    )
+    const user = userEvent.setup()
+
+    const { container } = renderWithProviders(<FundingRequestList />)
+    await screen.findByText('Loan 1')
+
+    const rowsPerPage = container.querySelector('.p-paginator .p-dropdown') as HTMLElement
+    expect(rowsPerPage).not.toBeNull()
+    expect(perPages[perPages.length - 1]).toBe(10)
+
+    await user.click(rowsPerPage)
+    // The open panel is portalled to the body; scoped to it, not the filters.
+    const options = await waitFor(() => {
+      const items = Array.from(document.querySelectorAll<HTMLElement>('.p-dropdown-panel [role="option"]'))
+      expect(items).toHaveLength(4)
+      return items
+    })
+    expect(options.map((o) => o.textContent)).toEqual(['10', '25', '50', '100'])
+
+    await user.click(options[1])
+    await waitFor(() => expect(perPages[perPages.length - 1]).toBe(25))
+    expect(await screen.findByText('Loan 11')).toBeInTheDocument()
+  })
+})

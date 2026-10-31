@@ -51,5 +51,21 @@ test.describe('Sidebar › Billing Details', () => {
 
     await dialog.locator('.btn-close').click()
   })
+
+  // BUG-151 follow-up: a gateway that can't take payments (Stripe without keys)
+  // is left out, and when none can the dialog says so instead of an empty grid.
+  // Only the provider list is answered here; nothing is changed.
+  test('Change says no payment method is available when none can take payments', async ({ page }) => {
+    await page.route('**/common/partner-payment-providers', (route) =>
+      route.fulfill({ json: { status: true, data: [{ id: 1, name: 'Stripe', display_name: 'Stripe', status: true, can_take_payments: false }] } })
+    )
+    await openFromSidebar(page, 'Billing Details', /\/billing-details$/)
+    await page.getByRole('button', { name: /^\W*Change$/ }).click()
+
+    const dialog = page.locator('.modal.show').filter({ hasText: 'Change Default Payment Method' })
+    await expect(dialog.getByText(/No payment method is available right now/)).toBeVisible()
+    await expect(dialog.getByText('Available Payment Gateways')).toHaveCount(0)
+    await expect(dialog.getByRole('button', { name: /save/i })).toHaveCount(0)
+  })
 })
 

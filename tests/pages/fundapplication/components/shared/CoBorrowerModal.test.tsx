@@ -41,16 +41,16 @@ const draft: CoBorrower = {
   driversLicenseState: '',
 }
 
-function Harness({ initial, onSubmit }: { initial: CoBorrower; onSubmit: (e: any) => void }) {
+function Harness({ initial, onSubmit, otherOwnershipTotal = 0 }: { initial: CoBorrower; onSubmit: (e: any) => void; otherOwnershipTotal?: number }) {
   const [coDraft, setCoDraft] = useState<CoBorrower>(initial)
-  return <CoBorrowerModal coDraft={coDraft} setCoDraft={setCoDraft} onSubmit={onSubmit} isEditing={false} />
+  return <CoBorrowerModal coDraft={coDraft} setCoDraft={setCoDraft} onSubmit={onSubmit} isEditing={false} otherOwnershipTotal={otherOwnershipTotal} />
 }
 
-const renderModal = (coDraft: CoBorrower, onSubmit = vi.fn()) => {
+const renderModal = (coDraft: CoBorrower, onSubmit = vi.fn(), otherOwnershipTotal = 0) => {
   const queryClient = createTestQueryClient()
   const utils = render(
     <QueryClientProvider client={queryClient}>
-      <Harness initial={coDraft} onSubmit={onSubmit} />
+      <Harness initial={coDraft} onSubmit={onSubmit} otherOwnershipTotal={otherOwnershipTotal} />
     </QueryClientProvider>
   )
   return { ...utils, onSubmit }
@@ -149,5 +149,34 @@ describe('CoBorrowerModal — phone fields', () => {
     expect(screen.queryByText(/Enter a valid 10-digit US phone number/)).not.toBeInTheDocument()
     // Only the field that was edited: the email's error stays until it is fixed.
     expect(screen.getByText('The email field is required.')).toBeInTheDocument()
+  })
+})
+
+/**
+ * Defect (BUG-108): + Add Co-Borrower accepted 50% next to an owner holding
+ * 100% - the check went out without what the others already hold, so only
+ * Save & Next refused it later. The modal sends other_ownership_total, and the
+ * API's answer stops the add with the message under Ownership %.
+ */
+describe('CoBorrowerModal — ownership must fit in what the others leave', () => {
+  afterEach(() => server.resetHandlers())
+
+  it('sends what the owner and other co-borrowers hold, and does not add a share that would pass 100%', async () => {
+    let receivedBody: any = null
+    server.use(
+      http.post('*/borrower/myapplication/funding-application/co-borrower-validation', async ({ request }) => {
+        receivedBody = await request.json()
+        return HttpResponse.json({ status: false, message: 'Invalid', errors: { ownership: 'Only 0% is left after the owner and the other co-borrowers.' } }, { status: 422 })
+      })
+    )
+    const user = userEvent.setup()
+    const { onSubmit } = renderModal({ ...draft, ownershipPct: '50' }, vi.fn(), 100)
+
+    await user.click(screen.getByRole('button', { name: /Add Co-Borrower/i, hidden: true }))
+
+    await waitFor(() => expect(receivedBody).not.toBeNull())
+    expect(receivedBody).toMatchObject({ ownership: '50', other_ownership_total: 100 })
+    expect(await screen.findByText('Only 0% is left after the owner and the other co-borrowers.')).toBeInTheDocument()
+    expect(onSubmit).not.toHaveBeenCalled()
   })
 })

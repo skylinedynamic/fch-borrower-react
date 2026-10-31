@@ -10,7 +10,8 @@ export interface PaymentProviderItem {
   // Backend (PartnerPaymentProviderResource) always casts this to a real boolean.
   status?: boolean;
   // False while the gateway is missing setup for its mode (e.g. Stripe with no
-  // keys): it cannot take payments, so it is not offered (BUG-130).
+  // keys): it cannot take payments, so neither Change nor Pay Now offers it
+  // (BUG-130, BUG-151).
   can_take_payments?: boolean;
 }
 
