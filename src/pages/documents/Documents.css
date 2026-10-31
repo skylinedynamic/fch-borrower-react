@@ -14,6 +14,9 @@
   --docs-success: #0ab39c;
   --docs-success-rgb: 10, 179, 156;
   --docs-danger: #e5543b;
+  --docs-danger-rgb: 229, 84, 59;
+  --docs-warning: #a86b08;
+  --docs-warning-rgb: 247, 184, 75;
   --docs-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.04);
 }
 
@@ -24,29 +27,61 @@
   padding-bottom: 32px;
 }
 
-/* -- header --------------------------------------------------------------------- */
+/* -- hero ------------------------------------------------------------------------ */
+/* Same language as My Applications / Credit Builder: the tenant's brand fills
+   the hero, a faint grid on the right, a glass card on it, 4px corners. Kept
+   short: one title row, the facts as small chips, the progress beside them. */
 
 .docs-hero {
-  margin-bottom: 20px;
-  border: 1px solid var(--docs-border);
+  --docs-on-brand: var(--brand-on-primary, #fff);
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(260px, 1fr);
+  align-items: center;
+  gap: 16px 28px;
+  margin-bottom: 16px;
+  padding: 18px 22px;
+  overflow: hidden;
   border-radius: var(--docs-radius);
-  background: #fff;
-  box-shadow: var(--docs-shadow);
-  padding: 20px 24px;
+  color: var(--docs-on-brand);
+  background:
+    radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--docs-on-brand) 16%, transparent), transparent 45%),
+    linear-gradient(120deg, var(--docs-brand) 0%, var(--docs-brand) 35%, color-mix(in srgb, var(--docs-brand) 70%, #000) 100%);
+  box-shadow: 0 10px 26px rgba(var(--docs-brand-rgb), 0.22);
+}
+
+.docs-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--docs-on-brand) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--docs-on-brand) 6%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(90deg, transparent, #000 70%);
+  pointer-events: none;
+}
+
+.docs-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.docs-hero.is-loading .skeleton-line {
+  background: color-mix(in srgb, var(--docs-on-brand) 18%, transparent);
 }
 
 .docs-hero-main {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px 32px;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
 }
 
 .docs-hero-intro {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -55,98 +90,181 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--docs-radius);
-  background: var(--docs-brand);
-  color: #fff;
-  font-size: 24px;
+  font-size: 20px;
+  background: color-mix(in srgb, var(--docs-on-brand) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--docs-on-brand) 18%, transparent);
+}
+
+.docs-hero-heading {
+  min-width: 0;
 }
 
 .docs-hero-title {
   margin: 0 0 2px;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--docs-ink);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: inherit;
 }
 
 .docs-hero-subtitle {
   margin: 0;
-  font-size: 13px;
-  color: var(--docs-muted);
+  font-size: 13.5px;
+  line-height: 1.45;
+  opacity: 0.85;
 }
 
-.docs-hero-stats {
+/* The facts: small chips in a row. */
+.docs-hero-facts {
   display: flex;
-  border: 1px solid var(--docs-border);
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.docs-fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 4px 10px 4px 8px;
   border-radius: var(--docs-radius);
-  background: var(--docs-soft);
+  font-size: 12px;
+  background: color-mix(in srgb, var(--docs-on-brand) 11%, transparent);
 }
 
-.docs-stat {
+.docs-fact i {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.docs-fact-value {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.docs-fact-label {
+  opacity: 0.85;
+}
+
+/* Every allowed file type, along the bottom. */
+.docs-hero-rules {
+  grid-column: 1 / -1;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 140px;
-  padding: 10px 18px;
+  align-items: flex-start;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--docs-on-brand) 14%, transparent);
+  font-size: 11.5px;
+  line-height: 1.6;
+  opacity: 0.82;
 }
 
-.docs-stat + .docs-stat {
-  border-left: 1px solid var(--docs-border);
+.docs-hero-rules i {
+  font-size: 14px;
+  line-height: 1.3;
 }
 
-.docs-stat-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--docs-muted);
+.docs-hero-rules-label {
+  font-weight: 700;
+}
+
+/* The progress card. */
+.docs-hero-progress {
+  padding: 14px 16px;
+  border-radius: var(--docs-radius);
+  background: color-mix(in srgb, var(--docs-on-brand) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--docs-on-brand) 18%, transparent);
+  backdrop-filter: blur(4px);
+}
+
+.docs-progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.docs-progress-percent {
+  padding: 2px 8px;
+  border-radius: var(--docs-radius);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: color-mix(in srgb, var(--docs-on-brand) 16%, transparent);
 }
 
 .docs-stat-value {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--docs-ink);
-  white-space: nowrap;
+  display: block;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
 }
 
+.docs-progress-segments {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 5px;
+}
+
+.docs-progress-segment {
+  height: 7px;
+  border-radius: var(--docs-radius);
+  background: color-mix(in srgb, var(--docs-on-brand) 22%, transparent);
+}
+
+.docs-progress-segment.is-accepted,
+.docs-progress-dot.is-accepted { background: #2fd3b3; }
+.docs-progress-segment.is-pending,
+.docs-progress-dot.is-pending { background: #f7b84b; }
+.docs-progress-segment.is-reupload,
+.docs-progress-dot.is-reupload { background: #ff7a66; }
+.docs-progress-dot.is-empty { background: color-mix(in srgb, var(--docs-on-brand) 40%, transparent); }
+
+.docs-progress-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 11.5px;
+  opacity: 0.9;
+}
+
+.docs-progress-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.docs-progress-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+/* No segments (no categories known): a plain bar. */
 .docs-stat-track {
   display: block;
-  height: 4px;
-  margin-top: 4px;
+  height: 7px;
   border-radius: var(--docs-radius);
-  background: #e3e6eb;
+  background: color-mix(in srgb, var(--docs-on-brand) 22%, transparent);
   overflow: hidden;
 }
 
 .docs-stat-bar {
   display: block;
   height: 100%;
-  background: var(--docs-success);
+  background: #2fd3b3;
   transition: width 0.3s ease;
-}
-
-.docs-hero-rules {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px dashed var(--docs-border);
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--docs-muted);
-}
-
-.docs-hero-rules i {
-  font-size: 15px;
-  line-height: 1.3;
-  color: var(--docs-brand-ink);
-}
-
-.docs-hero-rules-label {
-  font-weight: 600;
-  color: var(--docs-ink);
 }
 
 /* -- the board ------------------------------------------------------------------- */
@@ -271,6 +389,26 @@
   color: #078a78;
 }
 
+/* A file waiting for review: uploaded, not accepted yet (BUG-135). */
+.docs-category-status.is-pending {
+  background: rgba(var(--docs-warning-rgb), 0.16);
+  color: var(--docs-warning);
+}
+
+.docs-category-status.is-pending + .docs-category-text .docs-category-meta {
+  color: var(--docs-warning);
+}
+
+/* Only rejected files left: a new one is needed (BUG-135). */
+.docs-category-status.is-rejected {
+  background: rgba(var(--docs-danger-rgb), 0.12);
+  color: var(--docs-danger);
+}
+
+.docs-category-status.is-rejected + .docs-category-text .docs-category-meta {
+  color: var(--docs-danger);
+}
+
 .docs-category-chevron {
   flex: none;
   font-size: 18px;
@@ -359,6 +497,16 @@
 .docs-badge.is-done {
   background: rgba(var(--docs-success-rgb), 0.12);
   color: #078a78;
+}
+
+.docs-badge.is-pending {
+  background: rgba(var(--docs-warning-rgb), 0.16);
+  color: var(--docs-warning);
+}
+
+.docs-badge.is-rejected {
+  background: rgba(var(--docs-danger-rgb), 0.12);
+  color: var(--docs-danger);
 }
 
 .docs-dropzone {
@@ -559,14 +707,9 @@
   min-height: 140px;
 }
 
-@media (max-width: 1199.98px) {
-  .docs-hero-stats {
-    width: 100%;
-  }
-
-  .docs-stat {
-    flex: 1;
-    min-width: 0;
+@media (max-width: 991.98px) {
+  .docs-hero {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -575,27 +718,12 @@
     padding: 16px;
   }
 
-  .docs-stat {
-    padding: 10px 12px;
-  }
-
-  .docs-stat-value {
-    font-size: 14px;
-    white-space: normal;
+  .docs-hero-title {
+    font-size: 20px;
   }
 }
 
 @media (max-width: 575.98px) {
-  .docs-hero-stats {
-    flex-wrap: wrap;
-  }
-
-  .docs-stat:last-child {
-    flex-basis: 100%;
-    border-left: 0;
-    border-top: 1px solid var(--docs-border);
-  }
-
   .docs-file-remove span {
     display: none;
   }

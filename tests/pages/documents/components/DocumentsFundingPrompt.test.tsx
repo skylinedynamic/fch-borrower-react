@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { Route, Routes } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
+import { within } from '@testing-library/react'
 import { renderWithProviders, screen } from '../../../test-utils'
 import DocumentsFundingPrompt from '../../../../src/pages/documents/components/DocumentsFundingPrompt'
 
@@ -61,6 +62,40 @@ describe('Documents: uploading the required documents to apply for funding', () 
 
     await user.click(screen.getByRole('link', { name: /continue to funding/i }))
     expect(await screen.findByText('Funding page')).toBeInTheDocument()
+  })
+
+  it('shows how far along as a ring, filled of total', () => {
+    renderPrompt()
+
+    expect(screen.getByRole('img', { name: '1 of 4 required categories uploaded' })).toHaveTextContent('1/4')
+  })
+
+  it('lists each required category as a step, marked by where it stands, the next one picked out', () => {
+    renderPrompt({
+      categories: [
+        { name: "Driver's License", state: 'accepted' },
+        { name: 'Voided Business Check', state: 'empty' },
+        { name: 'EIN / Corporation Docs', state: 'pending' },
+        { name: 'Business Bank Statements', state: 'reupload' },
+      ],
+    })
+
+    const steps = within(screen.getByRole('list', { name: 'Required documents' })).getAllByRole('listitem')
+    expect(steps.map((s) => s.querySelector('.docs-prompt-step-name')?.textContent)).toEqual([
+      "Driver's License",
+      'Voided Business Check',
+      'EIN / Corporation Docs',
+      'Business Bank Statements',
+    ])
+    expect(steps.map((s) => s.className)).toEqual([
+      'docs-prompt-step is-accepted',
+      'docs-prompt-step is-empty is-next',
+      'docs-prompt-step is-pending',
+      'docs-prompt-step is-reupload',
+    ])
+    expect(steps[1]).toHaveAttribute('aria-current', 'step')
+    // A stepper: each step's mark, numbered while it has nothing in it.
+    expect(steps.map((s) => s.querySelector('.docs-prompt-step-mark')?.textContent)).toEqual(['', '2', '', ''])
   })
 
   it('says nothing when there are no document categories', () => {

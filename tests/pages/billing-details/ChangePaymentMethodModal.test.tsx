@@ -95,6 +95,70 @@ describe('BillingDetails > Change Payment Method modal', () => {
   })
 
   /**
+   * BUG-130: a WL free-plan client was offered Stripe (Active but with no
+   * keys) ahead of Cash, and with no publishable key the card form stayed a
+   * loading skeleton forever.
+   */
+  describe('BUG-130: only gateways that can take payments', () => {
+    function serve(providers: Record<string, unknown>[], defaultMethod: string | null = null) {
+      server.use(
+        http.get('*/borrower/billing-details', () =>
+          HttpResponse.json({
+            data: {
+              borrower: { id: 1, name: 'Wanda Client', email: 'wanda.client@example.com', default_payment_method: defaultMethod },
+              subscription: null,
+            },
+          })
+        ),
+        http.get('*/common/partner-payment-providers', () => HttpResponse.json({ data: providers }))
+      )
+    }
+
+    async function openDialog() {
+      const user = userEvent.setup()
+      renderWithProviders(<BillingDetails />)
+      await user.click(await screen.findByRole('button', { name: /change/i }))
+      const dialog = screen.getByText('Change Default Payment Method').closest('.modal') as HTMLElement
+      await within(dialog).findByText('Available Payment Gateways')
+      return dialog
+    }
+
+    it('leaves out an active gateway that is not set up, so Cash is the one offered and picked', async () => {
+      serve([
+        { id: 1, name: 'Stripe', display_name: 'Stripe', status: true, publishable_key: null, can_take_payments: false },
+        { id: 3, name: 'Cash Payment', display_name: 'Cash Payment', status: true, can_take_payments: true },
+      ])
+
+      const dialog = await openDialog()
+
+      expect(within(dialog).getAllByText('Cash Payment').length).toBeGreaterThan(0)
+      expect(within(dialog).queryByText('Stripe')).not.toBeInTheDocument()
+      expect(within(dialog).queryByText(/enter your card details/i)).not.toBeInTheDocument()
+      expect(within(dialog).getByRole('button', { name: /set as default method/i, hidden: true })).toBeInTheDocument()
+    })
+
+    it('still lists a gateway when the reply says nothing about whether it can take payments', async () => {
+      serve([{ id: 2, name: 'Bank Transfer', display_name: 'Bank Transfer', status: true }])
+
+      const dialog = await openDialog()
+
+      expect(within(dialog).getAllByText('Bank Transfer').length).toBeGreaterThan(0)
+    })
+
+    it('says card payments are unavailable instead of loading forever when Stripe has no key', async () => {
+      serve(
+        [{ id: 1, name: 'Stripe', display_name: 'Stripe', status: true, publishable_key: null }],
+        'Stripe'
+      )
+
+      const dialog = await openDialog()
+
+      expect(await within(dialog).findByText(/card payments are not available right now/i)).toBeInTheDocument()
+      expect(dialog.querySelector('.p-skeleton')).toBeNull()
+    })
+  })
+
+  /**
    * BUG-151: Stripe switched on but with no keys ("Active - Not configured")
    * was offered here, so it could become the default for auto-charges, while
    * the invoice Pay Now dialog already hid it. Both offer only a gateway that
