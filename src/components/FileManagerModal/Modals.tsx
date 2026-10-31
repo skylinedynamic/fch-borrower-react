@@ -302,7 +302,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpl
                 <div key={reason}>{reason}</div>
               ))}
               <div className="mt-1 text-muted">
-                Allowed types: {FILE_MANAGER_CONFIG.ALLOWED_EXTENSIONS.join(', ')}. Max {(FILE_MANAGER_CONFIG.MAX_FILE_SIZE / 1024 / 1024).toFixed(0)}MB each.
+                Allowed types: {FILE_MANAGER_CONFIG.ALLOWED_EXTENSIONS.join(', ')}. Max {(FILE_MANAGER_CONFIG.MAX_PICTURE_SIZE / 1024 / 1024).toFixed(0)}MB per image, {(FILE_MANAGER_CONFIG.MAX_FILE_SIZE / 1024 / 1024).toFixed(0)}MB per other file.
               </div>
             </div>
           )}
