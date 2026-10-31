@@ -17,7 +17,7 @@ QA round 2 defect log **BUG-015** (R2-CP-DOC-01, High/P1): Documents › Upload 
 
 ## Testing
 - The SVG case failed first, then passed (3/3).
-- Full Vitest suite and `npm run typecheck` — see the session report.
+- Full Vitest suite — 206 files, 1520 passed. `npm run typecheck` — clean.
 
 ## Open / follow-up
 - No E2E uploads an SVG; none needed changing.

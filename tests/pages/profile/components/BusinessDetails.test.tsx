@@ -129,6 +129,30 @@ describe('Profile — Business Details tab', () => {
     expect(screen.queryByText(/EIN must be 9 digits/i)).not.toBeInTheDocument()
   })
 
+  // BUG-054: the EIN is optional - no required mark, and the form saves
+  // without one. Once saved it is locked like the other business fields.
+  it('marks the EIN as optional and saves the details without one', async () => {
+    server.use(http.get('*/borrower/profile/business-info', () => HttpResponse.json({ status: true, data: {} })))
+    let receivedBody: Record<string, unknown> | null = null
+    server.use(
+      http.post('*/borrower/profile/business-info', async ({ request }) => {
+        receivedBody = (await request.json()) as Record<string, unknown>
+        return HttpResponse.json({ status: true, message: 'Saved' })
+      })
+    )
+    const user = userEvent.setup()
+    const { onSaveClick } = renderComponent()
+
+    const label = (await screen.findByText('Business EIN')).closest('label') as HTMLElement
+    expect(label.querySelector('.text-danger')).toBeNull()
+    expect(label.textContent).not.toContain('*')
+
+    await user.click(screen.getByRole('button', { name: /Save Changes/i }))
+
+    await waitFor(() => expect(onSaveClick).toHaveBeenCalled())
+    expect(receivedBody!.business_ein).toBeFalsy()
+  })
+
   it('shows a business phone example a real US number could be', async () => {
     server.use(http.get('*/borrower/profile/business-info', () => HttpResponse.json({ status: true, data: {} })))
     renderComponent()

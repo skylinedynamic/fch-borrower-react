@@ -242,7 +242,8 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
         </div>
         <div className="col-md-6">
           <label className="form-label d-flex align-items-center justify-content-between w-100">
-            <span>Business EIN <span className="text-danger">*</span></span>
+            {/* Optional, but locked once saved like the other business fields (BUG-054). */}
+            <span>Business EIN</span>
           </label>
           <div className="position-relative">
             <input
