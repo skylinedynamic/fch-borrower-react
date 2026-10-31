@@ -29,6 +29,15 @@ Sibling repos under `d:\laragon\www\`, part of the same FCH (Four Corner Funding
 - The codebase is a `.jsx` → `.tsx` migration in progress (`tsconfig.json` has `strict: true`, plus `allowJs: true`/`checkJs: false` so `.tsx` files — mainly tests — can import a `.jsx` file with real inferred types instead of an implicit-`any` error; `.jsx` file *contents* still aren't type-checked). Write new/changed files in TypeScript (`.ts`/`.tsx`); don't add new `.jsx` — note this rule is not being consistently followed today (new `.jsx` files have landed as recently as August 2026), so don't assume a file's extension reflects intent.
 
 ## Coding standards
+**Always follow these standards, in every change — new code and any existing code you touch.** Don't wait to be reminded.
+- **Every API call goes through a feature module** in `src/modules/<feature>/`:
+  - `services.ts`: the axios calls, through the shared `apiClient` and nothing else.
+  - `queries.ts`: TanStack Query hooks (`useQuery` for reads, `useMutation` for writes) that wrap the services, plus the module's query-key registry.
+  - `types.ts`: request and response types.
+  - `index.ts`: the barrel export.
+  
+  Pages and components use the module's query hooks. They never import `apiClient` or call an endpoint directly. When you touch a component that still calls `apiClient`, move those calls into its module in the same change. If the module is missing `queries.ts` or `types.ts`, add them.
+- **No hard-coded statuses, roles, permissions, types or option values.** Declare them once as constants (`src/config/*.ts`, or the module's `types.ts`) and import them. The same rule applies in `fch-api`: model constants, not string literals.
 - No ESLint/Prettier is configured yet — set one up (ESLint + `typescript-eslint` + Prettier) before relying on style review alone.
 - Follow the fixed module shape (`services.ts` → `queries.ts` → `types.ts` → `index.ts`) for any new feature; don't inline axios calls in a component.
 - Don't let page components grow unbounded — several existing pages (e.g. `pages/payments/PaymentDetails.jsx`) mix data-fetching, formatting, and markup in one large file; split new/changed work into `components/` subfiles instead of extending that pattern.
