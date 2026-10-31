@@ -20,7 +20,7 @@ Also requested: Business EIN should not be required (no `*`), but once saved it 
 
 ## Testing
 - The new Vitest case failed first (the label had the `*`), then passed; `tests/pages/profile` 150/150. `npm run typecheck` clean.
-- Full Vitest suite — see the session report.
+- Full Vitest suite — 206 files, 1521/1521 passed.
 - Playwright (chromium, local API): `business-details-locked-bypass.spec.ts` and `profile-save.spec.ts` passed.
 - `business-details-format-errors.spec.ts` failed on its precondition, not on this change: it needs the E2E borrower (`craig-borrower@fourcornerholdings.com`) to have no D-U-N-S, and the local DB now has `345345345` (saved 2026-10-31 17:49, before this work). Clear that borrower's `duns_number` locally to run it again.
 

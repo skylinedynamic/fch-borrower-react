@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
 import { toast } from 'react-toastify'
@@ -6,7 +6,7 @@ import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { usePersonalInfo, useSavePersonalInfo } from '../../../modules/profile'
 import type { PersonalInfoData, SavePersonalInfoRequest, ValidationErrors } from '../../../modules/profile'
 import TabLoader from '../../../components/Loader/TabLoader'
-import { formatCalendarDate } from '../../../utils/dates'
+import { dateOfBirthBounds, formatCalendarDate } from '../../../utils/dates'
 import { countries as countriesData } from '../../../modules/location'
 
 import { formatPhoneNumber, unformatPhoneNumber, formatZipCode, formatSSN, unformatSSN, SSN_DIGITS } from '../../../utils/formatters'
@@ -62,6 +62,8 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
   const { data: apiData, isLoading, error } = usePersonalInfo()
   const { mutate: savePersonalInfo, isPending: isSaving } = useSavePersonalInfo()
   const { refreshUser } = useAuth()
+  // Stable across renders, so an open picker is not reconfigured on every keystroke.
+  const dobBounds = useMemo(() => dateOfBirthBounds(), [])
   const [availableStates, setAvailableStates] = useState<StateType[]>([])
   const [availableCities, setAvailableCities] = useState<CityType[]>([])
   const [showCityInput, setShowCityInput] = useState(false)
@@ -641,10 +643,12 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
                   dateFormat: "Y-m-d",
                   altInput: true,
                   altFormat: "j M, Y",
-                  maxDate: "today",
+                  // 18 to 120 years old, as the API checks (BUG-005).
+                  minDate: dobBounds.minDate,
+                  maxDate: dobBounds.maxDate,
                   monthSelectorType: "dropdown",
                   clickOpens: !isFieldLocked('date_of_birth'),
-                  plugins: [yearDropdownPlugin(1900)],
+                  plugins: [yearDropdownPlugin(dobBounds.minDate.getFullYear())],
                 } as any}
               placeholder="Select date of birth"
               disabled={isFieldLocked('date_of_birth')}
@@ -722,10 +726,11 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
                   dateFormat: "Y-m-d",
                   altInput: true,
                   altFormat: "j M, Y",
-                  maxDate: "today",
+                  minDate: dobBounds.minDate,
+                  maxDate: dobBounds.maxDate,
                   monthSelectorType: "dropdown",
                   static: true,
-                  plugins: [yearDropdownPlugin(1900)],
+                  plugins: [yearDropdownPlugin(dobBounds.minDate.getFullYear())],
                 } as any}
                 placeholder="Select date of birth"
               />
