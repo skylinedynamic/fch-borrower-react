@@ -4,6 +4,7 @@ import { CREDIT_BUILDER_STATUS } from '../../../../data/credit-builder'
 import TaskDetailsModal from './TaskDetailsModal'
 import TaskStatusAction from './TaskStatusAction'
 import { Tier } from '../../../../modules/credit-builder/guide/types'
+import { sanitizeHtml } from '../../../../utils/sanitizeHtml'
 
 
 
@@ -42,7 +43,7 @@ export default function Tier1Task({ tierId, task, isCurrentTier, isFirstTier, on
     <>
       {/* Tier warning box - only for the first item */}
       {index === 0 && tierDescription ? (
-        <div className="cg-tier-note" dangerouslySetInnerHTML={{ __html: tierDescription }} />
+        <div className="cg-tier-note" dangerouslySetInnerHTML={{ __html: sanitizeHtml(tierDescription) }} />
       ) : null}
 
       <div className={`cg-vendor ${state}`} data-task={task.id}>

@@ -238,3 +238,28 @@ describe('AppointmentModal', () => {
     await waitFor(() => expect(deleteCalled).toBe(true))
   })
 })
+
+// BUG-004 (QA round 2): the description is stored HTML; it must not run script.
+describe('AppointmentModal - the description cannot run script (BUG-004)', () => {
+  it('shows the description without the onerror handler', async () => {
+    resetAuth()
+    server.use(
+      http.get('*/common/appointments/43', () =>
+        HttpResponse.json({
+          status: true,
+          data: {
+            id: 43, subject: 'XSS Meeting', appointment_date: '2026-01-15 10:00:00', duration_minutes: 30,
+            timezone: 'UTC (GMT+00:00)', description: 'Bring <b>statements</b> <img src=x onerror="window.__xss = 1">',
+            scheduled_by: { name: 'FCH Admin', id: 9 }, assigned_for: { name: 'Jane Borrower', id: 5, entity_id: 5, entity_type: 'borrower' },
+            meeting_type: 'Business Review',
+          },
+        })
+      )
+    )
+    const { ref } = renderModal()
+    await act(async () => { await ref.current!.show(43) })
+
+    expect(await screen.findByText('statements')).toBeInTheDocument()
+    expect(document.body.querySelector('[onerror]')).toBeNull()
+  })
+})

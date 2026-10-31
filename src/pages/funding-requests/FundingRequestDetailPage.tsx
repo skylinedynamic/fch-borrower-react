@@ -15,6 +15,7 @@ import { toast } from 'react-toastify'
 import ReviewProgressCard from './components/ReviewProgressCard'
 import '../../components/Common/StatisticsCardSkeleton.css'
 import '../../../assets/css/funding-requests.css'
+import { sanitizeHtml } from '../../utils/sanitizeHtml'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const formatDate = (d: string) =>
@@ -99,7 +100,7 @@ interface ActivityItemProps {
     isFirst: boolean
 }
 
-const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }) => {
+export const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }) => {
     const [expanded, setExpanded] = useState(false) // All items collapsed by default
 
     const logTypeRaw = activity.log_type_raw || ''
@@ -358,7 +359,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
                                         {description ? (
                                             <div
                                                 className="text-muted mb-2 fs-13"
-                                                dangerouslySetInnerHTML={{ __html: description }}
+                                                dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }}
                                             />
                                         ) : (!activity.attachments || activity.attachments.length === 0) ? (
                                             <p className="text-muted fs-12 mb-0">No additional details are available for this action.</p>

@@ -21,6 +21,7 @@ import { browserTimeZone, defaultStart, localDateString, startSlotsFrom, timeAft
 // Styles
 import '../../../assets/css/appointment-modal.css';
 import '../../../assets/css/appointment-styles.css';
+import { sanitizeHtml } from '../../utils/sanitizeHtml';
 
 // How many years past the current one the date picker's year list offers.
 const APPOINTMENT_YEARS_AHEAD = 10;
@@ -713,7 +714,7 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
                                                             <>
                                                                 <div
                                                                     className="rich-text-content"
-                                                                    dangerouslySetInnerHTML={{ __html: cleanHtml(description) }}
+                                                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(cleanHtml(description)) }}
                                                                 />
                                                                 {isDescriptionExpanded && rawText.length > limit && (
                                                                     <button
