@@ -8,7 +8,7 @@ import ResetPassword from '../src/pages/singin/ResetPassword.jsx'
 import EmailChangeLinkPage from './pages/email-change/EmailChangeLinkPage'
 import CreditGuide from '../src/pages/credit-builder/creditguide/CreditGuide.tsx'
 import Documents from '../src/pages/documents/Documents.tsx'
-import { ProtectedRoute, GuestRoute, HostRoute, CapitalAccessGuard, CapitalAccessStrategyGuard, checkSession, refreshSubscription } from './lib/auth'
+import { ProtectedRoute, GuestRoute, HostRoute, CapitalAccessGuard, CapitalAccessStrategyGuard, FundingGuard, checkSession, refreshSubscription } from './lib/auth'
 import { useAuthStore } from './store/auth'
 import Profile from '../src/pages/profile/profile.tsx'
 import PreQualification from '../src/pages/prequalification/PreQualification.tsx'
@@ -122,9 +122,12 @@ export default function App() {
             <Route path="my-applications" element={<MyApplication />} />
             <Route path="my-applications/funding/:id" element={<FundingApplicationDetailPage />} />
             <Route path="appointment" element={<Appointments />} />
-            <Route path="funding" element={<Funding />} />
-            <Route path="funding/:id" element={<FundingDetail />} />
-            <Route path="funding/:id/review" element={<FundingRequestWizard />} />
+            {/* Closed until FCH uploads the borrower's credit report. */}
+            <Route element={<FundingGuard />}>
+              <Route path="funding" element={<Funding />} />
+              <Route path="funding/:id" element={<FundingDetail />} />
+              <Route path="funding/:id/review" element={<FundingRequestWizard />} />
+            </Route>
             <Route path="funding-requests" element={<FundingRequestList />} />
             {/* Approved assistant navigation target "Funding Request" (singular) -> the funding request list. */}
             <Route path="funding-request" element={<Navigate to="/funding-requests" replace />} />

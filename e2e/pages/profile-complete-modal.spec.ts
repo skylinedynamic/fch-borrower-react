@@ -54,4 +54,20 @@ test.describe('Complete Your Profile popup', () => {
 
     await expect(page).toHaveURL(/\/profile\?tab=1$/)
   })
+
+  // Pages with a confirm dialog (ConfirmationModal, DeleteConfirmModal) swept
+  // up leftover backdrops just after they loaded, while this popup was still
+  // fading in, and took its overlay - it showed over a page that was not dimmed.
+  for (const path of ['/documents', '/billing-details']) {
+    test(`dims the page behind it on ${path}`, async ({ page }) => {
+      await signInWithIncompleteProfile(page)
+      await page.goto(path)
+
+      await expect(modal(page)).toBeVisible()
+      // Past the confirm dialogs' sweeps (100-350 ms after they mount and unmount).
+      await page.waitForTimeout(1000)
+      await expect(page.locator('.modal-backdrop.show')).toHaveCount(1)
+      await expect(page.locator('.modal-backdrop.show')).toBeVisible()
+    })
+  }
 })

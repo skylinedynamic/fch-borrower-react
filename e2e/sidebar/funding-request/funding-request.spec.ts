@@ -29,6 +29,22 @@ test.describe('Sidebar › Funding Request', () => {
     await expect(page.locator('.page-content').getByRole('heading', { name: 'Activity' })).toBeVisible()
   })
 
+  // BUG-149: the paginator had no rows-per-page choice, unlike Invoices and Payments.
+  test('the paginator offers 10/25/50/100 rows per page and asks for the one chosen', async ({ page }) => {
+    await expect(dataRows(page).first().or(emptyTableMessage(page))).toBeVisible()
+    test.skip(await emptyTableMessage(page).isVisible(), 'No funding requests for this borrower')
+
+    const rowsPerPage = page.locator('.p-paginator .p-dropdown')
+    await expect(rowsPerPage).toBeVisible()
+    await rowsPerPage.click()
+    await expect(page.locator('.p-dropdown-panel [role="option"]')).toHaveText(['10', '25', '50', '100'])
+
+    const asked = page.waitForRequest((r) => r.url().includes('/borrower/funding/requests/list') && r.postDataJSON()?.per_page === 25)
+    await page.locator('.p-dropdown-panel [role="option"]', { hasText: /^25$/ }).click()
+    await asked
+    await expect(rowsPerPage.locator('.p-dropdown-label')).toHaveText('25')
+  })
+
   test('the singular /funding-request alias redirects to the list', async ({ page }) => {
     await page.goto('/funding-request')
     await expect(page).toHaveURL(/\/funding-requests$/)

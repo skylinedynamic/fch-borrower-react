@@ -4,6 +4,13 @@ import type { FileSystemItem } from '../../../modules/filemanager/types'
 import { isOptionalDocumentCategory } from '../../../config/documents'
 import { DOCUMENT_STATUS, getDocumentStatusBadgeClass } from '../../../config/fileTypeConfig'
 import {
+  DOCUMENT_ACCEPTED_LABEL,
+  DOCUMENT_PENDING_LABEL,
+  DOCUMENT_REUPLOAD_LABEL,
+  documentCategoryState,
+  type DocumentCategoryState,
+} from '../../../utils/documentProgress'
+import {
   PdfIcon,
   WordIcon,
   ExcelIcon,
@@ -70,8 +77,31 @@ const fileReviewBadge = (status?: string) => {
   return { label: 'Pending review', className: getDocumentStatusBadgeClass(DOCUMENT_STATUS.PENDING) }
 }
 
-const fileCountLabel = (count: number, optional: boolean) =>
-  count ? `${count} file${count === 1 ? '' : 's'}` : optional ? 'Optional' : 'Not uploaded'
+/**
+ * A category's look for each state (BUG-135): the green tick only once a file
+ * is accepted, a clock while one waits for review, red when only rejected
+ * files are left.
+ */
+const CATEGORY_LOOK: Record<DocumentCategoryState, { className: string; icon: string; badgeIcon: string }> = {
+  empty: { className: '', icon: 'ri-file-upload-line', badgeIcon: 'ri-time-line' },
+  reupload: { className: ' is-rejected', icon: 'ri-error-warning-line', badgeIcon: 'ri-error-warning-fill' },
+  pending: { className: ' is-pending', icon: 'ri-time-line', badgeIcon: 'ri-time-line' },
+  accepted: { className: ' is-done', icon: 'ri-check-line', badgeIcon: 'ri-checkbox-circle-fill' },
+}
+
+const fileCountLabel = (count: number, optional: boolean, state: DocumentCategoryState) => {
+  if (state === 'reupload') return DOCUMENT_REUPLOAD_LABEL
+  if (!count) return optional ? 'Optional' : 'Not uploaded'
+  const files = `${count} file${count === 1 ? '' : 's'}`
+  return state === 'pending' ? `${files} · ${DOCUMENT_PENDING_LABEL}` : files
+}
+
+const headingLabel = (state: DocumentCategoryState, optional: boolean) => {
+  if (state === 'accepted') return DOCUMENT_ACCEPTED_LABEL
+  if (state === 'pending') return DOCUMENT_PENDING_LABEL
+  if (state === 'reupload') return DOCUMENT_REUPLOAD_LABEL
+  return optional ? 'Optional' : 'Not uploaded'
+}
 
 /** The file's extension, as a short tag next to its name. */
 const fileExtension = (name: string) => {
@@ -88,6 +118,8 @@ type CategoryButtonProps = Pick<DocumentCategoryProps, 'section' | 'files' | 'is
 export const DocumentCategoryButton: React.FC<CategoryButtonProps> = ({ section, files, isOpen, onToggle, layout }) => {
   const count = uploadedFiles(files).length
   const optional = isOptionalDocumentCategory(section)
+  const state = documentCategoryState(files)
+  const look = CATEGORY_LOOK[state]
 
   return (
     <button
@@ -96,12 +128,12 @@ export const DocumentCategoryButton: React.FC<CategoryButtonProps> = ({ section,
       onClick={onToggle}
       aria-expanded={isOpen}
     >
-      <span className={`docs-category-status${files.length ? ' is-done' : ''}`} aria-hidden="true">
-        <i className={files.length ? 'ri-check-line' : 'ri-file-upload-line'}></i>
+      <span className={`docs-category-status${look.className}`} aria-hidden="true">
+        <i className={look.icon}></i>
       </span>
       <span className="docs-category-text">
         <span className="docs-category-name">{section}</span>
-        <span className="docs-category-meta">{fileCountLabel(count, optional)}</span>
+        <span className="docs-category-meta">{fileCountLabel(count, optional, state)}</span>
       </span>
       <i
         className={`docs-category-chevron ${layout === 'split' ? 'ri-arrow-right-s-line' : 'ri-arrow-down-s-line'}`}
@@ -126,6 +158,7 @@ export const DocumentCategoryDetail: React.FC<DetailProps> = ({
   showHeader = true
 }) => {
   const uploaded = uploadedFiles(files)
+  const state = documentCategoryState(files)
   const openFileManager = () => !isUploading && onOpenFileManager(section, true)
 
   return (
@@ -134,9 +167,9 @@ export const DocumentCategoryDetail: React.FC<DetailProps> = ({
       <header className="docs-detail-head">
         <div className="docs-detail-heading">
           <h5 className="docs-detail-title">{section}</h5>
-          <span className={`docs-badge${uploaded.length ? ' is-done' : ''}`}>
-            <i className={uploaded.length ? 'ri-checkbox-circle-fill' : 'ri-time-line'} aria-hidden="true"></i>
-            {uploaded.length ? 'Uploaded' : isOptionalDocumentCategory(section) ? 'Optional' : 'Not uploaded'}
+          <span className={`docs-badge${CATEGORY_LOOK[state].className}`}>
+            <i className={CATEGORY_LOOK[state].badgeIcon} aria-hidden="true"></i>
+            {headingLabel(state, isOptionalDocumentCategory(section))}
           </span>
         </div>
       </header>

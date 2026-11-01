@@ -19,6 +19,15 @@ export interface ProfileCompletionStatus {
   onboarding?: ProfileOnboardingStatus
   /** Whether Credit Card Stacking is open, and what it waits on (the API decides). */
   credit_card_stacking?: CreditCardStackingAccess
+  /** Whether Funding is open: it waits for FCH to upload the credit report (the API decides). */
+  funding?: FundingAccess
+}
+
+export interface FundingAccess {
+  /** The credit report is uploaded, so the funding criteria can be read. */
+  unlocked: boolean
+  /** The borrower has submitted their credit profile (or a report is already in). */
+  credit_profile_submitted: boolean
 }
 
 export interface CreditCardStackingAccess {

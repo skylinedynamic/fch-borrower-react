@@ -65,6 +65,11 @@ export const PAYMENT_METHOD_PROVIDER = {
 };
 
 export const PROVIDER_STRIPE = PAYMENT_METHOD_PROVIDER[1];
+
+// Change Default Payment Method: Stripe chosen, but the partner's Stripe has no
+// publishable key, so no card form can load (BUG-130).
+export const STRIPE_UNAVAILABLE_MESSAGE =
+  'Card payments are not available right now. Please choose another payment method or contact your advisor.';
 export const PROVIDER_SQUARE = PAYMENT_METHOD_PROVIDER[2];
 export const PROVIDER_ECRYPT = PAYMENT_METHOD_PROVIDER[3];
 export const PROVIDER_AUTHORIZE = PAYMENT_METHOD_PROVIDER[4];

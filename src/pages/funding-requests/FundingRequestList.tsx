@@ -9,6 +9,7 @@ import { Dropdown } from 'primereact/dropdown'
 import StatisticsCardSkeleton from '../../components/Common/StatisticsCardSkeleton'
 import StatisticsCard from '../../components/Common/StatisticsCard'
 import { FUNDING_REVIEW_STATUS, FUNDING_APPLICATION_STATUS_OPTIONS } from '../../config/funding'
+import { ROWS_PER_PAGE_OPTIONS } from '../../config/tableConfig'
 import '../../../assets/css/funding-requests.css'
 
 export default function FundingRequestList() {
@@ -275,6 +276,7 @@ export default function FundingRequestList() {
                                         lazy
                                         first={(page - 1) * perPage}
                                         rows={perPage}
+                                        rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
                                         totalRecords={total}
                                         onPage={onPage}
                                         onSort={onSort}

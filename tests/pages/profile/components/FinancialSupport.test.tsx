@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { server } from '../../../mocks/server'
 import { createTestQueryClient } from '../../../test-utils'
-import FinancialSupport from '../../../../src/pages/profile/components/FinancialSupport'
+import FinancialSupport, { amountOrNull, shownAmount } from '../../../../src/pages/profile/components/FinancialSupport'
 import { LOCKED_FINANCIAL_FIELDS } from '../../../../src/config/profileLockFields'
 import { countries, clearLocationCache } from '../../../../src/modules/location'
 
@@ -77,6 +77,41 @@ const serveFinancial = (data: Record<string, unknown>) =>
       HttpResponse.json({ status: true, data })
     )
   )
+
+describe('amountOrNull', () => {
+  it('is null for an empty field', () => {
+    expect(amountOrNull('')).toBeNull()
+    expect(amountOrNull(null)).toBeNull()
+    expect(amountOrNull(undefined)).toBeNull()
+  })
+
+  it('keeps zero as zero', () => {
+    expect(amountOrNull('0')).toBe(0)
+    expect(amountOrNull('0.00')).toBe(0)
+    expect(amountOrNull(0)).toBe(0)
+  })
+
+  it('reads a formatted amount', () => {
+    expect(amountOrNull('20,000.50')).toBe(20000.5)
+  })
+})
+
+describe('shownAmount', () => {
+  it('is blank when nothing is stored', () => {
+    expect(shownAmount(null)).toBe('')
+    expect(shownAmount(undefined)).toBe('')
+    expect(shownAmount('')).toBe('')
+  })
+
+  it('shows a stored zero', () => {
+    expect(shownAmount(0)).toMatch(/^0(\.00)?$/)
+    expect(shownAmount('0.00')).toMatch(/^0(\.00)?$/)
+  })
+
+  it('formats a stored amount', () => {
+    expect(shownAmount(20000)).toBe('20,000')
+  })
+})
 
 describe('Profile — Financial tab', () => {
   afterEach(() => {
@@ -189,6 +224,109 @@ describe('Profile — Financial tab', () => {
     const annual = await screen.findByPlaceholderText('$30,000')
 
     expect(annual).not.toHaveAttribute('readonly')
+  })
+
+  // ── optional figures ──────────────────────────────────────────────────
+
+  it('does not mark Annual Personal Income or Average Monthly Deposits as required', async () => {
+    serveFinancial({})
+
+    renderTab()
+
+    await screen.findByPlaceholderText('$20,000')
+    const label = (text: string) => screen.getByText(text, { selector: 'label' })
+
+    expect(label('Annual Personal Income')).toHaveTextContent(/^Annual Personal Income$/)
+    expect(label('Average Monthly Deposits')).toHaveTextContent(/^Average Monthly Deposits$/)
+    // The revenue figures are still required.
+    expect(screen.getByText(/^Monthly Revenue/, { selector: 'label' })).toHaveTextContent('*')
+    expect(screen.getByText(/^Annual Revenue/, { selector: 'label' })).toHaveTextContent('*')
+  })
+
+  it('saves with both left empty, sending neither as a zero', async () => {
+    // The tab fills itself from the API once it answers.
+    serveFinancial({ currency: 'USD', monthly_revenue: 20000, annual_revenue: 240000 })
+    let sent: Record<string, unknown> | null = null
+    server.use(
+      http.post('*/borrower/profile/financial-info', async ({ request }) => {
+        sent = (await request.json()) as Record<string, unknown>
+        return HttpResponse.json({ status: true, message: 'Saved' })
+      })
+    )
+
+    const user = userEvent.setup()
+    renderTab()
+
+    await screen.findByDisplayValue('240,000')
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
+
+    await waitFor(() => expect(sent).not.toBeNull())
+    expect(sent).toMatchObject({ monthly_revenue: 20000, annual_revenue: 240000 })
+    expect(sent).not.toHaveProperty('annual_personal_income')
+    expect(sent).not.toHaveProperty('average_monthly_deposits')
+  })
+
+  // ── required revenue: empty is refused, zero is an amount ──────────────
+
+  /** Captures what the tab sends, answering as the API does for an empty revenue. */
+  const captureSave = () => {
+    const sent: { body: Record<string, unknown> | null } = { body: null }
+    server.use(
+      http.post('*/borrower/profile/financial-info', async ({ request }) => {
+        sent.body = (await request.json()) as Record<string, unknown>
+        const errors: Record<string, string> = {}
+        if (sent.body.monthly_revenue === null || sent.body.monthly_revenue === undefined) errors.monthly_revenue = 'Monthly revenue is required'
+        if (sent.body.annual_revenue === null || sent.body.annual_revenue === undefined) errors.annual_revenue = 'Annual revenue is required'
+        return Object.keys(errors).length
+          ? HttpResponse.json({ status: false, message: Object.values(errors)[0], errors }, { status: 422 })
+          : HttpResponse.json({ status: true, message: 'Saved' })
+      })
+    )
+    return sent
+  }
+
+  it('sends an empty revenue as empty, not as zero, and shows the API refusing it', async () => {
+    serveFinancial({ currency: 'USD', monthly_revenue: null, annual_revenue: null })
+    const sent = captureSave()
+
+    const user = userEvent.setup()
+    renderTab()
+
+    await user.click(await screen.findByRole('button', { name: 'Save Changes' }))
+
+    await waitFor(() => expect(sent.body).not.toBeNull())
+    expect(sent.body).toMatchObject({ monthly_revenue: null, annual_revenue: null })
+    expect(await screen.findByText('Monthly revenue is required')).toBeInTheDocument()
+    expect(screen.getByText('Annual revenue is required')).toBeInTheDocument()
+  })
+
+  it('saves a revenue of zero as zero', async () => {
+    serveFinancial({ currency: 'USD', monthly_revenue: null, annual_revenue: null })
+    const sent = captureSave()
+
+    const user = userEvent.setup()
+    renderTab()
+
+    await user.type(await screen.findByPlaceholderText('$20,000'), '0')
+    await user.type(screen.getByPlaceholderText('$30,000'), '0')
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
+
+    await waitFor(() => expect(sent.body).not.toBeNull())
+    expect(sent.body).toMatchObject({ monthly_revenue: 0, annual_revenue: 0 })
+    expect(screen.queryByText('Monthly revenue is required')).toBeNull()
+  })
+
+  it.each([
+    ['a number', 0],
+    ['a decimal string', '0.00'],
+  ])('shows a stored revenue of zero (as %s) rather than a blank', async (_, zero) => {
+    serveFinancial({ currency: 'USD', monthly_revenue: zero, annual_revenue: zero })
+
+    renderTab()
+
+    const monthly = await screen.findByPlaceholderText('$20,000')
+    await waitFor(() => expect((monthly as HTMLInputElement).value).toMatch(/^0(\.00)?$/))
+    expect((screen.getByPlaceholderText('$30,000') as HTMLInputElement).value).toMatch(/^0(\.00)?$/)
   })
 
   it('renders while the API is still answering', () => {

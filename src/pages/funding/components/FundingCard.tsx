@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FUNDING_ICON_MAP, FUNDING_REVIEW_STATUS, ENGINE_STATUS_LABELS, ENGINE_STATUS_VALUES } from '../../../config/funding';
 import { eligibilityLabel, hasMissingReadinessFactors } from '../../../utils/fundingEligibility';
 import { getFundingColorStyles } from '../../../config/fundingColor';
+import { bankingGuidance } from '../../../utils/bankingGuidance';
 import '../../../../assets/css/funding.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -11,6 +12,15 @@ interface ReadinessFactor {
     status: string;
     borrower_value?: any;
     required_value?: any;
+    /** 'banking' for a check judged from the bank statements. */
+    group?: string;
+    /** Set by the API on a failed banking check. */
+    message?: string;
+    /** Why a required document does not count, and what is needed instead. */
+    reason_code?: string;
+    reason?: string;
+    requirement?: string;
+    action?: { label: string; path: string };
 }
 
 interface FundingCardProps {
@@ -128,12 +138,21 @@ const formatFactorDetail = (factor: ReadinessFactor): string => {
 // ─── Missing Factors Tooltip ──────────────────────────────────────────────────
 const MissingTooltip: React.FC<{ factors: ReadinessFactor[]; visible: boolean }> = ({ factors, visible }) => {
     if (!visible || factors.length === 0) return null;
+    // One message only: when a factor line already says why it failed and what
+    // is required, the headline is not repeated above it.
+    const bankStatements = factors.some((f) => !!f.reason) ? null : bankingGuidance(factors);
     return (
         <div className="funding-missing-tooltip">
             <div className="funding-missing-tooltip-header">
                 <i className="ri-error-warning-fill fc-icon-warning" />
                 <span>Missing Requirements</span>
             </div>
+
+            {bankStatements && (
+                <p className="funding-missing-tooltip-desc fw-semibold text-danger mb-2">
+                    <i className="ri-bank-line me-1" />{bankStatements.message}
+                </p>
+            )}
 
             <p className="funding-missing-tooltip-desc">
                 This funding option is currently locked because the following requirement(s) are not met.
@@ -187,9 +206,21 @@ const MissingTooltip: React.FC<{ factors: ReadinessFactor[]; visible: boolean }>
                             <div className="d-flex align-items-start gap-2">
                                 <i className="ri-close-circle-fill fc-icon-error" />
                                 <div>
-                                    <div className="tooltip-item-title">{displayLabel}: {(!actVal || actVal === 'Missing') ? 'Failed' : actVal}</div>
-                                    {req !== undefined && req !== null && (
-                                        <div className="tooltip-item-req">Required: {reqVal}</div>
+                                    {f.reason ? (
+                                        <>
+                                            {/* The API says why and what to do (e.g. statements not uploaded). */}
+                                            <div className="tooltip-item-title">{displayLabel}: {f.reason}</div>
+                                            {f.requirement && (
+                                                <div className="tooltip-item-req">Required: {f.requirement}</div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="tooltip-item-title">{displayLabel}: {(!actVal || actVal === 'Missing') ? 'Failed' : actVal}</div>
+                                            {req !== undefined && req !== null && (
+                                                <div className="tooltip-item-req">Required: {reqVal}</div>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             </div>

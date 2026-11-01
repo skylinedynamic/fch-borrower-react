@@ -19,8 +19,8 @@ function mockDocuments() {
       HttpResponse.json({
         status: true,
         data: [
-          { id: 1, name: 'Bank Statements', sort_order: 1 },
-          { id: 2, name: 'Tax Returns', sort_order: 2 },
+          { id: 1, name: 'Business Bank Statements', sort_order: 1 },
+          { id: 2, name: 'Voided Business Check', sort_order: 2 },
         ],
       })
     ),
@@ -60,7 +60,7 @@ describe('Documents layout', () => {
     it('shows the first category beside the list, with its files', async () => {
       renderWithProviders(<Documents />)
 
-      const pane = await screen.findByRole('region', { name: 'Bank Statements' })
+      const pane = await screen.findByRole('region', { name: 'Business Bank Statements' })
       expect(within(pane).getByText('march.pdf')).toBeInTheDocument()
       expect(within(pane).getByText('Click here to upload documents.')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /bank statements/i })).toHaveAttribute('aria-expanded', 'true')
@@ -70,11 +70,11 @@ describe('Documents layout', () => {
       const user = userEvent.setup()
       renderWithProviders(<Documents />)
 
-      await user.click(await screen.findByRole('button', { name: /^tax returns/i }))
+      await user.click(await screen.findByRole('button', { name: /^voided business check/i }))
 
-      const pane = screen.getByRole('region', { name: 'Tax Returns' })
+      const pane = screen.getByRole('region', { name: 'Voided Business Check' })
       expect(within(pane).queryByText('march.pdf')).toBeNull()
-      expect(screen.queryByRole('region', { name: 'Bank Statements' })).toBeNull()
+      expect(screen.queryByRole('region', { name: 'Business Bank Statements' })).toBeNull()
     })
   })
 
@@ -85,17 +85,17 @@ describe('Documents layout', () => {
       const user = userEvent.setup()
       renderWithProviders(<Documents />)
 
-      await user.click(await screen.findByRole('button', { name: /^tax returns/i }))
+      await user.click(await screen.findByRole('button', { name: /^voided business check/i }))
 
-      expect(screen.getByRole('button', { name: /^tax returns/i })).toHaveAttribute('aria-expanded', 'true')
-      expect(screen.getByRole('region', { name: 'Tax Returns' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /^voided business check/i })).toHaveAttribute('aria-expanded', 'true')
+      expect(screen.getByRole('region', { name: 'Voided Business Check' })).toBeInTheDocument()
     })
   })
 
   it('keeps the walkthrough popup from opening by itself while the borrower is uploading', async () => {
     setWideScreen(true)
     const { unmount } = renderWithProviders(<Documents />)
-    await screen.findByRole('region', { name: 'Bank Statements' })
+    await screen.findByRole('region', { name: 'Business Bank Statements' })
 
     // Held for this page's own prompt, not as an open modal.
     expect(useOnboardingPopupStore.getState().pageHeld).toBe(true)
@@ -110,30 +110,33 @@ describe('Documents layout', () => {
     renderWithProviders(<Documents />)
 
     const prompt = await screen.findByRole('region', { name: /your next step/i })
-    expect(prompt).toHaveTextContent(/1 of 2 categories uploaded/i)
+    expect(prompt).toHaveTextContent(/1 of 2 required categories uploaded/i)
 
-    await user.click(screen.getByRole('button', { name: /upload tax returns/i }))
-    expect(screen.getByRole('region', { name: 'Tax Returns' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /upload voided business check/i }))
+    expect(screen.getByRole('region', { name: 'Voided Business Check' })).toBeInTheDocument()
   })
 
   it('says how many categories have documents', async () => {
     setWideScreen(true)
     renderWithProviders(<Documents />)
 
-    expect(await screen.findByText(/^1 of 2 categories$/i)).toBeInTheDocument()
+    expect(await screen.findByText(/^1 of 2 required$/i)).toBeInTheDocument()
   })
 
-  describe('the optional Others category', () => {
-    // Funding needs every document except Others: it can stay empty.
+  describe('the optional categories', () => {
+    // Only Driver's License, Voided Business Check, EIN / Corporation Docs and
+    // Business Bank Statements are required; Business Plan, Others and the
+    // rest can stay empty.
     const serveWithOthers = (uploadedIds: number[]) =>
       server.use(
         http.get('*/borrower/documents/borrower-document-types', () =>
           HttpResponse.json({
             status: true,
             data: [
-              { id: 1, name: 'Bank Statements', sort_order: 1 },
-              { id: 2, name: 'Tax Returns', sort_order: 2 },
+              { id: 1, name: 'Business Bank Statements', sort_order: 1 },
+              { id: 2, name: 'Voided Business Check', sort_order: 2 },
               { id: 3, name: 'Others', sort_order: 3 },
+              { id: 4, name: 'Business Plan', sort_order: 4 },
             ],
           })
         ),
@@ -156,6 +159,7 @@ describe('Documents layout', () => {
       expect(prompt).toHaveTextContent(/your documents are in\. you can apply for funding now/i)
       expect(within(prompt).getByRole('link', { name: /continue to funding/i })).toBeInTheDocument()
       expect(within(prompt).queryByRole('button', { name: /upload others/i })).toBeNull()
+      expect(within(prompt).queryByRole('button', { name: /upload business plan/i })).toBeNull()
     })
 
     it('counts only the required categories', async () => {
@@ -164,19 +168,29 @@ describe('Documents layout', () => {
       renderWithProviders(<Documents />)
 
       const prompt = await screen.findByRole('region', { name: /your next step/i })
-      expect(prompt).toHaveTextContent(/1 of 2 categories uploaded/i)
+      expect(prompt).toHaveTextContent(/1 of 2 required categories uploaded/i)
       // Asks for the next required one, never for Others.
-      expect(within(prompt).getByRole('button', { name: /upload tax returns/i })).toBeInTheDocument()
+      expect(within(prompt).getByRole('button', { name: /upload voided business check/i })).toBeInTheDocument()
     })
 
-    it('says in the list that it is optional', async () => {
+    it('says in the list that they are optional', async () => {
       setWideScreen(true)
       serveWithOthers([1, 2])
       renderWithProviders(<Documents />)
 
-      const others = await screen.findByRole('button', { name: /^others/i })
-      expect(others).toHaveTextContent(/optional/i)
-      expect(others).not.toHaveTextContent(/not uploaded/i)
+      for (const name of [/^others/i, /^business plan/i]) {
+        const category = await screen.findByRole('button', { name })
+        expect(category).toHaveTextContent(/optional/i)
+        expect(category).not.toHaveTextContent(/not uploaded/i)
+      }
+    })
+
+    it('says a required category without a document is not uploaded', async () => {
+      setWideScreen(true)
+      serveWithOthers([1])
+      renderWithProviders(<Documents />)
+
+      expect(await screen.findByRole('button', { name: /^voided business check/i })).toHaveTextContent(/not uploaded/i)
     })
 
     it('still takes uploads and counts them as files', async () => {

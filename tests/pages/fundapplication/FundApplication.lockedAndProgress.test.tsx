@@ -51,18 +51,23 @@ const locked = {
   signature_data: null,
 }
 
-/** BUG-071 - the step progress rule itself is covered in stepProgress.test.ts. */
+/**
+ * BUG-071 - the step progress rule itself is covered in stepProgress.test.ts.
+ *
+ * A Matched to Lender application opened with editable fields; the save was
+ * only refused on submit. Decision (2026-10-29, merging SCRUM-331): a locked
+ * application shows the "Can't Edit Funding Application" card with the reason
+ * instead of the form - no field can be typed in.
+ */
 describe('FundApplication - BUG-071', () => {
-  // A Matched to Lender application opened with editable fields; the save was
-  // only refused on submit.
-  it('opens a locked application read-only and says why', async () => {
+  it('shows a locked application as Can\'t Edit with the reason, and no form', async () => {
     serve(locked)
     renderWizard(86)
 
-    expect(await screen.findAllByText(locked.locked_reason)).not.toHaveLength(0)
-    const fieldsets = document.querySelectorAll('fieldset[disabled]')
-    expect(fieldsets.length).toBeGreaterThan(0)
-    // Closed (Completed) application 86 read 0% - it carries no per-step saved flags.
-    expect(screen.getAllByText("Completed 8 of 8 steps")).not.toHaveLength(0)
+    expect(await screen.findByRole('heading', { name: /can't edit funding application/i })).toBeInTheDocument()
+    expect(screen.getByText(locked.locked_reason)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument()
+    expect(document.querySelectorAll('input, select, textarea')).toHaveLength(0)
+    expect(screen.queryByText(/^Step \d+ of/)).not.toBeInTheDocument()
   })
 })

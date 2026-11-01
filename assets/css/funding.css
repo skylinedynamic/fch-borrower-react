@@ -1078,3 +1078,67 @@
 .fwiz-review-panel { max-width: 600px; }
 .fwiz-divider { width: 1px; height: 40px; background-color: #e2e8f0; }
 .fwiz-success-wrap { max-width: 480px; }
+
+/* Bank statements banner (funding detail): missing, rejected or short statements */
+.funding-bank-banner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 14px 18px;
+    margin-bottom: 1.5rem;
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 6px;
+}
+.funding-bank-banner-icon {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #fef3c7;
+    color: #1e293b;
+    font-size: 26px;
+}
+.funding-bank-banner-badge {
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+    font-size: 16px;
+    line-height: 1;
+    color: #f59e0b;
+    background: #fef3c7;
+    border-radius: 50%;
+}
+.funding-bank-banner-text {
+    flex: 1 1 220px;
+    min-width: 0;
+}
+.funding-bank-banner-title {
+    margin: 0 0 2px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+}
+.funding-bank-banner-detail {
+    margin: 0;
+    font-size: 13px;
+    color: #475569;
+}
+.funding-bank-banner-action {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    font-weight: 600;
+    white-space: nowrap;
+}
+@media (max-width: 575.98px) {
+    .funding-bank-banner-action {
+        width: 100%;
+        justify-content: center;
+    }
+}

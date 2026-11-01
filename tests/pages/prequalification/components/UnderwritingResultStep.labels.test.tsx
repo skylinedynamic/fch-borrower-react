@@ -1,8 +1,35 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import { server } from '../../../mocks/server'
 import { renderWithProviders, screen } from '../../../test-utils'
 import UnderwritingResultStep from '../../../../src/pages/prequalification/components/UnderwritingResultStep'
+
+// The step's Evaluating modal is the shared ConfirmationModal, which drives
+// Bootstrap's real Modal: its hide transition is a timer that can run after
+// the file ends, when jsdom is already torn down (an "error after teardown"
+// that fails the run). A synchronous fake leaves no timer behind.
+vi.mock('bootstrap/js/dist/modal', () => {
+  class FakeModal {
+    private el: HTMLElement
+    constructor(el: HTMLElement) {
+      this.el = el
+    }
+    show() {
+      this.el.classList.add('show')
+      this.el.style.display = 'block'
+      this.el.removeAttribute('aria-hidden')
+      this.el.setAttribute('aria-modal', 'true')
+    }
+    hide() {
+      this.el.classList.remove('show')
+      this.el.style.display = 'none'
+      this.el.setAttribute('aria-hidden', 'true')
+      this.el.removeAttribute('aria-modal')
+    }
+    dispose() {}
+  }
+  return { default: FakeModal }
+})
 
 /**
  * BUG-061: the borrower's underwriting result listed raw keys such as

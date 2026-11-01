@@ -11,7 +11,7 @@ const USER = { id: 1, name: 'Jane Borrower', email: 'jane@example.test', entity_
 
 // The Next step button pulses for attention; under reduced motion (which the
 // walkthrough's styles honour) it holds still long enough to be clicked.
-test.use({ storageState: { cookies: [], origins: [] }, reducedMotion: 'reduce' })
+test.use({ storageState: { cookies: [], origins: [] }, contextOptions: { reducedMotion: 'reduce' } })
 
 type Step = 'complete_profile' | 'credit_profile' | 'verify_all' | 'upload_documents' | 'results_ready' | 'completed'
 const COMPLETED: Record<Step, number> = { complete_profile: 0, credit_profile: 1, verify_all: 2, upload_documents: 3, results_ready: 4, completed: 5 }
@@ -90,6 +90,19 @@ test.describe('Getting Started walkthrough', () => {
     await expect(arrow).toBeVisible()
     const arrowedItem = page.locator('#navbar-nav li.onb-menu-target', { has: page.getByRole('img', { name: 'Go here next: Click Verify All' }) })
     await expect(arrowedItem).toContainText('Credit Builder')
+  })
+
+  test('the documents step asks for the four required documents only', async ({ page }) => {
+    await signInOnStep(page, 'upload_documents')
+    await page.goto('/payments')
+
+    await expect(popup(page)).toContainText('Upload your documents')
+    await expect(popup(page)).toContainText('upload your four required documents')
+    for (const name of ["Driver's License", 'Voided Business Check', 'EIN / Corporation Docs', 'Business Bank Statements']) {
+      await expect(popup(page)).toContainText(name)
+    }
+    await expect(popup(page)).toContainText('Every other category is optional')
+    await expect(popup(page)).not.toContainText('every document category')
   })
 
   test('shows nothing once the walkthrough is completed', async ({ page }) => {

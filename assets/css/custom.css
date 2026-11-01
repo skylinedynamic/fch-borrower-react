@@ -6450,7 +6450,9 @@ File: Custom Css File
     font-size: 18px;
     line-height: 1.2;
     vertical-align: middle;
-    color: var(--vz-vertical-menu-item-active-color, #fff);
+    /* The sidebar text colour the branding works out for the sidebar
+       background (BUG-141: white-label showed #495057 on navy). */
+    color: var(--brand-on-sidebar, var(--vz-vertical-menu-item-active-color, #fff));
 }
 
 .navbar-header .brand-logo-text,

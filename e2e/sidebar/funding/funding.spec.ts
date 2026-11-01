@@ -16,6 +16,15 @@ test.describe('Sidebar › Funding', () => {
     await expect(page.locator(REAL_CARD).first()).toBeVisible()
   })
 
+  // custom.css colours every breadcrumb link brand navy on hover (!important),
+  // which vanished into the navy banner.
+  test('the banner breadcrumb stays white on hover', async ({ page }) => {
+    await expect(pageHeading(page, 'Funding Options')).toBeVisible({ timeout: 60_000 })
+    const dashboard = page.locator('.fp-breadcrumb').getByRole('link', { name: 'Dashboard' })
+    await dashboard.hover()
+    await expect(dashboard).toHaveCSS('color', 'rgb(255, 255, 255)')
+  })
+
   // E2E-005: this endpoint used to run ~4,200 queries (~12s on its own, 30s+
   // behind the page's other calls on `artisan serve`). Fixed in fch-backend-api
   // by memoizing the engine's per-borrower checks; ~200 queries, ~1-3s now.
