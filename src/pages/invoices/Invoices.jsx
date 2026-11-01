@@ -126,6 +126,12 @@ export default function Invoices() {
         }
     }, [appliedSearchText, appliedStatus, appliedPayee, appliedCycle, appliedDateRange, appliedFilters, page, perPage, sortField, sortOrder]);
 
+    // An empty list then means "nothing matched", not "no invoices" (BUG-066).
+    const hasColumnFilter = Object.entries(appliedFilters).some(([key, f]) =>
+        key === 'global' ? !!f?.value : (f?.constraints ?? []).some((c) => c.value !== null && c.value !== '')
+    );
+    const isFiltered = !!(appliedSearchText || appliedStatus || appliedPayee || appliedCycle || appliedDateRange?.length || hasColumnFilter);
+
     const handleApplyFilters = () => {
         setAppliedSearchText(searchText);
         setAppliedStatus(selectedStatus);
@@ -221,6 +227,7 @@ export default function Invoices() {
                                     sortField={sortField}
                                     sortOrder={sortOrder}
                                     onRefresh={loadData}
+                                    isFiltered={isFiltered}
                                 />
                             </div>
                         </div>

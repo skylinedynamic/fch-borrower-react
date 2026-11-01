@@ -5,6 +5,7 @@ import TabLoader from '../../../components/Loader/TabLoader'
 import SubmitProgress from './SubmitProgress'
 import ConfirmationModal from '../../../components/GlobalModal/ConfirmationModal'
 import { clearStrayModalBackdrops } from '../../../utils/modalBackdrop'
+import { readableLabel } from '../../../utils/underwritingLabels'
 import '../../../../assets/css/underwriting-result.css'
 
 /**
@@ -100,6 +101,16 @@ function renderSourceBadge(status?: string) {
       </span>
     )
   }
+  // Was falling through to "Borrower Reported" - the opposite of what it says.
+  if (val.includes('not_provided') || val.includes('not provided')) {
+    return (
+      <span
+        className="badge rounded-pill px-2.5 py-1 text-uppercase fw-semibold uw-source-badge uw-source-badge--reported"
+      >
+        Not Provided
+      </span>
+    )
+  }
   return (
     <span
       className="badge rounded-pill px-2.5 py-1 text-uppercase fw-semibold uw-source-badge uw-source-badge--reported"
@@ -143,9 +154,12 @@ const humanizeKey = (key: string): string =>
 
 const isFilledString = (value: unknown): value is string => typeof value === 'string' && value.trim() !== ''
 
-/** A plain scalar the agent can state as a value: shown as written. */
+/**
+ * A plain scalar the agent can state as a value: shown as written, except a
+ * field path or source code, which is put into words (BUG-061).
+ */
 const asScalarText = (value: unknown): string | null => {
-  if (isFilledString(value)) return value.trim()
+  if (isFilledString(value)) return readableLabel(value.trim())
   if (typeof value === 'number' && Number.isFinite(value)) return String(value)
   if (typeof value === 'boolean') return value ? 'Yes' : 'No'
   return null
@@ -871,7 +885,7 @@ export default function UnderwritingResultStep({
                   {result.readiness_snapshot.map((item, idx) => (
                     <tr key={idx}>
                       <td className="ps-4 py-3 fw-semibold text-dark fs-13">
-                        {item.area}
+                        {readableLabel(item.area)}
                       </td>
                       <td className="py-3 fs-13 uw-cell">
                         {item.assessment}
@@ -895,7 +909,7 @@ export default function UnderwritingResultStep({
                   className={`uw-snapshot-row p-3 ${idx < items.length - 1 ? 'border-bottom' : ''}`}
                 >
                   <div className="d-flex align-items-center justify-content-between gap-2 mb-2">
-                    <span className="fw-bold text-dark fs-13">{item.area}</span>
+                    <span className="fw-bold text-dark fs-13">{readableLabel(item.area)}</span>
                     {renderSourceBadge(item.source_status)}
                   </div>
                   <p className="mb-0 fs-13 uw-snapshot-text">

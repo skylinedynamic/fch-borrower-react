@@ -10,6 +10,12 @@ test.describe('Sidebar › Resource Hub', () => {
     await expect(pageHeading(page, 'Education & Help')).toBeVisible()
   })
 
+  // BUG-065: the search covers Education & Help only and says when nothing matches.
+  test('an Education & Help search with no match says so', async ({ page }) => {
+    await page.getByPlaceholder('Search Education & Help...').fill('zz-e2e-no-such-resource')
+    await expect(page.getByText('No Education & Help resources match "zz-e2e-no-such-resource".')).toBeVisible()
+  })
+
   test('a fundability item opens its resource detail page', async ({ page }) => {
     const item = page.locator('.page-content .rh-luxe-item.cursor-pointer').first()
     await expect(page.locator('.page-content .rh-luxe-item').first()).toBeVisible()

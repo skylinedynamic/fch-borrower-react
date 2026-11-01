@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isSubscriptionRestricted, isFreeTrialLocked } from '../../../src/lib/auth/subscriptionUtils'
+import { isSubscriptionRestricted, isFreeTrialLocked, getRestrictionReason, RESTRICTION_REASON } from '../../../src/lib/auth/subscriptionUtils'
 import { PARTNER_TYPES, SUBSCRIPTION_STATUS_TYPES } from '../../../src/config/partnerTypeOptions'
 import type { UserSubscription } from '../../../src/store/auth'
 
@@ -95,3 +95,27 @@ describe('isFreeTrialLocked', () => {
     expect(isFreeTrialLocked(undefined)).toBe(false)
   })
 })
+
+// BUG-033: a locked menu explains itself; the reason picks the message.
+describe('getRestrictionReason', () => {
+  const sub = (o: Partial<UserSubscription>) => o as UserSubscription
+
+  it('is null when nothing is locked', () => {
+    expect(getRestrictionReason(null)).toBeNull()
+    expect(getRestrictionReason(sub({ is_host: true, subscription_status: SUBSCRIPTION_STATUS_TYPES.EXPIRED }))).toBeNull()
+    expect(getRestrictionReason(sub({ subscription_status: SUBSCRIPTION_STATUS_TYPES.ACTIVE, subscription_end_date: futureDate() }))).toBeNull()
+  })
+
+  it('is activation while the enrollment is still being set up', () => {
+    expect(getRestrictionReason(sub({ partner_type: PARTNER_TYPES.WHITE_LABEL, partner_payment_for_me: false, subscription_status: SUBSCRIPTION_STATUS_TYPES.ACTIVE })))
+      .toBe(RESTRICTION_REASON.ACTIVATION)
+    expect(getRestrictionReason(sub({ subscription_status: SUBSCRIPTION_STATUS_TYPES.PENDING }))).toBe(RESTRICTION_REASON.ACTIVATION)
+  })
+
+  it('is inactive once the subscription has expired, been cancelled or run past its end date', () => {
+    expect(getRestrictionReason(sub({ subscription_status: SUBSCRIPTION_STATUS_TYPES.EXPIRED }))).toBe(RESTRICTION_REASON.INACTIVE)
+    expect(getRestrictionReason(sub({ subscription_status: SUBSCRIPTION_STATUS_TYPES.CANCELLED }))).toBe(RESTRICTION_REASON.INACTIVE)
+    expect(getRestrictionReason(sub({ subscription_status: SUBSCRIPTION_STATUS_TYPES.ACTIVE, subscription_end_date: pastDate() }))).toBe(RESTRICTION_REASON.INACTIVE)
+  })
+})
+

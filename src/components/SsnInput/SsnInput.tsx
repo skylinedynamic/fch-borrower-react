@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { formatSSN, maskSSN, unformatSSN } from '../../utils/formatters'
-import { SSN_DIGITS } from '../../utils/validators'
+import { SSN_DIGITS, formatSSN, maskSSN, unformatSSN } from '../../utils/formatters'
 
 interface SsnInputProps {
   id: string

@@ -94,13 +94,19 @@ export const unformatCurrency = (value: string): string => {
 }
 
 /**
+ * How many digits a full SSN has - how the field is written, not a check of
+ * the number (that is the API's App\Rules\Ssn).
+ */
+export const SSN_DIGITS = 9
+
+/**
  * Formats the SSN input to ensure only digits and max 9 characters in ###-###-### format
  * @param value The raw input string
  * @returns The formatted string
  */
 export const formatSSN = (value: string): string => {
   if (!value) return ''
-  const digits = value.replace(/\D/g, '').slice(0, 9)
+  const digits = value.replace(/\D/g, '').slice(0, SSN_DIGITS)
   if (digits.length <= 3) return digits
   if (digits.length <= 5) return `${digits.slice(0, 3)}-${digits.slice(3)}`
   return `${digits.slice(0, 3)}-${digits.slice(3, 5)}-${digits.slice(5, 9)}`
@@ -217,4 +223,18 @@ export const formatNumber = (value: string): string => {
 export const unformatNumber = (value: string): string => {
   if (!value) return ''
   return value.replace(/\D/g, '')
+}
+
+/**
+ * Formats a funding option's "speed to funds" (free text such as "1-5 Days" or
+ * "24-72 Hours"). Adds "Days" only to a bare number or range, and drops a
+ * "Days" an earlier save appended after a unit (BUG-025: "1-5 Days Days").
+ * @param value The stored speed to funds
+ * @param fallback What to show when there is no value
+ * @returns The display string
+ */
+export const formatSpeedToFunds = (value: string | null | undefined, fallback = '—'): string => {
+  const speed = (value ?? '').trim().replace(/\b(days?|hours?|weeks?|months?)(\s+days)+$/i, '$1')
+  if (!speed) return fallback
+  return /[a-z]/i.test(speed) ? speed : `${speed} Days`
 }

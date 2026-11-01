@@ -6,6 +6,8 @@ interface DashboardHeroProps {
   status: string
   totalAccess: string
   hasActivePlay: boolean
+  /** Credit Card Stacking is still locked: the button leads to what unlocks it, not to a strategy. */
+  locked?: boolean
   /** Opens the strategy; left out (no button) until the borrower has paid. */
   onOpenCapitalAccess?: () => void
 }
@@ -26,6 +28,7 @@ export default function DashboardHero({
   status,
   totalAccess,
   hasActivePlay,
+  locked = false,
   onOpenCapitalAccess,
 }: DashboardHeroProps) {
   const clamped = Math.min(Math.max(score, 0), 100)
@@ -45,21 +48,38 @@ export default function DashboardHero({
         <p className="db-hero-subtitle">Here's what's happening with your business.</p>
 
         <div className="db-hero-cta">
-          <span className="db-hero-tag">
-            <i className="ri-sparkling-2-fill" aria-hidden="true"></i>
-            {hasActivePlay ? 'Active Strategy' : 'Get Started'}
-          </span>
-          <h2 className="db-hero-cta-title">
-            {hasActivePlay ? 'Continue your funding journey' : 'Start your capital access strategy'}
-          </h2>
-          <p className="db-hero-cta-text">
-            {hasActivePlay
-              ? 'Pick up where you left off and keep building your business credit profile.'
-              : 'Choose a play strategy tailored to your business funding goals and credit profile.'}
-          </p>
+          {locked ? (
+            // The Credit Card Stacking page is locked, so there is no strategy to
+            // choose yet; the button opens its explanation (BUG-099).
+            <>
+              <span className="db-hero-tag">
+                <i className="ri-lock-2-line" aria-hidden="true"></i>
+                Locked
+              </span>
+              <h2 className="db-hero-cta-title">Unlock your capital access strategy</h2>
+              <p className="db-hero-cta-text">
+                Verify your credit profile and complete your Tier 0 tasks to choose a play strategy.
+              </p>
+            </>
+          ) : (
+            <>
+              <span className="db-hero-tag">
+                <i className="ri-sparkling-2-fill" aria-hidden="true"></i>
+                {hasActivePlay ? 'Active Strategy' : 'Get Started'}
+              </span>
+              <h2 className="db-hero-cta-title">
+                {hasActivePlay ? 'Continue your funding journey' : 'Start your capital access strategy'}
+              </h2>
+              <p className="db-hero-cta-text">
+                {hasActivePlay
+                  ? 'Pick up where you left off and keep building your business credit profile.'
+                  : 'Choose a play strategy tailored to your business funding goals and credit profile.'}
+              </p>
+            </>
+          )}
           {onOpenCapitalAccess && (
             <button type="button" className="db-hero-btn" onClick={onOpenCapitalAccess}>
-              {hasActivePlay ? 'Resume Strategy' : 'Choose Strategy'}
+              {locked ? 'See how to unlock' : hasActivePlay ? 'Resume Strategy' : 'Choose Strategy'}
               <i className="ri-arrow-right-line" aria-hidden="true"></i>
             </button>
           )}

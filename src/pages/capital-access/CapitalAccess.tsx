@@ -33,7 +33,9 @@ export default function CapitalAccess() {
   const status = overview?.readiness_status ?? 'N/A'
   const statusColor = overview?.readiness_status_color
   const factors = overview?.factors ?? []
-  const totalAccess = overview?.estimated_total_access ?? '$0'
+  // Short ($1.4M, the API's formatCompactCurrency), the full amount on hover (BUG-031).
+  const totalAccessFull = overview?.estimated_total_access ?? '$0'
+  const totalAccess = overview?.estimated_total_access_compact || totalAccessFull
 
   return (
     <div className="page-content capital-access-page">
@@ -52,6 +54,7 @@ export default function CapitalAccess() {
               />
               <EstimatedTotalAccessCard
                 totalAccess={totalAccess}
+                totalAccessFull={totalAccessFull}
                 exposureBreakdown={overview?.exposure_breakdown}
                 statusColor={statusColor}
                 reasonCode={overview?.reason_code}

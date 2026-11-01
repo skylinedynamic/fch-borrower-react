@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import Modal from 'bootstrap/js/dist/modal';
 import { Link, useNavigate } from 'react-router-dom';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { getStripe } from '../../lib/stripe';
@@ -33,6 +34,7 @@ import {
   TRANSACTION_TYPE_DEBIT,
   TRANSACTION_TYPE_CREDIT,
   PROVIDER_STRIPE,
+  STRIPE_UNAVAILABLE_MESSAGE,
 } from '../../config/paymentConfig';
 
 // Inner Stripe Form component for card details
@@ -176,18 +178,21 @@ const ChangePaymentMethodModal = ({
   onUpdated: () => void;
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
-  const modalInstanceRef = useRef<any>(null);
+  const modalInstanceRef = useRef<Modal | null>(null);
 
   const [providers, setProviders] = useState<PaymentProviderItem[]>([]);
   const [loadingProviders, setLoadingProviders] = useState<boolean>(true);
   const [selectedProvider, setSelectedProvider] = useState<PaymentProviderItem | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [stripePromise, setStripePromise] = useState<any>(null);
+  // Stripe chosen but no card form can load (no publishable key).
+  const [stripeUnavailable, setStripeUnavailable] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (modalRef.current && (window as any).bootstrap) {
-      modalInstanceRef.current = new (window as any).bootstrap.Modal(modalRef.current, {
+    // The bundled Modal: the production build has no `window.bootstrap` global (BUG-101).
+    if (modalRef.current) {
+      modalInstanceRef.current = new Modal(modalRef.current, {
         backdrop: 'static',
         keyboard: false,
       });
@@ -237,8 +242,10 @@ const ChangePaymentMethodModal = ({
     try {
       const promise = await getStripe(pubKey);
       setStripePromise(promise);
+      setStripeUnavailable(!promise);
     } catch (e) {
       console.error('Failed to init stripe', e);
+      setStripeUnavailable(true);
     }
   };
 
@@ -246,7 +253,9 @@ const ChangePaymentMethodModal = ({
     setLoadingProviders(true);
     try {
       const res = await fetchPaymentProviders();
-      const list = Array.isArray(res) ? res.filter((p) => p.status !== false) : [];
+      // Only gateways that are on and set up to take payments - the same rule
+      // as the invoice Pay Now dialog (BUG-130, BUG-151).
+      const list = Array.isArray(res) ? res.filter((p) => p.status !== false && p.can_take_payments !== false) : [];
       setProviders(list);
       if (list.length > 0) {
         const matching = list.find(
@@ -324,6 +333,12 @@ const ChangePaymentMethodModal = ({
 
             {loadingProviders ? (
               <ModalProvidersLoader />
+            ) : providers.length === 0 ? (
+              // Nothing can take payments: say so, as Pay Now does, not an empty grid.
+              <div className="text-center py-4">
+                <i className="ri-bank-card-line fs-1 text-muted d-block mb-2"></i>
+                <p className="text-muted mb-0">No payment method is available right now. Please contact support to set up a payment method.</p>
+              </div>
             ) : (
               <div>
                 <label className="form-label fs-13 fw-semibold text-dark mb-3">
@@ -395,6 +410,8 @@ const ChangePaymentMethodModal = ({
                               onCancel={handleClose}
                             />
                           </Elements>
+                        ) : stripeUnavailable ? (
+                          <div className="alert alert-warning fs-13 mb-0 rounded-1">{STRIPE_UNAVAILABLE_MESSAGE}</div>
                         ) : (
                           <StripeFormLoader />
                         )}
@@ -456,11 +473,12 @@ const SubscriptionDetailsModal = ({
   onCancelClick: () => void;
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
-  const modalInstanceRef = useRef<any>(null);
+  const modalInstanceRef = useRef<Modal | null>(null);
 
   useEffect(() => {
-    if (modalRef.current && (window as any).bootstrap) {
-      modalInstanceRef.current = new (window as any).bootstrap.Modal(modalRef.current, {
+    // The bundled Modal: the production build has no `window.bootstrap` global (BUG-101).
+    if (modalRef.current) {
+      modalInstanceRef.current = new Modal(modalRef.current, {
         backdrop: 'static',
         keyboard: false,
       });

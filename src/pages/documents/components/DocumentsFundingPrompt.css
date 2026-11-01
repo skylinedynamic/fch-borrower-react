@@ -1,32 +1,101 @@
-/* The top of Documents: upload every document, then on to Funding. */
+/* The next step, its own section under the Documents hero: upload every
+   document, then on to Funding. A white card in the tenant's brand colour (green
+   once everything is in): a progress ring, the message and the action on top,
+   and a stepper along the bottom with each required document, the next one
+   picked out. 4px corners. */
 
 .docs-prompt {
-  --docs-prompt-accent: #e5243b;
-  --docs-prompt-accent-rgb: 229, 36, 59;
-  display: flex;
+  --docs-prompt-accent: var(--brand-primary, #001f3f);
+  --docs-prompt-accent-rgb: var(--brand-primary-rgb, 0, 31, 63);
+  --docs-prompt-ink: #1b2235;
+  --docs-prompt-muted: #6b7286;
+  --docs-prompt-line: #e4e7ee;
+  --docs-prompt-green: #0ab39c;
+  --docs-prompt-amber: #e09b1b;
+  --docs-prompt-red: #e5543b;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px 20px;
+  gap: 0 18px;
   margin-bottom: 20px;
-  padding: 14px 18px;
-  border: 1.5px solid var(--docs-prompt-accent);
+  padding: 18px 22px 0;
+  border: 1px solid var(--docs-prompt-line);
   border-radius: 4px;
   background: #fff;
-  box-shadow: 0 0 0 3px rgba(var(--docs-prompt-accent-rgb), 0.08);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 6px 18px rgba(16, 24, 40, 0.05);
 }
 
 .docs-prompt.is-done {
-  --docs-prompt-accent: #0ab39c;
+  --docs-prompt-accent: #078a78;
   --docs-prompt-accent-rgb: 10, 179, 156;
 }
 
-.docs-prompt-text {
+/* Without a stepper the card keeps its bottom padding. */
+.docs-prompt:not(:has(.docs-prompt-steps)) {
+  padding-bottom: 18px;
+}
+
+/* -- the ring --------------------------------------------------------------------- */
+
+.docs-prompt-ring {
+  position: relative;
+  width: 56px;
+  height: 56px;
+}
+
+.docs-prompt-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.docs-prompt-ring circle {
+  fill: none;
+  stroke-width: 5;
+}
+
+.docs-prompt-ring-track {
+  stroke: #eef0f4;
+}
+
+.docs-prompt-ring-fill {
+  stroke: var(--docs-prompt-accent);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.4s ease;
+}
+
+.docs-prompt-ring-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--docs-prompt-ink);
+}
+
+i.docs-prompt-ring-value {
+  font-size: 24px;
+  color: var(--docs-prompt-accent);
+}
+
+/* -- the text --------------------------------------------------------------------- */
+
+.docs-prompt-body {
   min-width: 0;
 }
 
+.docs-prompt-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-bottom: 3px;
+}
+
 .docs-prompt-label {
-  display: block;
-  margin-bottom: 2px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -34,52 +103,210 @@
   color: var(--docs-prompt-accent);
 }
 
-.docs-prompt-message {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #1b2235;
-}
-
 .docs-prompt-count {
+  padding: 1px 8px;
+  border-radius: 4px;
+  font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
+  background: rgba(var(--docs-prompt-accent-rgb), 0.08);
+  color: var(--docs-prompt-accent);
 }
 
+.docs-prompt-message {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--docs-prompt-ink);
+}
+
+/* -- the action ------------------------------------------------------------------- */
+
 .docs-prompt-btn {
-  flex: none;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 9px 16px;
+  gap: 8px;
+  padding: 11px 20px;
   border: 0;
   border-radius: 4px;
-  background: var(--brand-primary, #001f3f);
-  box-shadow: 0 0 0 3px rgba(var(--docs-prompt-accent-rgb), 0.18);
+  background: var(--docs-prompt-accent);
   font-size: 14px;
   font-weight: 600;
-  color: #fff;
+  color: var(--brand-on-primary, #fff);
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(var(--docs-prompt-accent-rgb), 0.22);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.docs-prompt.is-done .docs-prompt-btn {
+  color: #fff;
 }
 
 .docs-prompt-btn:hover,
 .docs-prompt-btn:focus-visible {
-  color: #fff;
+  color: var(--brand-on-primary, #fff);
   transform: translateY(-1px);
-  box-shadow: 0 0 0 4px rgba(var(--docs-prompt-accent-rgb), 0.25);
+  box-shadow: 0 8px 18px rgba(var(--docs-prompt-accent-rgb), 0.3);
 }
 
-@media (max-width: 575.98px) {
+.docs-prompt-btn:focus-visible {
+  outline: 2px solid var(--docs-prompt-accent);
+  outline-offset: 2px;
+}
+
+/* -- the stepper ------------------------------------------------------------------ */
+
+.docs-prompt-steps {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  margin: 16px -22px 0;
+  padding: 16px 22px 14px;
+  list-style: none;
+  border-top: 1px solid #eef0f4;
+  background: #fafbfc;
+}
+
+.docs-prompt-step {
+  --step-color: #c3c8d4;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 0 6px;
+  text-align: center;
+}
+
+/* The line from the step before. */
+.docs-prompt-step + .docs-prompt-step::before {
+  content: '';
+  position: absolute;
+  top: 13px;
+  left: calc(-50% + 20px);
+  right: calc(50% + 20px);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--docs-prompt-line);
+}
+
+.docs-prompt-step.is-accepted::before { background: var(--docs-prompt-green); }
+.docs-prompt-step.is-pending::before { background: rgba(224, 155, 27, 0.55); }
+
+.docs-prompt-step-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--step-color);
+  border-radius: 50%;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--docs-prompt-muted);
+  transition: box-shadow 0.2s ease;
+}
+
+.docs-prompt-step-mark i {
+  font-size: 14px;
+}
+
+.docs-prompt-step.is-accepted .docs-prompt-step-mark {
+  border-color: var(--docs-prompt-green);
+  background: var(--docs-prompt-green);
+  color: #fff;
+}
+
+.docs-prompt-step.is-pending .docs-prompt-step-mark {
+  border-color: var(--docs-prompt-amber);
+  background: #fff8ea;
+  color: var(--docs-prompt-amber);
+}
+
+.docs-prompt-step.is-reupload .docs-prompt-step-mark {
+  border-color: var(--docs-prompt-red);
+  background: #fff1ee;
+  color: var(--docs-prompt-red);
+}
+
+.docs-prompt-step-name {
+  max-width: 100%;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--docs-prompt-muted);
+}
+
+/* The one to do now: filled, with a halo. */
+.docs-prompt-step.is-next .docs-prompt-step-mark {
+  border-color: var(--docs-prompt-accent);
+  background: var(--docs-prompt-accent);
+  color: var(--brand-on-primary, #fff);
+  box-shadow: 0 0 0 4px rgba(var(--docs-prompt-accent-rgb), 0.14);
+}
+
+.docs-prompt-step.is-next.is-reupload .docs-prompt-step-mark {
+  border-color: var(--docs-prompt-red);
+  background: var(--docs-prompt-red);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(229, 84, 59, 0.16);
+}
+
+.docs-prompt-step.is-next .docs-prompt-step-name {
+  font-weight: 700;
+  color: var(--docs-prompt-ink);
+}
+
+@media (max-width: 767.98px) {
   .docs-prompt {
-    flex-direction: column;
-    align-items: stretch;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 12px 14px;
+    padding: 16px 16px 0;
   }
 
   .docs-prompt-btn {
+    grid-column: 1 / -1;
     justify-content: center;
     white-space: normal;
+  }
+
+  .docs-prompt-steps {
+    margin: 4px -16px 0;
+    padding: 14px 16px 12px;
+  }
+}
+
+/* Phones: the steps as a list, one under another. */
+@media (max-width: 575.98px) {
+  .docs-prompt-ring {
+    width: 48px;
+    height: 48px;
+  }
+
+  .docs-prompt-ring-value {
+    font-size: 12px;
+  }
+
+  .docs-prompt-steps {
+    grid-auto-flow: row;
+    gap: 10px;
+  }
+
+  .docs-prompt-step {
+    flex-direction: row;
+    gap: 10px;
+    padding: 0;
+    text-align: left;
+  }
+
+  .docs-prompt-step + .docs-prompt-step::before {
+    display: none;
   }
 }

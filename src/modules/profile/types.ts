@@ -4,6 +4,8 @@ export type PersonalInfoData = {
   middle_name?: string | null
   last_name: string
   email: string
+  /** A new email waiting to be confirmed from the link sent to it; `email` stays the sign-in one until then. */
+  pending_email?: string | null
   home_address: string
   city: string
   state: string

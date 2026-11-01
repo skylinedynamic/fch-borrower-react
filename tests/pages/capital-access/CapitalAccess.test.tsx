@@ -22,6 +22,7 @@ describe('CapitalAccess overview page', () => {
             readiness_status: 'Good',
             factors: [],
             estimated_total_access: '$50,000',
+            estimated_total_access_compact: '$50K',
           },
         })
       )
@@ -30,6 +31,30 @@ describe('CapitalAccess overview page', () => {
     renderWithProviders(<CapitalAccess />)
 
     expect(await screen.findByText(/Jane/i)).toBeInTheDocument()
+  })
+
+  // BUG-031: the estimate reads short ($50K), the full amount on hover; an
+  // API without the short form still shows the full amount.
+  it('shows the estimate short, with the full amount on hover', async () => {
+    server.use(
+      http.get('*/borrower/capital-access/overview', () =>
+        HttpResponse.json({ status: true, data: { readiness_score: 72, readiness_status: 'Good', factors: [], estimated_total_access: '$1,400,000.00', estimated_total_access_compact: '$1.4M' } })
+      )
+    )
+    renderWithProviders(<CapitalAccess />)
+
+    expect(await screen.findByText('$1.4M')).toHaveAttribute('title', '$1,400,000.00')
+  })
+
+  it('falls back to the full amount when the short form is not sent', async () => {
+    server.use(
+      http.get('*/borrower/capital-access/overview', () =>
+        HttpResponse.json({ status: true, data: { readiness_score: 72, readiness_status: 'Good', factors: [], estimated_total_access: '$1,400,000.00' } })
+      )
+    )
+    renderWithProviders(<CapitalAccess />)
+
+    expect(await screen.findByText('$1,400,000.00')).toBeInTheDocument()
   })
 
   it('shows an error page when the overview fails to load', async () => {

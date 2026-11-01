@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams, Navigate, useNavigate } from 'react-router-dom';
 import { useCapitalAccessStepDetail, useSubmitCapitalAccessStep } from '../../modules/capital-access/queries';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
+import CardLogo from './components/CardLogo';
 import type { CapitalAccessStepDetail } from '../../modules/capital-access/types';
 import { CAPITAL_ACCESS_STATUS, type CapitalAccessStatus } from '../../config/capitalAccessStatusOptions';
 
@@ -194,19 +195,7 @@ export default function StepDetail() {
             ══════════════════════════════════ */}
             <div className="ca-hero-header-premium">
               <div className="d-flex align-items-center gap-3 flex-grow-1 min-w-0">
-                {step.full_image_url ? (
-                  <img
-                    src={step.full_image_url}
-                    alt={step.card_name}
-                    className="rounded border bg-white flex-shrink-0 ca-card-img-thumb"
-                  />
-                ) : (
-                  <div className="avatar-sm flex-shrink-0">
-                    <span className="avatar-title bg-primary-subtle text-primary rounded-circle fs-20">
-                      <i className="ri-bank-card-line"></i>
-                    </span>
-                  </div>
-                )}
+                <CardLogo src={step.full_image_url} name={step.card_name} />
                 <div className="min-w-0">
                   <p className="ca-metric-label mb-0 text-truncate">
                     {step.play.name}&nbsp;&bull;&nbsp;Step {step.sequence_order}

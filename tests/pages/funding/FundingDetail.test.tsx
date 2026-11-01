@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import { Route, Routes } from 'react-router-dom'
-import { renderWithProviders, screen } from '../../test-utils'
+import { renderWithProviders, screen, within } from '../../test-utils'
 import { server } from '../../mocks/server'
 import FundingDetail from '../../../src/pages/funding/components/FundingDetail'
 
@@ -43,11 +43,11 @@ const detail = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 })
 
-const renderDetail = (overrides: Record<string, unknown> = {}) => {
+const renderDetail = (overrides: Record<string, unknown> = {}, readiness: Array<Record<string, unknown>> = []) => {
   server.use(
     http.get('*/borrower/funding/2', () => HttpResponse.json({ status: true, data: detail(overrides) })),
     http.get('*/common/funding-qualification/*/readiness-factors', () =>
-      HttpResponse.json({ status: true, data: [] })
+      HttpResponse.json({ status: true, data: readiness })
     )
   )
 
@@ -69,6 +69,99 @@ const expectOnlyANewRequest = async () => {
   expect(screen.queryByRole('link', { name: /process application/i })).not.toBeInTheDocument()
   expect(screen.getByText(/start your funding request/i)).toBeInTheDocument()
 }
+
+/**
+ * Defect (BUG-026, CP-FUND-04): the detail page and the card disagreed on the
+ * eligibility label. Both use the same rule: Failed while underwriting factors
+ * are missing, otherwise the engine's own label.
+ */
+describe('FundingDetail eligibility label', () => {
+  it('shows the engine label when nothing is missing', async () => {
+    renderDetail({ engine_status: 'Review', engine_status_label: 'Manual Review Required' })
+
+    expect(await screen.findByText('Manual Review Required')).toBeInTheDocument()
+  })
+
+  it('says Failed while underwriting factors are missing, as the card does', async () => {
+    const { container } = renderDetail({ engine_status: 'Warning', engine_status_label: 'Conditional', readiness_factors: [{ label: 'Time in Business', status: 'Failed' }] })
+
+    // Listed under Underwriting Factors and, being Failed, under What to Fix.
+    await screen.findAllByText('Time in Business')
+    expect(container.querySelector('.funding-detail-badge')).toHaveTextContent(/^Failed$/)
+    expect(screen.queryByText('Conditional')).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * Defect (BUG-134, CP-FUND-04): Term Loans said Failed, yet under the badge
+ * "High Match" and in "Why You May Qualify" "Business profile meets our
+ * lending standards" - while 7 of 8 underwriting factors were Failed. A Failed
+ * option gives one answer: no match label, and the panel says what to fix
+ * (the failed factors and the missing documents) instead of why it may qualify.
+ */
+describe('FundingDetail when the option is Failed', () => {
+  const termLoanFactors = [
+    { label: 'Revenue', status: 'Failed' },
+    { label: 'Time in Business', status: 'Failed' },
+    { label: 'Personal Credit', status: 'Weak' },
+    { label: 'Business Credit', status: 'Good' },
+  ]
+
+  it('shows no match label and no reasons it may qualify', async () => {
+    const { container } = renderDetail({ engine_status: 'Active', engine_status_label: 'Eligible Now' }, termLoanFactors)
+
+    await screen.findAllByText('Revenue')
+    expect(container.querySelector('.funding-detail-badge')).toHaveTextContent(/^Failed$/)
+    expect(screen.queryByText('High Match')).not.toBeInTheDocument()
+    expect(screen.queryByText(/why you may qualify/i)).not.toBeInTheDocument()
+    expect(screen.queryByText('Business profile meets our lending standards')).not.toBeInTheDocument()
+  })
+
+  it('lists what to fix: every failed or weak factor and the missing documents', async () => {
+    renderDetail({ engine_status: 'Active', missing_documents: ['Bank Statements'] }, termLoanFactors)
+
+    const panel = (await screen.findByRole('heading', { name: /what to fix/i })).closest('.funding-detail-panel') as HTMLElement
+    expect(within(panel).getByText('Revenue')).toBeInTheDocument()
+    expect(within(panel).getByText('Time in Business')).toBeInTheDocument()
+    expect(within(panel).getByText('Personal Credit')).toBeInTheDocument()
+    expect(within(panel).queryByText('Business Credit')).not.toBeInTheDocument()
+    expect(within(panel).getByText('Bank Statements')).toBeInTheDocument()
+  })
+
+  it('still shows the match label and the reasons when nothing is missing', async () => {
+    renderDetail({ engine_status: 'Active' }, [{ label: 'Business Credit', status: 'Good' }])
+
+    expect(await screen.findByText('Business profile meets our lending standards')).toBeInTheDocument()
+    expect(screen.getByText('High Match')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /why you may qualify/i })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /what to fix/i })).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * Defect (BUG-025, CP-FUND-07): SPEED TO FUNDS showed "1-5 Days Days" - the
+ * stored value already has its unit and the page appended " Days" again.
+ */
+describe('FundingDetail speed to funds', () => {
+  it('shows a value that has its own unit once', async () => {
+    renderDetail({ speed_to_funds: '1-5 Days' })
+
+    expect(await screen.findByText('1-5 Days')).toBeInTheDocument()
+    expect(screen.queryByText(/Days Days/)).not.toBeInTheDocument()
+  })
+
+  it('does not put Days after a value in hours', async () => {
+    renderDetail({ speed_to_funds: '24-72 Hours' })
+
+    expect(await screen.findByText('24-72 Hours')).toBeInTheDocument()
+  })
+
+  it('adds Days to a bare range', async () => {
+    renderDetail({ speed_to_funds: '3-7' })
+
+    expect(await screen.findByText('3-7 Days')).toBeInTheDocument()
+  })
+})
 
 describe('FundingDetail call to action', () => {
   /**
@@ -128,5 +221,95 @@ describe('FundingDetail call to action', () => {
     expect(await screen.findByText('Start Funding Request')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /start funding request/i })).not.toBeInTheDocument()
     expect(screen.getByText(/not available for your profile/i)).toBeInTheDocument()
+  })
+})
+
+/**
+ * Defect: a funding option blocked by the borrower's bank statement figures
+ * said only "Missing Info" - nothing told the borrower the bank statements were
+ * the problem or where to fix it. The API's message is shown with an upload link.
+ */
+describe('FundingDetail bank statement message', () => {
+  const failedDeposits = {
+    label: 'Minimum Monthly Deposits',
+    status: 'Failed',
+    group: 'banking',
+    borrower_value: 5000,
+    required_value: 60000,
+    message: 'Bank statements failed. Please upload proper bank statements.',
+    action: { label: 'Upload Bank Statements', path: '/documents' },
+  }
+
+  it('tells the borrower the bank statements failed and links to the upload page', async () => {
+    renderDetail({ latest_review_status: null, has_funding_application: false }, [failedDeposits])
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('Bank statements failed. Please upload proper bank statements.')
+    expect(screen.getByRole('link', { name: 'Upload Bank Statements' })).toHaveAttribute('href', '/documents')
+  })
+
+  it('shows no bank statement message when the banking checks pass', async () => {
+    renderDetail(
+      { latest_review_status: null, has_funding_application: false },
+      [{ label: 'Minimum Monthly Deposits', status: 'Strong', group: 'banking' }]
+    )
+
+    expect((await screen.findAllByRole('heading', { name: 'Business Credit Builder Cards' })).length).toBeGreaterThan(0)
+    expect(screen.queryByText(/bank statements failed/i)).not.toBeInTheDocument()
+  })
+})
+
+describe('FundingDetail Banking Activity reason', () => {
+  // One message: the alert says why and what to do (with the upload button);
+  // the Banking Activity row does not repeat it.
+  it('says why Banking Activity failed once, in the alert', async () => {
+    renderDetail({ latest_review_status: null, has_funding_application: false }, [{
+      label: 'Banking Activity',
+      status: 'Failed',
+      group: 'banking',
+      reason_code: 'rejected',
+      reason: 'Your Business Bank Statements were rejected.',
+      requirement: 'Upload your Business Bank Statements on the Documents page.',
+      message: 'Bank statements rejected. Please upload new business bank statements.',
+      action: { label: 'Upload Bank Statements', path: '/documents' },
+    }])
+
+    const alert = await screen.findByRole('alert')
+    expect(within(alert).getByRole('heading', { name: 'Bank statements rejected' })).toBeInTheDocument()
+    expect(alert).toHaveTextContent('Upload new business bank statements to continue.')
+    expect(screen.getAllByText(/rejected/i)).toHaveLength(1)
+    expect(screen.queryByText(/Required: Upload your Business Bank Statements/)).not.toBeInTheDocument()
+  })
+})
+
+// QA design: missing bank statements show a "Bank statements required" banner -
+// a heading, one line saying what to do and an Upload Bank Statements button
+// to Documents. Only failed banking checks show it.
+describe('FundingDetail bank statements banner', () => {
+  const missingStatements = {
+    label: 'Banking Activity',
+    status: 'Failed',
+    group: 'banking',
+    reason_code: 'not_uploaded',
+    reason: 'No Business Bank Statements uploaded yet.',
+    requirement: 'Upload your Business Bank Statements on the Documents page.',
+    message: 'Bank statements missing. Please upload your business bank statements.',
+    action: { label: 'Upload Bank Statements', path: '/documents' },
+  }
+
+  it('shows the required banner with the upload button when statements are missing', async () => {
+    renderDetail({ latest_review_status: null, has_funding_application: false }, [missingStatements])
+
+    const banner = await screen.findByRole('alert')
+    expect(within(banner).getByRole('heading', { name: 'Bank statements required' })).toBeInTheDocument()
+    expect(banner).toHaveTextContent('Upload your business bank statements to continue.')
+    expect(within(banner).getByRole('link', { name: 'Upload Bank Statements' })).toHaveAttribute('href', '/documents')
+  })
+
+  it('shows no banner when only a non-banking check failed', async () => {
+    renderDetail({ latest_review_status: null, has_funding_application: false }, [{ label: 'Personal Credit', status: 'Failed' }])
+
+    expect((await screen.findAllByRole('heading', { name: 'Business Credit Builder Cards' })).length).toBeGreaterThan(0)
+    expect(screen.queryByRole('heading', { name: /bank statements/i })).not.toBeInTheDocument()
   })
 })

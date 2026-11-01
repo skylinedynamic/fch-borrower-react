@@ -84,4 +84,56 @@ describe('ResourceHub', () => {
       expect(screen.queryByText('Resource not available')).toBeNull()
     })
   })
+
+  /**
+   * BUG-065: the Education & Help search showed an empty white area when
+   * nothing matched. It searches that section only (by design) and now says
+   * nothing matched.
+   */
+  describe('the Education & Help search', () => {
+    const edu = (id: number, title: string) => ({
+      id, title, subtitle: 'Sub', icon: 'ri-book-line', resource_type: 'education_help',
+      file_url: null, link: null, status: true, overview: null, impact: null, providers: [],
+    })
+
+    function loadHub() {
+      server.use(
+        http.get('*/borrower/resources', () =>
+          HttpResponse.json({
+            status: true,
+            data: {
+              legal_registration: [{ ...edu(1, 'EIN Overview'), resource_type: 'legal_registration' }],
+              business_services: [],
+              education_help: [edu(24, 'Credit Basics'), edu(25, 'Building Business Credit')],
+              download_assets: [],
+              training_academy: [],
+            },
+          })
+        )
+      )
+      renderWithProviders(<ResourceHub />)
+    }
+
+    it('says nothing matched instead of leaving the area blank', async () => {
+      const user = userEvent.setup()
+      loadHub()
+
+      await user.type(await screen.findByPlaceholderText('Search Education & Help...'), 'EIN')
+
+      expect(await screen.findByText('No Education & Help resources match "EIN".')).toBeInTheDocument()
+      expect(screen.queryByText('Credit Basics')).not.toBeInTheDocument()
+    })
+
+    it('still lists the matches, with no message', async () => {
+      const user = userEvent.setup()
+      loadHub()
+
+      await user.type(await screen.findByPlaceholderText('Search Education & Help...'), 'credit')
+
+      expect(await screen.findByText('Credit Basics')).toBeInTheDocument()
+      expect(screen.getByText('Building Business Credit')).toBeInTheDocument()
+      expect(screen.queryByText(/No Education & Help resources match/)).not.toBeInTheDocument()
+    })
+  })
 })
+

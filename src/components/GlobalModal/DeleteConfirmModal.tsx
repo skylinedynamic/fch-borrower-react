@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import Modal from 'bootstrap/js/dist/modal'
 import { hideAndDisposeModal } from '../../utils/bootstrapModal'
+import { clearStrayModalBackdrops } from '../../utils/modalBackdrop'
 
 interface DeleteConfirmationModalProps {
   show: boolean
@@ -68,13 +69,10 @@ export default function DeleteConfirmationModal({
 
     modal.hide()
     // Clean up any remaining backdrop, but never one belonging to a modal
-    // that is still open - this effect also runs on mount, where `show` starts
-    // false, and it used to strip the globally mounted profile modal overlay.
-    const timer = setTimeout(() => {
-      if (document.querySelector('.modal.show')) return
-      const backdrops = document.querySelectorAll('.modal-backdrop')
-      backdrops.forEach(el => el.remove())
-    }, 300)
+    // that is still open or fading in - this effect also runs on mount, where
+    // `show` starts false, and it used to strip the globally mounted profile
+    // modal overlay.
+    const timer = setTimeout(clearStrayModalBackdrops, 300)
     return () => clearTimeout(timer)
   }, [show])
 
@@ -89,19 +87,9 @@ export default function DeleteConfirmationModal({
       hideAndDisposeModal(modal, modalRef.current)
       modalInstanceRef.current = null
       
-      // Clean up any remaining backdrops and restore body
-      setTimeout(() => {
-        // Fires after unmount by design, so the host document can already be
-        // gone (a torn-down test environment) — bail out instead of throwing.
-        if (typeof document === 'undefined') return
-        // Nor one that belongs to a modal still on screen.
-        if (document.querySelector('.modal.show')) return
-        const backdrops = document.querySelectorAll('.modal-backdrop')
-        backdrops.forEach(el => el.remove())
-        document.body.classList.remove('modal-open')
-        document.body.style.overflow = ''
-        document.body.style.paddingRight = ''
-      }, 100)
+      // Clean up any remaining backdrops and restore body - never one that
+      // belongs to a modal still on screen or fading in.
+      setTimeout(clearStrayModalBackdrops, 100)
     }
   }, [])
 

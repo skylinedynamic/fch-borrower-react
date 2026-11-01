@@ -90,7 +90,11 @@ export default function CreditGuide() {
   }
 
   const estDays = progressData?.current_tier_estimated_completion_days ?? 0
-  const estTimeLabel = estDays === 0 ? "Ready for Next Tier" : `${estDays} Days`
+  // Nothing left: ready. Still a task to do but none listed yet (it arrives
+  // from the tier below), so no estimate - not "ready" (BUG-024).
+  const estTimeLabel = (progressData?.current_tier_tasks_remaining ?? 0) === 0
+    ? 'Ready for Next Tier'
+    : estDays > 0 ? `${estDays} Days` : '—'
 
   return (
     <div className="page-content credit-guide-page cg-page">

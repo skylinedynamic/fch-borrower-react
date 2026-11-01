@@ -8,6 +8,8 @@ export interface FileSystemItem {
   url?: string
   file?: File
   documentId?: number // For borrower document deletion
+  reviewStatus?: string // Borrower document review: Uploaded / Accepted / Rejected ...
+  rejectionReason?: string | null // Why a borrower document was rejected
   children?: FileSystemItem[] // For folder tree
 }
 

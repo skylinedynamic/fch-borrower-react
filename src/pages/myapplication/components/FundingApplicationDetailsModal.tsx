@@ -1,7 +1,7 @@
 import React from 'react'
 import { Modal, ModalBody, ModalHeader, Badge, ModalFooter } from 'reactstrap'
 import { FundingApplication } from '../../../modules/my-application/types'
-import { formatSSN } from '../../../utils/formatters'
+import SsnValue from '../../../components/SsnValue/SsnValue'
 import { FUNDING_APPLICATION_STATUS_CLASS_MAP } from '../../../config/funding'
 
 interface FundingApplicationDetailsModalProps {
@@ -78,7 +78,7 @@ export default function FundingApplicationDetailsModal({ isOpen, toggle, applica
           <DetailItem label="First Name" value={application.first_name} />
           <DetailItem label="Last Name" value={application.last_name} />
           <DetailItem label="Date of Birth" value={application.date_of_birth} icon="pi pi-calendar" />
-          <DetailItem label="SSN" value={application.ssn ? formatSSN(application.ssn) : 'N/A'} icon="pi pi-shield" />
+          <DetailItem label="SSN" value={application.ssn ? <SsnValue value={application.ssn} /> : 'N/A'} icon="pi pi-shield" />
           <DetailItem label="Citizenship Status" value={application.citizenship_status} icon="pi pi-flag" />
           <DetailItem label="Ownership %" value={application.ownership} icon="pi pi-percentage" />
           <DetailItem label="Has Co-Borrower" value={application.has_co_borrower ? 'Yes' : 'No'} />

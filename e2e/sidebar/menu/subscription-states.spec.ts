@@ -34,8 +34,8 @@ async function asSubscription(page: Page, override: Override) {
 
 const locked = (page: Page, label: string) => sidebarLink(page, label).locator('.ri-lock-line')
 
-const FREE_TRIAL_LOCKED = ['Capital Access', 'Invoices', 'Payments', 'Billing Details', 'Resource Hub']
-const RESTRICTED_LOCKED = ['Pre Qualification', 'Funding Request', 'My Applications', 'Capital Access', 'Billing Details', 'Documents', 'Resource Hub', 'Appointment', 'Funding', 'Profile']
+const FREE_TRIAL_LOCKED = ['Credit Card Stacking', 'Invoices', 'Payments', 'Billing Details', 'Resource Hub']
+const RESTRICTED_LOCKED = ['Pre Qualification', 'Funding Request', 'My Applications', 'Credit Card Stacking', 'Billing Details', 'Documents', 'Resource Hub', 'Appointment', 'Funding', 'Profile']
 
 test.describe('Sidebar › subscription states', () => {
   // A refresh call can still be in flight when a test finishes; drop it quietly.
@@ -48,7 +48,7 @@ test.describe('Sidebar › subscription states', () => {
 
     for (const label of FREE_TRIAL_LOCKED) await expect(locked(page, label), label).toHaveCount(1)
     await expect(sidebar(page).getByRole('button', { name: /Credit Builder/ }).locator('.ri-lock-line')).toHaveCount(1)
-    for (const label of ['Dashboard', 'Pre Qualification', 'Documents', 'Notification', 'Profile']) {
+    for (const label of ['Dashboard', 'Pre Qualification', 'Documents', 'Notifications', 'Profile']) {
       await expect(locked(page, label), label).toHaveCount(0)
     }
     await expect(page.locator('.sidebar-trial-panel')).toContainText('Free Plan')
@@ -69,14 +69,36 @@ test.describe('Sidebar › subscription states', () => {
     await asSubscription(page, { is_host: false, is_free_trail: false, subscription_status: 'Expired' })
 
     for (const label of RESTRICTED_LOCKED) await expect(locked(page, label), label).toHaveCount(1)
-    await expect(locked(page, 'Notification')).toHaveCount(0)
+    await expect(locked(page, 'Notifications')).toHaveCount(0)
     await expect(locked(page, 'Dashboard')).toHaveCount(0)
 
     await sidebarLink(page, 'Documents').click()
     await expect(page).toHaveURL(/\/$/)
+    // BUG-033: the locked item explains why.
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toContainText('Your subscription is not active')
+    await dialog.getByRole('button', { name: 'Got it' }).click()
+    await expect(dialog).toBeHidden()
 
-    await sidebarLink(page, 'Notification').click()
+    await sidebarLink(page, 'Notifications').click()
     await expect(page).toHaveURL(/\/notifications$/)
+  })
+
+  // BUG-033: a client whose enrollment is still being activated is told so -
+  // on a locked menu, and when a locked page sends them back to the Dashboard.
+  test('awaiting activation: a locked menu and a locked page explain why, without naming the partner', async ({ page }) => {
+    await asSubscription(page, { is_host: false, is_free_trail: false, partner_type: 'White-Label Partner (WL)', partner_payment_for_me: false, subscription_status: 'Active' })
+
+    await sidebarLink(page, 'Funding').click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toContainText('Your account is being activated')
+    await expect(dialog).not.toContainText(/partner/i)
+    await dialog.getByRole('button', { name: 'Got it' }).click()
+    await expect(dialog).toBeHidden()
+
+    await page.goto('/funding')
+    await expect(page).toHaveURL(/\/dashboard$/)
+    await expect(page.getByRole('dialog')).toContainText('Your account is being activated')
   })
 
   // E2E-012: hosts are exempt from subscription restrictions.

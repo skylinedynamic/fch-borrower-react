@@ -323,6 +323,13 @@ const ResourceHub = () => {
                               </div>
                             ))}
                           </div>
+                          {/* The search covers Education & Help only; say so when nothing matches (BUG-065). */}
+                          {eduSearch.trim() && filteredEdu.length === 0 && (
+                            <div className="text-center text-muted py-5">
+                              <i className="ri-search-line fs-24 d-block mb-2 opacity-50"></i>
+                              <p className="mb-0 fs-13">No Education &amp; Help resources match "{eduSearch.trim()}".</p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

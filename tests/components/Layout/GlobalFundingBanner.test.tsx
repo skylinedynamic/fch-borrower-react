@@ -10,7 +10,8 @@ import GlobalFundingBanner from '../../../src/components/Layout/GlobalFundingBan
  * green strip with a solid green icon, its own headline and a solid button,
  * not Bootstrap's pale alert.
  */
-const request = { id: 7, requested_amount: '45000', estimated_funding_range: '$45,000', funding_type: 'Term Loan' }
+// The option's full range comes along as estimated_funding_range; the banner must not show it.
+const request = { id: 7, requested_amount: '50000.00', estimated_funding_range: '$25,000 - $5,000,000', funding_type: 'Term Loan' }
 
 function renderBanner(count: number, path = '/') {
   return renderWithProviders(
@@ -31,12 +32,19 @@ describe('GlobalFundingBanner', () => {
     expect(banner).toHaveTextContent('You’re ready to start your applications.')
   })
 
-  it('gives the estimated funding for a single approved request', () => {
+  /**
+   * Defect (BUG-068): the banner read "Estimated Funding: $25,000 - $5,000,000",
+   * the funding option's full range, as if it were this client's estimate. It
+   * shows the amount the client requested.
+   */
+  it('gives the requested amount for a single approved request, not the option range', () => {
     renderBanner(1)
 
     const banner = screen.getByRole('alert')
     expect(within(banner).getByText('Your Funding Request has been Approved!')).toHaveClass('gfb-title')
-    expect(banner).toHaveTextContent('Estimated Funding: $45,000')
+    expect(banner).toHaveTextContent('Requested Amount: $50,000')
+    expect(banner).not.toHaveTextContent('Estimated Funding')
+    expect(banner).not.toHaveTextContent('$5,000,000')
   })
 
   it('stands out: its own tinted strip with an icon, not the pale alert', () => {

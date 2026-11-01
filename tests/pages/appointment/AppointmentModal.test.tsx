@@ -94,6 +94,56 @@ describe('AppointmentModal', () => {
     await waitFor(() => expect(onSuccess).toHaveBeenCalled())
   })
 
+  // BUG-078 / BUG-080: booked in the browser's zone (the API stores UTC), and
+  // never at a time of today that has already passed.
+  describe('time and time zone', () => {
+    const pad = (n: number) => String(n).padStart(2, '0')
+    const today = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` }
+
+    afterEach(() => vi.useRealTimers())
+
+    const createAndSubmit = async () => {
+      resetAuth()
+      let body: any = null
+      server.use(
+        http.post('*/common/appointments/fetch-selectable-users', () => HttpResponse.json({ status: true, data: [] })),
+        http.post('*/common/appointments', async ({ request }) => {
+          body = await request.json()
+          return HttpResponse.json({ status: true, message: 'ok', data: { id: 1 } })
+        })
+      )
+      const user = userEvent.setup()
+      const { ref } = renderModal()
+      await act(async () => { ref.current!.create() })
+      await user.type(await screen.findByPlaceholderText('Enter appointment title'), 'Quarterly Review')
+      await user.click(screen.getByRole('button', { name: /Confirm Appointment/i, hidden: true }))
+      await waitFor(() => expect(body).not.toBeNull())
+      return body
+    }
+
+    it("shows the browser's time zone and books in it", async () => {
+      vi.useFakeTimers({ toFake: ['Date'] })
+      vi.setSystemTime(new Date(new Date().setHours(7, 0, 0, 0)))
+      const zone = Intl.DateTimeFormat().resolvedOptions().timeZone
+
+      const body = await createAndSubmit()
+
+      expect((screen.getByLabelText('Time Zone', { selector: 'input' }) as HTMLInputElement).value.startsWith(`${zone} (GMT`)).toBe(true)
+      expect(body.timezone).toBe(zone)
+      expect(body.appointment_date).toBe(`${today()} 09:00:00`)
+    })
+
+    it("starts today's booking at the next time still ahead, not one that has passed", async () => {
+      vi.useFakeTimers({ toFake: ['Date'] })
+      vi.setSystemTime(new Date(new Date().setHours(13, 10, 0, 0)))
+
+      const body = await createAndSubmit()
+
+      expect(body.appointment_date).toBe(`${today()} 13:30:00`)
+      expect(body.duration_minutes).toBe(30)
+    })
+  })
+
   it('create(): the date picker uses the shared month/year dropdowns, with future years to pick from', async () => {
     resetAuth()
     server.use(

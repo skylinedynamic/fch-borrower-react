@@ -50,8 +50,14 @@ interface ApprovedRequest {
  * The approved requests come from their own endpoint (the layout's banner loads
  * them on every page), not from the dashboard response.
  */
-function serve(data: Partial<typeof baseData> = {}, overview: Record<string, unknown> = {}, approved: ApprovedRequest[] = []) {
+function serve(
+  data: Partial<typeof baseData> = {},
+  overview: Record<string, unknown> = {},
+  approved: ApprovedRequest[] = [],
+  stacking: Record<string, unknown> = { unlocked: true, credit_profile_verified: true, tier_0_completed: true }
+) {
   server.use(
+    http.get('*/borrower/profile/completion', () => HttpResponse.json({ status: true, data: { credit_card_stacking: stacking } })),
     http.get('*/borrower/dashboard', () => HttpResponse.json({ status: true, data: { ...baseData, ...data } })),
     http.get('*/borrower/active-funding-requests', () =>
       HttpResponse.json({
@@ -305,6 +311,38 @@ describe('Dashboard', () => {
         await loaded()
 
         expect(screen.getByRole('button', { name: /choose strategy/i })).toBeInTheDocument()
+      })
+    })
+
+    // BUG-099: without a verified credit profile the Credit Card Stacking page
+    // is locked, yet the dashboard still offered "Choose Strategy".
+    describe('while Credit Card Stacking is locked', () => {
+      const locked = { unlocked: false, credit_profile_verified: false, tier_0_completed: false }
+
+      it('offers no strategy, and leads to what unlocks it', async () => {
+        const user = userEvent.setup()
+        signIn()
+        serve({}, {}, [], locked)
+        renderDashboard()
+        await loaded()
+
+        const widget = screen.getByText('Funding Readiness Overview').closest('[data-widget="capital-access"]') as HTMLElement
+        await within(widget).findByRole('button', { name: /see how to unlock/i })
+        expect(within(widget).queryByRole('button', { name: /choose strategy/i })).toBeNull()
+        expect(widget).toHaveTextContent(/verify your credit profile/i)
+
+        await user.click(within(widget).getByRole('button', { name: /see how to unlock/i }))
+        expect(await screen.findByText('Credit Card Stacking page')).toBeInTheDocument()
+      })
+
+      it('offers Choose Strategy once it is unlocked', async () => {
+        signIn()
+        serve()
+        renderDashboard()
+        await loaded()
+
+        expect(await screen.findByRole('button', { name: /choose strategy/i })).toBeInTheDocument()
+        expect(screen.queryByRole('button', { name: /see how to unlock/i })).toBeNull()
       })
     })
 

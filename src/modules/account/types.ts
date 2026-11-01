@@ -1,3 +1,8 @@
+/** The pending sign-in email change after a resend (still pending) or a cancel (null). */
+export type PendingEmailChange = {
+  pending_email: string | null
+}
+
 /** The three links an email change sends: confirm (new address), cancel and undo (old address). */
 export const EMAIL_CHANGE_ACTIONS = ['confirm', 'cancel', 'undo'] as const
 export type EmailChangeAction = typeof EMAIL_CHANGE_ACTIONS[number]

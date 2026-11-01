@@ -88,11 +88,23 @@ describe('CreditGuide', () => {
     })
 
     it('says so when there is nothing left to wait for on this tier', async () => {
-      serve(standardTiers(), progress({ current_tier_estimated_completion_days: 0 }))
+      serve(standardTiers(), progress({ current_tier_estimated_completion_days: 0, current_tier_tasks_remaining: 0 }))
       renderWithProviders(<CreditGuide />)
 
       await screen.findByText('Est. Time to Next Tier')
       expect(screen.getByText('Est. Time to Next Tier').closest('[data-stat]')).toHaveTextContent('Ready for Next Tier')
+    })
+
+    // BUG-024 retest: a tier whose task has not arrived yet (0/1) has no
+    // estimate - it is not ready for the next tier either.
+    it('shows no estimate, not "ready", while the tier still needs a task it has not got', async () => {
+      serve(standardTiers(), progress({ current_tier_estimated_completion_days: 0, current_tier_tasks_remaining: 1, current_tier_complete_task: 0 }))
+      renderWithProviders(<CreditGuide />)
+
+      await screen.findByText('Est. Time to Next Tier')
+      const stat = screen.getByText('Est. Time to Next Tier').closest('[data-stat]')
+      expect(stat).toHaveTextContent('—')
+      expect(stat).not.toHaveTextContent('Ready for Next Tier')
     })
   })
 

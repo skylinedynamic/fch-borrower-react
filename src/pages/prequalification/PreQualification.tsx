@@ -30,6 +30,7 @@ export default function PreQualification() {
     setPersonal,
     business,
     setBusiness,
+    startDateOnFile,
     support,
     setSupport,
     personalErrors,
@@ -135,6 +136,7 @@ export default function PreQualification() {
               onPrevious={() => handleTabClick(0)}
               errors={businessErrors}
               isSubmitting={submitBusinessInfoMutation.isPending}
+              startDateOnFile={startDateOnFile}
             />
           )}
         </div>
@@ -256,7 +258,7 @@ export default function PreQualification() {
             <h3 className="mb-1">Prequalify to Build Your Business Credit. Access the Right Capital.</h3>
             <div className="text-muted mx-auto intro-text">
               <span className="d-block">We don't just help you get funding – we guarantee strategies to build business credit, improve fundability, and secure long-term growth.</span>
-              <span className="d-block">Complete your profile to get matc.hed with pre-qualified programs – no credit impact.</span>
+              <span className="d-block">Complete your profile to get matched with pre-qualified programs – no credit impact.</span>
             </div>
           </>
         </div>

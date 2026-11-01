@@ -1,6 +1,6 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '../../lib/query'
-import { readEmailChangeLink, submitEmailChangeLink } from './services'
+import { cancelEmailChange, readEmailChangeLink, resendEmailChange, submitEmailChangeLink } from './services'
 import type { EmailChangeLinkParams } from './types'
 
 /** What an email-change link is about. Reading it never changes anything. */
@@ -20,3 +20,19 @@ export const useSubmitEmailChangeLink = (link: EmailChangeLinkParams | null) =>
   useMutation({
     mutationFn: (password?: string) => submitEmailChangeLink(link as EmailChangeLinkParams, password),
   })
+
+/** Sends the confirmation link for the borrower's pending email change again. */
+export const useResendEmailChange = () =>
+  useMutation({
+    mutationFn: resendEmailChange,
+  })
+
+/** Withdraws the borrower's pending email change; the profile then shows none. */
+export const useCancelEmailChange = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: cancelEmailChange,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.profile.personalInfo() }),
+  })
+}

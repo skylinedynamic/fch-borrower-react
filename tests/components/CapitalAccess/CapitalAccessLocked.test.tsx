@@ -38,6 +38,18 @@ describe('Credit Card Stacking while locked', () => {
     expect(items[2]).toHaveAttribute('aria-current', 'step')
   })
 
+  // BUG-034: the summary once showed raw Markdown (**...**) instead of bold text.
+  it('shows the summary in bold, with no raw Markdown', async () => {
+    signInBorrower()
+    mockOnboardingStep('verify_all')
+    renderLocked()
+
+    const summary = (await screen.findByText(/to view your personalized/i)).closest('p')!
+    expect(summary).not.toHaveTextContent('*')
+    expect(within(summary).getByText('Credit Card Stacking Readiness Scores').tagName).toBe('STRONG')
+    expect(within(summary).getByText('Estimated Remaining Access').tagName).toBe('STRONG')
+  })
+
   it('takes the borrower to the next thing to do', async () => {
     const user = userEvent.setup()
     signInBorrower()

@@ -31,7 +31,8 @@ test.describe('Login (live backend)', () => {
     await page.getByLabel(/^Password/i).fill('wrong-password')
     await page.getByRole('button', { name: /Sign In/i }).click()
 
-    await expect(page.getByText(/does not exist/i)).toBeVisible({ timeout: SLOW_TIMEOUT })
+    // The same answer as a wrong password, so it does not reveal which emails have an account (BUG-104).
+    await expect(page.getByText('Invalid email or password.')).toBeVisible({ timeout: SLOW_TIMEOUT })
     await expect(page).toHaveURL(/\/login$/)
   })
 

@@ -41,16 +41,16 @@ const draft: CoBorrower = {
   driversLicenseState: '',
 }
 
-function Harness({ initial, onSubmit }: { initial: CoBorrower; onSubmit: (e: any) => void }) {
+function Harness({ initial, onSubmit, otherOwnershipTotal = 0 }: { initial: CoBorrower; onSubmit: (e: any) => void; otherOwnershipTotal?: number }) {
   const [coDraft, setCoDraft] = useState<CoBorrower>(initial)
-  return <CoBorrowerModal coDraft={coDraft} setCoDraft={setCoDraft} onSubmit={onSubmit} isEditing={false} />
+  return <CoBorrowerModal coDraft={coDraft} setCoDraft={setCoDraft} onSubmit={onSubmit} isEditing={false} otherOwnershipTotal={otherOwnershipTotal} />
 }
 
-const renderModal = (coDraft: CoBorrower, onSubmit = vi.fn()) => {
+const renderModal = (coDraft: CoBorrower, onSubmit = vi.fn(), otherOwnershipTotal = 0) => {
   const queryClient = createTestQueryClient()
   const utils = render(
     <QueryClientProvider client={queryClient}>
-      <Harness initial={coDraft} onSubmit={onSubmit} />
+      <Harness initial={coDraft} onSubmit={onSubmit} otherOwnershipTotal={otherOwnershipTotal} />
     </QueryClientProvider>
   )
   return { ...utils, onSubmit }
@@ -85,9 +85,21 @@ describe('CoBorrowerModal — SSN handling', () => {
     const user = userEvent.setup()
     renderModal(draft)
 
-    const ssnInput = screen.getByPlaceholderText('xxx-xx-xxxx')
+    const ssnInput = screen.getByLabelText(/social security number/i)
     await user.type(ssnInput, '987654321')
     expect((ssnInput as HTMLInputElement).value).toBe('987-65-4321')
+  })
+
+  it('shows a co-borrower SSN masked once the field is left, in full on the eye button', async () => {
+    // The same SSN field as the profile's: ***-**-1234 at rest.
+    const user = userEvent.setup()
+    renderModal({ ...draft, ssn: '987-65-4321' })
+
+    const ssnInput = screen.getByLabelText(/social security number/i) as HTMLInputElement
+    expect(ssnInput.value).toBe('***-**-4321')
+    // The modal sits outside the accessibility tree until Bootstrap shows it.
+    await user.click(screen.getByRole('button', { name: /show ssn/i, hidden: true }))
+    expect(ssnInput.value).toBe('987-65-4321')
   })
 
   it('shows field-level validation errors on a 422 response and does not call onSubmit', async () => {
@@ -103,6 +115,68 @@ describe('CoBorrowerModal — SSN handling', () => {
     await user.click(screen.getByRole('button', { name: /Add Co-Borrower/i, hidden: true }))
 
     expect(await screen.findByText('This SSN is already in use.')).toBeInTheDocument()
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+})
+
+describe('CoBorrowerModal — phone fields', () => {
+  it('shows a phone example a real US number could be', () => {
+    renderModal(draft)
+
+    // (123) 456-7890 is not one: an area code never starts with 1.
+    expect(screen.queryAllByPlaceholderText('(123) 456-7890')).toHaveLength(0)
+    expect(screen.getAllByPlaceholderText('(555) 555-5555')).toHaveLength(2)
+  })
+
+  it("drops a field's error once the field is edited, so an emptied phone shows none", async () => {
+    server.use(
+      http.post('*/borrower/myapplication/funding-application/co-borrower-validation', () =>
+        HttpResponse.json(
+          { message: 'Validation failed', errors: { home_phone: 'Enter a valid 10-digit US phone number, e.g. (555) 234-5678.', email: 'The email field is required.' } },
+          { status: 422 }
+        )
+      )
+    )
+    const user = userEvent.setup()
+    renderModal({ ...draft, homePhone: '(555) 21' })
+
+    await user.click(screen.getByRole('button', { name: /Add Co-Borrower/i, hidden: true }))
+    expect(await screen.findByText(/Enter a valid 10-digit US phone number/)).toBeInTheDocument()
+
+    const homePhone = screen.getAllByPlaceholderText('(555) 555-5555')[1]
+    await user.clear(homePhone)
+
+    expect(screen.queryByText(/Enter a valid 10-digit US phone number/)).not.toBeInTheDocument()
+    // Only the field that was edited: the email's error stays until it is fixed.
+    expect(screen.getByText('The email field is required.')).toBeInTheDocument()
+  })
+})
+
+/**
+ * Defect (BUG-108): + Add Co-Borrower accepted 50% next to an owner holding
+ * 100% - the check went out without what the others already hold, so only
+ * Save & Next refused it later. The modal sends other_ownership_total, and the
+ * API's answer stops the add with the message under Ownership %.
+ */
+describe('CoBorrowerModal — ownership must fit in what the others leave', () => {
+  afterEach(() => server.resetHandlers())
+
+  it('sends what the owner and other co-borrowers hold, and does not add a share that would pass 100%', async () => {
+    let receivedBody: any = null
+    server.use(
+      http.post('*/borrower/myapplication/funding-application/co-borrower-validation', async ({ request }) => {
+        receivedBody = await request.json()
+        return HttpResponse.json({ status: false, message: 'Invalid', errors: { ownership: 'Only 0% is left after the owner and the other co-borrowers.' } }, { status: 422 })
+      })
+    )
+    const user = userEvent.setup()
+    const { onSubmit } = renderModal({ ...draft, ownershipPct: '50' }, vi.fn(), 100)
+
+    await user.click(screen.getByRole('button', { name: /Add Co-Borrower/i, hidden: true }))
+
+    await waitFor(() => expect(receivedBody).not.toBeNull())
+    expect(receivedBody).toMatchObject({ ownership: '50', other_ownership_total: 100 })
+    expect(await screen.findByText('Only 0% is left after the owner and the other co-borrowers.')).toBeInTheDocument()
     expect(onSubmit).not.toHaveBeenCalled()
   })
 })

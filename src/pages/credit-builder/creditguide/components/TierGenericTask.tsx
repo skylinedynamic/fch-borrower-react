@@ -26,7 +26,7 @@ export default function TierGenericTask({ task, isCurrentTier, isFirstTier, onVe
   } else if (isProcessing) {
     reviewText = 'Verification in progress'
   } else if (isRejected) {
-    reviewText = 'Verification rejected - see the note'
+    reviewText = 'Verification rejected'
   } else {
     reviewText = 'Reviewed by FCH underwriting'
   }
@@ -55,6 +55,8 @@ export default function TierGenericTask({ task, isCurrentTier, isFirstTier, onVe
           <div className="cg-step-title">{task.title}</div>
           {task.subtitle && <div className="cg-step-subtitle">{task.subtitle}</div>}
           <div className="cg-step-review">{reviewText}</div>
+          {/* The reviewer's reason, in view rather than only on hover (BUG-083). */}
+          {isRejected && task.note && <div className="cg-step-reason">Reason: {task.note}</div>}
         </div>
 
         <div className="cg-step-action">

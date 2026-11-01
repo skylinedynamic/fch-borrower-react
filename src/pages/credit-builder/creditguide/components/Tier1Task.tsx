@@ -64,6 +64,7 @@ export default function Tier1Task({ tierId, task, isCurrentTier, isFirstTier, on
           <div className="cg-step-review">
             <i className="ri-shield-check-line" aria-hidden="true"></i> Vendor eligibility reviewed by FCH underwriting
           </div>
+          {isRejected && task.note && <div className="cg-step-reason">Reason: {task.note}</div>}
         </div>
 
         <div className="cg-step-action">

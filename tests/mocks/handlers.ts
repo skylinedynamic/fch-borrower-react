@@ -29,6 +29,7 @@ export const handlers: HttpHandler[] = [
         middle_name: null,
         last_name: '',
         email: '',
+        pending_email: null,
         home_address: '',
         city: '',
         state: '',
