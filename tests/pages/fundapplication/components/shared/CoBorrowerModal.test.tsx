@@ -8,11 +8,13 @@ import { server } from '../../../../mocks/server'
 import { createTestQueryClient } from '../../../../test-utils'
 import CoBorrowerModal from '../../../../../src/pages/fundapplication/components/shared/CoBorrowerModal'
 import type { CoBorrower } from '../../../../../src/pages/fundapplication/types'
+import { latestAdultBirthDate } from '../../../../../src/modules/funding-application/applicationRules'
 
 vi.mock('react-toastify', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 vi.mock('react-flatpickr', () => ({
-  default: ({ value, onChange, className, placeholder }: any) => (
+  default: ({ value, onChange, className, placeholder, options }: any) => (
     <input
+      data-max-date={options?.maxDate instanceof Date ? options.maxDate.toDateString() : options?.maxDate}
       className={className}
       value={value || ''}
       placeholder={placeholder}
@@ -177,6 +179,34 @@ describe('CoBorrowerModal — ownership must fit in what the others leave', () =
     await waitFor(() => expect(receivedBody).not.toBeNull())
     expect(receivedBody).toMatchObject({ ownership: '50', other_ownership_total: 100 })
     expect(await screen.findByText('Only 0% is left after the owner and the other co-borrowers.')).toBeInTheDocument()
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+})
+
+/**
+ * Defect: R2 BUG-031 - the co-borrower's date-of-birth picker allowed any
+ * date up to today, and the co-borrower check did not object to age 17. The
+ * picker now stops at 18 years ago; the API refuses a younger one too.
+ */
+describe('CoBorrowerModal — date of birth (R2 BUG-031)', () => {
+  it('offers only dates of birth that are 18 or older', () => {
+    renderModal(draft)
+
+    expect(screen.getByPlaceholderText('Select date of birth')).toHaveAttribute('data-max-date', latestAdultBirthDate().toDateString())
+  })
+
+  it('shows the API refusing a co-borrower under 18 under the date of birth', async () => {
+    server.use(
+      http.post('*/borrower/myapplication/funding-application/co-borrower-validation', () =>
+        HttpResponse.json({ status: false, message: 'Invalid', errors: { date_of_birth: ['Must be at least 18 years old.'] } }, { status: 422 })
+      )
+    )
+    const user = userEvent.setup()
+    const { onSubmit } = renderModal({ ...draft, dob: '2009-10-15', ssn: '123-45-6789' })
+
+    await user.click(screen.getByRole('button', { name: /Add Co-Borrower/i, hidden: true }))
+
+    expect(await screen.findByText('Must be at least 18 years old.')).toBeInTheDocument()
     expect(onSubmit).not.toHaveBeenCalled()
   })
 })

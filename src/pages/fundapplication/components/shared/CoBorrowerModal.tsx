@@ -3,6 +3,7 @@ import type { CoBorrower } from '../../types'
 import CustomDropdown from '../../../../components/Common/CustomDropdown'
 import { countries } from '../../../../modules/location'
 import { useValidateCoBorrower } from '../../../../modules/funding-application/queries'
+import { latestAdultBirthDate } from '../../../../modules/funding-application/applicationRules'
 import { getCountryCodeByName, getPhoneCodeByName } from '../../../../utils/countryHelpers'
 import { formatPhoneNumber, unformatSSN, formatZipCode } from '../../../../utils/formatters'
 import SsnInput from '../../../../components/SsnInput/SsnInput'
@@ -278,7 +279,7 @@ export default function CoBorrowerModal({ coDraft, setCoDraft: setDraft, onSubmi
                         dateFormat: "Y-m-d",
                         altInput: true,
                         altFormat: "j M, Y",
-                        maxDate: "today",
+                        maxDate: latestAdultBirthDate(), // 18 or older, as the API requires (R2 BUG-031)
                         monthSelectorType: "dropdown",
                         static: true,
                         plugins: [yearDropdownPlugin(1900)],

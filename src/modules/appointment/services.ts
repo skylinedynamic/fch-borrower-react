@@ -43,3 +43,11 @@ export const fetchSelectableUsers = async (payload: any = {}): Promise<FetchSele
   const { data } = await apiClient.post('/common/appointments/fetch-selectable-users', payload)
   return data
 }
+/**
+ * Cancel (not delete) an appointment the signed-in client is on but did not
+ * book; the API emails the organiser (R2 BUG-046).
+ */
+export const cancelAppointment = async (id: string | number): Promise<{ status: boolean, message: string }> => {
+  const { data } = await apiClient.post(`/common/appointments/${id}/cancel`)
+  return data
+}

@@ -9,6 +9,7 @@ import CoBorrowerTable from '../shared/CoBorrowerTable'
 import CustomDropdown from '../../../../components/Common/CustomDropdown'
 import { countries } from '../../../../modules/location'
 import { useOwnershipInfo, useSaveOwnershipInfo } from '../../../../modules/funding-application/queries'
+import { latestAdultBirthDate } from '../../../../modules/funding-application/applicationRules'
 import { reportSaveFailure } from '../../../../modules/funding-application/saveFeedback'
 import { citizenshipOptions } from '../../../../data/profile'
 import { toast } from 'react-toastify'
@@ -348,7 +349,7 @@ export default function OwnershipInformationStep({
                 dateFormat: 'Y-m-d',
                 altInput: true,
                 altFormat: 'j M, Y',
-                maxDate: 'today',
+                maxDate: latestAdultBirthDate(), // 18 or older, as the API requires (R2 BUG-031)
                 monthSelectorType: 'dropdown',
                 plugins: [yearDropdownPlugin(1900)],
               } as any}
