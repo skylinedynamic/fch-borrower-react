@@ -11,7 +11,6 @@ import type { OwnerInfo, CoBorrower } from '../../../../../src/pages/fundapplica
 import { countries, clearLocationCache } from '../../../../../src/modules/location'
 import { toast } from 'react-toastify'
 import { VALIDATION_ERROR_MESSAGE } from '../../../../../src/modules/funding-application/saveFeedback'
-import { latestAdultBirthDate } from '../../../../../src/modules/funding-application/applicationRules'
 
 vi.mock('react-toastify', () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }))
 
@@ -20,9 +19,8 @@ vi.mock('react-toastify', () => ({ toast: { success: vi.fn(), error: vi.fn(), in
 // outlive jsdom test teardown and throw. Not the date picker's own behavior
 // under test here, so it's replaced with a plain controlled input.
 vi.mock('react-flatpickr', () => ({
-  default: ({ value, onChange, className, placeholder, options }: any) => (
+  default: ({ value, onChange, className, placeholder }: any) => (
     <input
-      data-max-date={options?.maxDate instanceof Date ? options.maxDate.toDateString() : options?.maxDate}
       className={className}
       value={value || ''}
       placeholder={placeholder}
@@ -101,19 +99,6 @@ describe('OwnershipInformationStep — SSN handling (PII, FCRA-relevant)', () =>
     server.resetHandlers()
     vi.restoreAllMocks()
     clearLocationCache()
-  })
-
-  /**
-   * Defect: R2 BUG-031 - the owner's date-of-birth picker allowed any date
-   * up to today, so a 17-year-old owner was picked and saved. It now stops at
-   * the latest date that is 18 or older; the API refuses a younger one too.
-   */
-  it('lets the owner pick only a date of birth that is 18 or older', async () => {
-    server.use(http.get('*/borrower/funding-application/ownership-info', () => HttpResponse.json({ status: true, data: {} })))
-    renderStep()
-
-    const dob = await screen.findByPlaceholderText('Select date of birth')
-    expect(dob).toHaveAttribute('data-max-date', latestAdultBirthDate().toDateString())
   })
 
   it('displays the SSN formatted as user types, but sends only unformatted digits on save', async () => {

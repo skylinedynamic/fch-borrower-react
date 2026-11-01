@@ -312,6 +312,27 @@ describe('AppointmentModal - cancelling an appointment booked with me (R2 BUG-04
     expect(onSuccess).toHaveBeenCalled()
   })
 
+  it("shows the API's reason when the cancel is refused, and keeps the appointment open", async () => {
+    const { toast } = await import('react-toastify')
+    vi.mocked(toast.success).mockClear()
+    vi.mocked(toast.error).mockClear()
+    serve()
+    server.use(
+      http.post('*/common/appointments/:id/cancel', () =>
+        HttpResponse.json({ status: false, message: 'This appointment has already started.' }, { status: 422 })
+      )
+    )
+    const user = userEvent.setup()
+    const { onSuccess } = await open()
+
+    await user.click(screen.getByRole('button', { name: /cancel appointment/i, hidden: true }))
+    await user.click(await screen.findByRole('button', { name: /yes, cancel it/i, hidden: true }))
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('This appointment has already started.'))
+    expect(toast.success).not.toHaveBeenCalledWith('Appointment cancelled.')
+    expect(onSuccess).not.toHaveBeenCalled()
+  })
+
   it('does not offer Cancel on one I booked myself (I can delete it)', async () => {
     serve({ scheduled_by: { name: 'Me', id: ME }, assigned_for: { name: 'Host Admin', id: 9 } })
     await open()
