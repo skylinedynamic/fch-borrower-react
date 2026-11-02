@@ -26,7 +26,7 @@ import { sanitizeHtml } from '../../utils/sanitizeHtml';
 // How many years past the current one the date picker's year list offers.
 const APPOINTMENT_YEARS_AHEAD = 10;
 
-// The API fields the form shows a refusal beside; any other is toasted (R2 BUG-024).
+// The API fields the form shows a refusal beside; any other shows under the time slot (R2 BUG-024).
 const FORM_ERROR_FIELDS = ['subject', 'meeting_type', 'assigned_for', 'appointment_date', 'duration_minutes', 'timezone'];
 
 interface AppointmentModalProps {
@@ -69,6 +69,10 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+    // Under the time slot: the duration's refusal, else one on a field the form has no place for (R2 BUG-024).
+    const unshownErrorField = Object.keys(formErrors).find(field => !FORM_ERROR_FIELDS.includes(field));
+    const timeSlotError = formErrors.duration_minutes || (unshownErrorField ? ([] as string[]).concat(formErrors[unshownErrorField])[0] : null);
 
     const currentUser = useAuthStore((state) => state.user);
 
@@ -519,12 +523,8 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
                 toast.error(response?.message || `Failed to ${isNewEvent ? 'create' : 'update'} appointment`);
             }
         } catch (error: any) {
-            const errors: Record<string, string | string[]> | undefined = error.response?.data?.errors;
-            if (errors) {
-                setFormErrors(errors as Record<string, string>);
-                // A refused field the form has no place for still says why (R2 BUG-024).
-                const unshown = Object.keys(errors).find(field => !FORM_ERROR_FIELDS.includes(field));
-                if (unshown) toast.error(([] as string[]).concat(errors[unshown])[0]);
+            if (error.response?.data?.errors) {
+                setFormErrors(error.response.data.errors);
             } else {
                 toast.error(error.response?.data?.message || 'Failed to save appointment');
             }
@@ -878,7 +878,7 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
                                                         }}
                                                         className={`flex-grow-1 ${formErrors.timeEnd || formErrors.duration_minutes ? 'p-invalid' : ''}`} placeholder="End" appendTo="self" />
                                                 </div>
-                                                {formErrors.duration_minutes && <div className="text-danger fs-11 mt-1">{formErrors.duration_minutes}</div>}
+                                                {timeSlotError && <div className="text-danger fs-11 mt-1">{timeSlotError}</div>}
                                             </div>
                                         </div>
                                     </div>

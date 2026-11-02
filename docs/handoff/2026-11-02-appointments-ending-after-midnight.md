@@ -20,13 +20,13 @@ The API needs no change: it stores the start plus `duration_minutes`, and its va
 - `AppointmentModal.tsx`:
   - Uses those for the end list, the end after a new start, `duration_minutes` and the two overlap checks.
   - Shows `formErrors.duration_minutes` under the time slot.
-  - Toasts a 422 on any field outside `FORM_ERROR_FIELDS`.
+  - Shows a 422 on any field outside `FORM_ERROR_FIELDS` under the time slot too (`timeSlotError`). Nothing is toasted.
 
 ## Files changed
 - `src/utils/appointmentTime.ts`: `timeAfter` wraps; adds `endSlotsAfter`, `minutesBetween`, `endWithinDay`.
 - `src/pages/appointment/AppointmentModal.tsx`: end list, duration, overlap checks, error display.
 - `tests/utils/appointmentTime.test.ts`: the "23:30 → 23:59" expectation is replaced; +4 tests.
-- `tests/pages/appointment/AppointmentModal.test.tsx`: +3 tests (an 11:30 PM appointment ends 12:00 AM the next day and saves 30 minutes; a `duration_minutes` 422 is shown; a 422 on a field the form has no place for is toasted).
+- `tests/pages/appointment/AppointmentModal.test.tsx`: +3 tests (an 11:30 PM appointment ends 12:00 AM the next day and saves 30 minutes; a `duration_minutes` 422 is shown; a 422 on a field the form has no place for shows under the time slot, with no toast).
 - `e2e/sidebar/appointment/appointment-midnight-create.spec.ts`: new, against the real API. QA's steps on a day ~11 days out: start 11:30 PM, the end reads "12:00 AM (next day)", Confirm sends `duration_minutes: 30` and gets 200. It deletes the appointment again.
 
 ## Testing
@@ -39,3 +39,6 @@ The API needs no change: it stores the start plus `duration_minutes`, and its va
 ## Open items
 - QA sheet BUG-024 (round 2) → Fixed in build, pending stage retest (both portals).
 - The same fix is in `react-fch`, same date and title.
+
+## Follow-up, same day: the reason goes under the time slot, never in a toast
+Reviewer's request: no toast for an error message; show the reason under Time Slot. The 422 toast is removed. `timeSlotError` (the `duration_minutes` refusal, else the first one on a field the form has no place for) renders under the time slot. The test expecting a toast now expects the reason right after `.time-slot-container` and no toast; it failed first, then passed. Vitest `AppointmentModal` + `appointmentTime`: 23 passed. `npm run typecheck`: clean. No new live E2E: the real API cannot be made to refuse an unknown field, and the Vitest test covers it with MSW.
