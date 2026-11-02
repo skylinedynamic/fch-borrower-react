@@ -3,7 +3,10 @@ import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { SaveBusinessDetailsRequest, ValidationErrors, BusinessDetailsData } from '../../../modules/profile/types'
 import { countries as countriesData } from '../../../modules/location'
 import { entityTypes, industryTypes } from '../../../data/profile'
-import { useBusinessDetails, useSaveBusinessDetails, useSubmitChangeRequest } from '../../../modules/profile/queries'
+import { useBusinessDetails, useSaveBusinessDetails, useSubmitChangeRequest, usePendingChangeRequests } from '../../../modules/profile/queries'
+import ChangeRequestButton from './ChangeRequestButton'
+import ChangeRequestNotice from './ChangeRequestNotice'
+import { useCancelChangeRequestDialog } from './CancelChangeRequestDialog'
 import { useEffect, useMemo, useState, useRef } from 'react'
 import { formatCalendarDate } from '../../../utils/dates'
 import { toast } from 'react-toastify'
@@ -34,6 +37,10 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
   const { data: apiData, isLoading, isSuccess } = useBusinessDetails()
   const { mutate: saveBusiness, isPending } = useSaveBusinessDetails()
   const { mutate: submitChange, isPending: isSubmittingChange } = useSubmitChangeRequest()
+  // A field waiting for review offers no second Change Request (R2 BUG-039).
+  const { pendingId: pendingChangeId } = usePendingChangeRequests()
+  // Pressing "Pending review" offers to cancel that request.
+  const { ask: askCancelChange, dialog: cancelChangeDialog } = useCancelChangeRequestDialog()
   const [errors, setErrors] = useState<ValidationErrors>({})
   const inputRef = useRef<HTMLInputElement>(null)
   const [availableCities, setAvailableCities] = useState<{ name: string, code: string }[]>([])
@@ -229,13 +236,12 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               readOnly={isFieldLocked('business_name')}
             />
             {isFieldLocked('business_name') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('business_name')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Legal Business Name', 'business_name', data.business_name)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.business_name && <div className="invalid-feedback d-block">{errors.business_name}</div>}
@@ -256,13 +262,12 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               readOnly={isFieldLocked('business_ein')}
             />
             {isFieldLocked('business_ein') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('business_ein')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Business EIN', 'business_ein', data.business_ein)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.business_ein && <div className="invalid-feedback d-block">{errors.business_ein}</div>}
@@ -289,13 +294,12 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               />
             </div>
             {isFieldLocked('business_phone') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('business_phone')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Phone Number', 'business_phone', data.business_phone)}
-              >
-                Change Request
-              </button>
+              />
             )}
             {errors.business_phone && <div className="invalid-feedback d-block">{errors.business_phone}</div>}
           </div>
@@ -314,13 +318,12 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               readOnly={isFieldLocked('business_email')}
             />
             {isFieldLocked('business_email') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('business_email')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Business Email', 'business_email', data.business_email)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.business_email && <div className="invalid-feedback d-block">{errors.business_email}</div>}
@@ -340,13 +343,12 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               readOnly={isFieldLocked('duns_number')}
             />
             {isFieldLocked('duns_number') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('duns_number')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('DUNS Number', 'duns_number', data.duns_number)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.duns_number && <div className="invalid-feedback d-block">{errors.duns_number}</div>}
@@ -365,13 +367,12 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               readOnly={isFieldLocked('business_address')}
             />
             {isFieldLocked('business_address') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('business_address')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Business Address', 'business_address', data.business_address)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.business_address && <div className="invalid-feedback d-block">{errors.business_address}</div>}
@@ -401,13 +402,12 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               disabled={isFieldLocked('business_country')}
             />
             {isFieldLocked('business_country') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('business_country')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Country', 'business_country', data.business_country)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.business_country && (
@@ -437,13 +437,12 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               disabled={!data.business_country || isFieldLocked('business_state')}
             />
             {isFieldLocked('business_state') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('business_state')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('State', 'business_state', data.business_state)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.business_state && <div className="invalid-feedback d-block">{errors.business_state}</div>}
@@ -472,13 +471,12 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               disabled={!data.business_state || isFieldLocked('business_city')}
             />
             {isFieldLocked('business_city') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('business_city')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('City', 'business_city', data.business_city)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.business_city && !showCityInput && (
@@ -500,13 +498,12 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
                 readOnly={isFieldLocked('business_city')}
               />
               {isFieldLocked('business_city') && (
-                <button
+                <ChangeRequestButton
                   className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                  type="button"
+                  pendingId={pendingChangeId('business_city')}
+                  onCancel={askCancelChange}
                   onClick={() => handleOpenRequestModal('City Name', 'business_city', data.business_city)}
-                >
-                  Change Request
-                </button>
+                />
               )}
               {errors.business_city && (
                 <div className="invalid-feedback d-block">{errors.business_city}</div>
@@ -530,13 +527,12 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               readOnly={isFieldLocked('business_zip_code')}
             />
             {isFieldLocked('business_zip_code') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('business_zip_code')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Zip Code', 'business_zip_code', data.business_zip_code)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.business_zip_code && <div className="invalid-feedback d-block">{errors.business_zip_code}</div>}
@@ -556,13 +552,12 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               disabled={isFieldLocked('business_entity_type')}
             />
             {isFieldLocked('business_entity_type') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('business_entity_type')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Entity Type', 'business_entity_type', data.business_entity_type)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.business_entity_type && <div className="invalid-feedback d-block">{errors.business_entity_type}</div>}
@@ -611,13 +606,12 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               disabled={isFieldLocked('business_start_date')}
             />
             {isFieldLocked('business_start_date') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('business_start_date')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Business Start Date', 'business_start_date', data.business_start_date)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.business_start_date && (
@@ -674,13 +668,12 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               readOnly={isFieldLocked('business_website')}
             />
             {isFieldLocked('business_website') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('business_website')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Business Website', 'business_website', data.business_website)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.business_website && <div className="invalid-feedback d-block">{errors.business_website}</div>}
@@ -701,13 +694,12 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               disabled={isFieldLocked('business_industry_type')}
             />
             {isFieldLocked('business_industry_type') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('business_industry_type')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Industry Type', 'business_industry_type', data.business_industry_type)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.business_industry_type && <div className="invalid-feedback d-block">{errors.business_industry_type}</div>}
@@ -738,6 +730,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
       </form>
 
       {/* Update Request Modal */}
+      {cancelChangeDialog}
       <Modal
         isOpen={isModalOpen}
         toggle={toggleModal}
@@ -860,18 +853,7 @@ export default function BusinessDetails({ data, onChange, onSave, onBack }: Busi
               </div>
             )}
           </div>
-          <div className="alert alert-info border-0 mb-0">
-            <div className="d-flex">
-              <div className="flex-shrink-0">
-                <i className="ri-information-line fs-18"></i>
-              </div>
-              <div className="flex-grow-1 ms-2">
-                <p className="mb-0 fs-13">
-                  This field is verified and locked. Submitting this form will notify our compliance team to review and verify the new information before it is updated.
-                </p>
-              </div>
-            </div>
-          </div>
+          <ChangeRequestNotice />
         </ModalBody>
         <ModalFooter>
           <button className="btn btn-danger-subtle" onClick={toggleModal}>Discard</button>

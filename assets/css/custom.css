@@ -939,6 +939,9 @@ File: Custom Css File
     top: 4px !important;
     height: calc(37.5px - 8px) !important;
     transform: none !important;
+    /* Above a focused field: Bootstrap lifts a focused .input-group control
+       (the phone fields) to z-index 5, which hid the button behind it. */
+    z-index: 6 !important;
 }
 
 .position-relative .change-request-btn:hover {

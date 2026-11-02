@@ -10,6 +10,16 @@ import BusinessDetails from '../../../../src/pages/profile/components/BusinessDe
 import type { SaveBusinessDetailsRequest } from '../../../../src/modules/profile/types'
 
 vi.mock('react-toastify', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
+// The cancel question is the app's delete modal, which drives Bootstrap's Modal;
+// a synchronous fake shows and hides it without transition callbacks.
+vi.mock('bootstrap/js/dist/modal', () => ({
+  default: class {
+    constructor(private el: HTMLElement) {}
+    show() { this.el.classList.add('show') }
+    hide() { this.el.classList.remove('show') }
+    dispose() {}
+  },
+}))
 vi.mock('react-flatpickr', () => ({
   default: ({ value, onChange, className, placeholder }: any) => (
     <input
@@ -216,5 +226,184 @@ describe('Profile — Business Details tab', () => {
     expect(wrapper.querySelector('.change-request-btn')).toHaveTextContent('Change Request')
     expect(phone).toHaveClass('is-invalid', 'locked-field-padding')
     expect(phone).toHaveAttribute('readonly')
+  })
+})
+
+/**
+ * Round 2 BUG-039: a change request for the value already on file, and a
+ * second one for a field already waiting for review, were both accepted. The
+ * API refuses both now (shown in the modal), and a field waiting for review
+ * says so instead of offering another Change Request.
+ */
+describe('Profile — Business Details › change requests (R2 BUG-039)', () => {
+  afterEach(() => {
+    server.resetHandlers()
+    vi.clearAllMocks()
+  })
+
+  const lockedPhone = () =>
+    server.use(
+      http.get('*/borrower/profile/business-info', () =>
+        HttpResponse.json({ status: true, data: { business_name: 'Acme Corp', business_phone: '5555550122', business_email: 'acme@example.com' } })
+      )
+    )
+  const pending = (fields: Array<{ id: number; field_name: string; entity_id: number | null }>) =>
+    server.use(http.get('*/borrower/profile/change-requests/pending', () => HttpResponse.json({ status: true, data: fields })))
+  const wrapperOf = async (value: string) => ((await screen.findByDisplayValue(value)) as HTMLElement).closest('.position-relative') as HTMLElement
+
+  it('a field waiting for review shows "Pending review" instead of Change Request', async () => {
+    lockedPhone()
+    pending([{ id: 46, field_name: 'business_phone', entity_id: null }])
+    renderComponent()
+
+    const phone = await wrapperOf('(555) 555-0122')
+    await waitFor(() => expect(phone.querySelector('.change-request-btn')).toHaveTextContent('Pending review'))
+    // Another locked field still offers it.
+    expect((await wrapperOf('acme@example.com')).querySelector('.change-request-btn')).toHaveTextContent('Change Request')
+  })
+
+  it('once a request is sent, its field shows "Pending review"', async () => {
+    lockedPhone()
+    let sent = false
+    server.use(
+      http.post('*/borrower/profile/change-request', () => {
+        sent = true
+        return HttpResponse.json({ status: true, message: 'Your change request has been submitted for review.' })
+      }),
+      http.get('*/borrower/profile/change-requests/pending', () =>
+        HttpResponse.json({ status: true, data: sent ? [{ id: 46, field_name: 'business_phone', entity_id: null }] : [] })
+      )
+    )
+    const user = userEvent.setup()
+    renderComponent()
+
+    const phone = await wrapperOf('(555) 555-0122')
+    await user.click(phone.querySelector('.change-request-btn') as HTMLElement)
+    await user.type(await screen.findByPlaceholderText(/Enter the updated Phone Number/i), '5555550188')
+    await user.click(screen.getByRole('button', { name: /Submit for Review/i }))
+
+    await waitFor(() => expect(phone.querySelector('.change-request-btn')).toHaveTextContent('Pending review'))
+  })
+
+  it("shows the API's refusal of the same value in the modal, not as a toast", async () => {
+    lockedPhone()
+    server.use(
+      http.post('*/borrower/profile/change-request', () =>
+        HttpResponse.json({ status: false, message: 'This is already the value on your profile.', errors: { new_value: 'This is already the value on your profile.' } }, { status: 422 })
+      )
+    )
+    const { toast } = await import('react-toastify')
+    const user = userEvent.setup()
+    renderComponent()
+
+    const phone = await wrapperOf('(555) 555-0122')
+    await user.click(phone.querySelector('.change-request-btn') as HTMLElement)
+    await user.type(await screen.findByPlaceholderText(/Enter the updated Phone Number/i), '5555550122')
+    await user.click(screen.getByRole('button', { name: /Submit for Review/i }))
+
+    expect(await screen.findByText('This is already the value on your profile.')).toHaveClass('invalid-feedback')
+    expect(toast.error).not.toHaveBeenCalled()
+  })
+})
+
+// The borrower can cancel a request still waiting for review; it is deleted.
+describe('Profile — Business Details › cancelling a pending change request', () => {
+  afterEach(() => {
+    server.resetHandlers()
+    vi.clearAllMocks()
+  })
+
+  const serve = (cancel: () => Response) => {
+    let cancelled = false
+    const calls: string[] = []
+    server.use(
+      http.get('*/borrower/profile/business-info', () =>
+        HttpResponse.json({ status: true, data: { business_name: 'Acme Corp', business_phone: '5555550122' } })
+      ),
+      http.get('*/borrower/profile/change-requests/pending', () =>
+        HttpResponse.json({ status: true, data: cancelled ? [] : [{ id: 46, field_name: 'business_phone', entity_id: null }] })
+      ),
+      http.delete('*/borrower/profile/change-requests/:id', ({ params }) => {
+        calls.push(String(params.id))
+        const response = cancel()
+        if (response.status === 200) cancelled = true
+        return response
+      })
+    )
+    return calls
+  }
+  const phoneButton = async () =>
+    ((await screen.findByDisplayValue('(555) 555-0122')) as HTMLElement).closest('.position-relative')!.querySelector('.change-request-btn') as HTMLElement
+
+  it('"Pending review" asks first, then cancels that request and the field offers Change Request again', async () => {
+    const calls = serve(() => HttpResponse.json({ status: true, message: 'Your change request has been cancelled.' }))
+    const user = userEvent.setup()
+    renderComponent()
+
+    const button = await phoneButton()
+    await waitFor(() => expect(button).toHaveTextContent('Pending review'))
+    await user.click(button)
+
+    expect(await screen.findByText('This change request is still waiting for review. It will be deleted, and you can send a new one for this field.')).toBeInTheDocument()
+    expect(calls).toEqual([])
+    await user.click(screen.getByRole('button', { name: 'Yes, Delete It', hidden: true }))
+
+    await waitFor(() => expect(calls).toEqual(['46']))
+    await waitFor(async () => expect(await phoneButton()).toHaveTextContent('Change Request'))
+  })
+
+  it('Close shuts the question and cancels nothing', async () => {
+    const calls = serve(() => HttpResponse.json({ status: true, message: 'Cancelled.' }))
+    const user = userEvent.setup()
+    renderComponent()
+
+    const button = await phoneButton()
+    await waitFor(() => expect(button).toHaveTextContent('Pending review'))
+    await user.click(button)
+    await user.click(await screen.findByRole('button', { name: 'Close', hidden: true }))
+
+    // The delete modal stays in the page, hidden.
+    await waitFor(() => expect(document.querySelector('.modal.show')).toBeNull())
+    expect(calls).toEqual([])
+    expect(await phoneButton()).toHaveTextContent('Pending review')
+  })
+
+  it("a request already reviewed shows the API's message in the question, not a toast", async () => {
+    serve(() => HttpResponse.json({ status: false, message: 'This change request has already been processed and cannot be modified.' }, { status: 422 }))
+    const { toast } = await import('react-toastify')
+    const user = userEvent.setup()
+    renderComponent()
+
+    const button = await phoneButton()
+    await waitFor(() => expect(button).toHaveTextContent('Pending review'))
+    await user.click(button)
+    await user.click(await screen.findByRole('button', { name: 'Yes, Delete It', hidden: true }))
+
+    expect(await screen.findByText('This change request has already been processed and cannot be modified.')).toHaveClass('invalid-feedback')
+    expect(toast.error).not.toHaveBeenCalled()
+  })
+})
+
+// The note in the Change Request modal is a warning, not an info box.
+describe('Profile — Business Details › the Change Request note', () => {
+  afterEach(() => server.resetHandlers())
+
+  it('is a warning section that says the change is reviewed first', async () => {
+    server.use(
+      http.get('*/borrower/profile/business-info', () =>
+        HttpResponse.json({ status: true, data: { business_name: 'Acme Corp', business_phone: '5555550122' } })
+      )
+    )
+    const user = userEvent.setup()
+    renderComponent()
+
+    const phone = ((await screen.findByDisplayValue('(555) 555-0122')) as HTMLElement).closest('.position-relative') as HTMLElement
+    await user.click(phone.querySelector('.change-request-btn') as HTMLElement)
+
+    const note = (await screen.findByText(/This field is verified and locked/)).closest('.change-request-notice') as HTMLElement
+    expect(note).not.toBeNull()
+    expect(note).toHaveClass('alert-warning')
+    expect(note).not.toHaveClass('alert-info')
+    expect(note.querySelector('.ri-error-warning-line')).not.toBeNull()
   })
 })
