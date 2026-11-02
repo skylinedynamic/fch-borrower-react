@@ -20,6 +20,7 @@ import { hideAndDisposeModal } from '../../utils/bootstrapModal';
 import {
   isOneTimeType,
   ENROLLMENT_TYPE_ONE_TIME,
+  FINAL_INSTALLMENT_NOTE,
   SUBSCRIPTION_STATUS_ACTIVE,
   SUBSCRIPTION_STATUS_COMPLETED,
   SUBSCRIPTION_STATUS_CANCELLED,
@@ -601,6 +602,13 @@ const SubscriptionDetailsModal = ({
                       <span className="text-muted d-block fs-12">Subscription per Month</span>
                       <strong className="text-dark">{subscription.subscription_amount_per_month || 'N/A'}</strong>
                     </div>
+                    {subscription.final_installment_amount && (
+                      <div className="col-6">
+                        <span className="text-muted d-block fs-12">Last Installment</span>
+                        <strong className="text-dark">{subscription.final_installment_amount}</strong>
+                        <span className="text-muted d-block fs-11">{FINAL_INSTALLMENT_NOTE}</span>
+                      </div>
+                    )}
                     <div className="col-6">
                       <span className="text-muted d-block fs-12">Installment Progress</span>
                       <strong className="text-dark">Paid: {subscription.installments_paid ?? 0} / Total: {subscription.installment_count ?? 0}</strong>
@@ -1110,6 +1118,16 @@ export default function BillingDetails() {
                               <h6 className="fs-14 fw-bold text-dark mb-0">{subscription.subscription_amount_per_month || 'N/A'}</h6>
                             </div>
                           </div>
+
+                          {subscription.final_installment_amount && (
+                            <div className="col-xl-3 col-md-6 col-12">
+                              <div className="p-3 bg-light rounded-1 h-100">
+                                <span className="text-muted fs-11 text-uppercase fw-semibold d-block mb-1">Last Installment</span>
+                                <h6 className="fs-14 fw-bold text-dark mb-0">{subscription.final_installment_amount}</h6>
+                                <span className="text-muted fs-11 d-block mt-1">{FINAL_INSTALLMENT_NOTE}</span>
+                              </div>
+                            </div>
+                          )}
 
                           <div className="col-xl-3 col-md-6 col-12">
                             <div className="p-3 bg-light rounded-1 h-100">

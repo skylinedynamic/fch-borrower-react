@@ -44,6 +44,8 @@ export interface SubscriptionInfo {
   payable_amount?: number | string;
   down_payment?: number | string;
   subscription_amount_per_month?: number | string;
+  /** The last installment when it takes up the monthly rounding; null on an even split (BUG-049). */
+  final_installment_amount?: string | null;
   installment_count?: number;
   installments_paid?: number;
   subscription_start_date?: string;
