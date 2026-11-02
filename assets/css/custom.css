@@ -3426,6 +3426,61 @@ File: Custom Css File
     color: var(--vz-info, #299cdb) !important;
 }
 
+/* Running play notice above the locked Other Eligible Plays (BUG-044) */
+.ca-running-play-notice {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 16px 20px;
+    background: linear-gradient(90deg, rgba(64, 81, 137, 0.06) 0%, #ffffff 70%);
+    border: 1px solid rgba(64, 81, 137, 0.12);
+    border-left: 4px solid var(--primary-color, #405189);
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.ca-running-play-notice-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(64, 81, 137, 0.1);
+    color: var(--primary-color, #405189);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.ca-running-play-notice-text {
+    flex: 1 1 240px;
+    min-width: 0;
+}
+
+.ca-running-play-notice-title {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 2px;
+}
+
+.ca-running-play-notice-desc {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.ca-running-play-notice-btn {
+    white-space: nowrap;
+}
+
+@media (max-width: 575.98px) {
+    .ca-running-play-notice-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
 /* Premium Strategy Row (Other Eligible Plays) */
 .ca-strategy-row-premium {
     display: flex;
