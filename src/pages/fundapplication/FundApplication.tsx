@@ -321,6 +321,20 @@ export default function FundApplication() {
     activeStepSaveRef.current = fn
   }, [])
 
+  // Each step is rendered twice - the desktop pane (lg and up) and the mobile
+  // accordion - and only the copy on screen may register its save. Both did,
+  // the hidden mobile copy last, so a save refused from the sidebar put its
+  // field messages on the hidden copy and a desktop showed only the toast.
+  const [isDesktop, setIsDesktop] = useState<boolean>(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 992px)').matches
+  )
+  useEffect(() => {
+    const query = window.matchMedia('(min-width: 992px)')
+    const onChange = () => setIsDesktop(query.matches)
+    query.addEventListener?.('change', onChange)
+    return () => query.removeEventListener?.('change', onChange)
+  }, [])
+
   // Validation: Check if business info step can proceed
   const canProceedFromBusinessInfo = useMemo((): boolean => {
     return Boolean(
@@ -837,7 +851,7 @@ export default function FundApplication() {
                 {tabs.map((_, idx) => (
                   <div key={idx} style={{ display: activeStep === idx ? 'block' : 'none' }}>
                     <fieldset disabled={isLocked} className="border-0 p-0 m-0">
-                      {renderStep(idx, activeStep === idx)}
+                      {renderStep(idx, activeStep === idx && isDesktop)}
                     </fieldset>
                   </div>
                 ))}
@@ -881,7 +895,7 @@ export default function FundApplication() {
                             </div>
                           )}
                           <fieldset disabled={isLocked} className="border-0 p-0 m-0">
-                            {renderStep(idx, isOpen)}
+                            {renderStep(idx, isOpen && !isDesktop)}
                           </fieldset>
                         </div>
                       </li>
