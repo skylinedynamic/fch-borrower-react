@@ -6677,3 +6677,12 @@ File: Custom Css File
     background: rgba(var(--vz-primary-rgb, 64, 81, 137), 0.1);
     color: var(--vz-primary, #405189);
 }
+
+/* BUG-043: the profile fields a pre-flight item is still missing, with a link to fill them in. */
+.ca-checklist-missing {
+    margin-top: 2px;
+}
+.ca-checklist-missing a {
+    color: var(--vz-primary);
+    white-space: nowrap;
+}

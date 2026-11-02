@@ -1,7 +1,7 @@
 import { apiClient } from '../../lib/http/apiClient'
-import type { StrategiesResponse, StrategyDetailResponse, CapitalAccessStrategy, CapitalAccessOverview, OverviewResponse, CapitalAccessStrategyOverview, CapitalAccessStrategyChecklist, CapitalAccessStrategyRoadmap, CapitalAccessStepDetail } from './types'
+import type { StrategiesResponse, StrategyDetailResponse, CapitalAccessStrategy, CapitalAccessOverview, OverviewResponse, CapitalAccessStrategyOverview, CapitalAccessStrategyChecklist, CapitalAccessStrategyRoadmap, CapitalAccessStepDetail, ChecklistItem } from './types'
  
-const mapChecklist = (checklist: any[]): Array<{ id: string; label: string; complete: boolean }> => {
+const mapChecklist = (checklist: any[]): ChecklistItem[] => {
   if (!checklist) return []
   return checklist.map((item, index) => {
     if (typeof item === 'string') {
@@ -11,6 +11,7 @@ const mapChecklist = (checklist: any[]): Array<{ id: string; label: string; comp
       id: item.id || `item-${index}`,
       label: item.label || item.name || '',
       complete: item.complete !== false,
+      ...(Array.isArray(item.missing_fields) ? { missing_fields: item.missing_fields } : {}),
     }
   })
 }

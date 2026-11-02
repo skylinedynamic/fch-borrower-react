@@ -42,6 +42,12 @@ test.describe('Sidebar › Credit Card Stacking › strategy flow', () => {
 
     await page.goto(`/credit-card-stacking/${id}/pre-flight`)
     await expect(pageHeading(page, 'Pre-Flight Checklist')).toBeVisible()
+    // BUG-043: a missing item names its fields and links to the profile tab that holds them.
+    const missing = page.locator('.ca-checklist-missing')
+    for (const hint of await missing.all()) {
+      await expect(hint).toContainText('Missing:')
+      await expect(hint.getByRole('link', { name: /Complete in Profile/i })).toHaveAttribute('href', '/profile?tab=1')
+    }
 
     await page.goto(`/credit-card-stacking/${id}/roadmap`)
     await expect(page).toHaveURL(new RegExp(`/credit-card-stacking/${id}/roadmap$`))

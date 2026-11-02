@@ -86,13 +86,22 @@ export interface CapitalAccessStrategy {
   est_timeline: string;       // e.g. "11 - 16 days"
   approval_probability: string; // e.g. "95%"
   benefits: string[];
-  checklist: Array<{ id: string; label: string; complete: boolean }>;
+  checklist: ChecklistItem[];
   roadmap: RoadmapCard[];
   approval_status?: boolean;
   reason_code?: string | null;
   unlock_at?: string | null;
 }
 
+
+/** One pre-flight checklist item. */
+export interface ChecklistItem {
+  id: string;
+  label: string;
+  complete: boolean;
+  /** The profile fields still to fill in (only the Business Information item sends these). */
+  missing_fields?: string[];
+}
 
 export interface CapitalAccessStrategyOverview {
   id: number;
@@ -119,7 +128,7 @@ export interface CapitalAccessStrategyChecklist {
   approval_status: boolean;
   reason_code: string | null;
   unlock_at?: string | null;
-  checklist: Array<{ id: string; label: string; complete: boolean }>;
+  checklist: ChecklistItem[];
 }
 
 export interface StrategiesResponse {

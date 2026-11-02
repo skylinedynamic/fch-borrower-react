@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Modal, ModalBody, ModalHeader } from 'reactstrap'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { formatFieldName } from '../../utils/fieldNames'
 import { useProfileCompletion } from '../../modules/profile'
 import { useAuthStore } from '../../store/auth'
 import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils'
@@ -25,15 +26,6 @@ const SECTIONS: readonly ProfileSection[] = [
 
 /** How many missing fields to list per section before "+N more fields". */
 const FIELDS_SHOWN = 3
-
-/** Field-name words that are acronyms, kept in capitals ("business_ein" → "Business EIN"). */
-const ACRONYMS = new Set(['ein', 'ssn', 'dob', 'zip', 'llc'])
-
-const formatFieldName = (field: string) =>
-  field
-    .split('_')
-    .map((word) => (ACRONYMS.has(word) ? word.toUpperCase() : word.charAt(0).toUpperCase() + word.slice(1)))
-    .join(' ')
 
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`
 
