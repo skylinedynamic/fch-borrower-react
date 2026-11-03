@@ -1,5 +1,5 @@
 import { apiClient } from '../../lib/http/apiClient';
-import { InvoiceResponse, InvoiceStatsResponse, InvoiceParams, PaymentPayload, PaymentResponse, UnpaidInvoiceResponse } from './types';
+import { InvoiceResponse, InvoiceStatsResponse, InvoiceParams, PaymentPayload, PaymentResponse, ProcessPaymentPayload, ProcessPaymentResponse, UnpaidInvoiceResponse } from './types';
 
 const BASE_URL = '/borrower/invoice';
 
@@ -38,7 +38,16 @@ export const fetchPartnerPaymentMethods = async () => {
     return data;
 };
 
-export const processUnifiedPayment = async (payload: { payment_token: string; invoice_id: number | string; payment_method_id: number; bank_detail_id?: number | string }) => {
-    const response = await apiClient.post('/borrower/process-payment', payload);
+export const processUnifiedPayment = async (payload: ProcessPaymentPayload): Promise<ProcessPaymentResponse> => {
+    const response = await apiClient.post<ProcessPaymentResponse>('/borrower/process-payment', payload);
+    return response.data;
+};
+
+/**
+ * Finish a card payment after the bank's 3-D Secure challenge. Only the
+ * payment id is sent: the API reads the outcome from Stripe itself.
+ */
+export const confirmAuthenticatedPayment = async (paymentId: number): Promise<ProcessPaymentResponse> => {
+    const response = await apiClient.post<ProcessPaymentResponse>('/borrower/process-payment/confirm', { payment_id: paymentId });
     return response.data;
 };

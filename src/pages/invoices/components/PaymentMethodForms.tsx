@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { processUnifiedPayment } from '../../../modules/invoice/services';
+import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { getStripe } from '../../../lib/stripe';
+import type { Stripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { getStripe } from '../../../lib/stripe';
+import { CHECKOUT_OUTCOME, CHECKOUT_STAGE, useStripeCardCheckout } from '../hooks/useStripeCardCheckout';
+import type { CheckoutStage } from '../hooks/useStripeCardCheckout';
 
 /*
  * Card payments only go through a gateway's own tokenisation (Stripe Elements):
@@ -11,9 +13,17 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
  * with a reference number (InvoicePaymentModal › ManualProcessingNoticeView).
  */
 
+interface StripeFormProps {
+  amount: number;
+  invoice: { id: number | string };
+  selectedProvider: { id: number; publishable_key?: string };
+  onPaymentSuccess: (paymentId?: number) => void;
+  onCancel: () => void;
+}
+
 /* ── Summary + Pay button ── */
 
-const PaymentSummary = ({ amount }) => (
+const PaymentSummary = ({ amount }: { amount: number }) => (
   <div className="stripe-summary-card">
     <div className="d-flex flex-column">
       <span className="stripe-summary-title">Total to Pay</span>
@@ -27,30 +37,44 @@ const PaymentSummary = ({ amount }) => (
   </div>
 );
 
-const PayButton = ({ amount, disabled, onClick, processing }) => (
-  <div className="hstack gap-2 justify-content-center">
-    <button
-      type="button"
-      className="stripe-submit-btn"
-      disabled={disabled || processing}
-      onClick={onClick}
-    >
-      {processing ? (
-        <><span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Processing...</>
-      ) : (
-        <><i className="ri-shield-check-line me-1"></i> Pay ${amount.toFixed(2)}</>
-      )}
-    </button>
-  </div>
-);
+interface PayButtonProps {
+  amount: number;
+  disabled: boolean;
+  onClick: () => void;
+  stage: CheckoutStage;
+}
+
+const PayButton = ({ amount, disabled, onClick, stage }: PayButtonProps) => {
+  const busy = stage !== CHECKOUT_STAGE.IDLE;
+
+  return (
+    <div className="hstack gap-2 justify-content-center">
+      <button
+        type="button"
+        className="stripe-submit-btn"
+        disabled={disabled || busy}
+        onClick={onClick}
+      >
+        {busy ? (
+          <>
+            <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>{' '}
+            {stage === CHECKOUT_STAGE.AUTHENTICATING ? 'Waiting for your bank to verify...' : 'Processing...'}
+          </>
+        ) : (
+          <><i className="ri-shield-check-line me-1"></i> Pay ${amount.toFixed(2)}</>
+        )}
+      </button>
+    </div>
+  );
+};
 
 /* ── Stripe form ── */
 
-export const StripeForm = ({ amount, invoice, selectedProvider, onPaymentSuccess, onCancel }) => {
-  const [stripePromise, setStripePromise] = useState(null);
+export const StripeForm = ({ amount, invoice, selectedProvider, onPaymentSuccess, onCancel }: StripeFormProps) => {
+  const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | Stripe | null>(null);
 
   useEffect(() => {
-    getStripe(selectedProvider?.publishable_key).then(setStripePromise);
+    getStripe(selectedProvider?.publishable_key).then((stripe) => setStripePromise(stripe));
   }, [selectedProvider]);
 
   if (!stripePromise) {
@@ -75,16 +99,36 @@ export const StripeForm = ({ amount, invoice, selectedProvider, onPaymentSuccess
   );
 };
 
-const StripeCardFormInner = ({ amount, invoice, selectedProvider, onPaymentSuccess, onCancel }) => {
+const CARD_ELEMENT_OPTIONS = {
+  style: {
+    base: {
+      color: '#495057',
+      fontFamily: 'Inter, sans-serif',
+      fontSmoothing: 'antialiased',
+      fontSize: '15px',
+      '::placeholder': {
+        color: '#adb5bd',
+      },
+    },
+    invalid: {
+      color: '#f06548',
+      iconColor: '#f06548',
+    },
+  },
+  hidePostalCode: true,
+};
+
+const StripeCardFormInner = ({ amount, invoice, selectedProvider, onPaymentSuccess, onCancel }: StripeFormProps) => {
   const stripe = useStripe();
   const elements = useElements();
-  const [processing, setProcessing] = useState(false);
+  const [tokenizing, setTokenizing] = useState(false);
   const [isValid, setIsValid] = useState(false);
+  const { checkout, stage } = useStripeCardCheckout();
 
   const handlePay = async () => {
     if (!stripe || !elements) return;
 
-    setProcessing(true);
+    setTokenizing(true);
     try {
       const cardElement = elements.getElement(CardElement);
       if (!cardElement) {
@@ -96,51 +140,36 @@ const StripeCardFormInner = ({ amount, invoice, selectedProvider, onPaymentSucce
         card: cardElement,
       });
 
-      if (error) {
-        toast.error(error.message || 'Failed to authorize card details');
-        setProcessing(false);
+      if (error || !paymentMethod) {
+        toast.error(error?.message || 'Failed to authorize card details');
         return;
       }
 
-      const response = await processUnifiedPayment({
+      // Only Stripe's token leaves the browser (E2E-017). A card whose bank wants
+      // 3-D Secure is verified inside checkout() (BUG-066).
+      const outcome = await checkout(stripe, {
         payment_token: paymentMethod.id,
         invoice_id: invoice.id,
         payment_method_id: selectedProvider.id,
       });
 
-      if (response.status) {
+      if (outcome.status === CHECKOUT_OUTCOME.SUCCEEDED) {
         toast.success('Payment completed successfully!');
-        onPaymentSuccess(response.data?.id || response.data?.payment_id);
+        onPaymentSuccess(outcome.paymentId);
         window.location.reload();
+      } else if (outcome.status === CHECKOUT_OUTCOME.PENDING) {
+        toast.info(outcome.message);
+        onCancel();
       } else {
-        toast.error(response.message || 'Payment failed');
+        toast.error(outcome.message);
         onCancel();
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Failed to process payment');
+      toast.error((err as Error)?.message || 'Failed to process payment');
       onCancel();
     } finally {
-      setProcessing(false);
+      setTokenizing(false);
     }
-  };
-
-  const CARD_ELEMENT_OPTIONS = {
-    style: {
-      base: {
-        color: '#495057',
-        fontFamily: 'Inter, sans-serif',
-        fontSmoothing: 'antialiased',
-        fontSize: '15px',
-        '::placeholder': {
-          color: '#adb5bd',
-        },
-      },
-      invalid: {
-        color: '#f06548',
-        iconColor: '#f06548',
-      },
-    },
-    hidePostalCode: true,
   };
 
   return (
@@ -157,8 +186,8 @@ const StripeCardFormInner = ({ amount, invoice, selectedProvider, onPaymentSucce
       <PaymentSummary amount={amount} />
       <PayButton
         amount={amount}
-        disabled={!isValid || processing}
-        processing={processing}
+        disabled={!isValid}
+        stage={tokenizing && stage === CHECKOUT_STAGE.IDLE ? CHECKOUT_STAGE.CHARGING : stage}
         onClick={handlePay}
       />
     </div>
