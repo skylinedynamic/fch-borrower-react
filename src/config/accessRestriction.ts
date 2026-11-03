@@ -2,11 +2,22 @@ import { RESTRICTION_REASON, type RestrictionReason } from '../lib/auth/subscrip
 import { NOTIFICATIONS_ROUTE } from './notifications'
 
 /**
+ * Where a borrower sees and settles what they owe. Paying always comes first:
+ * these stay open to a restricted borrower, and the Complete Your Profile
+ * popup leaves them alone (pay first, then finish the profile).
+ */
+export const PAYMENT_PATHS = ['/invoices', '/payments', '/billing-details']
+
+/**
  * The pages a restricted borrower can still open (BUG-069): what they owe and
  * how to resume, and their own profile. Notifications stay open on every
  * plan: the header bell is always shown.
  */
-export const RESTRICTED_ALLOWED_PATHS = ['/dashboard', '/profile', '/invoices', '/payments', '/billing-details', NOTIFICATIONS_ROUTE]
+export const RESTRICTED_ALLOWED_PATHS = ['/dashboard', '/profile', ...PAYMENT_PATHS, NOTIFICATIONS_ROUTE]
+
+/** Whether a pathname is one of `paths` or a page under it ("/invoices/42"). */
+export const isUnderPath = (pathname: string, paths: readonly string[]) =>
+  paths.some((path) => pathname === path || pathname.startsWith(`${path}/`))
 
 /**
  * What a restricted borrower is told when they open a locked menu or page

@@ -6,6 +6,7 @@ import { useProfileCompletion } from '../../modules/profile'
 import { useAuthStore } from '../../store/auth'
 import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils'
 import { clearStrayModalBackdrops } from '../../utils/modalBackdrop'
+import { PAYMENT_PATHS, isUnderPath } from '../../config/accessRestriction'
 import './ProfileCompleteCheckModal.css'
 
 type SectionType = 'personal' | 'business' | 'financial'
@@ -31,7 +32,8 @@ const plural = (count: number, word: string) => `${count} ${word}${count === 1 ?
 
 /**
  * Asks the borrower to finish the required parts of their profile (Personal,
- * Business, Financial), on every page but Profile, until they have. Only the
+ * Business, Financial), on every page but Profile and the payment pages
+ * (Invoices, Payments, Billing Details - paying comes first), until they have. Only the
  * sections still to finish are listed, each with what is missing, and the
  * first one pulses with "Start here".
  */
@@ -50,6 +52,13 @@ const ProfileCompleteCheckModal = () => {
   useEffect(() => {
     // If restricted, never show the modal
     if (isRestricted) {
+      setOpen(false)
+      return
+    }
+
+    // Paying comes first: the payment pages stay usable, and the popup comes
+    // back on the next page the borrower opens.
+    if (isUnderPath(location.pathname, PAYMENT_PATHS)) {
       setOpen(false)
       return
     }
