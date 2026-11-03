@@ -1,7 +1,7 @@
 import React from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useFundingApplicationDetail } from '../../modules/my-application'
-import { FUNDING_APPLICATION_STATUS_CLASS_MAP, FUNDING_REVIEW_STATUS } from '../../config/funding'
+import { FUNDING_APPLICATION_STATUS_CLASS_MAP } from '../../config/funding'
 import FundingApplicationDetailLoader from './components/FundingApplicationDetailLoader'
 import DetailSection, { Field } from './components/detail/DetailSection'
 import KeyFact from './components/detail/KeyFact'
@@ -44,12 +44,10 @@ export default function FundingApplicationDetailPage() {
   }
 
   // Same rule as the partner portal's Funding Application details page: the
-  // request is approved and the application is in one of the API's editable
-  // statuses (config `statuses.editable`). The server sends that as is_editable.
-  const canEditApplication =
-    application.funding_request_status === FUNDING_REVIEW_STATUS.APPROVED &&
-    !!application.funding_request_id &&
-    !!application.is_editable
+  // application is in one of the API's editable statuses (config
+  // `statuses.editable`) - however it was created, from a funding request or
+  // converted from the embed form with none. The server sends that as is_editable.
+  const canEditApplication = !!application.id && !!application.is_editable
 
   // Status not in the editable list: tell the borrower so instead of just
   // dropping the Edit button. The reason comes from the API.
@@ -80,7 +78,7 @@ export default function FundingApplicationDetailPage() {
               <StatusChip status={application.status} tone={toneFromBadgeClass(statusClass)} />
               {canEditApplication && (
                 <Link
-                  to={`/fund-application/${application.funding_request_id}`}
+                  to={`/my-applications/funding/${application.id}/edit`}
                   className="ma-hero-cta"
                   title="Editing will require you to resign the application"
                 >
