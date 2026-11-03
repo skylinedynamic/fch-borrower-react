@@ -15,6 +15,7 @@ import {
   PaymentProviderItem,
 } from '../../modules/billings';
 import BillingDetailsLoader from '../../components/Loader/BillingDetailsLoader';
+import ResumeSubscription from './components/ResumeSubscription';
 import ConfirmationModal from '../../components/GlobalModal/ConfirmationModal';
 import { hideAndDisposeModal } from '../../utils/bootstrapModal';
 import {
@@ -1058,6 +1059,7 @@ export default function BillingDetails() {
                             <i className="ri-close-circle-line"></i> Cancel Subscription
                           </button>
                         )}
+                        {isSubscriptionCancelled && <ResumeSubscription onResumed={loadBillingDetails} />}
                       </div>
                     </div>
 
