@@ -1577,3 +1577,46 @@
     transition: none;
   }
 }
+/* ---------- Locked application banner (same design as the admin portal) ---------- */
+
+.ma-locked-banner {
+  display: flex;
+  align-items: center;
+  margin: 16px 0 12px;
+  padding: 14px 18px;
+  border: 1px solid #f7b84b;
+  border-radius: var(--ma-radius);
+  background: #fff4de;
+  color: #3b2a12;
+}
+
+.ma-locked-banner__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f7931e;
+  color: #fff;
+  font-size: 17px;
+}
+
+.ma-locked-banner__bar {
+  flex-shrink: 0;
+  align-self: stretch;
+  width: 3px;
+  margin: 0 16px;
+  border-radius: 2px;
+  background: #f7931e;
+}
+
+.ma-locked-banner__title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ma-locked-banner__detail {
+  font-size: 13px;
+}

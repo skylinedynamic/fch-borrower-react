@@ -34,6 +34,6 @@ describe("FundApplication — Can't edit a locked application", () => {
     request.data = { ...request.data, status: 'Closed - No Response', locked_reason: null }
     renderWithProviders(<FundApplication />)
 
-    expect(await screen.findByText(/because it is "Closed - No Response"/)).toBeInTheDocument()
+    expect(await screen.findByText(/This funding application is "Closed - No Response", so it can no longer be edited/)).toBeInTheDocument()
   })
 })
