@@ -747,7 +747,7 @@ export default function FundApplication() {
               <h4 className="mt-2 mb-2">Can't Edit Funding Application</h4>
               <p className="text-muted mb-4">
                 {fundingData.locked_reason
-                  || `This application can no longer be edited because it is "${fundingData.status}". Contact your funding advisor if something needs to change.`}
+                  || `This funding application is "${fundingData.status}", so it can no longer be edited. Contact your funding advisor if something needs to change.`}
               </p>
               <button type="button" className="btn btn-outline-secondary" onClick={() => navigate(-1)}>
                 &larr; Back
