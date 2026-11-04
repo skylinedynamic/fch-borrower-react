@@ -61,4 +61,20 @@ describe('Prequalification details dialog', () => {
     const personal = screen.getByRole('region', { name: 'Personal Information' })
     expect(within(personal).getByText('Business Website').parentElement).toHaveTextContent('Not provided')
   })
+  /**
+   * Defect: the dialog was large (modal-lg) and opened without the flip
+   * animation the app's other dialogs use. It is a medium dialog that flips in.
+   */
+  it('is a medium dialog that opens with the flip animation', async () => {
+    serve()
+    renderWithProviders(<PreQualificationDetailsModal isOpen toggle={() => {}} requestId={11} />)
+
+    const dialog = await screen.findByRole('dialog')
+    const modal = dialog.closest('.modal') as HTMLElement
+    expect(modal).toHaveClass('fade', 'flip')
+    const box = modal.querySelector('.modal-dialog') as HTMLElement
+    expect(box).not.toHaveClass('modal-lg')
+    expect(box).not.toHaveClass('modal-xl')
+    expect(box).not.toHaveClass('modal-sm')
+  })
 })
