@@ -1038,13 +1038,13 @@
 
 .prequalification-page .review-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
 }
 
 @media (min-width: 992px) {
   .prequalification-page .review-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -1053,6 +1053,9 @@
   border-radius: 8px;
   padding: 16px;
   background: #fff;
+  /* Shrinks with the page: a long unbroken value wraps inside it rather than
+     stretching the card off-screen (R2 BUG-025). */
+  min-width: 0;
 }
 
 .prequalification-page .review-card h6 {
@@ -1073,10 +1076,13 @@
 
 .prequalification-page .kv .label {
   color: #6c757d;
+  flex-shrink: 0;
 }
 
 .prequalification-page .kv .value {
   font-weight: 500;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 @keyframes fadeSlide {

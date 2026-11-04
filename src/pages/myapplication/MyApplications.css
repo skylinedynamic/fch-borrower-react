@@ -1271,9 +1271,11 @@
   background: var(--ma-surface-2);
 }
 
+/* Strengths and Needs attention stacked, each full width - side by side,
+   Strengths alone sat in half the box with the other half empty. */
 .ma-outcome-lists {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
 }
 
@@ -1363,6 +1365,22 @@
   border-radius: var(--ma-radius);
 }
 
+/* A medium dialog: wider than Bootstrap's 500px default (the content looked
+   squeezed) but narrower than the old large one, and no longer stretched to
+   the full screen height by "scrollable" - it grows with its content up to
+   85% of the screen, then its body scrolls. */
+.ma-modal.modal-dialog {
+  max-width: 800px;
+}
+
+.ma-modal.modal-dialog-scrollable {
+  height: auto;
+}
+
+.ma-modal.modal-dialog-scrollable .modal-content {
+  max-height: 85vh;
+}
+
 .ma-modal-body {
   position: relative;
   padding: 0;
@@ -1393,10 +1411,11 @@
   font-size: 20px;
 }
 
-/* Room for the figures beside the title in the dialog's narrower hero. */
+/* The dialog is medium width: the title on top and the figures under it, so
+   amounts like $50,000.00 are not squeezed beside the title. */
 @media (min-width: 992px) {
   .ma-modal .ma-detail-hero {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -1575,5 +1594,51 @@
   .ma-advisor-caret,
   .ma-table tbody tr.ma-row-link {
     transition: none;
+  }
+}
+/* The details dialog on a phone: the page's phone rules stacked the two
+   figures, so the header alone took ~370px - nearly half the screen. In the
+   dialog they stay side by side, smaller, and the header and cards are
+   tighter, so the outcome is visible without scrolling. */
+@media (max-width: 767.98px) {
+  .ma-modal .ma-detail-hero {
+    gap: 14px;
+    padding: 18px 16px;
+  }
+
+  .ma-modal .ma-hero-title {
+    padding-right: 32px; /* clear of the close button */
+    font-size: 19px;
+  }
+
+  .ma-modal .ma-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .ma-modal .ma-fact {
+    padding: 10px 12px;
+  }
+
+  .ma-modal .ma-fact-value {
+    font-size: 17px;
+  }
+
+  .ma-modal .ma-stat-label {
+    font-size: 12px;
+  }
+
+  .ma-modal-content {
+    padding: 12px;
+  }
+
+  /* The status pill moves under the title when they do not fit on one line. */
+  .ma-modal .ma-card-head {
+    flex-wrap: wrap;
+    padding: 12px 14px;
+  }
+
+  .ma-modal .ma-card-title {
+    font-size: 15px;
   }
 }

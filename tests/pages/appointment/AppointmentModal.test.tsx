@@ -333,3 +333,114 @@ describe('AppointmentModal - an appointment that ends after midnight (R2 BUG-024
     expect(toast.error).not.toHaveBeenCalled()
   })
 })
+
+/**
+ * Defect: R2 BUG-046 - a client had no way to cancel an appointment the
+ * host booked with them: its details were read-only. The client can now
+ * cancel (not delete) an upcoming one they did not book; the organiser is
+ * emailed by the API.
+ */
+describe('AppointmentModal - cancelling an appointment booked with me (R2 BUG-046)', () => {
+  const ME = 1
+  afterEach(() => {
+    server.resetHandlers()
+    useAuthStore.setState({ token: undefined, user: null, userSubscription: null, rememberMe: true })
+  })
+
+  const serve = (overrides: Record<string, unknown> = {}) => {
+    const cancels: string[] = []
+    server.use(
+      http.get('*/common/appointments/41', () =>
+        HttpResponse.json({
+          status: true,
+          data: {
+            id: 41,
+            subject: 'R2 CP-APPT-04 admin-created',
+            appointment_date: '2999-10-28 09:00:00',
+            duration_minutes: 30,
+            status: 'pending',
+            scheduled_by: { name: 'Host Admin', id: 9 },
+            assigned_for: { name: 'QA-TEST Owner Client Two', id: ME, entity_id: 144, entity_type: 'borrower' },
+            meeting_type: 'Business Review',
+            ...overrides,
+          },
+        })
+      ),
+      http.post('*/common/appointments/:id/cancel', ({ params }) => {
+        cancels.push(String(params.id))
+        return HttpResponse.json({ status: true, message: 'Appointment cancelled.', data: { id: 41, status: 'cancelled' } })
+      })
+    )
+    return cancels
+  }
+
+  const open = async () => {
+    useAuthStore.setState({ token: 'tok', user: { id: ME, is_host: 0 } as any, userSubscription: null, rememberMe: true })
+    const utils = renderModal()
+    await act(async () => {
+      await utils.ref.current!.show(41)
+    })
+    await screen.findByText('R2 CP-APPT-04 admin-created')
+    return utils
+  }
+
+  it('offers Cancel, not Delete, on an upcoming appointment the host booked with me', async () => {
+    serve()
+    await open()
+
+    expect(screen.getByRole('button', { name: /cancel appointment/i, hidden: true })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^delete$/i, hidden: true })).not.toBeInTheDocument()
+  })
+
+  it('asks first, then cancels it and refreshes the calendar', async () => {
+    const { toast } = await import('react-toastify')
+    const cancels = serve()
+    const user = userEvent.setup()
+    const { onSuccess } = await open()
+
+    await user.click(screen.getByRole('button', { name: /cancel appointment/i, hidden: true }))
+    expect(cancels).toHaveLength(0)
+    await user.click(await screen.findByRole('button', { name: /yes, cancel it/i, hidden: true }))
+
+    await waitFor(() => expect(cancels).toEqual(['41']))
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Appointment cancelled.'))
+    expect(onSuccess).toHaveBeenCalled()
+  })
+
+  it("shows the API's reason when the cancel is refused, and keeps the appointment open", async () => {
+    const { toast } = await import('react-toastify')
+    vi.mocked(toast.success).mockClear()
+    vi.mocked(toast.error).mockClear()
+    serve()
+    server.use(
+      http.post('*/common/appointments/:id/cancel', () =>
+        HttpResponse.json({ status: false, message: 'This appointment has already started.' }, { status: 422 })
+      )
+    )
+    const user = userEvent.setup()
+    const { onSuccess } = await open()
+
+    await user.click(screen.getByRole('button', { name: /cancel appointment/i, hidden: true }))
+    await user.click(await screen.findByRole('button', { name: /yes, cancel it/i, hidden: true }))
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('This appointment has already started.'))
+    expect(toast.success).not.toHaveBeenCalledWith('Appointment cancelled.')
+    expect(onSuccess).not.toHaveBeenCalled()
+  })
+
+  it('does not offer Cancel on one I booked myself (I can delete it)', async () => {
+    serve({ scheduled_by: { name: 'Me', id: ME }, assigned_for: { name: 'Host Admin', id: 9 } })
+    await open()
+
+    expect(screen.queryByRole('button', { name: /cancel appointment/i, hidden: true })).not.toBeInTheDocument()
+  })
+
+  it('does not offer Cancel once it is cancelled, completed or past', async () => {
+    for (const overrides of [{ status: 'cancelled' }, { status: 'completed' }, { appointment_date: '2020-01-15 10:00:00' }]) {
+      serve(overrides)
+      const { unmount } = await open()
+      expect(screen.queryByRole('button', { name: /cancel appointment/i, hidden: true })).not.toBeInTheDocument()
+      unmount()
+    }
+  })
+})

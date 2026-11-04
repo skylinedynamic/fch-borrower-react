@@ -44,6 +44,13 @@ const FundingRequestWizard = () => {
     const searchParams = new URLSearchParams(search);
     const initialAmount = state?.amount || searchParams.get('amount') || '';
     const initialPurpose = state?.purpose || searchParams.get('purpose') || '';
+    // Set by "Update Application" on a rejected request: submitting resubmits
+    // that request (the API updates it back to Pending) instead of creating a
+    // new one, and already-uploaded documents get an optional "Upload Again".
+    // Read from the URL (`?resubmit=<id>`) first, so it survives a reload or a
+    // tab opened earlier; router state is the fallback.
+    const rejectedRequestId: number | null =
+        Number(searchParams.get('resubmit') || state?.fromRejectedRequestId) || null;
 
     const [formData, setFormData] = useState({
         requested_amount: initialAmount ? String(initialAmount).replace(/[^0-9.]/g, '') : '',
@@ -339,6 +346,7 @@ const FundingRequestWizard = () => {
         setSubmitting(true);
         try {
             const response = await apiClient.post('/borrower/funding/requests', {
+                ...(rejectedRequestId ? { funding_request_id: rejectedRequestId } : {}),
                 funding_sequence_id: fundingDetail.id,
                 funding_type: fundingDetail.funding_type_name || fundingDetail.name,
                 requested_amount: formData.requested_amount,
@@ -470,6 +478,15 @@ const FundingRequestWizard = () => {
                                 <div>
                                     <h3 className="fw-bold mb-2 funding-wizard-text-dark">Funding Request Summary</h3>
                                     <p className="mb-4 fs-14 funding-wizard-text-muted">Please confirm your request details</p>
+                                    {rejectedRequestId && (
+                                        <div className="alert alert-warning d-flex align-items-start gap-2 fs-13 mb-4" role="note">
+                                            <i className="ri-refresh-line fs-16"></i>
+                                            <span>
+                                                <strong>You are updating your rejected funding request.</strong> Submitting sends this
+                                                same request back for review - it does not create a new one.
+                                            </span>
+                                        </div>
+                                    )}
 
                                     <div className="border rounded p-4 mb-4 funding-wizard-border-panel">
                                         <div className="row align-items-center">
@@ -799,6 +816,16 @@ const FundingRequestWizard = () => {
                                     ) : (
                                         <>
                                             <p className="text-muted mb-4 fs-15">Upload the documents below to continue</p>
+                                            {rejectedRequestId && (
+                                                <div className="alert alert-warning d-flex align-items-start gap-2 fs-13 mb-4" role="note">
+                                                    <i className="ri-information-line fs-16"></i>
+                                                    <span>
+                                                        <strong>Your previous request was rejected.</strong> If anything has changed, you can add
+                                                        updated documents - for example your latest business bank statements - with
+                                                        "Upload Again". Uploading more is optional: your documents already on file are used either way.
+                                                    </span>
+                                                </div>
+                                            )}
                                             <div className="mb-4">
                                                 {requiredDocTypes.map(docType => {
                                                     const isMissing = missingDocs.includes(docType.name);
@@ -836,7 +863,7 @@ const FundingRequestWizard = () => {
                                                                         <>
                                                                             <span className="fs-13 fw-semibold funding-wizard-primary-text"><i className="ri-check-line align-middle me-1"></i> Uploaded</span>
 
-                                                                            {fundingDetail?.latest_review_status === 'Rejected' && (
+                                                                            {(rejectedRequestId || fundingDetail?.latest_review_status === 'Rejected') && (
                                                                                 <button
                                                                                     className="btn btn-light border btn-sm px-3 fw-medium ms-2"
                                                                                     onClick={() => {
@@ -848,7 +875,7 @@ const FundingRequestWizard = () => {
                                                                                     {uploading && currentDocType?.id === docType.id ? (
                                                                                         <><span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Uploading...</>
                                                                                     ) : (
-                                                                                        <><i className="ri-upload-cloud-2-line align-middle me-1 fs-15"></i> Upload Again</>
+                                                                                        <><i className="ri-upload-cloud-2-line align-middle me-1 fs-15"></i> Upload Again <span className="text-muted fw-normal">(Optional)</span></>
                                                                                     )}
                                                                                 </button>
                                                                             )}
@@ -993,7 +1020,7 @@ const FundingRequestWizard = () => {
                                                 {submitting ? (
                                                     <><span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Submitting...</>
                                                 ) : (
-                                                    <>Submit for Underwriting <i className="ri-arrow-right-line"></i></>
+                                                    <>{rejectedRequestId ? 'Resubmit for Underwriting' : 'Submit for Underwriting'} <i className="ri-arrow-right-line"></i></>
                                                 )}
                                             </button>
                                         </span>

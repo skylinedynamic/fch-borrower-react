@@ -5,6 +5,15 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { withEditConfirmation } from './editConfirmation'
 import type { FundingRequestData, FundingApplicationDocument, AttestationData } from './types'
 
+/**
+ * One cache key per funding request, whether its id arrives as text ("40", from
+ * the URL) or as a number (40, from the loaded application). Keyed on the raw
+ * id, the two were different queries, so opening the wizard fetched every step
+ * twice and showed its loading skeleton again.
+ */
+const requestKey = (fundingRequestId?: number | string | null): string =>
+  fundingRequestId ? String(fundingRequestId) : 'current'
+
 // The six step saves below are gated: once an application has been signed and
 // submitted, a change withdraws that signature, so the borrower is asked before
 // the request goes out. Gating here rather than at each button is what makes it
@@ -103,7 +112,7 @@ export const useSaveAttestation = () => {
 
 export const useAttestation = (fundingRequestId?: number | string | null, options?: { enabled?: boolean }) => {
   return useQuery<AttestationData>({
-    queryKey: ['attestation', fundingRequestId ?? 'current'],
+    queryKey: ['attestation', requestKey(fundingRequestId)],
     queryFn: () => fetchAttestation(fundingRequestId),
     enabled: options?.enabled,
   })
@@ -111,7 +120,7 @@ export const useAttestation = (fundingRequestId?: number | string | null, option
 
 export const useBusinessInfo = (fundingRequestId?: number | string | null, options?: { enabled?: boolean }) => {
   return useQuery({
-    queryKey: [...queryKeys.fundingApplication.businessInfo(), fundingRequestId ?? 'current'],
+    queryKey: [...queryKeys.fundingApplication.businessInfo(), requestKey(fundingRequestId)],
     queryFn: () => fetchBusinessInfo(fundingRequestId),
     enabled: options?.enabled,
   })
@@ -119,7 +128,7 @@ export const useBusinessInfo = (fundingRequestId?: number | string | null, optio
 
 export const useOwnershipInfo = (fundingRequestId?: number | string | null, options?: { enabled?: boolean }) => {
   return useQuery({
-    queryKey: [...queryKeys.fundingApplication.ownershipInfo(), fundingRequestId ?? 'current'],
+    queryKey: [...queryKeys.fundingApplication.ownershipInfo(), requestKey(fundingRequestId)],
     queryFn: () => fetchOwnershipInfo(fundingRequestId),
     enabled: options?.enabled,
   })
@@ -127,7 +136,7 @@ export const useOwnershipInfo = (fundingRequestId?: number | string | null, opti
 
 export const useFinancialInfo = (fundingRequestId?: number | string | null, options?: { enabled?: boolean }) => {
   return useQuery({
-    queryKey: [...queryKeys.fundingApplication.financialInfo(), fundingRequestId ?? 'current'],
+    queryKey: [...queryKeys.fundingApplication.financialInfo(), requestKey(fundingRequestId)],
     queryFn: () => fetchFinancialInfo(fundingRequestId),
     enabled: options?.enabled,
   })
@@ -135,7 +144,7 @@ export const useFinancialInfo = (fundingRequestId?: number | string | null, opti
 
 export const useDisclosuresConsent = (fundingRequestId?: number | string | null, options?: { enabled?: boolean }) => {
   return useQuery({
-    queryKey: [...queryKeys.fundingApplication.disclosuresConsent(), fundingRequestId ?? 'current'],
+    queryKey: [...queryKeys.fundingApplication.disclosuresConsent(), requestKey(fundingRequestId)],
     queryFn: () => fetchDisclosuresConsent(fundingRequestId),
     enabled: options?.enabled,
   })
@@ -143,7 +152,7 @@ export const useDisclosuresConsent = (fundingRequestId?: number | string | null,
 
 export const useFundingRequest = (fundingRequestId?: number | string | null, options?: { enabled?: boolean }) => {
   return useQuery<FundingRequestData>({
-    queryKey: [...queryKeys.fundingApplication.fundingRequest(), fundingRequestId ? String(fundingRequestId) : 'current'],
+    queryKey: [...queryKeys.fundingApplication.fundingRequest(), requestKey(fundingRequestId)],
     queryFn: () => fetchFundingRequest(fundingRequestId),
     enabled: options?.enabled,
   })
@@ -151,7 +160,7 @@ export const useFundingRequest = (fundingRequestId?: number | string | null, opt
 
 export const useFederalCompliance = (fundingRequestId?: number | string | null, options?: { enabled?: boolean }) => {
   return useQuery({
-    queryKey: [...queryKeys.fundingApplication.federalCompliance(), fundingRequestId ?? 'current'],
+    queryKey: [...queryKeys.fundingApplication.federalCompliance(), requestKey(fundingRequestId)],
     queryFn: () => fetchFederalCompliance(fundingRequestId),
     enabled: options?.enabled,
   })

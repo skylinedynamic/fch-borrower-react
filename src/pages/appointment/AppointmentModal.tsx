@@ -7,7 +7,9 @@ import { Dropdown } from 'primereact/dropdown';
 import { Skeleton } from 'primereact/skeleton';
 
 // API Services
-import { fetchAppointmentById, createAppointment, deleteAppointment, updateAppointment, checkAvailability, fetchSelectableUsers } from '../../modules/appointment/services';
+import { fetchAppointmentById, createAppointment, deleteAppointment, updateAppointment, checkAvailability, fetchSelectableUsers, cancelAppointment } from '../../modules/appointment/services';
+import { canCancelAppointment } from '../../modules/appointment/cancel';
+import ConfirmationModal from '../../components/GlobalModal/ConfirmationModal';
 import { useAuthStore } from '../../store/auth/authStore';
 
 import { useSummernote } from '../../hooks/useSummernote';
@@ -53,6 +55,10 @@ interface DisplayData {
     appointmentCode: string;
     category: string;
     scheduledById: string | number | null;
+    // For "Cancel appointment" (R2 BUG-046).
+    status: string | null;
+    startsAt: Date | null;
+    assignedForUserId: number | string | null;
 }
 
 const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProps>(({ onSuccess }, ref) => {
@@ -68,6 +74,8 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+    const [isCancelling, setIsCancelling] = useState(false);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
     // Under the time slot: the duration's refusal, else one on a field the form has no place for (R2 BUG-024).
@@ -114,6 +122,9 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
         appointmentCode: '',
         category: '',
         scheduledById: null,
+        status: null,
+        startsAt: null,
+        assignedForUserId: null,
     });
 
     const [originalData, setOriginalData] = useState<any>(null);
@@ -382,6 +393,9 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
                 appointmentCode: apt.appointment_code || '',
                 category: apt.meeting_type || 'Business Review',
                 scheduledById: apt.scheduled_by?.id || null,
+                status: apt.status ?? null,
+                startsAt: dateStr ? start : null,
+                assignedForUserId: apt.assigned_for?.id ?? null,
             });
 
             const h_full = start.getHours().toString().padStart(2, '0');
@@ -530,6 +544,31 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
             }
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    // The client cancels one the host booked with them (R2 BUG-046): kept, marked
+    // cancelled, and the organiser is emailed.
+    const canCancel = !viewMode || !displayData.startsAt ? false : canCancelAppointment({
+        status: displayData.status,
+        startsAt: displayData.startsAt,
+        scheduledById: displayData.scheduledById,
+        assignedForUserId: displayData.assignedForUserId,
+    }, currentUser?.id);
+
+    const handleCancelAppointment = async () => {
+        if (!selectedEventId) return;
+        try {
+            setIsCancelling(true);
+            const response = await cancelAppointment(selectedEventId);
+            toast.success(response?.message || 'Appointment cancelled.');
+            setShowCancelConfirm(false);
+            if (modalInstance) modalInstance.hide();
+            if (onSuccess) onSuccess();
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || 'Failed to cancel the appointment');
+        } finally {
+            setIsCancelling(false);
         }
     };
 
@@ -770,6 +809,14 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
                                         </div>
                                     </div>
 
+                                    {canCancel && (
+                                        <div className="mt-4 pt-4 border-top d-flex justify-content-end">
+                                            <button className="btn btn-soft-warning fw-bold text-uppercase fs-12 px-4 shadow-none" onClick={() => setShowCancelConfirm(true)} disabled={isCancelling} style={{ height: '40px' }}>
+                                                <i className="ri-close-circle-line me-1 align-middle"></i> {isCancelling ? "Cancelling..." : "Cancel Appointment"}
+                                            </button>
+                                        </div>
+                                    )}
+
                                     {(currentUser?.id == displayData.scheduledById) && (
                                         <div className="mt-4 pt-4 border-top d-flex justify-content-end">
                                             <button className="btn btn-soft-danger fw-bold text-uppercase fs-12 px-4 shadow-none" onClick={confirmDelete} disabled={isDeleting} style={{ height: '40px' }}>
@@ -967,6 +1014,18 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
                 onClose={() => setShowDeleteConfirm(false)}
                 loading={isDeleting}
                 text="Are you sure you want to delete this appointment? This action cannot be undone."
+            />
+
+            <ConfirmationModal
+                show={showCancelConfirm}
+                onClose={() => !isCancelling && setShowCancelConfirm(false)}
+                onConfirm={handleCancelAppointment}
+                title="Cancel this appointment?"
+                message={`"${displayData.title}" will be cancelled and ${displayData.scheduledBy || 'the organiser'} will be told by email.`}
+                confirmText="Yes, Cancel It"
+                cancelText="Keep It"
+                loading={isCancelling}
+                loadingText="Cancelling..."
             />
         </div >
     );

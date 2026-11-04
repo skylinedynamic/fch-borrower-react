@@ -159,6 +159,35 @@ describe('Profile — Personal Info tab', () => {
     ).toBeInTheDocument()
   })
 
+  /**
+   * R2 BUG-017 - a 9-digit phone was saved and a 6-digit ZIP was cut to 5
+   * digits without a word. The API now refuses both (10-digit phone, 5-digit
+   * ZIP); the tab shows each refusal under its field, and the ZIP box takes no
+   * more than 5 digits.
+   */
+  it('shows the API refusing a 9-digit phone and a bad ZIP under their fields', async () => {
+    server.use(
+      http.get('*/borrower/profile/personal-info', () =>
+        HttpResponse.json({ status: true, data: { phone_number: '(555) 555-012', zip_code: '1234' } })
+      ),
+      http.post('*/borrower/profile/personal-info', () =>
+        HttpResponse.json(
+          { status: false, errors: { phone_number: ['Enter a 10-digit US phone number, e.g. (555) 123-4567.'], zip_code: ['Enter a 5-digit ZIP code, e.g. 10001.'] } },
+          { status: 422 }
+        )
+      )
+    )
+
+    const user = userEvent.setup()
+    renderTab()
+
+    await user.click(await screen.findByRole('button', { name: /save|update/i }))
+
+    expect(await screen.findByText(/10-digit US phone number/i)).toBeInTheDocument()
+    expect(screen.getByText(/5-digit ZIP code/i)).toBeInTheDocument()
+    expect(document.querySelector('input[maxlength="5"]')).not.toBeNull()
+  })
+
   describe('Social Security Number', () => {
     /**
      * The tab used to take only the last four digits ("Last 4 SSN"), and the
