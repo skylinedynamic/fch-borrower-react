@@ -101,7 +101,11 @@ const FEDERAL_COMPLIANCE_KEYS: (keyof FederalCompliance)[] = [
 
 export default function FundApplication() {
   const navigate = useNavigate()
-  const { id } = useParams()
+  // `id` is a funding request id (/fund-application/:id); `applicationId` is a
+  // funding application's own id (/my-applications/funding/:applicationId/edit) -
+  // how an application without a funding request (converted from the embed
+  // form) is opened, and how My Applications always opens one for editing.
+  const { id, applicationId } = useParams()
   const location = useLocation()
   const [fundingSequenceId, setFundingSequenceId] = useState<string | number | null>(null)
   const [fundingRequestId, setFundingRequestId] = useState<string | number | null>(null)
@@ -265,7 +269,7 @@ export default function FundApplication() {
 
   // Fetch funding request and documents (tab-wise lazy loading)
   const currentReqId = fundingRequestId || id || null
-  const { data: fundingData, isLoading: isFundingDataLoading, error: fundingDataError } = useFundingRequest(currentReqId)
+  const { data: fundingData, isLoading: isFundingDataLoading, error: fundingDataError } = useFundingRequest(currentReqId, { fundingApplicationId: applicationId })
   // The API answers 404 for a funding request that is not this borrower's
   // (BUG-082): the wizard is not shown for it at all.
   const isForeignRequest = (fundingDataError as any)?.response?.status === 404
@@ -607,6 +611,7 @@ export default function FundApplication() {
             onRegisterSave={isActive ? registerSave : undefined}
             fundingSequenceId={fundingSequenceId}
             fundingRequestId={fundingRequestId || id}
+            fundingApplicationId={applicationId}
           />
         )
 
@@ -626,6 +631,7 @@ export default function FundApplication() {
             isValid={isStepValid(STEP_INDICES.OWNERSHIP_INFO)}
             fundingSequenceId={fundingSequenceId}
             fundingRequestId={fundingRequestId || id}
+            fundingApplicationId={applicationId}
             {...currentCommonProps}
           />
         )
@@ -637,6 +643,7 @@ export default function FundApplication() {
             setFinancial={setFinancial}
             fundingSequenceId={fundingSequenceId}
             fundingRequestId={fundingRequestId || id}
+            fundingApplicationId={applicationId}
             {...currentCommonProps}
           />
         )
@@ -648,6 +655,7 @@ export default function FundApplication() {
             setFunding={setFunding}
             fundingSequenceId={fundingSequenceId}
             fundingRequestId={fundingRequestId || id}
+            fundingApplicationId={applicationId}
             {...currentCommonProps}
           />
         )
@@ -669,6 +677,7 @@ export default function FundApplication() {
             setDisclosure={setDisclosure}
             disclosureItems={disclosureItems}
             fundingRequestId={fundingRequestId || id}
+            fundingApplicationId={applicationId}
             {...commonStepProps}
           />
         )
@@ -680,6 +689,7 @@ export default function FundApplication() {
             setFederal={setFederal}
             isValid={isStepValid(STEP_INDICES.FEDERAL_COMPLIANCE)}
             fundingRequestId={fundingRequestId || id}
+            fundingApplicationId={applicationId}
             {...commonStepProps}
           />
         )
@@ -690,6 +700,7 @@ export default function FundApplication() {
             attestation={attestation}
             setAttestation={setAttestation}
             fundingRequestId={fundingRequestId || id}
+            fundingApplicationId={applicationId}
             onBack={() => setActiveStep(STEP_INDICES.FEDERAL_COMPLIANCE)}
             onSubmit={() => toast.success('Application submitted!')}
             loading={loading}
@@ -756,7 +767,7 @@ export default function FundApplication() {
               <h4 className="mt-2 mb-2">Can't Edit Funding Application</h4>
               <p className="text-muted mb-4">
                 {fundingData.locked_reason
-                  || `This application can no longer be edited because it is "${fundingData.status}". Contact your funding advisor if something needs to change.`}
+                  || `This funding application is "${fundingData.status}", so it can no longer be edited. Contact your funding advisor if something needs to change.`}
               </p>
               <button type="button" className="btn btn-outline-secondary" onClick={() => navigate(-1)}>
                 &larr; Back

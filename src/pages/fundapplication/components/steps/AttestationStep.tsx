@@ -28,6 +28,7 @@ interface AttestationStepProps {
   onBack: () => void
   loading: boolean
   fundingRequestId?: number | string | null
+  fundingApplicationId?: number | string | null
   isResigning?: boolean
 }
 
@@ -38,6 +39,7 @@ export default function AttestationStep({
   onBack,
   loading,
   fundingRequestId,
+  fundingApplicationId,
   isResigning,
 }: AttestationStepProps) {
   const navigate = useNavigate()
@@ -54,7 +56,7 @@ export default function AttestationStep({
   })
   const toggleModal = () => setModalState({ ...modalState, isOpen: !modalState.isOpen })
 
-  const { data: apiData, isLoading: isApiLoading, isSuccess } = useAttestation(fundingRequestId)
+  const { data: apiData, isLoading: isApiLoading, isSuccess } = useAttestation(fundingRequestId, { fundingApplicationId })
   const { mutate: saveAttestation, isPending: isSaving } = useSaveAttestation()
 
   // Pre-fill form from API

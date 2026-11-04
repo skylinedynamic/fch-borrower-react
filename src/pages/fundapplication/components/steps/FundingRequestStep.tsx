@@ -22,6 +22,7 @@ interface FundingRequestStepProps {
   loading: boolean
   onRegisterSave?: (fn: (() => Promise<boolean>) | null) => void
   fundingRequestId?: number | string | null
+  fundingApplicationId?: number | string | null
   fundingSequenceId?: number | string | null
 }
 
@@ -58,6 +59,7 @@ export default function FundingRequestStep({
   loading,
   onRegisterSave,
   fundingRequestId: initialFundingRequestId,
+  fundingApplicationId,
   fundingSequenceId,
 }: FundingRequestStepProps) {
   const location = useLocation()
@@ -74,7 +76,7 @@ export default function FundingRequestStep({
     || searchParams.get('fundingRequestId')
     || null
 
-  const { data: apiData, isLoading: isApiLoading, isSuccess } = useFundingRequest(effectiveRequestId)
+  const { data: apiData, isLoading: isApiLoading, isSuccess } = useFundingRequest(effectiveRequestId, { fundingApplicationId })
   const saveMutation = useSaveFundingRequest()
   const [fundingRequestId, setFundingRequestId] = useState<number | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
