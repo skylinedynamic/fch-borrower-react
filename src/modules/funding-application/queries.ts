@@ -5,6 +5,15 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { withEditConfirmation } from './editConfirmation'
 import type { FundingRequestData, FundingApplicationDocument, AttestationData } from './types'
 
+/**
+ * One cache key per funding request, whether its id arrives as text ("40", from
+ * the URL) or as a number (40, from the loaded application). Keyed on the raw
+ * id, the two were different queries, so opening the wizard fetched every step
+ * twice and showed its loading skeleton again.
+ */
+const requestKey = (fundingRequestId?: number | string | null): string =>
+  fundingRequestId ? String(fundingRequestId) : 'current'
+
 // A wizard step reads its application by funding request, or by the
 // application's own id when the wizard was opened on one - an application
 // converted from the embed form has no funding request to read it by.
@@ -111,7 +120,7 @@ export const useSaveAttestation = () => {
 
 export const useAttestation = (fundingRequestId?: number | string | null, options?: WizardLookupOptions) => {
   return useQuery<AttestationData>({
-    queryKey: ['attestation', fundingRequestId ?? 'current', ...(options?.fundingApplicationId ? [String(options.fundingApplicationId)] : [])],
+    queryKey: ['attestation', requestKey(fundingRequestId), ...(options?.fundingApplicationId ? [String(options.fundingApplicationId)] : [])],
     queryFn: () => fetchAttestation(fundingRequestId, options?.fundingApplicationId),
     enabled: wizardEnabled(options),
   })
@@ -119,7 +128,7 @@ export const useAttestation = (fundingRequestId?: number | string | null, option
 
 export const useBusinessInfo = (fundingRequestId?: number | string | null, options?: WizardLookupOptions) => {
   return useQuery({
-    queryKey: [...queryKeys.fundingApplication.businessInfo(), fundingRequestId ?? 'current', ...(options?.fundingApplicationId ? [String(options.fundingApplicationId)] : [])],
+    queryKey: [...queryKeys.fundingApplication.businessInfo(), requestKey(fundingRequestId), ...(options?.fundingApplicationId ? [String(options.fundingApplicationId)] : [])],
     queryFn: () => fetchBusinessInfo(fundingRequestId, options?.fundingApplicationId),
     enabled: wizardEnabled(options),
   })
@@ -127,7 +136,7 @@ export const useBusinessInfo = (fundingRequestId?: number | string | null, optio
 
 export const useOwnershipInfo = (fundingRequestId?: number | string | null, options?: WizardLookupOptions) => {
   return useQuery({
-    queryKey: [...queryKeys.fundingApplication.ownershipInfo(), fundingRequestId ?? 'current', ...(options?.fundingApplicationId ? [String(options.fundingApplicationId)] : [])],
+    queryKey: [...queryKeys.fundingApplication.ownershipInfo(), requestKey(fundingRequestId), ...(options?.fundingApplicationId ? [String(options.fundingApplicationId)] : [])],
     queryFn: () => fetchOwnershipInfo(fundingRequestId, options?.fundingApplicationId),
     enabled: wizardEnabled(options),
   })
@@ -135,7 +144,7 @@ export const useOwnershipInfo = (fundingRequestId?: number | string | null, opti
 
 export const useFinancialInfo = (fundingRequestId?: number | string | null, options?: WizardLookupOptions) => {
   return useQuery({
-    queryKey: [...queryKeys.fundingApplication.financialInfo(), fundingRequestId ?? 'current', ...(options?.fundingApplicationId ? [String(options.fundingApplicationId)] : [])],
+    queryKey: [...queryKeys.fundingApplication.financialInfo(), requestKey(fundingRequestId), ...(options?.fundingApplicationId ? [String(options.fundingApplicationId)] : [])],
     queryFn: () => fetchFinancialInfo(fundingRequestId, options?.fundingApplicationId),
     enabled: wizardEnabled(options),
   })
@@ -143,7 +152,7 @@ export const useFinancialInfo = (fundingRequestId?: number | string | null, opti
 
 export const useDisclosuresConsent = (fundingRequestId?: number | string | null, options?: WizardLookupOptions) => {
   return useQuery({
-    queryKey: [...queryKeys.fundingApplication.disclosuresConsent(), fundingRequestId ?? 'current', ...(options?.fundingApplicationId ? [String(options.fundingApplicationId)] : [])],
+    queryKey: [...queryKeys.fundingApplication.disclosuresConsent(), requestKey(fundingRequestId), ...(options?.fundingApplicationId ? [String(options.fundingApplicationId)] : [])],
     queryFn: () => fetchDisclosuresConsent(fundingRequestId, options?.fundingApplicationId),
     enabled: wizardEnabled(options),
   })
@@ -151,7 +160,7 @@ export const useDisclosuresConsent = (fundingRequestId?: number | string | null,
 
 export const useFundingRequest = (fundingRequestId?: number | string | null, options?: WizardLookupOptions) => {
   return useQuery<FundingRequestData>({
-    queryKey: [...queryKeys.fundingApplication.fundingRequest(), fundingRequestId ? String(fundingRequestId) : 'current', ...(options?.fundingApplicationId ? [String(options.fundingApplicationId)] : [])],
+    queryKey: [...queryKeys.fundingApplication.fundingRequest(), requestKey(fundingRequestId), ...(options?.fundingApplicationId ? [String(options.fundingApplicationId)] : [])],
     queryFn: () => fetchFundingRequest(fundingRequestId, options?.fundingApplicationId),
     enabled: wizardEnabled(options),
   })
@@ -159,7 +168,7 @@ export const useFundingRequest = (fundingRequestId?: number | string | null, opt
 
 export const useFederalCompliance = (fundingRequestId?: number | string | null, options?: WizardLookupOptions) => {
   return useQuery({
-    queryKey: [...queryKeys.fundingApplication.federalCompliance(), fundingRequestId ?? 'current', ...(options?.fundingApplicationId ? [String(options.fundingApplicationId)] : [])],
+    queryKey: [...queryKeys.fundingApplication.federalCompliance(), requestKey(fundingRequestId), ...(options?.fundingApplicationId ? [String(options.fundingApplicationId)] : [])],
     queryFn: () => fetchFederalCompliance(fundingRequestId, options?.fundingApplicationId),
     enabled: wizardEnabled(options),
   })

@@ -22,6 +22,29 @@ const ORDER: Status[] = ['rejected', 'processing', 'verified']
 
 type Row = Task & { state: Status }
 
+/** Tasks with no tier go last, under this heading. */
+const NO_TIER = 'Other'
+
+/** "Tier 4" -> 4; a tier without a number sorts last. */
+const tierNumber = (tier: string) => {
+  const match = tier.match(/\d+/)
+  return match ? Number(match[0]) : Number.POSITIVE_INFINITY
+}
+
+/**
+ * The rows under one heading per tier, lowest tier first. Inside a tier the
+ * rows keep their order: what needs fixing, then in review, then verified.
+ */
+export const groupByTier = (rows: Row[]): { tier: string; rows: Row[] }[] => {
+  const groups = new Map<string, Row[]>()
+  rows.forEach((row) => {
+    const tier = row.tier || NO_TIER
+    groups.set(tier, [...(groups.get(tier) ?? []), row])
+  })
+  return Array.from(groups, ([tier, list]) => ({ tier, rows: list }))
+    .sort((a, b) => tierNumber(a.tier) - tierNumber(b.tier))
+}
+
 /**
  * Every task the borrower has submitted, in one list - what needs fixing
  * first, with the reason and the way back to the Guide - filtered by where it
@@ -121,41 +144,52 @@ export default function TaskStatusCards() {
               <span>{filter === 'all' ? 'No tasks' : STATUSES[filter].empty}</span>
             </div>
           ) : (
-            <ul className="co-rows" aria-label="Tasks">
-              {visible.map((row) => (
-                <li key={`${row.state}-${row.id}`} className={`co-row is-${row.state}`}>
-                  <span className="co-row-icon" aria-hidden="true">
-                    <i className={STATUSES[row.state].icon}></i>
-                  </span>
-                  <div className="co-row-body">
-                    <div className="co-row-top">
-                      <span className="co-row-title">{row.title}</span>
-                      {row.tier && <span className="co-row-tier">{row.tier}</span>}
-                    </div>
-                    {row.subtitle && <p className="co-row-sub">{row.subtitle}</p>}
-                    {row.state === 'rejected' && row.rejection_reason && (
-                      <p className="co-row-reason">
-                        <i className="ri-information-line" aria-hidden="true"></i>
-                        <span>{row.rejection_reason}</span>
-                      </p>
-                    )}
-                  </div>
-                  <div className="co-row-side">
-                    <span className={`co-row-status is-${row.state}`}>{STATUSES[row.state].label}</span>
-                    {row.state === 'verified' && row.completed_at && (
-                      <span className="co-row-date">
-                        <i className="ri-calendar-check-line" aria-hidden="true"></i> {row.completed_at}
+            <div className="co-tier-groups" role="region" aria-label="Tasks">
+              {groupByTier(visible).map((group) => {
+                const headingId = `co-tier-${group.tier.replace(/\W+/g, '-')}`
+                return (
+                  <section key={group.tier} className="co-tier-group" aria-labelledby={headingId}>
+                    <h3 id={headingId} className="co-tier-head">
+                      <span className="co-tier-name">{group.tier}</span>
+                      <span className="co-tier-count">
+                        {group.rows.length} {group.rows.length === 1 ? 'task' : 'tasks'}
                       </span>
-                    )}
-                    {row.state === 'rejected' && (
-                      <Link to={GUIDE_PATH} className="co-row-fix">
-                        Fix in the guide <i className="ri-arrow-right-line" aria-hidden="true"></i>
-                      </Link>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
+                    </h3>
+                    <ul className="co-rows" aria-label={`${group.tier} tasks`}>
+                    {group.rows.map((row) => (
+                      <li key={`${row.state}-${row.id}`} className={`co-row is-${row.state}`}>
+                        <span className="co-row-icon" aria-hidden="true">
+                          <i className={STATUSES[row.state].icon}></i>
+                        </span>
+
+                        <div className="co-row-main">
+                          <span className="co-row-title">{row.title}</span>
+                          {row.subtitle && <span className="co-row-sub" title={row.subtitle}>{row.subtitle}</span>}
+                        </div>
+
+                        <div className="co-row-meta">
+                          {row.state === 'rejected' && row.rejection_reason && (
+                            <span className="co-row-reason" title={row.rejection_reason}>{row.rejection_reason}</span>
+                          )}
+                          {row.state === 'verified' && row.completed_at && (
+                            <span className="co-row-date">
+                              <i className="ri-calendar-check-line" aria-hidden="true"></i> {row.completed_at}
+                            </span>
+                          )}
+                          <span className={`co-row-status is-${row.state}`}>{STATUSES[row.state].label}</span>
+                          {row.state === 'rejected' && (
+                            <Link to={GUIDE_PATH} className="co-row-fix">
+                              Fix in the guide <i className="ri-arrow-right-line" aria-hidden="true"></i>
+                            </Link>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                    </ul>
+                  </section>
+                )
+              })}
+            </div>
           )}
 
           {!showAll && listed.length > FIRST_ROWS && (

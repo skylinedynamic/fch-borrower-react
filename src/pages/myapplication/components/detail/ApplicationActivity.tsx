@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { useBorrowerActivityLogs, type ActivityLog } from '../../../../modules/activity-log'
+import { sanitizeHtml } from '../../../../utils/sanitizeHtml'
 
 type Tone = 'info' | 'warning' | 'success' | 'danger' | 'neutral'
 
@@ -88,7 +89,7 @@ function ActivityItem({ log }: { log: ActivityLog }) {
             </button>
             {open && (
               // The description is HTML written by the server for this log.
-              <div id={detailsId} className="ma-activity-details" dangerouslySetInnerHTML={{ __html: log.description }} />
+              <div id={detailsId} className="ma-activity-details" dangerouslySetInnerHTML={{ __html: sanitizeHtml(log.description) }} />
             )}
           </>
         )}

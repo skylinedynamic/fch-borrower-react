@@ -18,6 +18,7 @@ import { useOnboardingPopupStore } from '../../store/onboardingPopupStore'
 import { FileManagerModal } from '../../components/FileManagerModal/FileManagerModal'
 import { DocumentSectionLoader } from '../../components/Loader/DocumentSectionLoader'
 import DeleteConfirmationModal from '../../components/GlobalModal/DeleteConfirmModal'
+import { DOCUMENT_STATUS } from '../../config/fileTypeConfig'
 import './Documents.css'
 
 
@@ -44,7 +45,7 @@ export default function Documents() {
   const [currentSection, setCurrentSection] = useState<string>('')
   const [selectionMode, setSelectionMode] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [documentToDelete, setDocumentToDelete] = useState<{ id: number; name: string } | null>(null)
+  const [documentToDelete, setDocumentToDelete] = useState<{ id: number; name: string; accepted: boolean } | null>(null)
 
   // Fetch document types and documents
   const { data: types, isLoading: typesLoading, error: typesError } = useDocumentTypes()
@@ -154,7 +155,7 @@ export default function Documents() {
     // Find document name for modal display
     const file = uploads[section]?.find(f => f.documentId === documentId)
     if (file) {
-      setDocumentToDelete({ id: documentId, name: file.name })
+      setDocumentToDelete({ id: documentId, name: file.name, accepted: file.reviewStatus === DOCUMENT_STATUS.ACCEPTED })
       setShowDeleteModal(true)
     }
   }
@@ -168,9 +169,13 @@ export default function Documents() {
         setShowDeleteModal(false)
         setDocumentToDelete(null)
       },
-      onError: (error) => {
-        console.error('Failed to delete document', error)
-        toast.error('Failed to delete document')
+      onError: (error: any) => {
+        console.error('Failed to delete document', error?.response?.status)
+        // The API says why - e.g. an open funding request needs this accepted
+        // document (R2 BUG-045). The file stays, so the dialog closes.
+        toast.error(error?.response?.data?.message || 'Failed to delete document')
+        setShowDeleteModal(false)
+        setDocumentToDelete(null)
       }
     })
   }
@@ -196,7 +201,10 @@ export default function Documents() {
         onClose={() => setShowDeleteModal(false)}
         onConfirm={confirmDelete}
         loading={deleteDocumentMutation.isPending}
-        text={`Are you sure you want to delete "${documentToDelete?.name}"? This action cannot be undone.`}
+        text={documentToDelete?.accepted
+          // Said up front: an accepted document may be one a funding request relies on (R2 BUG-045).
+          ? `"${documentToDelete.name}" has been accepted. Funding requests that need it will report it missing until you upload a replacement. Delete it anyway? This action cannot be undone.`
+          : `Are you sure you want to delete "${documentToDelete?.name}"? This action cannot be undone.`}
       />
 
       <div className="container-fluid min-vh-70 pt-4">

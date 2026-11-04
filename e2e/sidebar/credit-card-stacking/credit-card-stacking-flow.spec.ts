@@ -42,6 +42,12 @@ test.describe('Sidebar › Credit Card Stacking › strategy flow', () => {
 
     await page.goto(`/credit-card-stacking/${id}/pre-flight`)
     await expect(pageHeading(page, 'Pre-Flight Checklist')).toBeVisible()
+    // BUG-043: a missing item names its fields and links to the profile tab that holds them.
+    const missing = page.locator('.ca-checklist-missing')
+    for (const hint of await missing.all()) {
+      await expect(hint).toContainText('Missing:')
+      await expect(hint.getByRole('link', { name: /Complete in Profile/i })).toHaveAttribute('href', '/profile?tab=1')
+    }
 
     await page.goto(`/credit-card-stacking/${id}/roadmap`)
     await expect(page).toHaveURL(new RegExp(`/credit-card-stacking/${id}/roadmap$`))
@@ -66,6 +72,28 @@ test.describe('Sidebar › Credit Card Stacking › strategy flow', () => {
     await page.goto(`/credit-card-stacking/${id}/completion`)
     // Either the congratulations screen, or the guard sends an unfinished play elsewhere.
     await expect(pageHeading(page, 'Play Completed!').or(page.locator('.page-content h4').first())).toBeVisible()
+  })
+
+  // BUG-044: one play runs at a time. While one runs, the strategy page says
+  // so above the locked plays, and opening another play by URL comes back
+  // to the strategy page with the same reason.
+  test('while a play runs, the other plays say why they are locked', async ({ page }) => {
+    await page.goto('/credit-card-stacking/strategy')
+    await expect(pageHeading(page, 'Credit Card Stacking Strategy')).toBeVisible()
+    const notice = page.locator('.page-content [role="status"]').filter({ hasText: 'You can run one play at a time.' })
+    await expect(notice.or(page.locator('.page-content a[href$="/overview"]')).first()).toBeVisible()
+    test.skip(!(await notice.count()), 'This borrower has no running play')
+
+    await expect(page.locator('.page-content').getByText(/locked while a play is running/)).toBeVisible()
+    const runningId = (await notice.getByRole('link').getAttribute('href'))?.match(/\/credit-card-stacking\/(\d+)\/roadmap/)?.[1]
+    const lockedRow = page.locator('.page-content .ca-strategy-row-premium[title^="You can run one play at a time."]').first()
+    await expect(lockedRow).toBeVisible()
+
+    // Another play's overview by URL: back to the list, with the reason.
+    const otherId = String(Number(runningId) === 1 ? 2 : 1)
+    await page.goto(`/credit-card-stacking/${otherId}/overview`)
+    await expect(page).toHaveURL(/\/credit-card-stacking\/strategy$/, { timeout: 90_000 })
+    await expect(page.locator('.Toastify').getByText(/You can run one play at a time\./)).toBeVisible()
   })
 
   test('a strategy id the borrower cannot use is redirected away', async ({ page }) => {

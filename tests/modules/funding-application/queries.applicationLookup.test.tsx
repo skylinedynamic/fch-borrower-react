@@ -74,7 +74,8 @@ describe.each(hooks)('%s', (_, hook, step, key) => {
 
     await waitFor(() => expect(result.current.data).toEqual({ id: 80 }))
     expect(seen[0].get('funding_request_id')).toBe('29')
-    expect(queryClient.getQueryData([...key, 29])).toEqual({ id: 80 })
+    // Keyed by the id as text, whichever way it arrives, so the wizard reads each step once.
+    expect(queryClient.getQueryData([...key, '29'])).toEqual({ id: 80 })
   })
 
   it('does not read when switched off and there is no application id', () => {

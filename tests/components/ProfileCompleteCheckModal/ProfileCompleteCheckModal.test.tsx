@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { http, HttpResponse } from 'msw'
-import { Route, Routes } from 'react-router-dom'
+import { Link, Route, Routes } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders, screen, within } from '../../test-utils'
 import { server } from '../../mocks/server'
@@ -33,15 +33,22 @@ function serveCompletion(personal: string[], business: string[], financial: stri
   )
 }
 
-function renderModal() {
+function renderModal(route = '/') {
   return renderWithProviders(
     <>
       <ProfileCompleteCheckModal />
       <Routes>
         <Route path="/" element={<div>Dashboard page</div>} />
+        <Route path="/dashboard" element={<div>Dashboard page</div>} />
         <Route path="/profile" element={<div>Profile page</div>} />
+        <Route path="/invoices" element={<Link to="/dashboard">Go to dashboard</Link>} />
+        <Route path="/invoices/:id" element={<div>Invoice page</div>} />
+        <Route path="/payments" element={<div>Payments page</div>} />
+        <Route path="/payments/:id" element={<div>Payment page</div>} />
+        <Route path="/billing-details" element={<div>Billing page</div>} />
       </Routes>
-    </>
+    </>,
+    { route }
   )
 }
 
@@ -156,5 +163,41 @@ describe('ProfileCompleteCheckModal', () => {
     await screen.findByRole('dialog')
     await new Promise((r) => setTimeout(r, 50))
     expect(requests).toBe(1)
+  })
+
+  // Paying comes first: a borrower with an incomplete profile can still settle
+  // what they owe. The popup returns on any other page.
+  it.each(['/invoices', '/invoices/42', '/payments', '/payments/7', '/billing-details'])(
+    'stays away on %s so the borrower can pay first',
+    async (route) => {
+      signInBorrower()
+      serveCompletion([], ['entity_type'], [])
+      renderModal(route)
+
+      await new Promise((r) => setTimeout(r, 50))
+      expect(screen.queryByRole('dialog')).toBeNull()
+    }
+  )
+
+  it('comes back as soon as the borrower leaves the payment pages', async () => {
+    const user = userEvent.setup()
+    signInBorrower()
+    serveCompletion([], ['entity_type'], [])
+    renderModal('/invoices')
+
+    await new Promise((r) => setTimeout(r, 50))
+    expect(screen.queryByRole('dialog')).toBeNull()
+
+    await user.click(screen.getByRole('link', { name: /go to dashboard/i }))
+
+    expect(await screen.findByRole('dialog')).toHaveTextContent(/your profile needs attention/i)
+  })
+
+  it('is not fooled by a page whose path only starts like a payment page', async () => {
+    signInBorrower()
+    serveCompletion([], ['entity_type'], [])
+    renderModal('/invoices-archive')
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
   })
 })

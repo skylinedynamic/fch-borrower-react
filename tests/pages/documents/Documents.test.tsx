@@ -206,3 +206,66 @@ describe('Documents page - the next step', () => {
     expect(hero.compareDocumentPosition(prompt) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 })
+
+/**
+ * Defect: R2 BUG-045 - the client could delete an Accepted document an open
+ * funding request relied on; the request then reported it missing. The API
+ * now refuses that (422, naming the request). The page shows its reason and
+ * keeps the file, and the confirmation says when a document is Accepted.
+ */
+describe('Documents page - removing an accepted document (R2 BUG-045)', () => {
+  const IN_USE = 'This document is accepted and needed by funding request #45. Upload a replacement first, then remove this one.'
+
+  const serve = (deleteStatus: number) => {
+    const deletes: string[] = []
+    server.use(
+      http.get('*/borrower/documents/borrower-document-types', () =>
+        HttpResponse.json({ status: true, data: [{ id: 2, name: 'Driver License', sort_order: 1 }] })
+      ),
+      http.get('*/borrower/documents', () =>
+        HttpResponse.json({
+          status: true,
+          data: { 2: [{ id: 153, borrower_id: 5, document_type_id: 2, file_name: 'licence.jpg', file_path: 'b.jpg', url: '', status: 'Accepted', rejection_reason: null }] },
+        })
+      ),
+      http.delete('*/borrower/documents/:id', ({ params }) => {
+        deletes.push(String(params.id))
+        return deleteStatus === 422
+          ? HttpResponse.json({ status: false, message: IN_USE, errors: { funding_request_ids: [45] } }, { status: 422 })
+          : HttpResponse.json({ status: true, message: 'Document deleted successfully.' })
+      })
+    )
+    return deletes
+  }
+
+  const askToRemove = async (user: ReturnType<typeof userEvent.setup>) => {
+    await user.click(await screen.findByRole('button', { name: /Driver License/ }))
+    await user.click(screen.getAllByTitle('Remove file')[0])
+  }
+
+  it('says the document is accepted before it is removed', async () => {
+    serve(200)
+    const user = userEvent.setup()
+    renderWithProviders(<Documents />)
+
+    await askToRemove(user)
+
+    expect(await screen.findByText(/"licence\.jpg" has been accepted/)).toBeInTheDocument()
+  })
+
+  it('shows why a document an open request needs was not removed, and keeps it', async () => {
+    const { toast } = await import('react-toastify')
+    vi.mocked(toast.error).mockClear()
+    const deletes = serve(422)
+    const user = userEvent.setup()
+    renderWithProviders(<Documents />)
+
+    await askToRemove(user)
+    await user.click(await screen.findByRole('button', { name: 'Yes, Delete It' }))
+
+    await vi.waitFor(() => expect(toast.error).toHaveBeenCalledWith(IN_USE))
+    expect(deletes).toEqual(['153'])
+    expect(screen.getAllByText('licence.jpg').length).toBeGreaterThan(0)
+    await vi.waitFor(() => expect(screen.queryByRole('button', { name: 'Yes, Delete It' })).not.toBeInTheDocument())
+  })
+})

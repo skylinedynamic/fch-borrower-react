@@ -352,10 +352,11 @@ export default function FundingRequestList() {
                                                     )}
                                                     {isRejected && (
                                                         <Link
-                                                            to={`/funding/${row.funding_sequence_id || row.funding_sequence?.id}/review`}
+                                                            to={`/funding/${row.funding_sequence_id || row.funding_sequence?.id}/review?resubmit=${row.id}`}
                                                             state={{
                                                                 purpose: row.use_of_funds,
-                                                                amount: row.requested_amount
+                                                                amount: row.requested_amount,
+                                                                fromRejectedRequestId: row.id
                                                             }}
                                                             className="btn btn-danger btn-sm text-nowrap d-inline-flex align-items-center"
                                                             title="Update Application"

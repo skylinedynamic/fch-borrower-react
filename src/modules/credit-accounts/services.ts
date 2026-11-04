@@ -1,5 +1,5 @@
 import { apiClient } from '../../lib/http/apiClient';
-import { CreditAccountFilters, CreditAccountResponse, CreditAccountFilterResponse } from './types';
+import type { ApplyCreditAccountResponse, CreditAccountFilters, CreditAccountResponse, CreditAccountFilterResponse } from './types';
 
 const BASE_URL = '/borrower/credit-builder/credit-accounts';
 
@@ -13,7 +13,7 @@ export const fetchCreditAccountFilters = async (): Promise<CreditAccountFilterRe
     return data;
 };
 
-export const applyForCreditAccount = async (id: number, status?: string): Promise<any> => {
-    const { data } = await apiClient.post(`${BASE_URL}/${id}/apply`, { status });
+export const applyForCreditAccount = async (id: number, status?: string): Promise<ApplyCreditAccountResponse> => {
+    const { data } = await apiClient.post<ApplyCreditAccountResponse>(`${BASE_URL}/${id}/apply`, { status });
     return data;
 };

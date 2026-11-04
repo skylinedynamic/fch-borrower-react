@@ -73,6 +73,27 @@ describe('fetchCapitalAccessStrategies / fetchCapitalAccessStrategyDetail (check
     ])
   })
 
+  it('keeps the missing profile fields the API names for an item (BUG-043)', async () => {
+    server.use(
+      http.get('*/borrower/capital-access/strategies/3', () =>
+        HttpResponse.json({
+          status: true,
+          message: 'ok',
+          data: {
+            id: 3,
+            name: 'Play C',
+            checklist: [{ id: 'business_info', label: 'Business Information', complete: false, missing_fields: ['business_email'] }],
+          },
+        })
+      )
+    )
+
+    const strategy = await fetchCapitalAccessStrategyDetail(3)
+    expect(strategy.checklist).toEqual([
+      { id: 'business_info', label: 'Business Information', complete: false, missing_fields: ['business_email'] },
+    ])
+  })
+
   it('defaults checklist/roadmap to an empty array when the backend omits them', async () => {
     server.use(
       http.get('*/borrower/capital-access/strategies/2', () =>

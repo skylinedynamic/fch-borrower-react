@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import StepNavigation from '../shared/StepNavigation'
 import FormSkeleton from '../../../../components/Loader/FormSkeleton'
 import { useSaveAttestation, useAttestation } from '../../../../modules/funding-application/queries'
+import { isStaleApplicationError } from '../../../../modules/funding-application/applicationVersion'
+import { reportSaveFailure } from '../../../../modules/funding-application/saveFeedback'
 import type { PreviousSignature } from '../../../../modules/funding-application/types'
 import { toast } from 'react-toastify'
 import { useBrandingStore } from '../../../../store/brandingStore'
@@ -168,6 +170,11 @@ export default function AttestationStep({
       onError: (error: any) => {
         setShowModal(false)
         console.error('Error submitting application:', error)
+        // Changed elsewhere since this page loaded (R2 BUG-033): say so, offer a reload.
+        if (isStaleApplicationError(error)) {
+          reportSaveFailure(error, { fallbackMessage: 'Failed to submit application' })
+          return
+        }
         const errors = error.response?.data?.errors
         if (errors) {
           // Field errors are shown on the fields themselves - under the name,

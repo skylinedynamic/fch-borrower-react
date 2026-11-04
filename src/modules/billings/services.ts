@@ -1,5 +1,5 @@
 import { apiClient } from '../../lib/http/apiClient';
-import { BillingDetailsData } from './types';
+import { BillingDetailsData, ResumeSubscriptionResult } from './types';
 
 export interface PaymentProviderItem {
   id: number;
@@ -39,4 +39,10 @@ export const removeDefaultPaymentMethod = async (): Promise<any> => {
 export const cancelBorrowerSubscription = async (): Promise<any> => {
   const { data } = await apiClient.post('/borrower/cancel-subscription');
   return data?.data || data;
+};
+
+/** Resumes a cancelled subscription on its current plan (BUG-069). */
+export const resumeBorrowerSubscription = async (): Promise<ResumeSubscriptionResult> => {
+  const { data } = await apiClient.post<{ message: string; data: Omit<ResumeSubscriptionResult, 'message'> }>('/borrower/resume-subscription');
+  return { ...data.data, message: data.message };
 };
