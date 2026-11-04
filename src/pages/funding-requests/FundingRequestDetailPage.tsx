@@ -433,12 +433,20 @@ export default function FundingRequestDetailPage() {
     const loadRequest = useCallback((showLoader = true) => {
         if (!id) return Promise.resolve()
         if (showLoader) setLoading(true)
+        // A request that is not this borrower's (or none) answers 404: the page
+        // shows "Request not found", so no error toast on top. A real failure is
+        // toasted once - the id stops a second copy when the load runs twice.
+        const loadFailed = (message?: string) =>
+            toast.error(message || 'Failed to load details', { toastId: 'funding-request-load' })
         return getBorrowerFundingRequest(Number(id))
             .then(res => {
                 if (res.success) setReview(res.data)
-                else toast.error(res.message || 'Failed to load details')
+                else loadFailed(res.message)
             })
-            .catch(() => toast.error('Failed to load details'))
+            .catch((error) => {
+                if (error?.response?.status === 404) return
+                loadFailed()
+            })
             .finally(() => setLoading(false))
     }, [id])
 
