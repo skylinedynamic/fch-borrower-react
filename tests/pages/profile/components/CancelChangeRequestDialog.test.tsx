@@ -33,7 +33,7 @@ describe('Cancel change request dialog', () => {
   })
 
   it('opens with the page dimmed behind it, also under StrictMode', async () => {
-    render(
+    const { unmount } = render(
       <StrictMode>
         <QueryClientProvider client={createTestQueryClient()}>
           <Harness />
@@ -54,5 +54,12 @@ describe('Cancel change request dialog', () => {
     await waitFor(() => expect(document.querySelectorAll('.modal-backdrop')).toHaveLength(1))
     await new Promise((resolve) => setTimeout(resolve, 400))
     expect(document.querySelectorAll('.modal-backdrop')).toHaveLength(1)
+
+    // Unmounting hides the real Bootstrap modal, which finishes on a timer
+    // (its transition end, then the 100ms backdrop sweep). Let those run here:
+    // left to the end of the file they fire after jsdom is torn down, and
+    // Vitest fails the run with an unhandled error.
+    unmount()
+    await new Promise((resolve) => setTimeout(resolve, 400))
   })
 })
