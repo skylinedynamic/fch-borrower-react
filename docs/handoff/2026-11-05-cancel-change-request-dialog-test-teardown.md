@@ -38,6 +38,29 @@
 - **`npm run typecheck`:** clean.
 - **Not reproduced:** the Documents timing failure could not be reproduced on demand locally, since it is a CI-load race. It is covered by the longer wait.
 
+## Follow-up: the Documents test still failed in CI, from a stray modal
+With the 5 s wait, CI still failed the same Documents test. The DOM it printed held **two** open "Are you sure?" modals, but the page renders only one.
+
+**Cause:** this was a real app race, not timing.
+- The previous test ("says the document is accepted before it is removed") ended while Bootstrap was still opening its modal. React had already rendered the text, but Bootstrap's show finishes on a timer.
+- `cleanup()` unmounted the modal, and React took it out of the page.
+- When the show timer then ran, Bootstrap found the element missing from `<body>` and appended it again, open and with its backdrop. Nothing owned it.
+- The next test clicked that stray modal's "Yes, Delete It", so no request was sent.
+- In the app the same thing happens if a confirm modal is unmounted within about 150 ms of being asked to show.
+
+**Fix:** `src/utils/bootstrapModal.ts` `hideAndDisposeModal()`. It is used by every modal's unmount cleanup. It now notes whether React had already taken the element out of the page. If it had, it closes the modal once Bootstrap finishes the show (`shown.bs.modal`), and removes the element if Bootstrap put it back. When it has no element, it falls back to Bootstrap's own `_element`. Under StrictMode's development remount the element never leaves the page, so it is left alone, as before.
+
+**Tests:**
+- **New, `tests/components/GlobalModal/unmountWhileOpening.test.tsx`:** `DeleteConfirmModal` and `ConfirmationModal` are unmounted right after `show`. Both tests failed first, with one stray `.modal` left in the page, and pass now.
+- **Related suites:** `tests/components/GlobalModal`, `tests/utils/bootstrapModal.test.ts`, the profile dialog and Documents: 51 passed.
+- **CI commands:** `npm run test:unit` 341 passed; `npm run test:feature` 178 files and 1236 tests passed, with no unhandled errors.
+- **`npm run typecheck`:** clean.
+
+**Files changed (follow-up):**
+- `src/utils/bootstrapModal.ts`
+- `tests/components/GlobalModal/unmountWhileOpening.test.tsx` (new)
+
 ## Open items
+- **E2E not run:** no Playwright E2E was run for this. `hideAndDisposeModal` is shared by the confirm, invoice, payment, billing and task-complete modals; a browser check of opening and closing one of them is worthwhile.
 - **`vi.waitFor` elsewhere:** `tests/lib/auth/auth.test.ts` still uses `vi.waitFor` with the 1 s default. It is a non-DOM unit test and has not failed.
 - **Not committed.**
