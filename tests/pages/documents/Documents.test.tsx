@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import userEvent from '@testing-library/user-event'
-import { renderWithProviders, screen, within } from '../../test-utils'
+import { renderWithProviders, screen, waitFor, within } from '../../test-utils'
 import { server } from '../../mocks/server'
 import Documents from '../../../src/pages/documents/Documents'
 
@@ -40,7 +40,7 @@ describe('Documents page', () => {
     renderWithProviders(<Documents />)
 
     await new Promise((resolve) => setTimeout(resolve, 0))
-    await vi.waitFor(() => expect(toast.error).toHaveBeenCalledWith('Failed to load documents'))
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Failed to load documents'))
   })
 })
 
@@ -263,9 +263,9 @@ describe('Documents page - removing an accepted document (R2 BUG-045)', () => {
     await askToRemove(user)
     await user.click(await screen.findByRole('button', { name: 'Yes, Delete It' }))
 
-    await vi.waitFor(() => expect(toast.error).toHaveBeenCalledWith(IN_USE))
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(IN_USE))
     expect(deletes).toEqual(['153'])
     expect(screen.getAllByText('licence.jpg').length).toBeGreaterThan(0)
-    await vi.waitFor(() => expect(screen.queryByRole('button', { name: 'Yes, Delete It' })).not.toBeInTheDocument())
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Yes, Delete It' })).not.toBeInTheDocument())
   })
 })

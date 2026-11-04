@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import { Route, Routes } from 'react-router-dom'
-import { renderWithProviders, screen, within } from '../../test-utils'
+import { renderWithProviders, screen, waitFor, within } from '../../test-utils'
 import { server } from '../../mocks/server'
 import StrategySelection from '../../../src/pages/capital-access/StrategySelection'
 import PlayOverview from '../../../src/pages/capital-access/PlayOverview'
@@ -71,7 +71,7 @@ describe('StrategySelection while a play is running', () => {
     )
 
     expect(await screen.findByRole('status')).toBeInTheDocument()
-    await vi.waitFor(() =>
+    await waitFor(() =>
       expect(toastInfo).toHaveBeenCalledWith('You can run one play at a time. Finish Foundation 100 Play to start another.', expect.anything())
     )
   })
