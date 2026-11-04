@@ -9,6 +9,8 @@ export interface ActivityLog {
   properties?: { status?: string | null; old?: { status?: string | null } | null } | null
   /** HTML written by the server. */
   description?: string | null
+  /** A staff note's Summary (an email's subject line on an email entry). */
+  subject?: string | null
   causer_name?: string | null
   created_at: string
 }

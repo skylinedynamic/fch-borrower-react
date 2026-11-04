@@ -41,6 +41,16 @@ const statusChange = (log: ActivityLog): { title: string; from?: string; to: str
   return null
 }
 
+/**
+ * The title of an entry. A note staff added (log type "activity") is titled by
+ * its Summary - its event label is only "Activity Created" (BUG-156).
+ */
+const titleOf = (log: ActivityLog): string => {
+  const summary = String(log.subject || '').trim()
+  if (log.log_type_raw === 'activity' && summary) return summary
+  return log.event_label || log.log_type || 'Activity'
+}
+
 const dayOf = (iso: string) =>
   new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
@@ -56,7 +66,7 @@ function ActivityItem({ log }: { log: ActivityLog }) {
     <li className="ma-activity-item">
       <span className={`ma-activity-icon is-${tone}`} aria-hidden="true"><i className={icon}></i></span>
       <div className="ma-activity-main">
-        <p className="ma-activity-title">{change ? change.title : log.event_label || log.log_type || 'Activity'}</p>
+        <p className="ma-activity-title">{change ? change.title : titleOf(log)}</p>
 
         {change && (
           <span
