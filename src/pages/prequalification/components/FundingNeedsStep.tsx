@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import type { FinancialSupport } from '../../../modules/pre-qualification'
 import { formatCurrency } from '../../../utils/formatters'
 import CustomDropdown from '../../../components/Common/CustomDropdown'
-import { fundingUrgencyOptions, purposeOfFundingOptions, personalCreditScoreOptions, estimatedBusinessCreditScoreOptions, FUNDING_PURPOSE_OTHER, PURPOSE_NOTE_MAX, NOTES_MAX } from '../../../data/profile'
+import { fundingUrgencyOptions, fundingTypeOptionsFrom, onlyFundingTypesIn, personalCreditScoreOptions, estimatedBusinessCreditScoreOptions, FUNDING_PURPOSE_OTHER, PURPOSE_NOTE_MAX, NOTES_MAX } from '../../../data/profile'
+import { useFundingTypes } from '../../../modules/funding-application/queries'
 
 interface FundingNeedsStepProps {
   support: FinancialSupport
@@ -14,6 +15,19 @@ interface FundingNeedsStepProps {
 }
 
 export default function FundingNeedsStep({ support, setSupport, onNext, onPrevious, errors = {}, isSubmitting = false }: FundingNeedsStepProps) {
+  // Purpose of Funding: the lender product categories (GET /common/funding-types),
+  // the same list as the funding application's Preferred Funding Type.
+  const { data: fundingTypes } = useFundingTypes()
+  const purposeOptions = fundingTypeOptionsFrom(fundingTypes)
+
+  // A purpose saved before that is not a category is cleared, to be chosen again.
+  useEffect(() => {
+    if (!fundingTypes || !support.purposeOfFunding) return
+    if (onlyFundingTypesIn(fundingTypes, [support.purposeOfFunding]).length === 0) {
+      setSupport({ ...support, purposeOfFunding: '', purposeNote: '' })
+    }
+  }, [fundingTypes, support, setSupport])
+
   const handleFundingAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCurrency(e.target.value)
     setSupport({ ...support, fundingRequestedAmount: formatted })
@@ -60,7 +74,7 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
             purposeOfFunding: value,
             purposeNote: value === FUNDING_PURPOSE_OTHER ? support.purposeNote : ''
           })}
-          options={purposeOfFundingOptions}
+          options={purposeOptions}
           optionLabel="label"
           optionValue="value"
           placeholder="Select purpose"
