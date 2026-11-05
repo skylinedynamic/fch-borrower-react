@@ -2,8 +2,7 @@ import React from 'react'
 import type { FinancialSupport } from '../../../modules/pre-qualification'
 import { formatCurrency } from '../../../utils/formatters'
 import CustomDropdown from '../../../components/Common/CustomDropdown'
-import { fundingUrgencyOptions, purposeOptionsFrom, personalCreditScoreOptions, estimatedBusinessCreditScoreOptions, FUNDING_PURPOSE_OTHER, PURPOSE_NOTE_MAX, NOTES_MAX } from '../../../data/profile'
-import { useFundingPurposes } from '../../../modules/funding-application/queries'
+import { fundingUrgencyOptions, purposeOfFundingOptions, personalCreditScoreOptions, estimatedBusinessCreditScoreOptions, FUNDING_PURPOSE_OTHER, PURPOSE_NOTE_MAX, NOTES_MAX } from '../../../data/profile'
 
 interface FundingNeedsStepProps {
   support: FinancialSupport
@@ -15,11 +14,6 @@ interface FundingNeedsStepProps {
 }
 
 export default function FundingNeedsStep({ support, setSupport, onNext, onPrevious, errors = {}, isSubmitting = false }: FundingNeedsStepProps) {
-  // Purpose of Funding: the purposes list, as it was - the funding application's
-  // Purpose of Funds list (GET /common/funding-purposes), not the funding types.
-  const { data: purposes } = useFundingPurposes()
-  const purposeOptions = purposeOptionsFrom(purposes)
-
   const handleFundingAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCurrency(e.target.value)
     setSupport({ ...support, fundingRequestedAmount: formatted })
@@ -66,7 +60,7 @@ export default function FundingNeedsStep({ support, setSupport, onNext, onPrevio
             purposeOfFunding: value,
             purposeNote: value === FUNDING_PURPOSE_OTHER ? support.purposeNote : ''
           })}
-          options={purposeOptions}
+          options={purposeOfFundingOptions}
           optionLabel="label"
           optionValue="value"
           placeholder="Select purpose"
