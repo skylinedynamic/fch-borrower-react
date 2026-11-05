@@ -7,12 +7,12 @@ import { renderWithProviders, screen, waitFor } from '../../../test-utils'
 import FundingNeedsStep from '../../../../src/pages/prequalification/components/FundingNeedsStep'
 
 /**
- * Request 2026-11-05: Pre-Qualification > Purpose of Funding offers the lender
- * product categories (GET /common/funding-types) - the same list as the
- * funding application's Preferred Funding Type - not a hard-coded list. A
- * purpose saved before that is not a category is cleared, to be chosen again.
+ * Request 2026-11-05 (final): Pre-Qualification > Purpose of Funding is the
+ * purpose, as it was - the purposes list (GET /common/funding-purposes, the
+ * funding application's Purpose of Funds list), not the lender product
+ * categories - and a purpose saved before is kept as it is.
  */
-const categories = ['Term Loan', 'Business Line of Credit', 'Other']
+const purposes = ['Business Expansion', 'Payroll', 'Working Capital', 'Other']
 
 const blank = {
   fundingRequestedAmount: '', fundingUrgency: '', purposeOfFunding: '', purposeNote: '',
@@ -27,16 +27,17 @@ function Harness({ initial }: { initial: typeof blank }) {
   return <FundingNeedsStep support={support as any} setSupport={setSupport as any} onNext={vi.fn()} onPrevious={vi.fn()} />
 }
 
-const serveCategories = () =>
-  server.use(http.get('*/common/funding-types', () => HttpResponse.json({ status: true, message: 'ok', data: categories })))
+const servePurposes = () =>
+  server.use(
+    http.get('*/common/funding-purposes', () => HttpResponse.json({ status: true, message: 'ok', data: purposes })),
+    // Never the lender product categories.
+    http.get('*/common/funding-types', () => HttpResponse.json({ status: true, message: 'ok', data: ['Term Loan', 'Sajib Product'] }))
+  )
+
+const items = () => Array.from(document.querySelectorAll('.dropdown-menu .list-group-item')).map((el) => el.textContent?.trim())
 
 const openPurpose = async (user: ReturnType<typeof userEvent.setup>) => {
   await user.click((await screen.findByText('Select purpose')).closest('button') as HTMLElement)
-  return waitFor(() => {
-    const items = Array.from(document.querySelectorAll('.dropdown-menu .list-group-item')).map((el) => el.textContent?.trim())
-    expect(items.length).toBeGreaterThan(0)
-    return items
-  })
 }
 
 describe('Pre-Qualification > Purpose of Funding', () => {
@@ -45,38 +46,32 @@ describe('Pre-Qualification > Purpose of Funding', () => {
     latest = blank
   })
 
-  it('offers the lender product categories from the common API, nothing else', async () => {
-    serveCategories()
+  it('offers the purposes list, not the lender product categories', async () => {
+    servePurposes()
     const user = userEvent.setup()
     renderWithProviders(<Harness initial={blank} />)
 
     await openPurpose(user)
-    await waitFor(() =>
-      expect(Array.from(document.querySelectorAll('.dropdown-menu .list-group-item')).map((el) => el.textContent?.trim())).toEqual(categories)
-    )
+    await waitFor(() => expect(items()).toEqual(purposes))
+    expect(items()).not.toContain('Sajib Product')
   })
 
-  it('clears a purpose saved before that is not a category, to be chosen again', async () => {
-    serveCategories()
-    renderWithProviders(<Harness initial={{ ...blank, purposeOfFunding: 'Working Capital' }} />)
+  it('keeps a purpose saved before as it is', async () => {
+    servePurposes()
+    renderWithProviders(<Harness initial={{ ...blank, purposeOfFunding: 'Business Expansion' }} />)
 
-    await waitFor(() => expect(latest.purposeOfFunding).toBe(''))
-  })
-
-  it('keeps a saved purpose that is a category', async () => {
-    serveCategories()
-    renderWithProviders(<Harness initial={{ ...blank, purposeOfFunding: 'Term Loan' }} />)
-
-    expect(await screen.findByText('Term Loan')).toBeInTheDocument()
-    expect(latest.purposeOfFunding).toBe('Term Loan')
+    expect(await screen.findByText('Business Expansion')).toBeInTheDocument()
+    await new Promise((r) => setTimeout(r, 200))
+    expect(latest.purposeOfFunding).toBe('Business Expansion')
   })
 
   it('still asks for the note when the purpose is Other', async () => {
-    serveCategories()
+    servePurposes()
     const user = userEvent.setup()
     renderWithProviders(<Harness initial={blank} />)
 
     await openPurpose(user)
+    await waitFor(() => expect(items().length).toBeGreaterThan(0))
     await user.click(screen.getByText('Other', { selector: '.dropdown-menu .list-group-item' }))
 
     expect(await screen.findByText(/Purpose Of Funding Note/)).toBeInTheDocument()

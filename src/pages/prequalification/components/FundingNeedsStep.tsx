@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import type { FinancialSupport } from '../../../modules/pre-qualification'
 import { formatCurrency } from '../../../utils/formatters'
 import CustomDropdown from '../../../components/Common/CustomDropdown'
-import { fundingUrgencyOptions, fundingTypeOptionsFrom, onlyFundingTypesIn, personalCreditScoreOptions, estimatedBusinessCreditScoreOptions, FUNDING_PURPOSE_OTHER, PURPOSE_NOTE_MAX, NOTES_MAX } from '../../../data/profile'
-import { useFundingTypes } from '../../../modules/funding-application/queries'
+import { fundingUrgencyOptions, purposeOptionsFrom, personalCreditScoreOptions, estimatedBusinessCreditScoreOptions, FUNDING_PURPOSE_OTHER, PURPOSE_NOTE_MAX, NOTES_MAX } from '../../../data/profile'
+import { useFundingPurposes } from '../../../modules/funding-application/queries'
 
 interface FundingNeedsStepProps {
   support: FinancialSupport
@@ -15,18 +15,10 @@ interface FundingNeedsStepProps {
 }
 
 export default function FundingNeedsStep({ support, setSupport, onNext, onPrevious, errors = {}, isSubmitting = false }: FundingNeedsStepProps) {
-  // Purpose of Funding: the lender product categories (GET /common/funding-types),
-  // the same list as the funding application's Preferred Funding Type.
-  const { data: fundingTypes } = useFundingTypes()
-  const purposeOptions = fundingTypeOptionsFrom(fundingTypes)
-
-  // A purpose saved before that is not a category is cleared, to be chosen again.
-  useEffect(() => {
-    if (!fundingTypes || !support.purposeOfFunding) return
-    if (onlyFundingTypesIn(fundingTypes, [support.purposeOfFunding]).length === 0) {
-      setSupport({ ...support, purposeOfFunding: '', purposeNote: '' })
-    }
-  }, [fundingTypes, support, setSupport])
+  // Purpose of Funding: the purposes list, as it was - the funding application's
+  // Purpose of Funds list (GET /common/funding-purposes), not the funding types.
+  const { data: purposes } = useFundingPurposes()
+  const purposeOptions = purposeOptionsFrom(purposes)
 
   const handleFundingAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCurrency(e.target.value)
