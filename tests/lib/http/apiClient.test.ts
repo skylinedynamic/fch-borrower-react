@@ -97,9 +97,12 @@ describe('apiClient response interceptor', () => {
     expect(toast.error).not.toHaveBeenCalledWith(expect.anything(), { toastId: 'network-error' })
   })
 
+  /** A request sent while signed in - it carries the Bearer token. */
+  const signedIn = () => makeConfig({ Authorization: 'Bearer token-123' })
+
   it('on 401: clears auth and redirects to /login', async () => {
     window.location.pathname = '/dashboard'
-    const error = makeError({ response: { status: 401, data: {} } as any })
+    const error = makeError({ response: { status: 401, data: {} } as any, config: signedIn() })
 
     await expect(responseInterceptor.rejected(error)).rejects.toBe(error)
 
@@ -109,11 +112,24 @@ describe('apiClient response interceptor', () => {
 
   it('on 401: does not redirect again when already on /login (no redirect loop)', async () => {
     window.location.pathname = '/login'
-    const error = makeError({ response: { status: 401, data: {} } as any })
+    const error = makeError({ response: { status: 401, data: {} } as any, config: signedIn() })
 
     await expect(responseInterceptor.rejected(error)).rejects.toBe(error)
 
     expect(clearAuth).toHaveBeenCalled()
+    expect(window.location.assign).not.toHaveBeenCalled()
+  })
+
+  // BUG-198: a wrong email or password is a 401 too, sent with no token. It is
+  // the sign-in form's error, not an expired session: treating it as a logout
+  // reset a white-label login page's tab title to the host's name.
+  it('on 401 from a request sent without a token (a failed sign-in): leaves auth and the page alone', async () => {
+    window.location.pathname = '/login'
+    const error = makeError({ response: { status: 401, data: { message: 'Invalid email or password.' } } as any })
+
+    await expect(responseInterceptor.rejected(error)).rejects.toBe(error)
+
+    expect(clearAuth).not.toHaveBeenCalled()
     expect(window.location.assign).not.toHaveBeenCalled()
   })
 
