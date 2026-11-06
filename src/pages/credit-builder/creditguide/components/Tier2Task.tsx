@@ -3,6 +3,7 @@ import { TierTask as TierTaskType } from '../../../../modules/credit-builder/gui
 import { CREDIT_BUILDER_STATUS } from '../../../../data/credit-builder'
 import { UncontrolledTooltip } from 'reactstrap'
 import TaskDetailsModal from './TaskDetailsModal'
+import { sanitizeHtml } from '../../../../utils/sanitizeHtml'
 
 
 
@@ -82,7 +83,7 @@ export default function Tier2Task({ tierId, task, isCurrentTier, isFirstTier, on
       {/* Tier 1 Warning Box - Only for first item */}
       {index === 0 && (
         tierDescription ? (
-          <div dangerouslySetInnerHTML={{ __html: tierDescription }} />
+          <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(tierDescription) }} />
         ) : ''
       )}
       <div className="tier-task-item tier-vendor-task-item d-flex align-items-center gap-3 p-3 border rounded mb-2">

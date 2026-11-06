@@ -234,7 +234,8 @@ export default function Sidebar() {
             <LinkItem to="/payments" label="Payments" icon="ri-money-dollar-box-line" restricted={isFreeTierModule} />
 
             {/* Billing Details — locked on free trial */}
-            <LinkItem to="/billing-details" label="Billing Details" icon="ri-bank-card-line" restricted={isFreeTierModule || isRestricted} />
+            {/* Open while restricted, like Invoices: the plan, and how to resume it (BUG-069). */}
+            <LinkItem to="/billing-details" label="Billing Details" icon="ri-bank-card-line" restricted={isFreeTierModule} />
 
             <LinkItem to="/documents" label="Documents" icon="ri-file-2-line" restricted={isRestricted} arrowTag={arrowTagFor(ONBOARDING_MENU.DOCUMENTS)} />
 
@@ -299,7 +300,8 @@ export default function Sidebar() {
               badge={unreadNotificationCount > 0 ? formatUnreadCount(unreadNotificationCount) : undefined}
             />
 
-            <LinkItem to="/profile" label="Profile" icon="ri-account-circle-line" restricted={isRestricted} arrowTag={arrowTagFor(ONBOARDING_MENU.PROFILE)} />
+            {/* Their own profile stays open while restricted (BUG-069). */}
+            <LinkItem to="/profile" label="Profile" icon="ri-account-circle-line" arrowTag={arrowTagFor(ONBOARDING_MENU.PROFILE)} />
 
             <li className="nav-item">
               <a className="nav-link menu-link" href="#" onClick={handleLogout}>

@@ -1,10 +1,13 @@
 import { test, expect, type Page, type Route } from '@playwright/test'
+import { sidebarLink } from '../support/fixtures'
 
 // The Complete Your Profile popup: a borrower with gaps in their profile gets
-// it on every page but Profile, and can't dismiss it - no close or cancel
-// button, no Escape - only pick a section to complete. Every backend call is
-// answered here, at the API origin, so no session or backend is needed. Pages
-// open on /payments, which renders with the empty data every other call gets.
+// it on every page but Profile and the payment pages (Invoices, Payments,
+// Billing Details - paying comes first), and can't dismiss it - no close or
+// cancel button, no Escape - only pick a section to complete. Every backend
+// call is answered here, at the API origin, so no session or backend is needed.
+// Pages open on /documents, which renders with the empty data every other call
+// gets.
 const API_ORIGIN = 'http://127.0.0.1:8000/api/v1'
 const USER = { id: 1, name: 'Jane Borrower', email: 'jane@example.test', entity_type: 'borrower', entity_id: 1 }
 
@@ -32,10 +35,13 @@ async function signInWithIncompleteProfile(page: Page) {
 
 const modal = (page: Page) => page.locator('#profileCompleteModal')
 
+// Started before the page opens: the status can arrive before goto() returns.
+const completionLoaded = (page: Page) => page.waitForResponse((r) => r.url().includes('/borrower/profile/completion'))
+
 test.describe('Complete Your Profile popup', () => {
   test('has no close or cancel button, and Escape leaves it open', async ({ page }) => {
     await signInWithIncompleteProfile(page)
-    await page.goto('/payments')
+    await page.goto('/documents')
 
     await expect(modal(page)).toBeVisible()
     await expect(modal(page)).toContainText('Complete Your Profile')
@@ -48,7 +54,7 @@ test.describe('Complete Your Profile popup', () => {
 
   test('picking a section opens it on the Profile page', async ({ page }) => {
     await signInWithIncompleteProfile(page)
-    await page.goto('/payments')
+    await page.goto('/documents')
 
     await modal(page).getByText('Business Details').click()
 
@@ -58,7 +64,7 @@ test.describe('Complete Your Profile popup', () => {
   // Pages with a confirm dialog (ConfirmationModal, DeleteConfirmModal) swept
   // up leftover backdrops just after they loaded, while this popup was still
   // fading in, and took its overlay - it showed over a page that was not dimmed.
-  for (const path of ['/documents', '/billing-details']) {
+  for (const path of ['/documents', '/appointment']) {
     test(`dims the page behind it on ${path}`, async ({ page }) => {
       await signInWithIncompleteProfile(page)
       await page.goto(path)
@@ -70,4 +76,34 @@ test.describe('Complete Your Profile popup', () => {
       await expect(page.locator('.modal-backdrop.show')).toBeVisible()
     })
   }
+
+  // Paying comes first: a borrower with an incomplete profile can still open
+  // what they owe and pay it. The popup is back on the next page.
+  for (const path of ['/invoices', '/payments', '/billing-details']) {
+    test(`stays away on ${path} so the borrower can pay first`, async ({ page }) => {
+      await signInWithIncompleteProfile(page)
+      const completion = completionLoaded(page)
+      await page.goto(path)
+
+      // Long enough for the completion status to load and the popup to have opened.
+      await completion
+      await page.waitForTimeout(1500)
+      await expect(modal(page)).toBeHidden()
+      await expect(page.locator('.modal-backdrop')).toHaveCount(0)
+    })
+  }
+
+  test('comes back once the borrower leaves the payment pages', async ({ page }) => {
+    await signInWithIncompleteProfile(page)
+    const completion = completionLoaded(page)
+    await page.goto('/invoices')
+    await completion
+    await page.waitForTimeout(1500)
+    await expect(modal(page)).toBeHidden()
+
+    await sidebarLink(page, 'Documents').first().click()
+
+    await expect(page).toHaveURL(/\/documents$/)
+    await expect(modal(page)).toBeVisible()
+  })
 })

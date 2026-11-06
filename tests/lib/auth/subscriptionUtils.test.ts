@@ -15,6 +15,11 @@ const pastDate = () => {
   return d.toISOString().slice(0, 10)
 }
 
+const localToday = () => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 describe('isSubscriptionRestricted', () => {
   it('is false when there is no subscription', () => {
     expect(isSubscriptionRestricted(null)).toBe(false)
@@ -56,7 +61,45 @@ describe('isSubscriptionRestricted', () => {
   })
 
   it('is true when the subscription status is present and not active', () => {
-    expect(isSubscriptionRestricted({ subscription_status: 'Cancelled' } as UserSubscription)).toBe(true)
+    expect(isSubscriptionRestricted({ subscription_status: SUBSCRIPTION_STATUS_TYPES.EXPIRED } as UserSubscription)).toBe(true)
+    expect(isSubscriptionRestricted({ subscription_status: SUBSCRIPTION_STATUS_TYPES.PENDING } as UserSubscription)).toBe(true)
+  })
+
+  // BUG-069: cancelling stops renewal, not access - the period already paid for stays open.
+  it('is false for a cancelled subscription until its end date', () => {
+    expect(
+      isSubscriptionRestricted({
+        subscription_status: SUBSCRIPTION_STATUS_TYPES.CANCELLED,
+        subscription_end_date: futureDate(),
+      } as UserSubscription)
+    ).toBe(false)
+  })
+
+  it('is false for a cancelled subscription on its end date itself', () => {
+    expect(
+      isSubscriptionRestricted({
+        subscription_status: SUBSCRIPTION_STATUS_TYPES.CANCELLED,
+        subscription_end_date: localToday(),
+      } as UserSubscription)
+    ).toBe(false)
+  })
+
+  it('is true for a cancelled subscription once its end date has passed', () => {
+    expect(
+      isSubscriptionRestricted({
+        subscription_status: SUBSCRIPTION_STATUS_TYPES.CANCELLED,
+        subscription_end_date: pastDate(),
+      } as UserSubscription)
+    ).toBe(true)
+  })
+
+  it('is true for a cancelled subscription with no period left (no end date)', () => {
+    expect(
+      isSubscriptionRestricted({
+        subscription_status: SUBSCRIPTION_STATUS_TYPES.CANCELLED,
+        subscription_end_date: null,
+      } as UserSubscription)
+    ).toBe(true)
   })
 
   it('is false when status is active and there is no end date', () => {
@@ -104,6 +147,7 @@ describe('getRestrictionReason', () => {
     expect(getRestrictionReason(null)).toBeNull()
     expect(getRestrictionReason(sub({ is_host: true, subscription_status: SUBSCRIPTION_STATUS_TYPES.EXPIRED }))).toBeNull()
     expect(getRestrictionReason(sub({ subscription_status: SUBSCRIPTION_STATUS_TYPES.ACTIVE, subscription_end_date: futureDate() }))).toBeNull()
+    expect(getRestrictionReason(sub({ subscription_status: SUBSCRIPTION_STATUS_TYPES.CANCELLED, subscription_end_date: futureDate() }))).toBeNull()
   })
 
   it('is activation while the enrollment is still being set up', () => {
@@ -115,6 +159,7 @@ describe('getRestrictionReason', () => {
   it('is inactive once the subscription has expired, been cancelled or run past its end date', () => {
     expect(getRestrictionReason(sub({ subscription_status: SUBSCRIPTION_STATUS_TYPES.EXPIRED }))).toBe(RESTRICTION_REASON.INACTIVE)
     expect(getRestrictionReason(sub({ subscription_status: SUBSCRIPTION_STATUS_TYPES.CANCELLED }))).toBe(RESTRICTION_REASON.INACTIVE)
+    expect(getRestrictionReason(sub({ subscription_status: SUBSCRIPTION_STATUS_TYPES.CANCELLED, subscription_end_date: pastDate() }))).toBe(RESTRICTION_REASON.INACTIVE)
     expect(getRestrictionReason(sub({ subscription_status: SUBSCRIPTION_STATUS_TYPES.ACTIVE, subscription_end_date: pastDate() }))).toBe(RESTRICTION_REASON.INACTIVE)
   })
 })

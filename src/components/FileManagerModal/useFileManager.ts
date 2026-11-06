@@ -12,6 +12,17 @@ import {
 } from '../../modules/filemanager/services'
 import type { FileSystemItem, FileManagerContext } from '../../modules/filemanager/types'
 
+// Nginx answers a body over client_max_body_size with 413 before the API sees it.
+const HTTP_PAYLOAD_TOO_LARGE = 413
+
+/** The API's first validation message for a refused upload, or null. */
+const uploadRefusalReason = (error: any): string | null => {
+  const errors = error?.response?.data?.errors
+  const first = errors ? Object.values(errors)[0] : undefined
+  const message = Array.isArray(first) ? first[0] : first
+  return typeof message === 'string' && message ? message : null
+}
+
 export const useFileManager = (section?: string, initialPath: string = '/', config: { enabled?: boolean } = { enabled: true }, context?: FileManagerContext) => {
   const [files, setFiles] = useState<FileSystemItem[]>([])
   const [folderTree, setFolderTree] = useState<FileSystemItem[]>([])
@@ -86,7 +97,10 @@ export const useFileManager = (section?: string, initialPath: string = '/', conf
       }
     } catch (error) {
       console.error('Upload failed', error)
-      toast.error('Failed to upload file')
+      // Say why: too large, not a valid image, type not allowed (BUG-014).
+      toast.error((error as any)?.response?.status === HTTP_PAYLOAD_TOO_LARGE
+        ? 'This file is too large to upload.'
+        : uploadRefusalReason(error) ?? 'Failed to upload file')
     }
   }
 

@@ -10,8 +10,11 @@ import PersonalInfo from '../../../../src/pages/profile/components/PersonalInfo'
 import type { SavePersonalInfoRequest } from '../../../../src/modules/profile/types'
 
 vi.mock('react-toastify', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
+// The options each picker was given, by placeholder (BUG-005: the DOB bounds).
+const pickerOptions: Record<string, any> = {}
 vi.mock('react-flatpickr', () => ({
-  default: ({ value, onChange, className, placeholder }: any) => (
+  default: ({ value, onChange, className, placeholder, options }: any) => (
+    (pickerOptions[placeholder] = options),
     <input
       className={className}
       value={value || ''}
@@ -154,6 +157,35 @@ describe('Profile — Personal Info tab', () => {
     expect(
       await screen.findByText(/email field must be a valid address/i)
     ).toBeInTheDocument()
+  })
+
+  /**
+   * R2 BUG-017 - a 9-digit phone was saved and a 6-digit ZIP was cut to 5
+   * digits without a word. The API now refuses both (10-digit phone, 5-digit
+   * ZIP); the tab shows each refusal under its field, and the ZIP box takes no
+   * more than 5 digits.
+   */
+  it('shows the API refusing a 9-digit phone and a bad ZIP under their fields', async () => {
+    server.use(
+      http.get('*/borrower/profile/personal-info', () =>
+        HttpResponse.json({ status: true, data: { phone_number: '(555) 555-012', zip_code: '1234' } })
+      ),
+      http.post('*/borrower/profile/personal-info', () =>
+        HttpResponse.json(
+          { status: false, errors: { phone_number: ['Enter a 10-digit US phone number, e.g. (555) 123-4567.'], zip_code: ['Enter a 5-digit ZIP code, e.g. 10001.'] } },
+          { status: 422 }
+        )
+      )
+    )
+
+    const user = userEvent.setup()
+    renderTab()
+
+    await user.click(await screen.findByRole('button', { name: /save|update/i }))
+
+    expect(await screen.findByText(/10-digit US phone number/i)).toBeInTheDocument()
+    expect(screen.getByText(/5-digit ZIP code/i)).toBeInTheDocument()
+    expect(document.querySelector('input[maxlength="5"]')).not.toBeNull()
   })
 
   describe('Social Security Number', () => {
@@ -485,5 +517,33 @@ describe('Profile — Personal Info tab: changing the email', () => {
     await user.click(await screen.findByRole('button', { name: 'Resend link' }))
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('There is no pending email change.'))
+  })
+})
+
+/**
+ * BUG-005 (QA round 2): a date of birth only had to be in the past, so a
+ * 17-year-old could be saved. The picker now offers 18 to 120 years old - the
+ * range the API checks.
+ */
+describe('Profile - Personal Info date of birth bounds', () => {
+  afterEach(() => {
+    server.resetHandlers()
+    vi.useRealTimers()
+  })
+
+  const ymd = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+  it('offers dates from the day after the 121st birthday to the 18th birthday', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(2026, 9, 21, 10, 0, 0))
+    server.use(http.get('*/borrower/profile/personal-info', () => HttpResponse.json({ status: true, data: {} })))
+
+    renderTab()
+    await screen.findByPlaceholderText('Select date of birth')
+
+    const options = pickerOptions['Select date of birth']
+    expect(ymd(options.maxDate)).toBe('2008-10-21')
+    expect(ymd(options.minDate)).toBe('1905-10-22')
   })
 })

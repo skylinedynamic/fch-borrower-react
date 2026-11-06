@@ -7,7 +7,9 @@ import { Dropdown } from 'primereact/dropdown';
 import { Skeleton } from 'primereact/skeleton';
 
 // API Services
-import { fetchAppointmentById, createAppointment, deleteAppointment, updateAppointment, checkAvailability, fetchSelectableUsers } from '../../modules/appointment/services';
+import { fetchAppointmentById, createAppointment, deleteAppointment, updateAppointment, checkAvailability, fetchSelectableUsers, cancelAppointment } from '../../modules/appointment/services';
+import { canCancelAppointment } from '../../modules/appointment/cancel';
+import ConfirmationModal from '../../components/GlobalModal/ConfirmationModal';
 import { useAuthStore } from '../../store/auth/authStore';
 
 import { useSummernote } from '../../hooks/useSummernote';
@@ -16,14 +18,18 @@ import DeleteConfirmationModal from '../../components/GlobalModal/DeleteConfirmM
 
 // Config
 import { APPOINTMENT_TYPE_OPTIONS, TIME_SLOTS } from '../../config/appointmentTypeOptions';
-import { browserTimeZone, defaultStart, localDateString, startSlotsFrom, timeAfter, timeZoneLabel } from '../../utils/appointmentTime';
+import { browserTimeZone, defaultStart, endSlotsAfter, endWithinDay, localDateString, minutesBetween, startSlotsFrom, timeAfter, timeZoneLabel } from '../../utils/appointmentTime';
 
 // Styles
 import '../../../assets/css/appointment-modal.css';
 import '../../../assets/css/appointment-styles.css';
+import { sanitizeHtml } from '../../utils/sanitizeHtml';
 
 // How many years past the current one the date picker's year list offers.
 const APPOINTMENT_YEARS_AHEAD = 10;
+
+// The API fields the form shows a refusal beside; any other shows under the time slot (R2 BUG-024).
+const FORM_ERROR_FIELDS = ['subject', 'meeting_type', 'assigned_for', 'appointment_date', 'duration_minutes', 'timezone'];
 
 interface AppointmentModalProps {
     onSuccess?: (data?: any) => void;
@@ -49,6 +55,10 @@ interface DisplayData {
     appointmentCode: string;
     category: string;
     scheduledById: string | number | null;
+    // For "Cancel appointment" (R2 BUG-046).
+    status: string | null;
+    startsAt: Date | null;
+    assignedForUserId: number | string | null;
 }
 
 const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProps>(({ onSuccess }, ref) => {
@@ -64,7 +74,13 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+    const [isCancelling, setIsCancelling] = useState(false);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+    // Under the time slot: the duration's refusal, else one on a field the form has no place for (R2 BUG-024).
+    const unshownErrorField = Object.keys(formErrors).find(field => !FORM_ERROR_FIELDS.includes(field));
+    const timeSlotError = formErrors.duration_minutes || (unshownErrorField ? ([] as string[]).concat(formErrors[unshownErrorField])[0] : null);
 
     const currentUser = useAuthStore((state) => state.user);
 
@@ -106,6 +122,9 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
         appointmentCode: '',
         category: '',
         scheduledById: null,
+        status: null,
+        startsAt: null,
+        assignedForUserId: null,
     });
 
     const [originalData, setOriginalData] = useState<any>(null);
@@ -182,7 +201,7 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
                         // Standard overlap check: (StartA < EndB) && (EndA > StartB)
                         // AND exclude the CURRENT appointment itself by ID
                         const isSelf = !isNewEvent && String(c.id) === String(selectedEventId);
-                        return (formData.timeStart < cEnd && formData.timeEnd > cStart) && !isSelf;
+                        return (formData.timeStart < cEnd && endWithinDay(formData.timeStart, formData.timeEnd) > cStart) && !isSelf;
                     });
 
                     // Logic: If we are EDITING and the user has NOT changed the time/date, ignore conflicts (it's likely the current appointment)
@@ -374,6 +393,9 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
                 appointmentCode: apt.appointment_code || '',
                 category: apt.meeting_type || 'Business Review',
                 scheduledById: apt.scheduled_by?.id || null,
+                status: apt.status ?? null,
+                startsAt: dateStr ? start : null,
+                assignedForUserId: apt.assigned_for?.id ?? null,
             });
 
             const h_full = start.getHours().toString().padStart(2, '0');
@@ -455,8 +477,8 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
         const descVal = formData.description;
 
         const startDateTime = new Date(`${formData.date}T${formData.timeStart}`);
-        const endDateTime = new Date(`${formData.date}T${formData.timeEnd}`);
-        const durationMinutes = (endDateTime.getTime() - startDateTime.getTime()) / 60000;
+        // An end at or before the start is on the next day (R2 BUG-024).
+        const durationMinutes = minutesBetween(formData.timeStart, formData.timeEnd);
 
         if (!formData.date) {
             setFormErrors({ appointment_date: "Event date is required" });
@@ -472,7 +494,7 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
             const matchingConflict = allConflicts.find(c => {
                 const cStart = c.start_time || "";
                 const cEnd = c.end_time || "";
-                const isOverlap = (formData.timeStart < cEnd && formData.timeEnd > cStart);
+                const isOverlap = (formData.timeStart < cEnd && endWithinDay(formData.timeStart, formData.timeEnd) > cStart);
                 const isSelf = !isNewEvent && String(c.id) === String(selectedEventId);
                 return isOverlap && !isSelf;
             });
@@ -522,6 +544,31 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
             }
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    // The client cancels one the host booked with them (R2 BUG-046): kept, marked
+    // cancelled, and the organiser is emailed.
+    const canCancel = !viewMode || !displayData.startsAt ? false : canCancelAppointment({
+        status: displayData.status,
+        startsAt: displayData.startsAt,
+        scheduledById: displayData.scheduledById,
+        assignedForUserId: displayData.assignedForUserId,
+    }, currentUser?.id);
+
+    const handleCancelAppointment = async () => {
+        if (!selectedEventId) return;
+        try {
+            setIsCancelling(true);
+            const response = await cancelAppointment(selectedEventId);
+            toast.success(response?.message || 'Appointment cancelled.');
+            setShowCancelConfirm(false);
+            if (modalInstance) modalInstance.hide();
+            if (onSuccess) onSuccess();
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || 'Failed to cancel the appointment');
+        } finally {
+            setIsCancelling(false);
         }
     };
 
@@ -713,7 +760,7 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
                                                             <>
                                                                 <div
                                                                     className="rich-text-content"
-                                                                    dangerouslySetInnerHTML={{ __html: cleanHtml(description) }}
+                                                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(cleanHtml(description)) }}
                                                                 />
                                                                 {isDescriptionExpanded && rawText.length > limit && (
                                                                     <button
@@ -761,6 +808,14 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
                                             </h5>
                                         </div>
                                     </div>
+
+                                    {canCancel && (
+                                        <div className="mt-4 pt-4 border-top d-flex justify-content-end">
+                                            <button className="btn btn-soft-warning fw-bold text-uppercase fs-12 px-4 shadow-none" onClick={() => setShowCancelConfirm(true)} disabled={isCancelling} style={{ height: '40px' }}>
+                                                <i className="ri-close-circle-line me-1 align-middle"></i> {isCancelling ? "Cancelling..." : "Cancel Appointment"}
+                                            </button>
+                                        </div>
+                                    )}
 
                                     {(currentUser?.id == displayData.scheduledById) && (
                                         <div className="mt-4 pt-4 border-top d-flex justify-content-end">
@@ -858,34 +913,19 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
                                                     <Dropdown value={formData.timeStart} options={startOptions}
                                                         onChange={(e) => {
                                                             const startVal = e.value;
-                                                            setFormData(p => {
-                                                                const newData = { ...p, timeStart: startVal };
-                                                                // Automatically select the next 30-minute slot for timeEnd
-                                                                const [h, m] = startVal.split(':').map(Number);
-                                                                let endM = m + 30;
-                                                                let endH = h;
-                                                                if (endM >= 60) {
-                                                                    endH += 1;
-                                                                    endM = 0;
-                                                                }
-                                                                if (endH < 24) {
-                                                                    newData.timeEnd = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
-                                                                } else {
-                                                                    // Fallback if it's the last slot of the day
-                                                                    newData.timeEnd = startVal;
-                                                                }
-                                                                return newData;
-                                                            });
+                                                            // Half an hour later, past midnight too (R2 BUG-024).
+                                                            setFormData(p => ({ ...p, timeStart: startVal, timeEnd: timeAfter(startVal) }));
                                                         }}
                                                         className={`flex-grow-1 ${formErrors.timeStart ? 'p-invalid' : ''}`} placeholder="Start" appendTo="self" />
                                                     <span className="text-muted fw-bold">to</span>
                                                     <Dropdown value={formData.timeEnd}
-                                                        options={TIME_SLOTS.filter(slot => slot.value > formData.timeStart)}
+                                                        options={endSlotsAfter(TIME_SLOTS, formData.timeStart)}
                                                         onChange={(e) => {
                                                             setFormData(p => ({ ...p, timeEnd: e.value }));
                                                         }}
-                                                        className={`flex-grow-1 ${formErrors.timeEnd ? 'p-invalid' : ''}`} placeholder="End" appendTo="self" />
+                                                        className={`flex-grow-1 ${formErrors.timeEnd || formErrors.duration_minutes ? 'p-invalid' : ''}`} placeholder="End" appendTo="self" />
                                                 </div>
+                                                {timeSlotError && <div className="text-danger fs-11 mt-1">{timeSlotError}</div>}
                                             </div>
                                         </div>
                                     </div>
@@ -974,6 +1014,18 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
                 onClose={() => setShowDeleteConfirm(false)}
                 loading={isDeleting}
                 text="Are you sure you want to delete this appointment? This action cannot be undone."
+            />
+
+            <ConfirmationModal
+                show={showCancelConfirm}
+                onClose={() => !isCancelling && setShowCancelConfirm(false)}
+                onConfirm={handleCancelAppointment}
+                title="Cancel this appointment?"
+                message={`"${displayData.title}" will be cancelled and ${displayData.scheduledBy || 'the organiser'} will be told by email.`}
+                confirmText="Yes, Cancel It"
+                cancelText="Keep It"
+                loading={isCancelling}
+                loadingText="Cancelling..."
             />
         </div >
     );

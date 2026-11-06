@@ -117,6 +117,35 @@ export interface PaymentResponse {
     };
 }
 
+export interface ProcessPaymentPayload {
+    payment_token: string;
+    invoice_id: number | string;
+    payment_method_id: number;
+    bank_detail_id?: number | string;
+}
+
+/**
+ * What the API answers for a payment attempt or its confirmation. A card whose
+ * bank wants 3-D Secure comes back with `requires_action` and the
+ * `client_secret` Stripe.js needs to run the bank's challenge (BUG-066); the
+ * payment then stays `pending` until confirmAuthenticatedPayment settles it.
+ */
+export interface ProcessPaymentResult {
+    success: boolean;
+    payment_id?: number;
+    transaction_id?: string;
+    status: string;
+    requires_action?: boolean;
+    client_secret?: string;
+    message?: string | null;
+}
+
+export interface ProcessPaymentResponse {
+    status: boolean;
+    message?: string;
+    data?: ProcessPaymentResult;
+}
+
 export interface UnpaidInvoice {
     id: number;
     invoice_id: string;

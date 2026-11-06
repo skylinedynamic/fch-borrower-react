@@ -13,7 +13,15 @@ afterEach(() => {
   server.resetHandlers()
   cleanup()
 })
-afterAll(() => server.close())
+afterAll(async () => {
+  // A test that ends with a real Bootstrap modal open leaves its hide on timers
+  // (the transition end, the components' backdrop sweeps) when cleanup()
+  // unmounts it. Let them run before Vitest tears jsdom down: firing after
+  // that, Bootstrap's new Event() is not jsdom's and Vitest fails the whole
+  // run with an unhandled error, even with every test passing.
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  server.close()
+})
 
 // jsdom's Blob implements arrayBuffer() but not stream(). undici (Node's fetch,
 // which MSW builds its Response objects with) duck-types blob-like values and

@@ -20,6 +20,10 @@ export const handlers: HttpHandler[] = [
   // address and the SSN on file. Default to a blank profile with no SSN so a
   // test rendering that form for something else is not an unhandled request;
   // tests about the prefill or the SSN override it with server.use().
+  // Every profile tab asks which fields have a change request waiting for
+  // review (R2 BUG-039). Default to none; tests about it override this.
+  http.get('*/borrower/profile/change-requests/pending', () => HttpResponse.json({ status: true, data: [] })),
+
   http.get('*/borrower/profile/personal-info', () =>
     HttpResponse.json({
       status: true,

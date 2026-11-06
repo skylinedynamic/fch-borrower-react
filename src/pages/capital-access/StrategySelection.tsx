@@ -1,13 +1,31 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useCapitalAccessStrategies, useCapitalAccessOverview } from '../../modules/capital-access/queries';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
 import CommonErrorPage from '../../components/Common/CommonErrorPage';
 import { useDelayCountdown } from '../../modules/capital-access/useDelayCountdown';
+import {
+  PLAY_LOCKED_REDIRECT_STATE,
+  PLAY_LOCKED_TOAST_ID,
+  onePlayAtATimeMessage,
+  playsLockedWhileRunningLabel,
+} from '../../config/capitalAccess';
 
 export default function StrategySelection() {
   const { data, isLoading, isError } = useCapitalAccessStrategies();
   const { data: overview, isLoading: isOverviewLoading } = useCapitalAccessOverview();
+  const location = useLocation();
+
+  // Sent back from a play that is locked because another one is running:
+  // say why (BUG-044).
+  const runningPlayName = overview?.current_play?.name;
+  const cameFromLockedPlay = (location.state as typeof PLAY_LOCKED_REDIRECT_STATE | null)?.playLocked === true;
+  useEffect(() => {
+    if (cameFromLockedPlay && runningPlayName) {
+      toast.info(onePlayAtATimeMessage(runningPlayName), { toastId: PLAY_LOCKED_TOAST_ID });
+    }
+  }, [cameFromLockedPlay, runningPlayName]);
 
   if (isError) {
     return (
@@ -38,6 +56,9 @@ export default function StrategySelection() {
 
   const delayTime = useDelayCountdown(topPlay?.unlock_at);
   const isDelayActive = topPlay?.reason_code === 'NEXT_PLAY_DELAY_ACTIVE';
+  const lockedReason = hasRunningPlay
+    ? onePlayAtATimeMessage(overview?.current_play?.name ?? 'your running play')
+    : `Your next play unlocks in ${delayTime?.text ?? 'a little while'}.`;
 
   return (
     <div className="page-content capital-access-page">
@@ -180,13 +201,29 @@ export default function StrategySelection() {
                     <span className="ca-section-label fw-bold fs-11 text-uppercase text-muted" style={{ letterSpacing: '0.08em' }}>
                       Other Eligible Plays
                     </span>
-                    <span className="badge bg-light text-muted border">{otherPlays.length} available</span>
+                    <span className="badge bg-light text-muted border">
+                      {hasRunningPlay ? playsLockedWhileRunningLabel(otherPlays.length) : `${otherPlays.length} available`}
+                    </span>
                   </div>
+                  {hasRunningPlay && (
+                    <div role="status" className="ca-running-play-notice mb-3">
+                      <div className="ca-running-play-notice-icon flex-shrink-0">
+                        <i className="ri-lock-2-line"></i>
+                      </div>
+                      <div className="ca-running-play-notice-text">
+                        <span className="ca-running-play-notice-title">A play is already running</span>
+                        <p className="ca-running-play-notice-desc mb-0">{lockedReason}</p>
+                      </div>
+                      <Link to={`/credit-card-stacking/${runningPlayId}/roadmap`} className="ca-btn ca-btn-primary ca-running-play-notice-btn">
+                        Continue {overview?.current_play?.name} <i className="ri-arrow-right-line ms-1"></i>
+                      </Link>
+                    </div>
+                  )}
                   <div className="d-flex flex-column gap-3">
                     {otherPlays.map(play => {
                       if (hasRunningPlay || isDelayActive) {
                         return (
-                          <div key={play.id} className="ca-strategy-row-premium" style={{ cursor: 'not-allowed' }}>
+                          <div key={play.id} className="ca-strategy-row-premium" style={{ cursor: 'not-allowed' }} title={lockedReason}>
                             <div className="d-flex align-items-center gap-3 flex-grow-1" style={{ minWidth: 0 }}>
                               <div className="ca-strategy-icon-wrapper-premium flex-shrink-0" style={{ background: '#f3f4f6', color: '#9ca3af' }}>
                                 <i className="ri-flashlight-line"></i>
@@ -213,7 +250,7 @@ export default function StrategySelection() {
                                 <span className="value">{play.approval_probability}</span>
                               </div>
                               <div className="ps-2">
-                                <i className="ri-lock-line fs-20 text-muted"></i>
+                                <i className="ri-lock-line fs-20 text-muted" role="img" aria-label={lockedReason} title={lockedReason}></i>
                               </div>
                             </div>
                           </div>

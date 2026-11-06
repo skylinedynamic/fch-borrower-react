@@ -10,14 +10,17 @@ interface DeleteConfirmationModalProps {
   onClose: () => void
   loading?: boolean
   text?: string
+  /** Why the delete was refused, shown under the text (not as a toast). */
+  error?: string | null
 }
 
 export default function DeleteConfirmationModal({ 
   show, 
   onConfirm, 
   onClose, 
-  loading = false, 
-  text 
+  loading = false,
+  text,
+  error,
 }: DeleteConfirmationModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
   const modalInstanceRef = useRef<Modal | null>(null)
@@ -115,6 +118,7 @@ export default function DeleteConfirmationModal({
               <p className="text-muted fs-15 mb-4">
                 {text || "Deleting this item will remove all information."}
               </p>
+              {error && <div className="invalid-feedback d-block mb-3 fs-13">{error}</div>}
               <div className="hstack gap-2 justify-content-center remove">
                 <button
                   className="btn btn-light fw-medium"
