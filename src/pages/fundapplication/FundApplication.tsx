@@ -37,6 +37,7 @@ import {
   type Attestation,
 } from './types'
 
+
 const matchPurpose = (raw: string | null | undefined): string => {
   if (!raw) return ''
   const trimmed = raw.trim()
