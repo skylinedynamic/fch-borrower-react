@@ -3,15 +3,16 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import { Route, Routes } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
-import { renderWithProviders, screen, within } from '../../test-utils'
+import { renderWithProviders, screen, waitFor, within } from '../../test-utils'
 import { server } from '../../mocks/server'
 import { signInBorrower, signOutBorrower } from '../../mocks/onboarding'
 import ProfileCompleteCheckModal from '../../../src/components/ProfileCompleteCheckModal/ProfileCompleteCheckModal'
 import { useProfileCompletion } from '../../../src/modules/profile'
+import { useAuthStore } from '../../../src/store/auth'
 
 /**
  * The Complete Your Profile popup a borrower with gaps in their profile gets on
- * every page but Profile. It can't be dismissed: no close or cancel button, no
+ * every page but Profile and Change Password. It can't be dismissed: no close or cancel button, no
  * Escape. The way out is to pick a section to complete.
  */
 const section = (missing: string[]) => ({ is_complete: missing.length === 0, missing_fields: missing })
@@ -33,15 +34,18 @@ function serveCompletion(personal: string[], business: string[], financial: stri
   )
 }
 
-function renderModal() {
+function renderModal(route = '/') {
   return renderWithProviders(
     <>
       <ProfileCompleteCheckModal />
       <Routes>
         <Route path="/" element={<div>Dashboard page</div>} />
         <Route path="/profile" element={<div>Profile page</div>} />
+        <Route path="/change-password" element={<div>Change password page</div>} />
+        <Route path="/login" element={<div>Login page</div>} />
       </Routes>
-    </>
+    </>,
+    { route }
   )
 }
 
@@ -92,8 +96,52 @@ describe('ProfileCompleteCheckModal', () => {
     const dialog = await screen.findByRole('dialog')
     expect(dialog.querySelector('.btn-close')).toBeNull()
     expect(within(dialog).queryByRole('button', { name: /close|cancel|later/i })).toBeNull()
-    // Only the sections themselves are buttons.
-    expect(within(dialog).getAllByRole('button').map((b) => b.className)).toEqual(['pcg-row is-next'])
+    // The sections, plus the two account actions it must never block (BUG-201).
+    expect(within(dialog).getAllByRole('button').map((b) => b.textContent?.trim())).toEqual([
+      expect.stringMatching(/business details/i),
+      'Change password',
+      'Log out',
+    ])
+  })
+
+  // Defect: BUG-201 - the popup covered the whole page, so a new client could
+  // neither sign out nor change the temporary password the welcome mail asks
+  // them to change until every profile field was filled.
+  it('lets the client log out from the popup', async () => {
+    const user = userEvent.setup()
+    let loggedOut = 0
+    server.use(http.post('*/borrower/logout', () => { loggedOut += 1; return HttpResponse.json({ status: true }) }))
+    signInBorrower()
+    serveCompletion([], ['business_ein'], [])
+    renderModal()
+
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Log out' }))
+
+    expect(await screen.findByText('Login page')).toBeInTheDocument()
+    expect(loggedOut).toBe(1)
+    expect(useAuthStore.getState().token).toBeFalsy()
+  })
+
+  it('lets the client change their password from the popup, and stays away there', async () => {
+    const user = userEvent.setup()
+    signInBorrower()
+    serveCompletion([], ['business_ein'], [])
+    renderModal()
+
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Change password' }))
+
+    expect(await screen.findByText('Change password page')).toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull(), { timeout: 2000 })
+  })
+
+  it('does not open on the change password page', async () => {
+    signInBorrower()
+    serveCompletion([], ['business_ein'], [])
+    renderModal('/change-password')
+
+    expect(await screen.findByText('Change password page')).toBeInTheDocument()
+    await new Promise((r) => setTimeout(r, 50))
+    expect(screen.queryByRole('dialog')).toBeNull()
   })
 
   it('stays open on Escape', async () => {
