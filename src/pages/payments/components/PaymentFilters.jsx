@@ -89,6 +89,7 @@ export default function PaymentFilters({
                     <Dropdown
                         value={selectedStatus}
                         options={PAYMENT_STATUS_OPTIONS}
+                        optionValue="value"
                         onChange={(e) => setSelectedStatus(e.value)}
                         placeholder="All Status"
                         className="w-100 bg-light border-light"
@@ -99,6 +100,7 @@ export default function PaymentFilters({
                     <Dropdown
                         value={selectedEnvironment}
                         options={PAYMENT_ENVIRONMENT_OPTIONS}
+                        optionValue="value"
                         onChange={(e) => setSelectedEnvironment(e.value)}
                         placeholder="All Environment"
                         className="w-100 bg-light border-light"
@@ -109,6 +111,7 @@ export default function PaymentFilters({
                     <Dropdown
                         value={selectedMethod}
                         options={PAYMENT_METHOD_OPTIONS}
+                        optionValue="value"
                         onChange={(e) => setSelectedMethod(e.value)}
                         placeholder="All Methods"
                         className="w-100 bg-light border-light"
@@ -119,6 +122,7 @@ export default function PaymentFilters({
                     <Dropdown
                         value={selectedType}
                         options={PAYMENT_TYPE_OPTIONS}
+                        optionValue="value"
                         onChange={(e) => setSelectedType(e.value)}
                         placeholder="All Types"
                         className="w-100 bg-light border-light"
