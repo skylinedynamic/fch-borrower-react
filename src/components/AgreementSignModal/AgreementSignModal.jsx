@@ -9,6 +9,7 @@ import { withAppCalendar } from '../../utils/agreementCalendar'
 import { collectAgreementFields } from '../../utils/agreementFields'
 import { useGuidedSigning } from './useGuidedSigning'
 import SignatureDialog from './SignatureDialog'
+import { USER_REFRESHED_EVENT } from '../../config/appConfig'
 
 const AgreementSignModal = () => {
   const [visible, setVisible] = useState(false)
@@ -23,7 +24,10 @@ const AgreementSignModal = () => {
   
   const isFreeTrial = !!user?.is_free_trail || !!userSubscription?.is_free_trail
 
-  const { data: checkData, isLoading: loadingCheck, refetch: refetchCheck } = useCheckAgreementSign()
+  // Signed: nothing to ask. A signature the host cancels comes back through
+  // refresh-user (is_agreement_signed false), and the check starts again.
+  const isSigned = !!user?.is_agreement_signed
+  const { data: checkData, isLoading: loadingCheck, refetch: refetchCheck } = useCheckAgreementSign(!isSigned)
   const guide = useGuidedSigning(iframeRef, template ? `${template.id}:${template.version_id}:${template.template_html?.length}` : null)
   const signerName = user?.name || [user?.first_name, user?.last_name].filter(Boolean).join(' ')
   const submitSignature = useSubmitAgreementSign()
@@ -34,10 +38,24 @@ const AgreementSignModal = () => {
       return
     }
     if (checkData?.status && checkData.data?.needs_sign && checkData.data?.template && !user?.is_agreement_signed) {
-      setTemplate(checkData.data.template)
+      const next = checkData.data.template
+      // Asked again while open on the same wording: keep what was filled in.
+      setTemplate((prev) => (prev && prev.id === next.id && prev.version_id === next.version_id ? prev : next))
       setVisible(true)
+    } else if (checkData?.status && !checkData.data?.needs_sign && !isSuccess) {
+      // No longer asked to sign (waived, or signing turned off): close it.
+      setVisible(false)
     }
-  }, [checkData, user, isFreeTrial])
+  }, [checkData, user, isFreeTrial, isSuccess])
+
+  // The host can require or waive it while the portal is open: the user is then
+  // reloaded (is_refresh -> refresh-user), and the modal asks again.
+  useEffect(() => {
+    // refetch() runs even when the query is off, so check here: once signed, don't ask.
+    const askAgain = () => { if (!useAuthStore.getState().user?.is_agreement_signed) refetchCheck() }
+    window.addEventListener(USER_REFRESHED_EVENT, askAgain)
+    return () => window.removeEventListener(USER_REFRESHED_EVENT, askAgain)
+  }, [refetchCheck])
 
 
   const handleSign = async () => {

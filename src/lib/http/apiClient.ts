@@ -28,9 +28,40 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config
 })
 
+// Calls that must not start a refresh check: the check's own calls (they would
+// recurse) and the auth calls (no session yet, or ending it).
+const REFRESH_CHECK_EXCLUDED_PATHS = [
+  '/borrower/user-details',
+  '/common/refresh-user',
+  '/auth/',
+]
+
+let refreshCheckInFlight = false
+
+// The API flags a user with is_refresh when something about them changed - the
+// host required or waived their agreement, say. After each call, look at
+// user-details; getUserDetails() reloads the user (refresh-user) when flagged.
+// Calls made together share one check.
+function triggerUserRefreshCheck(url?: string) {
+  if (!url || refreshCheckInFlight) return
+  if (REFRESH_CHECK_EXCLUDED_PATHS.some((path) => url.includes(path))) return
+  if (!getToken()) return
+
+  refreshCheckInFlight = true
+  import('../auth/authApi')
+    .then(({ getUserDetails }) => getUserDetails())
+    .catch(() => {})
+    .finally(() => {
+      refreshCheckInFlight = false
+    })
+}
+
 // Global 401/403 handling: 401 => logout + redirect; 403 => toast only
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    triggerUserRefreshCheck(response.config?.url)
+    return response
+  },
   (error: AxiosError) => {
     const status = error?.response?.status
 
