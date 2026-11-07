@@ -42,11 +42,14 @@ const AgreementSignModal = () => {
       // Asked again while open on the same wording: keep what was filled in.
       setTemplate((prev) => (prev && prev.id === next.id && prev.version_id === next.version_id ? prev : next))
       setVisible(true)
-    } else if (checkData?.status && !checkData.data?.needs_sign && !isSuccess) {
+    } else if (checkData?.status && !checkData.data?.needs_sign && !isSuccess && !isLoading) {
       // No longer asked to sign (waived, or signing turned off): close it.
+      // Not while a signature is being saved: signing itself makes the check
+      // answer "not needed", and that answer could land before the submit
+      // returned - closing the modal instead of showing the thank-you screen.
       setVisible(false)
     }
-  }, [checkData, user, isFreeTrial, isSuccess])
+  }, [checkData, user, isFreeTrial, isSuccess, isLoading])
 
   // The host can require or waive it while the portal is open: the user is then
   // reloaded (is_refresh -> refresh-user), and the modal asks again.
