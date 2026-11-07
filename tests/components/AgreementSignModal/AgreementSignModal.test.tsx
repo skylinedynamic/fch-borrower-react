@@ -8,6 +8,7 @@ import { useAuthStore } from '../../../src/store/auth/authStore'
 import AgreementSignModal from '../../../src/components/AgreementSignModal/AgreementSignModal'
 import { USER_REFRESHED_EVENT } from '../../../src/config/appConfig'
 import { act } from '@testing-library/react'
+import { MutationCache, QueryClient } from '@tanstack/react-query'
 
 vi.mock('react-toastify', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-toastify')>()
@@ -279,6 +280,42 @@ describe('AgreementSignModal after the user is refreshed', () => {
 
     await new Promise((r) => setTimeout(r, 50))
     expect(thanks).toBeInTheDocument()
+  })
+
+  // Flaky in CI: signing invalidates the check, and when that refetch
+  // ("no longer needed") landed before the submit had marked success, the
+  // modal closed and the thank-you screen never showed. Here the refetch is
+  // made to land first, every time.
+  it('shows the thank-you screen even when the post-signing check answers first', async () => {
+    signIn()
+    let signed = false
+    server.use(
+      http.get('*/borrower/agreement-sign/check', () => needsSign(!signed)),
+      http.post('*/borrower/agreement-sign/submit', () => {
+        signed = true
+        return HttpResponse.json({ status: true, message: 'Signed' })
+      }),
+    )
+    // A mutation's cache-level onSuccess is awaited before mutateAsync resolves,
+    // so the check is refetched - and its answer rendered - before the submit
+    // call returns to the component.
+    const queryClient: QueryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+      mutationCache: new MutationCache({
+        onSuccess: async () => {
+          await queryClient.refetchQueries({ type: 'active' })
+          // Let the "no longer needed" answer render before the submit returns.
+          await new Promise((r) => setTimeout(r, 100))
+        },
+      }),
+    })
+    const user = userEvent.setup()
+    renderWithProviders(<AgreementSignModal />, { queryClient })
+    await screen.findByTitle('Agreement Content')
+    await user.click(screen.getByRole('checkbox'))
+    await user.click(screen.getByRole('button', { name: /Accept & Continue/ }))
+
+    expect(await screen.findByText('Thank You!')).toBeInTheDocument()
   })
 })
 
