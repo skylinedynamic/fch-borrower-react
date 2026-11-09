@@ -1,6 +1,12 @@
 export const ENROLLMENT_TYPE_ONE_TIME = 'One Time Payment';
 export const ENROLLMENT_TYPE_INSTALLMENT = 'Installment';
 
+/**
+ * Why the last installment differs from the monthly one (BUG-049): the monthly
+ * amount is rounded to the cent, and the last takes up the difference.
+ */
+export const FINAL_INSTALLMENT_NOTE = 'Your last payment differs by a few cents from the monthly amount so that all payments add up to exactly the plan total.';
+
 export const SUBSCRIPTION_STATUS_ACTIVE = 'Active';
 export const SUBSCRIPTION_STATUS_COMPLETED = 'Completed';
 export const SUBSCRIPTION_STATUS_CANCELLED = 'Cancelled';

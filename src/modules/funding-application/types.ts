@@ -106,6 +106,8 @@ export interface FundingRequestData {
   id: number | null
   funding_request_id?: number | string | null
   funding_sequence_id?: number | string | null
+  /** Converted from the embed form: the Funding Sequence is chosen on the step. */
+  is_from_embed_form?: boolean
   requested_amount?: string | null
   purpose_of_funds?: string | null
   approved_funding?: string | null

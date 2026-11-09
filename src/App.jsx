@@ -121,6 +121,8 @@ export default function App() {
             <Route path="fund-application/:id?" element={<FundApplication />} />
             <Route path="my-applications" element={<MyApplication />} />
             <Route path="my-applications/funding/:id" element={<FundingApplicationDetailPage />} />
+            {/* Edit by the application's own id - works with or without a funding request. */}
+            <Route path="my-applications/funding/:applicationId/edit" element={<FundApplication />} />
             <Route path="appointment" element={<Appointments />} />
             {/* Closed until FCH uploads the borrower's credit report. */}
             <Route element={<FundingGuard />}>

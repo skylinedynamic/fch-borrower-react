@@ -9,6 +9,7 @@ import { bankingGuidance } from '../../../utils/bankingGuidance';
 import { toast } from 'react-toastify';
 import { UncontrolledTooltip } from 'reactstrap';
 import '../../../../assets/css/funding.css';
+import { sanitizeHtml } from '../../../utils/sanitizeHtml';
 
 // ─── Icon resolver ────────────────────────────────────────────────────────────
 const resolveIcon = (icon: any): string => {
@@ -482,7 +483,7 @@ const FundingDetail = () => {
                         {description && (
                             <div className="funding-detail-panel no-full-height">
                                 <h6 className="funding-detail-panel-title desc">Description</h6>
-                                <div className="funding-detail-desc-content" dangerouslySetInnerHTML={{ __html: description }} />
+                                <div className="funding-detail-desc-content" dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }} />
                             </div>
                         )}
 

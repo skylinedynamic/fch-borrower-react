@@ -1,4 +1,5 @@
 import React from 'react'
+import { sanitizeHtml } from '../../utils/sanitizeHtml'
 
 export interface MetaLink {
   url: string | null
@@ -60,7 +61,7 @@ export default function GlobalPagination({ meta, onPageChange }: GlobalPaginatio
               <button 
                 className="page-link" 
                 onClick={() => link.url && pageNumber && onPageChange(pageNumber)}
-                dangerouslySetInnerHTML={{ __html: label }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(label) }}
               />
             </li>
           )

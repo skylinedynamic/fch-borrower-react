@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import { server } from '../../mocks/server'
-import { fetchPersonalInfo, savePersonalInfo, fetchProfileCompletion } from '../../../src/modules/profile/services'
+import { fetchPersonalInfo, savePersonalInfo, fetchProfileCompletion, fetchPendingChangeRequests, cancelChangeRequest } from '../../../src/modules/profile/services'
 
 afterEach(() => server.resetHandlers())
 
@@ -32,5 +32,40 @@ describe('profile services', () => {
     const envelope = { status: true, message: 'ok', data: { is_complete: false, personal: { is_complete: true, missing_fields: [] }, business: { is_complete: false, missing_fields: ['business_ein'] }, financial: { is_complete: false, missing_fields: [] } } }
     server.use(http.get('*/borrower/profile/completion', () => HttpResponse.json(envelope)))
     await expect(fetchProfileCompletion()).resolves.toEqual(envelope)
+  })
+})
+
+// R2 BUG-039: which fields already have a change request waiting for review.
+describe('fetchPendingChangeRequests', () => {
+  it('returns the pending fields, a bank account one with its row id', async () => {
+    server.use(
+      http.get('*/borrower/profile/change-requests/pending', () =>
+        HttpResponse.json({ status: true, data: [{ id: 46, field_name: 'business_phone', entity_id: null }, { id: 47, field_name: 'bank_name', entity_id: 7 }] })
+      )
+    )
+    await expect(fetchPendingChangeRequests()).resolves.toEqual([
+      { id: 46, field_name: 'business_phone', entity_id: null },
+      { id: 47, field_name: 'bank_name', entity_id: 7 },
+    ])
+  })
+
+  it('treats a missing list as none', async () => {
+    server.use(http.get('*/borrower/profile/change-requests/pending', () => HttpResponse.json({ status: true })))
+    await expect(fetchPendingChangeRequests()).resolves.toEqual([])
+  })
+})
+
+describe('cancelChangeRequest', () => {
+  it('deletes the pending request by its id and returns the message', async () => {
+    let method = ''
+    server.use(
+      http.delete('*/borrower/profile/change-requests/46', ({ request }) => {
+        method = request.method
+        return HttpResponse.json({ status: true, message: 'Your change request has been cancelled.' })
+      })
+    )
+    const result = await cancelChangeRequest(46)
+    expect(method).toBe('DELETE')
+    expect(result.message).toBe('Your change request has been cancelled.')
   })
 })

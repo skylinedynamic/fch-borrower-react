@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event'
 import { server } from '../../mocks/server'
 import { useAuthStore } from '../../../src/store/auth'
 import AppointmentModal, { type AppointmentModalHandle } from '../../../src/pages/appointment/AppointmentModal'
+import { toast } from 'react-toastify'
 
 vi.mock('react-toastify', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 
@@ -236,6 +237,100 @@ describe('AppointmentModal', () => {
     await user.click(confirmButton)
 
     await waitFor(() => expect(deleteCalled).toBe(true))
+  })
+})
+
+// BUG-004 (QA round 2): the description is stored HTML; it must not run script.
+describe('AppointmentModal - the description cannot run script (BUG-004)', () => {
+  it('shows the description without the onerror handler', async () => {
+    resetAuth()
+    server.use(
+      http.get('*/common/appointments/43', () =>
+        HttpResponse.json({
+          status: true,
+          data: {
+            id: 43, subject: 'XSS Meeting', appointment_date: '2026-01-15 10:00:00', duration_minutes: 30,
+            timezone: 'UTC (GMT+00:00)', description: 'Bring <b>statements</b> <img src=x onerror="window.__xss = 1">',
+            scheduled_by: { name: 'FCH Admin', id: 9 }, assigned_for: { name: 'Jane Borrower', id: 5, entity_id: 5, entity_type: 'borrower' },
+            meeting_type: 'Business Review',
+          },
+        })
+      )
+    )
+    const { ref } = renderModal()
+    await act(async () => { await ref.current!.show(43) })
+
+    expect(await screen.findByText('statements')).toBeInTheDocument()
+    expect(document.body.querySelector('[onerror]')).toBeNull()
+  })
+})
+
+/**
+ * Round 2 BUG-024: an appointment at 11:30 PM had an empty end list, saved as
+ * 0 minutes, and the API's 422 ("Duration must be at least 1 minute.") was
+ * shown nowhere - the modal just stayed open.
+ */
+describe('AppointmentModal - an appointment that ends after midnight (R2 BUG-024)', () => {
+  afterEach(() => {
+    server.resetHandlers()
+    vi.clearAllMocks()
+  })
+
+  const lateNight = {
+    id: 44, subject: 'Late call', appointment_date: '2999-10-28 23:30:00', duration_minutes: 30,
+    scheduled_by: { name: 'Me', id: 1 }, assigned_for: { name: 'Jane Partner', id: 5, entity_id: 5, entity_type: 'partner' },
+    meeting_type: 'Business Review',
+  }
+  const endLabel = () => document.querySelectorAll('.time-slot-container .p-dropdown-label')[1]?.textContent
+
+  const editLateNight = async (answer: { status: number; body: Record<string, unknown> } = { status: 200, body: { status: true, message: 'Updated' } }) => {
+    resetAuth()
+    const bodies: any[] = []
+    server.use(
+      http.get('*/common/appointments/44', () => HttpResponse.json({ status: true, data: lateNight })),
+      http.post('*/common/appointments/fetch-selectable-users', () => HttpResponse.json({ status: true, data: [] })),
+      http.post('*/common/appointments/check-availability', () => HttpResponse.json({ status: true, data: { available: true } })),
+      http.put('*/common/appointments/44', async ({ request }) => {
+        bodies.push(await request.json())
+        return HttpResponse.json(answer.body, { status: answer.status })
+      })
+    )
+    const user = userEvent.setup()
+    const { ref } = renderModal()
+    await act(async () => { await ref.current!.show(44) })
+    await screen.findByText('Late call')
+    await user.click(screen.getByRole('button', { name: /edit/i, hidden: true }))
+    await screen.findByRole('button', { name: /save changes/i, hidden: true })
+    const save = () => user.click(screen.getByRole('button', { name: /save changes/i, hidden: true }))
+    return { bodies, save }
+  }
+
+  it('ends at 12:00 AM the next day, and saves as 30 minutes', async () => {
+    const { bodies, save } = await editLateNight()
+
+    expect(endLabel()).toBe('12:00 AM (next day)')
+    await save()
+
+    await waitFor(() => expect(bodies).toHaveLength(1))
+    expect(bodies[0]).toMatchObject({ appointment_date: '2999-10-28 23:30:00', duration_minutes: 30 })
+  })
+
+  it('shows the API refusing the duration beside the time slot', async () => {
+    const { save } = await editLateNight({ status: 422, body: { status: false, message: 'Duration must be at least 1 minute.', errors: { duration_minutes: 'Duration must be at least 1 minute.' } } })
+
+    await save()
+
+    expect(await screen.findByText('Duration must be at least 1 minute.')).toBeInTheDocument()
+  })
+
+  it('shows the reason under the time slot, not as a toast, when the API refuses a field the form has no place for', async () => {
+    const { save } = await editLateNight({ status: 422, body: { status: false, message: 'The status is not valid.', errors: { status: 'The status is not valid.' } } })
+
+    await save()
+
+    const reason = await screen.findByText('The status is not valid.')
+    expect(reason.previousElementSibling).toHaveClass('time-slot-container')
+    expect(toast.error).not.toHaveBeenCalled()
   })
 })
 

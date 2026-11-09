@@ -8,6 +8,11 @@ import { http, HttpResponse, type HttpHandler } from 'msw'
  * silently hitting the network.
  */
 export const handlers: HttpHandler[] = [
+  // After every call with a session, apiClient looks at user-details for the
+  // is_refresh flag (and reloads the user when it is set). Default to a user
+  // that is not flagged; tests about the refresh override it with server.use().
+  http.get('*/borrower/user-details', () => HttpResponse.json({ status: true, data: { user: { is_refresh: false } } })),
+
   // The layout (header bell + sidebar "Notifications" badge) loads the latest
   // notifications - and the unread count in their meta - on every page. Default
   // it to empty so tests that render the layout for something else don't need
@@ -20,6 +25,10 @@ export const handlers: HttpHandler[] = [
   // address and the SSN on file. Default to a blank profile with no SSN so a
   // test rendering that form for something else is not an unhandled request;
   // tests about the prefill or the SSN override it with server.use().
+  // Every profile tab asks which fields have a change request waiting for
+  // review (R2 BUG-039). Default to none; tests about it override this.
+  http.get('*/borrower/profile/change-requests/pending', () => HttpResponse.json({ status: true, data: [] })),
+
   http.get('*/borrower/profile/personal-info', () =>
     HttpResponse.json({
       status: true,
