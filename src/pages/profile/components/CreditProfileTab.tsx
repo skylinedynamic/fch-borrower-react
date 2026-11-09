@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '../../../lib/query'
 import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
+import { dateOfBirthError, openOnLatestDateOfBirth } from '../../../utils/dateOfBirth'
 import { useAuth } from '../../../hooks/useAuth'
 import { countries } from '../../../modules/location'
 import { apiClient } from '../../../lib/http/apiClient'
@@ -625,7 +626,7 @@ export default function CreditProfileTab({ onSubmitted }: CreditProfileTabProps 
             <div className="col-md-6">
               <label className="form-label">Date of Birth <span className="text-danger">*</span></label>
               <Flatpickr
-                className={`form-control${errors.date_of_birth ? ' is-invalid' : ''}`}
+                className={`form-control${errors.date_of_birth || dateOfBirthError(formData.date_of_birth) ? ' is-invalid' : ''}`}
                 value={formData.date_of_birth}
                 onChange={(_dates, dateStr) => update('date_of_birth', dateStr)}
                 options={{
@@ -633,12 +634,13 @@ export default function CreditProfileTab({ onSubmitted }: CreditProfileTabProps 
                   altInput: true,
                   altFormat: 'j M, Y',
                   maxDate: 'today',
+                  onOpen: openOnLatestDateOfBirth,
                   monthSelectorType: 'dropdown',
                   plugins: [yearDropdownPlugin(1900)],
                 } as any}
                 placeholder="Select your date of birth"
               />
-              {errors.date_of_birth && <div className="invalid-feedback d-block">{errors.date_of_birth}</div>}
+              {(errors.date_of_birth || dateOfBirthError(formData.date_of_birth)) && <div className="invalid-feedback d-block">{errors.date_of_birth || dateOfBirthError(formData.date_of_birth)}</div>}
             </div>
             <div className="col-md-6">
               <label className="form-label">Street Address <span className="text-danger">*</span></label>

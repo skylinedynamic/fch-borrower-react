@@ -8,6 +8,7 @@ import { server } from '../../../mocks/server'
 import { createTestQueryClient } from '../../../test-utils'
 import PersonalInfo from '../../../../src/pages/profile/components/PersonalInfo'
 import type { SavePersonalInfoRequest } from '../../../../src/modules/profile/types'
+import { openOnLatestDateOfBirth } from '../../../../src/utils/dateOfBirth'
 
 vi.mock('react-toastify', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 // The options each picker was given, by placeholder (BUG-005: the DOB bounds).
@@ -534,7 +535,10 @@ describe('Profile - Personal Info date of birth bounds', () => {
   const ymd = (d: Date) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
-  it('offers dates from the day after the 121st birthday to the 18th birthday', async () => {
+  // BUG-005 plus the platform minimum age: from the day after the 121st
+  // birthday up to today. An empty field opens 18 years back, and an under-18
+  // pick gets "You must be at least 18 years old to continue." (the API's answer).
+  it('offers dates from the day after the 121st birthday to today, opening 18 years back', async () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(new Date(2026, 9, 21, 10, 0, 0))
     server.use(http.get('*/borrower/profile/personal-info', () => HttpResponse.json({ status: true, data: {} })))
@@ -543,7 +547,8 @@ describe('Profile - Personal Info date of birth bounds', () => {
     await screen.findByPlaceholderText('Select date of birth')
 
     const options = pickerOptions['Select date of birth']
-    expect(ymd(options.maxDate)).toBe('2008-10-21')
+    expect(options.maxDate).toBe('today')
     expect(ymd(options.minDate)).toBe('1905-10-22')
+    expect(options.onOpen).toBe(openOnLatestDateOfBirth)
   })
 })
