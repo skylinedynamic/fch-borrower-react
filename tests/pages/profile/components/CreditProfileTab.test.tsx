@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { http, HttpResponse } from 'msw'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { server } from '../../../mocks/server'
@@ -9,6 +9,7 @@ import { toast } from 'react-toastify'
 import { useAuthStore } from '../../../../src/store/auth'
 import { countries, clearLocationCache } from '../../../../src/modules/location'
 import CreditProfileTab from '../../../../src/pages/profile/components/CreditProfileTab'
+import { latestDateOfBirth, openOnLatestDateOfBirth } from '../../../../src/utils/dateOfBirth'
 import CreditScoreHero from '../../../../src/pages/profile/components/CreditScoreHero'
 import CreditAccountHealth from '../../../../src/pages/profile/components/CreditAccountHealth'
 import CreditAccountsBreakdown from '../../../../src/pages/profile/components/CreditAccountsBreakdown'
@@ -842,6 +843,29 @@ describe('Profile — Credit Profile tab', () => {
       renderTab()
       return await screen.findByLabelText(/social security number/i)
     }
+
+    it('the date of birth calendar offers every year up to today and opens an empty field 18 years back', async () => {
+      await openForm()
+
+      const input = document.querySelector<HTMLInputElement & { _flatpickr?: any }>('input.flatpickr-input[placeholder="Select your date of birth"]')!
+      const fp = input._flatpickr
+      expect((fp.config.maxDate as Date).toDateString()).toBe(new Date().toDateString())
+      expect(fp.config.onOpen).toContain(openOnLatestDateOfBirth)
+
+      act(() => fp.open())
+      expect(fp.currentYear).toBe(latestDateOfBirth().getFullYear())
+      expect(fp.currentMonth).toBe(latestDateOfBirth().getMonth())
+    })
+
+    it('an under-18 date of birth shows the minimum-age message and marks the field', async () => {
+      await openForm()
+      const input = document.querySelector<HTMLInputElement & { _flatpickr?: any }>('input.flatpickr-input[placeholder="Select your date of birth"]')!
+
+      act(() => input._flatpickr.setDate('2016-06-23', true))
+
+      expect(await screen.findByText('You must be at least 18 years old to continue.')).toBeInTheDocument()
+      expect(input).toHaveClass('is-invalid')
+    })
 
     it('writes the SSN as the borrower types it', async () => {
       // The placeholder promised XXX-XX-XXXX and the field did nothing of the

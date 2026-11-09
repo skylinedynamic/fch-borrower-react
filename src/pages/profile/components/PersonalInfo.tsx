@@ -13,6 +13,7 @@ import { formatPhoneNumber, unformatPhoneNumber, formatZipCode, formatSSN, unfor
 import SsnField from './SsnField'
 import PendingEmailNotice from './PendingEmailNotice'
 import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
+import { dateOfBirthError, openOnLatestDateOfBirth } from '../../../utils/dateOfBirth'
 import { useAuth } from '../../../hooks/useAuth'
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import { LOCKED_PERSONAL_FIELDS } from '../../../config/profileLockFields'
@@ -632,7 +633,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
           <label className="form-label">Date of Birth <span className="text-danger">*</span></label>
           <div className="position-relative">
             <Flatpickr
-              className={`form-control ${hasError('date_of_birth') ? 'is-invalid' : ''} ${isFieldLocked('date_of_birth') ? 'bg-light border-dashed' : ''}`}
+              className={`form-control ${hasError('date_of_birth') || dateOfBirthError(data.date_of_birth) ? 'is-invalid' : ''} ${isFieldLocked('date_of_birth') ? 'bg-light border-dashed' : ''}`}
               value={data.date_of_birth}
               onChange={(dates, dateStr) => {
                 onChange({ ...data, date_of_birth: dateStr })
@@ -641,7 +642,8 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
                   dateFormat: "Y-m-d",
                   altInput: true,
                   altFormat: "j M, Y",
-                  maxDate: "today",
+                  maxDate: 'today',
+                  onOpen: openOnLatestDateOfBirth,
                   monthSelectorType: "dropdown",
                   clickOpens: !isFieldLocked('date_of_birth'),
                   plugins: [yearDropdownPlugin(1900)],
@@ -659,8 +661,10 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
               </button>
             )}
           </div>
-          {hasError('date_of_birth') && (
-            <div className="invalid-feedback d-block">{getFieldError('date_of_birth')}</div>
+          {(hasError('date_of_birth') || dateOfBirthError(data.date_of_birth)) && (
+            <div className="invalid-feedback d-block">
+              {hasError('date_of_birth') ? getFieldError('date_of_birth') : dateOfBirthError(data.date_of_birth)}
+            </div>
           )}
         </div>
         <SsnField
@@ -715,14 +719,15 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             <label className="form-label fw-bold">Requested New Value <span className="text-danger">*</span></label>
             {updateRequest.key === 'date_of_birth' ? (
               <Flatpickr
-                className={`form-control w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
+                className={`form-control w-100 ${modalErrors.new_value || dateOfBirthError(String(updateRequest.newValue ?? '')) ? 'is-invalid' : ''}`}
                 value={updateRequest.newValue}
                 onChange={(dates, dateStr) => setUpdateRequest({ ...updateRequest, newValue: dateStr })}
                 options={{
                   dateFormat: "Y-m-d",
                   altInput: true,
                   altFormat: "j M, Y",
-                  maxDate: "today",
+                  maxDate: 'today',
+                  onOpen: openOnLatestDateOfBirth,
                   monthSelectorType: "dropdown",
                   static: true,
                   plugins: [yearDropdownPlugin(1900)],
@@ -766,7 +771,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
               <input
                 ref={inputRef}
                 type={updateRequest.key === 'email' ? 'email' : 'text'}
-                className={`form-control w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
+                className={`form-control w-100 ${modalErrors.new_value || dateOfBirthError(String(updateRequest.newValue ?? '')) ? 'is-invalid' : ''}`}
                 placeholder={`Enter the updated ${updateRequest.label}`}
                 value={updateRequest.newValue}
                 onChange={(e) => {
@@ -777,6 +782,9 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
                 }}
                 maxLength={updateRequest.key === 'phone_number' ? 14 : undefined}
               />
+            )}
+            {!modalErrors.new_value && updateRequest.key === 'date_of_birth' && dateOfBirthError(String(updateRequest.newValue ?? '')) && (
+              <div className="invalid-feedback d-block mt-1">{dateOfBirthError(String(updateRequest.newValue ?? ''))}</div>
             )}
             {modalErrors.new_value && (
               <div className="invalid-feedback d-block mt-1">
