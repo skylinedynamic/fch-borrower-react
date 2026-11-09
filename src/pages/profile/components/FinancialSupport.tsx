@@ -3,7 +3,10 @@ import { SaveFinancialInfoRequest, ValidationErrors } from '../../../modules/pro
 import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { countries as countriesData } from '../../../modules/location'
 import { yearsInBusinessOptions } from '../../../data/profile'
-import { useFinancialInfo, useSaveFinancialInfo, useSubmitChangeRequest } from '../../../modules/profile/queries'
+import { useFinancialInfo, useSaveFinancialInfo, useSubmitChangeRequest, usePendingChangeRequests } from '../../../modules/profile/queries'
+import ChangeRequestButton from './ChangeRequestButton'
+import ChangeRequestNotice from './ChangeRequestNotice'
+import { useCancelChangeRequestDialog } from './CancelChangeRequestDialog'
 import { toast } from 'react-toastify'
 import TabLoader from '../../../components/Loader/TabLoader'
 import { formatCurrency, unformatCurrency } from '../../../utils/formatters'
@@ -40,6 +43,10 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
   const { mutate: saveFinancial, isPending } = useSaveFinancialInfo()
   const [errors, setErrors] = useState<ValidationErrors>({})
   const { mutate: submitChange, isPending: isSubmittingChange } = useSubmitChangeRequest()
+  // A field waiting for review offers no second Change Request (R2 BUG-039).
+  const { pendingId: pendingChangeId } = usePendingChangeRequests()
+  // Pressing "Pending review" offers to cancel that request.
+  const { ask: askCancelChange, dialog: cancelChangeDialog } = useCancelChangeRequestDialog()
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Update Request Modal State
@@ -212,13 +219,12 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               disabled={isFieldLocked('currency')}
             />
             {isFieldLocked('currency') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('currency')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Currency', 'currency', data.currency)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.currency && <div className="invalid-feedback d-block">{errors.currency}</div>}
@@ -244,13 +250,12 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               readOnly={isFieldLocked('monthly_revenue' as any)}
             />
             {isFieldLocked('monthly_revenue' as any) && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('monthly_revenue')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Monthly Revenue', 'monthly_revenue' as any, data.monthly_revenue)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.monthly_revenue && <div className="invalid-feedback d-block">{errors.monthly_revenue}</div>}
@@ -267,13 +272,12 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               readOnly={isFieldLocked('annual_revenue' as any)}
             />
             {isFieldLocked('annual_revenue' as any) && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('annual_revenue')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Annual Revenue', 'annual_revenue' as any, data.annual_revenue)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.annual_revenue && <div className="invalid-feedback d-block">{errors.annual_revenue}</div>}
@@ -290,13 +294,12 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               readOnly={isFieldLocked('annual_personal_income' as any)}
             />
             {isFieldLocked('annual_personal_income' as any) && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('annual_personal_income')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Annual Personal Income', 'annual_personal_income' as any, data.annual_personal_income)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.annual_personal_income && <div className="invalid-feedback d-block">{errors.annual_personal_income}</div>}
@@ -313,13 +316,12 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               readOnly={isFieldLocked('average_monthly_deposits' as any)}
             />
             {isFieldLocked('average_monthly_deposits' as any) && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('average_monthly_deposits')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Average Monthly Deposits', 'average_monthly_deposits' as any, data.average_monthly_deposits)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.average_monthly_deposits && <div className="invalid-feedback d-block">{errors.average_monthly_deposits}</div>}
@@ -337,13 +339,12 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               maxLength={5}
             />
             {isFieldLocked('monthly_deposit_count' as any) && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('monthly_deposit_count')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Number of Monthly Deposits', 'monthly_deposit_count' as any, data.monthly_deposit_count)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.monthly_deposit_count && <div className="invalid-feedback d-block">{errors.monthly_deposit_count}</div>}
@@ -360,13 +361,12 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               readOnly={isFieldLocked('avg_bank_balance' as any)}
             />
             {isFieldLocked('avg_bank_balance' as any) && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('avg_bank_balance')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Average Daily Balance (ADB)', 'avg_bank_balance' as any, data.avg_bank_balance)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.avg_bank_balance && <div className="invalid-feedback d-block">{errors.avg_bank_balance}</div>}
@@ -383,13 +383,12 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               readOnly={isFieldLocked('current_business_debt' as any)}
             />
             {isFieldLocked('current_business_debt' as any) && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('current_business_debt')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Current Business Debt', 'current_business_debt' as any, data.current_business_debt)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.current_business_debt && <div className="invalid-feedback d-block">{errors.current_business_debt}</div>}
@@ -407,13 +406,12 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               maxLength={5}
             />
             {isFieldLocked('nsf_count' as any) && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('nsf_count')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('NSF Count', 'nsf_count' as any, data.nsf_count)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.nsf_count && <div className="invalid-feedback d-block">{errors.nsf_count}</div>}
@@ -431,13 +429,12 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               maxLength={5}
             />
             {isFieldLocked('negative_days' as any) && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('negative_days')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Negative Days', 'negative_days' as any, data.negative_days)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {errors.negative_days && <div className="invalid-feedback d-block">{errors.negative_days}</div>}
@@ -487,13 +484,12 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
                                 readOnly={isBankNameLocked}
                               />
                               {isBankNameLocked && (
-                                <button
+                                <ChangeRequestButton
                                   className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                                  type="button"
+                                  pendingId={pendingChangeId('bank_name', account.id)}
+                                  onCancel={askCancelChange}
                                   onClick={() => handleOpenRequestModal('Bank Name', 'bank_name', account.bank_name, account.id, 'borrower_bank_accounts')}
-                                >
-                                  Change Request
-                                </button>
+                                />
                               )}
                             </div>
                             {getRowFieldError(index, 'bank_name') && (
@@ -525,13 +521,12 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
                                 disabled={isDateLocked}
                               />
                               {isDateLocked && (
-                                <button
+                                <ChangeRequestButton
                                   className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                                  type="button"
+                                  pendingId={pendingChangeId('account_open_date', account.id)}
+                                  onCancel={askCancelChange}
                                   onClick={() => handleOpenRequestModal('Account Open Date', 'account_open_date', account.account_open_date, account.id, 'borrower_bank_accounts')}
-                                >
-                                  Change Request
-                                </button>
+                                />
                               )}
                             </div>
                             {getRowFieldError(index, 'account_open_date') && (
@@ -571,6 +566,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
       </form>
 
       {/* Update Request Modal */}
+      {cancelChangeDialog}
       <Modal
         isOpen={isModalOpen}
         toggle={toggleModal}
@@ -658,18 +654,7 @@ export default function FinancialSupport({ data, onChange, onSave, onBack, savin
               </div>
             )}
           </div>
-          <div className="alert alert-info border-0 mb-0">
-            <div className="d-flex">
-              <div className="flex-shrink-0">
-                <i className="ri-information-line fs-18"></i>
-              </div>
-              <div className="flex-grow-1 ms-2">
-                <p className="mb-0 fs-13">
-                  This field is verified and locked. Submitting this form will notify our compliance team to review and verify the new information before it is updated.
-                </p>
-              </div>
-            </div>
-          </div>
+          <ChangeRequestNotice />
         </ModalBody>
         <ModalFooter>
           <button className="btn btn-ghost-danger" onClick={toggleModal}>Discard</button>

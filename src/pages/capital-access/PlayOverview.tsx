@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
 import { useCapitalAccessStrategyOverview } from '../../modules/capital-access/queries';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
+import { PLAY_LOCKED_REDIRECT_STATE } from '../../config/capitalAccess';
 
 export default function PlayOverview() {
   const { id } = useParams<{ id: string }>();
@@ -37,8 +38,14 @@ export default function PlayOverview() {
   // We use play.reason_code (from the per-page API) so it is always fresh.
   const isDelayLocked = play?.reason_code === 'NEXT_PLAY_DELAY_ACTIVE' && !play?.isCompleted;
 
-  if (isError || !play || !play.isAccessible || isDelayLocked) {
+  if (isError || !play) {
     return <Navigate to="/credit-card-stacking/strategy" />;
+  }
+
+  // Locked (another play running, or the cooling delay): the strategy list
+  // says why, given this state (BUG-044).
+  if (!play.isAccessible || isDelayLocked) {
+    return <Navigate to="/credit-card-stacking/strategy" state={PLAY_LOCKED_REDIRECT_STATE} />;
   }
 
   return (

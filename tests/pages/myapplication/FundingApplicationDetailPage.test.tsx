@@ -32,10 +32,10 @@ describe('FundingApplicationDetailPage — Edit Application', () => {
     detail.application = { ...editable }
   })
 
-  it('offers Edit Application, opening the edit form on the funding request', () => {
+  it('offers Edit Application, opening the edit form by the application id', () => {
     renderWithProviders(<FundingApplicationDetailPage />)
 
-    expect(editLink()).toHaveAttribute('href', '/fund-application/17')
+    expect(editLink()).toHaveAttribute('href', '/my-applications/funding/56/edit')
   })
 
   it('hides it once the server says the application can no longer be edited', () => {
@@ -74,18 +74,19 @@ describe('FundingApplicationDetailPage — Edit Application', () => {
     expect(editLink()).not.toBeInTheDocument()
   })
 
-  it('hides it when the funding request is not approved', () => {
+  // F169: the editable statuses are the only rule - not the funding request.
+  it('offers it whatever state the funding request is in', () => {
     detail.application = { ...editable, funding_request_status: FUNDING_REVIEW_STATUS.PENDING }
     renderWithProviders(<FundingApplicationDetailPage />)
 
-    expect(editLink()).not.toBeInTheDocument()
+    expect(editLink()).toHaveAttribute('href', '/my-applications/funding/56/edit')
   })
 
-  it('hides it when the application has no funding request to open the form on', () => {
-    detail.application = { ...editable, funding_request_id: null }
+  it('offers it on an application converted from a loan application, with no funding request', () => {
+    detail.application = { ...editable, funding_request_id: null, funding_request_status: null }
     renderWithProviders(<FundingApplicationDetailPage />)
 
-    expect(editLink()).not.toBeInTheDocument()
+    expect(editLink()).toHaveAttribute('href', '/my-applications/funding/56/edit')
   })
 })
 
@@ -157,7 +158,8 @@ describe('FundingApplicationDetailPage — overview', () => {
 })
 
 describe("FundingApplicationDetailPage — Can't edit a locked application", () => {
-  const reason = 'This application can no longer be edited because it is "Withdrawn". Contact your funding advisor if something needs to change.'
+  // F173: one banner (first sentence bold, the advice beneath), no disabled button.
+  const reason = 'This funding application is "Withdrawn", so it can no longer be edited. Contact your funding advisor if something needs to change.'
   const cantEdit = () => screen.queryByRole('button', { name: /can't edit application/i })
 
   it('tells the borrower it can no longer be edited, and why', () => {
@@ -165,8 +167,9 @@ describe("FundingApplicationDetailPage — Can't edit a locked application", () 
     renderWithProviders(<FundingApplicationDetailPage />)
 
     expect(editLink()).not.toBeInTheDocument()
-    expect(cantEdit()).toBeDisabled()
-    expect(screen.getByRole('status')).toHaveTextContent(reason)
+    expect(cantEdit()).not.toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('This funding application is "Withdrawn", so it can no longer be edited.')
+    expect(screen.getByRole('status')).toHaveTextContent('Contact your funding advisor if something needs to change.')
   })
 
   it.each([
@@ -180,8 +183,8 @@ describe("FundingApplicationDetailPage — Can't edit a locked application", () 
     detail.application = { ...editable, status, is_editable: false }
     renderWithProviders(<FundingApplicationDetailPage />)
 
-    expect(cantEdit()).toBeDisabled()
-    expect(screen.getByRole('status')).toHaveTextContent(`because it is "${status}"`)
+    expect(cantEdit()).not.toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(`This funding application is "${status}", so it can no longer be edited.`)
   })
 
   it('says nothing of the kind while the application is editable', () => {

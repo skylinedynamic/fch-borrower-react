@@ -15,6 +15,7 @@ import { toast } from 'react-toastify'
 import { formatPhoneNumber, formatSSN, unformatSSN, formatZipCode } from '../../../../utils/formatters'
 import { getCountryCodeByName, getPhoneCodeByName, getCountryNameByCode, getDefaultCountry } from '../../../../utils/countryHelpers'
 import { yearDropdownPlugin } from '../../../../utils/flatpickrPlugins'
+import { dateOfBirthError, openOnLatestDateOfBirth } from '../../../../utils/dateOfBirth'
 
 interface OwnershipInformationStepProps {
   owner: OwnerInfo
@@ -34,6 +35,7 @@ interface OwnershipInformationStepProps {
   onRegisterSave?: (fn: (() => Promise<boolean>) | null) => void
   fundingSequenceId?: number | string | null
   fundingRequestId?: number | string | null
+  fundingApplicationId?: number | string | null
 }
 
 export default function OwnershipInformationStep({
@@ -54,6 +56,7 @@ export default function OwnershipInformationStep({
   onRegisterSave,
   fundingSequenceId,
   fundingRequestId,
+  fundingApplicationId,
 }: OwnershipInformationStepProps) {
   const [availableStates, setAvailableStates] = useState<{ name: string; code: string; cities?: string[] }[]>([])
   const [availableCities, setAvailableCities] = useState<{ name: string; code: string }[]>([])
@@ -61,7 +64,7 @@ export default function OwnershipInformationStep({
   const [lastCustomCity, setLastCustomCity] = useState('')
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
-  const { data: apiData, isLoading: isApiLoading, isSuccess } = useOwnershipInfo(fundingRequestId)
+  const { data: apiData, isLoading: isApiLoading, isSuccess } = useOwnershipInfo(fundingRequestId, { fundingApplicationId })
   const { mutateAsync: saveOwnershipInfo, isPending: isSaving } = useSaveOwnershipInfo()
 
   // Memoized save handler
@@ -339,7 +342,7 @@ export default function OwnershipInformationStep({
           </label>
           <div className="position-relative">
             <Flatpickr
-              className={`form-control ${hasError('date_of_birth') ? 'is-invalid' : ''}`}
+              className={`form-control ${hasError('date_of_birth') || dateOfBirthError(owner.dob) ? 'is-invalid' : ''}`}
               value={owner.dob}
               onChange={(dates, dateStr) => {
                 setOwner({ ...owner, dob: dateStr })
@@ -349,13 +352,14 @@ export default function OwnershipInformationStep({
                 altInput: true,
                 altFormat: 'j M, Y',
                 maxDate: 'today',
+                onOpen: openOnLatestDateOfBirth,
                 monthSelectorType: 'dropdown',
                 plugins: [yearDropdownPlugin(1900)],
               } as any}
               placeholder="Select date of birth"
             />
           </div>
-          {hasError('date_of_birth') && <div className="invalid-feedback d-block">{getFieldError('date_of_birth')}</div>}
+          {(hasError('date_of_birth') || dateOfBirthError(owner.dob)) && <div className="invalid-feedback d-block">{hasError('date_of_birth') ? getFieldError('date_of_birth') : dateOfBirthError(owner.dob)}</div>}
         </div>
         <div className="col-md-6">
           <label className="form-label" htmlFor="owner-ssn">

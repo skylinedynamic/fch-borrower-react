@@ -2,6 +2,7 @@ import React from 'react'
 import { TierTask as TierTaskType } from '../../../../modules/credit-builder/guide/types'
 import { CREDIT_BUILDER_STATUS } from '../../../../data/credit-builder'
 import TaskStatusAction from './TaskStatusAction'
+import { sanitizeHtml } from '../../../../utils/sanitizeHtml'
 
 export interface TierGenericTaskProps {
   task: TierTaskType
@@ -35,7 +36,7 @@ export default function TierGenericTask({ task, isCurrentTier, isFirstTier, onVe
     <>
       {/* Tier Description - Only for first item */}
       {index === 0 && tierDescription && (
-        <div className="cg-tier-note" dangerouslySetInnerHTML={{ __html: tierDescription }} />
+        <div className="cg-tier-note" dangerouslySetInnerHTML={{ __html: sanitizeHtml(tierDescription) }} />
       )}
 
       <div className={`cg-step ${state}`} data-task={task.id}>

@@ -18,6 +18,7 @@ import EditConfirmationModal from './components/shared/EditConfirmationModal'
 import { useCoBorrowers } from './hooks/useCoBorrowers'
 import { FUNDING_PURPOSE_OTHER, purposeOfFundingOptions, timeframeOptions, withoutPreferredFundingType } from '../../data/profile'
 import { useFundingRequest, useFundingApplicationDocuments } from '../../modules/funding-application/queries'
+import { resetApplicationVersion } from '../../modules/funding-application/applicationVersion'
 import { setEditRequiresConfirmation, setEditConfirmationResolving, resetEditConfirmation } from '../../store/fundApplication/editConfirmationStore'
 import { formatCurrency } from '../../utils/formatters'
 import { STEP_INDICES, isWizardStepComplete } from './stepProgress'
@@ -35,6 +36,7 @@ import {
   type FederalCompliance,
   type Attestation,
 } from './types'
+
 
 const matchPurpose = (raw: string | null | undefined): string => {
   if (!raw) return ''
@@ -100,7 +102,11 @@ const FEDERAL_COMPLIANCE_KEYS: (keyof FederalCompliance)[] = [
 
 export default function FundApplication() {
   const navigate = useNavigate()
-  const { id } = useParams()
+  // `id` is a funding request id (/fund-application/:id); `applicationId` is a
+  // funding application's own id (/my-applications/funding/:applicationId/edit) -
+  // how an application without a funding request (converted from the embed
+  // form) is opened, and how My Applications always opens one for editing.
+  const { id, applicationId } = useParams()
   const location = useLocation()
   const [fundingSequenceId, setFundingSequenceId] = useState<string | number | null>(null)
   const [fundingRequestId, setFundingRequestId] = useState<string | number | null>(null)
@@ -113,6 +119,11 @@ export default function FundApplication() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const activeStepSaveRef = React.useRef<(() => Promise<boolean>) | null>(null)
+
+  // The application version belongs to this wizard: leaving it (or opening
+  // another request) forgets it, so the next one starts from its own load
+  // (R2 BUG-033).
+  useEffect(() => () => resetApplicationVersion(), [id])
 
   // Co-borrower hook
   const {
@@ -259,7 +270,7 @@ export default function FundApplication() {
 
   // Fetch funding request and documents (tab-wise lazy loading)
   const currentReqId = fundingRequestId || id || null
-  const { data: fundingData, isLoading: isFundingDataLoading, error: fundingDataError } = useFundingRequest(currentReqId)
+  const { data: fundingData, isLoading: isFundingDataLoading, error: fundingDataError } = useFundingRequest(currentReqId, { fundingApplicationId: applicationId })
   // The API answers 404 for a funding request that is not this borrower's
   // (BUG-082): the wizard is not shown for it at all.
   const isForeignRequest = (fundingDataError as any)?.response?.status === 404
@@ -313,6 +324,20 @@ export default function FundApplication() {
   // Callback for steps to register their save function
   const registerSave = useCallback((fn: (() => Promise<boolean>) | null) => {
     activeStepSaveRef.current = fn
+  }, [])
+
+  // Each step is rendered twice - the desktop pane (lg and up) and the mobile
+  // accordion - and only the copy on screen may register its save. Both did,
+  // the hidden mobile copy last, so a save refused from the sidebar put its
+  // field messages on the hidden copy and a desktop showed only the toast.
+  const [isDesktop, setIsDesktop] = useState<boolean>(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 992px)').matches
+  )
+  useEffect(() => {
+    const query = window.matchMedia('(min-width: 992px)')
+    const onChange = () => setIsDesktop(query.matches)
+    query.addEventListener?.('change', onChange)
+    return () => query.removeEventListener?.('change', onChange)
   }, [])
 
   // Validation: Check if business info step can proceed
@@ -587,6 +612,7 @@ export default function FundApplication() {
             onRegisterSave={isActive ? registerSave : undefined}
             fundingSequenceId={fundingSequenceId}
             fundingRequestId={fundingRequestId || id}
+            fundingApplicationId={applicationId}
           />
         )
 
@@ -606,6 +632,7 @@ export default function FundApplication() {
             isValid={isStepValid(STEP_INDICES.OWNERSHIP_INFO)}
             fundingSequenceId={fundingSequenceId}
             fundingRequestId={fundingRequestId || id}
+            fundingApplicationId={applicationId}
             {...currentCommonProps}
           />
         )
@@ -617,6 +644,7 @@ export default function FundApplication() {
             setFinancial={setFinancial}
             fundingSequenceId={fundingSequenceId}
             fundingRequestId={fundingRequestId || id}
+            fundingApplicationId={applicationId}
             {...currentCommonProps}
           />
         )
@@ -628,6 +656,7 @@ export default function FundApplication() {
             setFunding={setFunding}
             fundingSequenceId={fundingSequenceId}
             fundingRequestId={fundingRequestId || id}
+            fundingApplicationId={applicationId}
             {...currentCommonProps}
           />
         )
@@ -649,6 +678,7 @@ export default function FundApplication() {
             setDisclosure={setDisclosure}
             disclosureItems={disclosureItems}
             fundingRequestId={fundingRequestId || id}
+            fundingApplicationId={applicationId}
             {...commonStepProps}
           />
         )
@@ -660,6 +690,7 @@ export default function FundApplication() {
             setFederal={setFederal}
             isValid={isStepValid(STEP_INDICES.FEDERAL_COMPLIANCE)}
             fundingRequestId={fundingRequestId || id}
+            fundingApplicationId={applicationId}
             {...commonStepProps}
           />
         )
@@ -670,6 +701,7 @@ export default function FundApplication() {
             attestation={attestation}
             setAttestation={setAttestation}
             fundingRequestId={fundingRequestId || id}
+            fundingApplicationId={applicationId}
             onBack={() => setActiveStep(STEP_INDICES.FEDERAL_COMPLIANCE)}
             onSubmit={() => toast.success('Application submitted!')}
             loading={loading}
@@ -736,7 +768,7 @@ export default function FundApplication() {
               <h4 className="mt-2 mb-2">Can't Edit Funding Application</h4>
               <p className="text-muted mb-4">
                 {fundingData.locked_reason
-                  || `This application can no longer be edited because it is "${fundingData.status}". Contact your funding advisor if something needs to change.`}
+                  || `This funding application is "${fundingData.status}", so it can no longer be edited. Contact your funding advisor if something needs to change.`}
               </p>
               <button type="button" className="btn btn-outline-secondary" onClick={() => navigate(-1)}>
                 &larr; Back
@@ -831,7 +863,7 @@ export default function FundApplication() {
                 {tabs.map((_, idx) => (
                   <div key={idx} style={{ display: activeStep === idx ? 'block' : 'none' }}>
                     <fieldset disabled={isLocked} className="border-0 p-0 m-0">
-                      {renderStep(idx, activeStep === idx)}
+                      {renderStep(idx, activeStep === idx && isDesktop)}
                     </fieldset>
                   </div>
                 ))}
@@ -875,7 +907,7 @@ export default function FundApplication() {
                             </div>
                           )}
                           <fieldset disabled={isLocked} className="border-0 p-0 m-0">
-                            {renderStep(idx, isOpen)}
+                            {renderStep(idx, isOpen && !isDesktop)}
                           </fieldset>
                         </div>
                       </li>

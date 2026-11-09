@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
 import { toast } from 'react-toastify'
@@ -6,17 +6,21 @@ import CustomDropdown from '../../../components/Common/CustomDropdown'
 import { usePersonalInfo, useSavePersonalInfo } from '../../../modules/profile'
 import type { PersonalInfoData, SavePersonalInfoRequest, ValidationErrors } from '../../../modules/profile'
 import TabLoader from '../../../components/Loader/TabLoader'
-import { formatCalendarDate } from '../../../utils/dates'
+import { dateOfBirthBounds, formatCalendarDate } from '../../../utils/dates'
 import { countries as countriesData } from '../../../modules/location'
 
 import { formatPhoneNumber, unformatPhoneNumber, formatZipCode, formatSSN, unformatSSN, SSN_DIGITS } from '../../../utils/formatters'
 import SsnField from './SsnField'
 import PendingEmailNotice from './PendingEmailNotice'
 import { yearDropdownPlugin } from '../../../utils/flatpickrPlugins'
+import { dateOfBirthError, openOnLatestDateOfBirth } from '../../../utils/dateOfBirth'
 import { useAuth } from '../../../hooks/useAuth'
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import { LOCKED_PERSONAL_FIELDS } from '../../../config/profileLockFields'
-import { useSubmitChangeRequest } from '../../../modules/profile/queries'
+import { useSubmitChangeRequest, usePendingChangeRequests } from '../../../modules/profile/queries'
+import ChangeRequestButton from './ChangeRequestButton'
+import ChangeRequestNotice from './ChangeRequestNotice'
+import { useCancelChangeRequestDialog } from './CancelChangeRequestDialog'
 import { useRef } from 'react'
 
 interface PersonalInfoProps {
@@ -62,11 +66,17 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
   const { data: apiData, isLoading, error } = usePersonalInfo()
   const { mutate: savePersonalInfo, isPending: isSaving } = useSavePersonalInfo()
   const { refreshUser } = useAuth()
+  // Stable across renders, so an open picker is not reconfigured on every keystroke.
+  const dobBounds = useMemo(() => dateOfBirthBounds(), [])
   const [availableStates, setAvailableStates] = useState<StateType[]>([])
   const [availableCities, setAvailableCities] = useState<CityType[]>([])
   const [showCityInput, setShowCityInput] = useState(false)
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({})
   const { mutate: submitChange, isPending: isSubmittingChange } = useSubmitChangeRequest()
+  // A field waiting for review offers no second Change Request (R2 BUG-039).
+  const { pendingId: pendingChangeId } = usePendingChangeRequests()
+  // Pressing "Pending review" offers to cancel that request.
+  const { ask: askCancelChange, dialog: cancelChangeDialog } = useCancelChangeRequestDialog()
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Update Request Modal State
@@ -266,13 +276,12 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
                   readOnly={isFieldLocked('first_name')}
                 />
                 {isFieldLocked('first_name') && (
-                  <button
+                  <ChangeRequestButton
                     className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
-                    type="button"
+                    pendingId={pendingChangeId('first_name')}
+                    onCancel={askCancelChange}
                     onClick={() => handleOpenRequestModal('First Name', 'first_name', data.first_name)}
-                  >
-                    Change Request
-                  </button>
+                  />
                 )}
               </div>
               {hasError('first_name') && (
@@ -291,13 +300,12 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
                   readOnly={isFieldLocked('middle_name')}
                 />
                 {isFieldLocked('middle_name') && (
-                  <button
+                  <ChangeRequestButton
                     className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
-                    type="button"
+                    pendingId={pendingChangeId('middle_name')}
+                    onCancel={askCancelChange}
                     onClick={() => handleOpenRequestModal('Middle Name', 'middle_name', data.middle_name || '')}
-                  >
-                    Change Request
-                  </button>
+                  />
                 )}
               </div>
               {hasError('middle_name') && (
@@ -319,13 +327,12 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
               readOnly={isFieldLocked('last_name')}
             />
             {isFieldLocked('last_name') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute end-0 top-0 mt-1 me-1 shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('last_name')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Last Name', 'last_name', data.last_name)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {hasError('last_name') && (
@@ -345,13 +352,12 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
               readOnly={isFieldLocked('email')}
             />
             {isFieldLocked('email') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('email')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Email Address', 'email', data.email)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {hasError('email') && (
@@ -378,13 +384,12 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
               />
             </div>
             {isFieldLocked('phone_number') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('phone_number')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Phone Number', 'phone_number', data.phone_number)}
-              >
-                Change Request
-              </button>
+              />
             )}
             {hasError('phone_number') && (
               <div className="invalid-feedback d-block">{getFieldError('phone_number')}</div>
@@ -405,13 +410,12 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
               readOnly={isFieldLocked('home_address')}
             />
             {isFieldLocked('home_address') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('home_address')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Home Address', 'home_address', data.home_address)}
-              >
-                Change Request
-              </button>
+              />
             )}
             {hasError('home_address') && (
               <div className="invalid-feedback d-block">{getFieldError('home_address')}</div>
@@ -440,13 +444,12 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
               disabled={isFieldLocked('country')}
             />
             {isFieldLocked('country') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('country')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Country', 'country', data.country)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {hasError('country') && (
@@ -484,13 +487,12 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
               disabled={!data.country || isFieldLocked('state')}
             />
             {isFieldLocked('state') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('state')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('State', 'state', data.state)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
           {hasError('state') && (
@@ -522,13 +524,12 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
               disabled={!data.state || isFieldLocked('city')}
             />
             {isFieldLocked('city') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('city')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('City', 'city', data.city)}
-              >
-                Change Request
-              </button>
+              />
             )}
             {hasError('city') && (
               <div className="invalid-feedback d-block">{getFieldError('city')}</div>
@@ -551,13 +552,12 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
               readOnly={isFieldLocked('city')}
             />
             {isFieldLocked('city') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('city')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('City Name', 'city', data.city)}
-              >
-                Change Request
-              </button>
+              />
             )}
             {hasError('city') && (
               <div className="invalid-feedback d-block">{getFieldError('city')}</div>
@@ -583,13 +583,12 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
               readOnly={isFieldLocked('zip_code')}
             />
             {isFieldLocked('zip_code') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('zip_code')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Zip Code', 'zip_code', data.zip_code)}
-              >
-                Change Request
-              </button>
+              />
             )}
             {hasError('zip_code') && (
               <div className="invalid-feedback d-block">{getFieldError('zip_code')}</div>
@@ -615,13 +614,12 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
               />
             </div>
             {isFieldLocked('home_phone') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('home_phone')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Home Phone', 'home_phone', data.home_phone)}
-              >
-                Change Request
-              </button>
+              />
             )}
             {hasError('home_phone') && (
               <div className="invalid-feedback d-block">{getFieldError('home_phone')}</div>
@@ -632,7 +630,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
           <label className="form-label">Date of Birth <span className="text-danger">*</span></label>
           <div className="position-relative">
             <Flatpickr
-              className={`form-control ${hasError('date_of_birth') ? 'is-invalid' : ''} ${isFieldLocked('date_of_birth') ? 'bg-light border-dashed' : ''}`}
+              className={`form-control ${hasError('date_of_birth') || dateOfBirthError(data.date_of_birth) ? 'is-invalid' : ''} ${isFieldLocked('date_of_birth') ? 'bg-light border-dashed' : ''}`}
               value={data.date_of_birth}
               onChange={(dates, dateStr) => {
                 onChange({ ...data, date_of_birth: dateStr })
@@ -641,26 +639,32 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
                   dateFormat: "Y-m-d",
                   altInput: true,
                   altFormat: "j M, Y",
-                  maxDate: "today",
+                  // Back to 120 years (BUG-005) and every year up to today; an
+                  // under-18 pick gets the minimum-age message, as the API
+                  // answers. An empty field opens 18 years back.
+                  minDate: dobBounds.minDate,
+                  maxDate: 'today',
+                  onOpen: openOnLatestDateOfBirth,
                   monthSelectorType: "dropdown",
                   clickOpens: !isFieldLocked('date_of_birth'),
-                  plugins: [yearDropdownPlugin(1900)],
+                  plugins: [yearDropdownPlugin(dobBounds.minDate.getFullYear())],
                 } as any}
               placeholder="Select date of birth"
               disabled={isFieldLocked('date_of_birth')}
             />
             {isFieldLocked('date_of_birth') && (
-              <button
+              <ChangeRequestButton
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
-                type="button"
+                pendingId={pendingChangeId('date_of_birth')}
+                onCancel={askCancelChange}
                 onClick={() => handleOpenRequestModal('Date of Birth', 'date_of_birth', data.date_of_birth)}
-              >
-                Change Request
-              </button>
+              />
             )}
           </div>
-          {hasError('date_of_birth') && (
-            <div className="invalid-feedback d-block">{getFieldError('date_of_birth')}</div>
+          {(hasError('date_of_birth') || dateOfBirthError(data.date_of_birth)) && (
+            <div className="invalid-feedback d-block">
+              {hasError('date_of_birth') ? getFieldError('date_of_birth') : dateOfBirthError(data.date_of_birth)}
+            </div>
           )}
         </div>
         <SsnField
@@ -688,6 +692,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
       </form>
 
       {/* Update Request Modal */}
+      {cancelChangeDialog}
       <Modal
         isOpen={isModalOpen}
         toggle={toggleModal}
@@ -715,17 +720,19 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
             <label className="form-label fw-bold">Requested New Value <span className="text-danger">*</span></label>
             {updateRequest.key === 'date_of_birth' ? (
               <Flatpickr
-                className={`form-control w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
+                className={`form-control w-100 ${modalErrors.new_value || dateOfBirthError(String(updateRequest.newValue ?? '')) ? 'is-invalid' : ''}`}
                 value={updateRequest.newValue}
                 onChange={(dates, dateStr) => setUpdateRequest({ ...updateRequest, newValue: dateStr })}
                 options={{
                   dateFormat: "Y-m-d",
                   altInput: true,
                   altFormat: "j M, Y",
-                  maxDate: "today",
+                  minDate: dobBounds.minDate,
+                  maxDate: 'today',
+                  onOpen: openOnLatestDateOfBirth,
                   monthSelectorType: "dropdown",
                   static: true,
-                  plugins: [yearDropdownPlugin(1900)],
+                  plugins: [yearDropdownPlugin(dobBounds.minDate.getFullYear())],
                 } as any}
                 placeholder="Select date of birth"
               />
@@ -766,7 +773,7 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
               <input
                 ref={inputRef}
                 type={updateRequest.key === 'email' ? 'email' : 'text'}
-                className={`form-control w-100 ${modalErrors.new_value ? 'is-invalid' : ''}`}
+                className={`form-control w-100 ${modalErrors.new_value || dateOfBirthError(String(updateRequest.newValue ?? '')) ? 'is-invalid' : ''}`}
                 placeholder={`Enter the updated ${updateRequest.label}`}
                 value={updateRequest.newValue}
                 onChange={(e) => {
@@ -778,24 +785,16 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
                 maxLength={updateRequest.key === 'phone_number' ? 14 : undefined}
               />
             )}
+            {!modalErrors.new_value && updateRequest.key === 'date_of_birth' && dateOfBirthError(String(updateRequest.newValue ?? '')) && (
+              <div className="invalid-feedback d-block mt-1">{dateOfBirthError(String(updateRequest.newValue ?? ''))}</div>
+            )}
             {modalErrors.new_value && (
               <div className="invalid-feedback d-block mt-1">
                 {Array.isArray(modalErrors.new_value) ? modalErrors.new_value[0] : modalErrors.new_value}
               </div>
             )}
           </div>
-          <div className="alert alert-info border-0 mb-0">
-            <div className="d-flex">
-              <div className="flex-shrink-0">
-                <i className="ri-information-line fs-18"></i>
-              </div>
-              <div className="flex-grow-1 ms-2">
-                <p className="mb-0 fs-13">
-                  This field is verified and locked. Submitting this form will notify our compliance team to review and verify the new information before it is updated.
-                </p>
-              </div>
-            </div>
-          </div>
+          <ChangeRequestNotice />
         </ModalBody>
         <ModalFooter>
           <button className="btn btn-ghost-danger" onClick={toggleModal}>Discard</button>

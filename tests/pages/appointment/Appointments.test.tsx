@@ -58,3 +58,25 @@ describe('Appointments', () => {
     expect(await screen.findByText('Kickoff Call')).toBeInTheDocument()
   })
 })
+
+// BUG-004 (QA round 2): an upcoming appointment's description is stored HTML;
+// it must not run script.
+describe('Appointments - descriptions cannot run script (BUG-004)', () => {
+  it('lists the description without the onerror handler', async () => {
+    useAuthStore.setState({ user: { id: 1, is_host: 0 } })
+    const future = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    server.use(
+      http.post('*/common/appointments/fetch-all', () =>
+        HttpResponse.json({
+          status: true,
+          data: [{ id: 1, subject: 'Kickoff Call', appointment_date: future, duration_minutes: 30, status: 'scheduled', description: 'Agenda <b>review</b> <img src=x onerror="window.__xss = 1">' }],
+        })
+      )
+    )
+
+    const view = renderWithProviders(<Appointments />)
+
+    expect((await screen.findAllByText('review')).length).toBeGreaterThan(0)
+    expect(view.container.querySelector('[onerror]')).toBeNull()
+  })
+})

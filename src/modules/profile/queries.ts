@@ -1,6 +1,7 @@
+import { useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '../../lib/query'
-import { fetchPersonalInfo, savePersonalInfo, fetchBusinessDetails, saveBusinessDetails, fetchFinancialInfo, saveFinancialInfo, submitChangeRequest, fetchProfileCompletion, completeOnboarding, skipOnboardingStep, resumeOnboardingStep, chooseOnboardingPath } from './services'
+import { fetchPersonalInfo, savePersonalInfo, fetchBusinessDetails, saveBusinessDetails, fetchFinancialInfo, saveFinancialInfo, submitChangeRequest, fetchPendingChangeRequests, cancelChangeRequest, fetchProfileCompletion, completeOnboarding, skipOnboardingStep, resumeOnboardingStep, chooseOnboardingPath } from './services'
 import type { ProfileCompletionResponse, ProfileCompletionStatus, ProfileOnboardingStatus } from './services'
 import type { SavePersonalInfoRequest, SaveBusinessDetailsRequest, SaveFinancialInfoRequest, ChangeRequestRequest } from './types'
 
@@ -66,8 +67,40 @@ export const useSaveFinancialInfo = () => {
 }
 
 export const useSubmitChangeRequest = () => {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (data: ChangeRequestRequest) => submitChangeRequest(data),
+    // Sent, or refused as already waiting: either way the field is pending now.
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.profile.pendingChangeRequests() }),
+  })
+}
+
+/**
+ * The fields with a change request waiting for review, and pendingId(field,
+ * rowId) - the id of the request waiting on one of them, or null. A bank
+ * account field is pending per row (R2 BUG-039).
+ */
+export const usePendingChangeRequests = () => {
+  const query = useQuery({
+    queryKey: queryKeys.profile.pendingChangeRequests(),
+    queryFn: fetchPendingChangeRequests,
+  })
+  const pending = query.data
+  const pendingId = useCallback(
+    (field: string, entityId?: number | null) =>
+      (pending ?? []).find((p) => p.field_name === field && (p.entity_id ?? null) === (entityId ?? null))?.id ?? null,
+    [pending]
+  )
+  return { ...query, pendingId }
+}
+
+/** Cancels (deletes) a change request still waiting for review. */
+export const useCancelChangeRequest = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => cancelChangeRequest(id),
+    // Cancelled, or refused as already reviewed: either way the list moved on.
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.profile.pendingChangeRequests() }),
   })
 }
 

@@ -3,11 +3,14 @@ import { SUBSCRIPTION_STATUS_TYPES, PARTNER_TYPES } from '../../config/partnerTy
 import { STATUS_PAID } from '../../config/invoiceConfig';
 
 /**
- * Helper: convert string date to midnight Date object, or null
+ * Helper: convert string date to midnight Date object, or null. A plain
+ * "YYYY-MM-DD" is read as that local day: new Date() would read it as UTC
+ * midnight, the evening before west of UTC, and lock a day early.
  */
 const toDate = (d?: string | null) => {
     if (!d) return null;
-    const x = new Date(d);
+    const ymd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d);
+    const x = ymd ? new Date(Number(ymd[1]), Number(ymd[2]) - 1, Number(ymd[3])) : new Date(d);
     x.setHours(0, 0, 0, 0);
     return x;
 };
@@ -46,6 +49,14 @@ export function isSubscriptionRestricted(subscription: UserSubscription | null |
 
     const subStatus = String(subscription.subscription_status).toLowerCase().trim();
     const activeStatus = (SUBSCRIPTION_STATUS_TYPES.ACTIVE).toLowerCase().trim();
+
+    // Cancelling stops renewal, not access: the period already paid for
+    // stays open until its end date (BUG-069). With no end date there is no
+    // period left.
+    const cancelledStatus = SUBSCRIPTION_STATUS_TYPES.CANCELLED.toLowerCase();
+    if (subStatus === cancelledStatus) {
+        return !endDate || today > endDate;
+    }
 
     if (subStatus && subStatus !== activeStatus) {
         return true;

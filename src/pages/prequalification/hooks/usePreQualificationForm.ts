@@ -6,6 +6,7 @@ import type { PersonalInfo, BusinessDetails, FinancialSupport } from '../../../m
 import { countries } from '../../../modules/location'
 import { formatCurrency, unformatCurrency } from '../../../utils/formatters'
 import { FUNDING_PURPOSE_OTHER } from '../../../data/profile'
+import { resumeStepFor } from './resumeStep'
 
 export const usePreQualificationForm = () => {
   const [step, setStep] = useState<number>(0)
@@ -66,8 +67,9 @@ export const usePreQualificationForm = () => {
   const initialSupportRef = useRef<FinancialSupport | null>(null)
 
   // Once the borrower has successfully saved funding info, prevent any background
-  // re-fetch of the pre-qualification query from wiping their entered values.
-  // The GET intentionally returns null for all funding fields (fresh-start by design).
+  // re-fetch of the pre-qualification query from replacing what they entered.
+  // The GET returns the draft's own funding answers (R2 BUG-026), and blank
+  // ones only for a new application.
   const fundingSubmittedRef = useRef(false)
 
   // Fills the wizard from the GET payload. Funding fields are only applied when
@@ -104,8 +106,8 @@ export const usePreQualificationForm = () => {
     })
 
     // Only populate funding fields from API if the borrower has NOT yet submitted
-    // their funding info in this session. After submission the GET returns null for
-    // all funding fields (by design), so re-applying them would wipe the entered values.
+    // their funding info in this session, so a background refetch never replaces
+    // what they are editing.
     if (resetFunding || !fundingSubmittedRef.current) {
       setSupport({
         fundingRequestedAmount: apiData.funding_requested_amount ? formatCurrency(apiData.funding_requested_amount.toString()) : '',
@@ -154,12 +156,25 @@ export const usePreQualificationForm = () => {
     }, 100)
   }
 
+  // A draft reopens where the borrower left it, once - not on every refetch,
+  // which would move them while they work (R2 BUG-026).
+  const resumedRef = useRef(false)
+
   useEffect(() => {
     if (apiData) {
       if (apiData.id) {
         setPreQualId(apiData.id)
       }
       populateFromApi(apiData, false)
+      if (!resumedRef.current) {
+        resumedRef.current = true
+        const resumeAt = resumeStepFor(apiData)
+        if (resumeAt > 0) {
+          setStep(resumeAt)
+          setMaxStepReached(resumeAt)
+          setMobileOpenIdx(resumeAt)
+        }
+      }
       setLoading(false)
     } else if (!isLoading) {
       setLoading(false)

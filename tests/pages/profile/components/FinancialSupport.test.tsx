@@ -335,3 +335,27 @@ describe('Profile — Financial tab', () => {
     expect(() => renderTab()).not.toThrow()
   })
 })
+
+// R2 BUG-039: a bank account field waiting for review is pending for that account only.
+describe('Financial tab › change requests per bank account (R2 BUG-039)', () => {
+  afterEach(() => server.resetHandlers())
+
+  it('shows "Pending review" on the account whose request waits, Change Request on the other', async () => {
+    const accounts = [
+      { id: 7, bank_name: 'First Bank', account_open_date: '2020-01-01' },
+      { id: 8, bank_name: 'Second Bank', account_open_date: '2021-01-01' },
+    ]
+    serveFinancial({ ...blank, bank_accounts: accounts })
+    server.use(
+      http.get('*/borrower/profile/change-requests/pending', () =>
+        HttpResponse.json({ status: true, data: [{ id: 47, field_name: 'bank_name', entity_id: 7 }] })
+      )
+    )
+    renderTab({ ...blank, bank_accounts: accounts })
+
+    const buttonFor = async (bank: string) =>
+      ((await screen.findByDisplayValue(bank)) as HTMLElement).closest('.position-relative')!.querySelector('.change-request-btn')
+    await waitFor(async () => expect(await buttonFor('First Bank')).toHaveTextContent('Pending review'))
+    expect(await buttonFor('Second Bank')).toHaveTextContent('Change Request')
+  })
+})

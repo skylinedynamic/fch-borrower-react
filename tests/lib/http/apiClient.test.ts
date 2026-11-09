@@ -6,7 +6,7 @@ vi.mock('../../../src/lib/auth', () => ({
   clearAuth: vi.fn(),
 }))
 vi.mock('react-toastify', () => ({
-  toast: { error: vi.fn() },
+  toast: { error: vi.fn(), info: vi.fn() },
 }))
 
 import { getToken, clearAuth } from '../../../src/lib/auth'
@@ -54,13 +54,34 @@ describe('apiClient response interceptor', () => {
     Object.defineProperty(window, 'location', {
       configurable: true,
       writable: true,
-      value: { pathname: '/dashboard', assign: vi.fn() },
+      value: { pathname: '/dashboard', assign: vi.fn(), reload: vi.fn() },
     })
   })
 
   afterEach(() => {
     vi.clearAllMocks()
+    sessionStorage.clear()
     Object.defineProperty(window, 'location', { configurable: true, writable: true, value: originalLocation })
+  })
+
+  // Maintenance mode: Nginx answers every API call with 503 and
+  // { maintenance: true } while the platform is being updated.
+  it('on a maintenance 503: reloads onto the server maintenance page, without an error toast or logout', async () => {
+    const error = makeError({ response: { status: 503, data: { status: false, maintenance: true, message: 'Updating' } } as any })
+
+    await expect(responseInterceptor.rejected(error)).rejects.toBe(error)
+
+    expect(window.location.reload).toHaveBeenCalledTimes(1)
+    expect(toast.error).not.toHaveBeenCalled()
+    expect(clearAuth).not.toHaveBeenCalled()
+  })
+
+  it('on any other 503 (e.g. Laravel down, overload): does not reload', async () => {
+    const error = makeError({ response: { status: 503, data: { message: 'Service Unavailable' } } as any })
+
+    await expect(responseInterceptor.rejected(error)).rejects.toBe(error)
+
+    expect(window.location.reload).not.toHaveBeenCalled()
   })
 
   it('passes successful responses through unchanged', () => {

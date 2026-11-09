@@ -33,7 +33,7 @@ const overview = (verified: Task[], processing: Task[], rejected: Task[]) => ({
 const serve = (data: ReturnType<typeof overview>) =>
   server.use(http.get('*/borrower/credit-builder/task-overview', () => HttpResponse.json({ status: true, message: 'ok', data })))
 
-const rows = () => within(screen.getByRole('list', { name: 'Tasks' })).getAllByRole('listitem')
+const rows = () => within(screen.getByRole('region', { name: 'Tasks' })).getAllByRole('listitem')
 const tab = (name: RegExp) => screen.getByRole('tab', { name })
 
 afterEach(() => server.resetHandlers())
@@ -57,7 +57,7 @@ describe('Credit Builder Overview - Task activity', () => {
     ))
     renderWithProviders(<TaskStatusCards />)
 
-    await screen.findByRole('list', { name: 'Tasks' })
+    await screen.findByRole('region', { name: 'Tasks' })
     const [first, second, third] = rows()
     expect(first).toHaveTextContent('EIN Consistency')
     expect(first).toHaveTextContent('EIN does not match the IRS letter')
@@ -65,6 +65,25 @@ describe('Credit Builder Overview - Task activity', () => {
     expect(second).toHaveTextContent('In review')
     expect(third).toHaveTextContent('Verified')
     expect(third).toHaveTextContent('08 Mar 2026')
+  })
+
+  it('groups the tasks by tier, lowest tier first, what needs fixing first inside each', async () => {
+    serve(overview(
+      [task(1, 'verified', { tier: 'Tier 4', title: 'Uline verified' }), task(2, 'verified', { tier: 'Tier 0', title: 'EIN verified' })],
+      [],
+      [task(3, 'rejected', { tier: 'Tier 4', title: 'Uline rejected' })],
+    ))
+    renderWithProviders(<TaskStatusCards />)
+
+    const all = await screen.findByRole('region', { name: 'Tasks' })
+    const groups = within(all).getAllByRole('list')
+    expect(groups.map((g) => g.getAttribute('aria-label'))).toEqual(['Tier 0 tasks', 'Tier 4 tasks'])
+    expect(within(all).getByRole('heading', { name: /Tier 0/ })).toHaveTextContent('1 task')
+    expect(within(all).getByRole('heading', { name: /Tier 4/ })).toHaveTextContent('2 tasks')
+
+    const tier4 = within(groups[1]).getAllByRole('listitem')
+    expect(tier4[0]).toHaveTextContent('Uline rejected')
+    expect(tier4[1]).toHaveTextContent('Uline verified')
   })
 
   it('filters to one status', async () => {
@@ -84,7 +103,7 @@ describe('Credit Builder Overview - Task activity', () => {
     serve(overview(Array.from({ length: 9 }, (_, i) => task(i + 1, 'verified')), [], []))
     renderWithProviders(<TaskStatusCards />)
 
-    await screen.findByRole('list', { name: 'Tasks' })
+    await screen.findByRole('region', { name: 'Tasks' })
     expect(rows()).toHaveLength(6)
 
     await user.click(screen.getByRole('button', { name: 'Show all 9' }))
@@ -99,7 +118,7 @@ describe('Credit Builder Overview - Task activity', () => {
     await user.click(await screen.findByRole('tab', { name: /Needs attention\s*0/ }))
 
     expect(screen.getByText('Nothing needs your attention')).toBeInTheDocument()
-    expect(screen.queryByRole('list', { name: 'Tasks' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Tasks' })).not.toBeInTheDocument()
   })
 
   it('invites the borrower to start when nothing has been submitted', async () => {

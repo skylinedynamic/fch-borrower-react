@@ -35,7 +35,9 @@ async function asSubscription(page: Page, override: Override) {
 const locked = (page: Page, label: string) => sidebarLink(page, label).locator('.ri-lock-line')
 
 const FREE_TRIAL_LOCKED = ['Credit Card Stacking', 'Invoices', 'Payments', 'Billing Details', 'Resource Hub']
-const RESTRICTED_LOCKED = ['Pre Qualification', 'Funding Request', 'My Applications', 'Credit Card Stacking', 'Billing Details', 'Documents', 'Resource Hub', 'Appointment', 'Funding', 'Profile']
+const RESTRICTED_LOCKED = ['Pre Qualification', 'Funding Request', 'My Applications', 'Credit Card Stacking', 'Documents', 'Resource Hub', 'Appointment', 'Funding']
+// BUG-069: what they owe, how to resume, and their own profile stay open.
+const RESTRICTED_OPEN = ['Dashboard', 'Invoices', 'Payments', 'Billing Details', 'Notifications', 'Profile']
 
 test.describe('Sidebar › subscription states', () => {
   // A refresh call can still be in flight when a test finishes; drop it quietly.
@@ -69,8 +71,7 @@ test.describe('Sidebar › subscription states', () => {
     await asSubscription(page, { is_host: false, is_free_trail: false, subscription_status: 'Expired' })
 
     for (const label of RESTRICTED_LOCKED) await expect(locked(page, label), label).toHaveCount(1)
-    await expect(locked(page, 'Notifications')).toHaveCount(0)
-    await expect(locked(page, 'Dashboard')).toHaveCount(0)
+    for (const label of RESTRICTED_OPEN) await expect(locked(page, label), label).toHaveCount(0)
 
     await sidebarLink(page, 'Documents').click()
     await expect(page).toHaveURL(/\/$/)
@@ -102,6 +103,18 @@ test.describe('Sidebar › subscription states', () => {
   })
 
   // E2E-012: hosts are exempt from subscription restrictions.
+  // BUG-069: cancelling stops renewal, not access - nothing locks before the end date.
+  test('cancelled subscription before its end date: nothing is locked', async ({ page }) => {
+    const ahead = new Date()
+    ahead.setDate(ahead.getDate() + 10)
+    const endDate = `${ahead.getFullYear()}-${String(ahead.getMonth() + 1).padStart(2, '0')}-${String(ahead.getDate()).padStart(2, '0')}`
+    await asSubscription(page, { is_host: false, is_free_trail: false, subscription_status: 'Cancelled', subscription_end_date: endDate })
+
+    await expect(sidebar(page).locator('.ri-lock-line')).toHaveCount(0)
+    await sidebarLink(page, 'Documents').click()
+    await expect(page).toHaveURL(/\/documents$/)
+  })
+
   test('expired subscription (host): nothing is locked', async ({ page }) => {
     await asSubscription(page, { is_host: true, is_free_trail: false, subscription_status: 'Expired' })
 
