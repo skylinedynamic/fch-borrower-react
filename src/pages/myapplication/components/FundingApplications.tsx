@@ -11,10 +11,10 @@ const COLUMNS = ['Funding Type', 'Entity Type', 'Industry', 'Date', 'Requested A
 const statusClass = (s: string) => `badge ${FUNDING_APPLICATION_STATUS_CLASS_MAP[s] ?? 'bg-secondary-subtle text-secondary'}`
 
 // An application the borrower started but has not submitted (On Hold) is
-// continued from its funding request, as on the Funding Request list - it has
+// continued in the wizard, opened by its own id (it may have no funding request) - it has
 // nothing to view yet (BUG-027).
 const continueUrl = (app: FundingApplication) =>
-  app.status === FUNDING_APPLICATION_STATUS.ON_HOLD && app.funding_request_id ? `/fund-application/${app.funding_request_id}` : null
+  app.status === FUNDING_APPLICATION_STATUS.ON_HOLD ? `/my-applications/funding/${app.id}/edit` : null
 
 export default function FundingApplications() {
   const navigate = useNavigate()

@@ -1,6 +1,7 @@
 import { apiClient } from '../http/apiClient'
 import { useAuthStore } from '../../store/auth'
 import { refreshUser as refreshUserService } from '../../modules/auth-profile'
+import { USER_REFRESHED_EVENT } from '../../config/appConfig'
 
 // Local helper to perform the same logic as the useAuth hook but in a non-React context
 async function refreshUser() {
@@ -9,6 +10,8 @@ async function refreshUser() {
         const responseUserData = await refreshUserService()
         if (responseUserData) {
             setUserData(responseUserData)
+            // Let what depends on more than the user record (the agreement prompt) look again.
+            window.dispatchEvent(new Event(USER_REFRESHED_EVENT))
             return responseUserData
         }
     } catch (error) {

@@ -1,6 +1,9 @@
 import React from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
 import { useCapitalAccessStrategyChecklist } from '../../modules/capital-access/queries';
+import type { ChecklistItem } from '../../modules/capital-access/types';
+import { PROFILE_BUSINESS_DETAILS_ROUTE } from '../../config/profileRoutes';
+import { formatFieldName } from '../../utils/fieldNames';
 import CapitalAccessLoader from '../../components/Loader/CapitalAccessLoader';
 
 export default function PreFlightChecklist() {
@@ -144,7 +147,7 @@ export default function PreFlightChecklist() {
                 </div>
 
                 <div className="mb-4">
-                  {play.checklist.map((item: any, idx: number) => (
+                  {play.checklist.map((item: ChecklistItem, idx: number) => (
                     <div key={idx} className={`ca-checklist-item${item.complete !== false ? '' : ' is-pending'}`}>
                       <div className="d-flex align-items-center gap-3">
                         {item.complete !== false ? (
@@ -152,7 +155,17 @@ export default function PreFlightChecklist() {
                         ) : (
                           <i className="ca-checklist-icon pending ri-close-circle-fill"></i>
                         )}
-                        <span className="fw-semibold fs-14 text-dark">{item.label}</span>
+                        <div>
+                          <span className="fw-semibold fs-14 text-dark">{item.label}</span>
+                          {item.complete === false && item.missing_fields && item.missing_fields.length > 0 && (
+                            <div className="ca-checklist-missing fs-12 text-muted">
+                              <span>Missing: {item.missing_fields.map(formatFieldName).join(', ')}</span>{' '}
+                              <Link to={PROFILE_BUSINESS_DETAILS_ROUTE} className="fw-semibold">
+                                Complete in Profile <i className="ri-arrow-right-line"></i>
+                              </Link>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       {item.complete !== false ? (
                         <span className="ca-badge-done">

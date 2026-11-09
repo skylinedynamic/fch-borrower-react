@@ -99,7 +99,8 @@ export default function PreQualificationDetailsModal({ isOpen, toggle, requestId
   const data = response?.data
 
   return (
-    <Modal isOpen={isOpen} toggle={toggle} size="lg" centered scrollable className="ma-modal" labelledBy="ma-prequal-detail-title">
+    // A medium dialog that flips in, like the app's other dialogs.
+    <Modal isOpen={isOpen} toggle={toggle} centered scrollable modalClassName="flip" className="ma-modal" labelledBy="ma-prequal-detail-title">
       <ModalBody className="ma-modal-body">
         <button type="button" className="btn-close ma-modal-close" onClick={toggle} aria-label="Close"></button>
 

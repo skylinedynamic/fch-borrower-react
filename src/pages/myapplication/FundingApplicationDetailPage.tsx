@@ -1,7 +1,7 @@
 import React from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useFundingApplicationDetail } from '../../modules/my-application'
-import { FUNDING_APPLICATION_STATUS_CLASS_MAP, FUNDING_REVIEW_STATUS } from '../../config/funding'
+import { FUNDING_APPLICATION_STATUS_CLASS_MAP } from '../../config/funding'
 import FundingApplicationDetailLoader from './components/FundingApplicationDetailLoader'
 import DetailSection, { Field } from './components/detail/DetailSection'
 import KeyFact from './components/detail/KeyFact'
@@ -44,18 +44,18 @@ export default function FundingApplicationDetailPage() {
   }
 
   // Same rule as the partner portal's Funding Application details page: the
-  // request is approved and the application is in one of the API's editable
-  // statuses (config `statuses.editable`). The server sends that as is_editable.
-  const canEditApplication =
-    application.funding_request_status === FUNDING_REVIEW_STATUS.APPROVED &&
-    !!application.funding_request_id &&
-    !!application.is_editable
+  // application is in one of the API's editable statuses (config
+  // `statuses.editable`) - however it was created, from a funding request or
+  // converted from the embed form with none. The server sends that as is_editable.
+  const canEditApplication = !!application.id && !!application.is_editable
 
-  // Status not in the editable list: tell the borrower so instead of just
-  // dropping the Edit button. The reason comes from the API.
+  // Status not in the editable list: a banner tells the borrower so (same
+  // design as the admin portal's) instead of just dropping the Edit button.
+  // The reason comes from the API; the first sentence shows in bold.
   const isLockedForEdit = !!application.id && application.is_editable === false
   const lockedReason = application.locked_reason
-    || `This application can no longer be edited because it is "${application.status}". Contact your funding advisor if something needs to change.`
+    || `This funding application is "${application.status}", so it can no longer be edited. Contact your funding advisor if something needs to change.`
+  const [, lockedHeadline = lockedReason, lockedDetail = ''] = lockedReason.match(/^(.*?\.)\s+(.*)$/) ?? []
 
   const statusClass = FUNDING_APPLICATION_STATUS_CLASS_MAP[application.status] || 'bg-secondary-subtle text-secondary'
   const uses = Array.isArray(application.funding_sequence_uses) ? application.funding_sequence_uses.join(', ') : application.funding_sequence_uses
@@ -63,6 +63,19 @@ export default function FundingApplicationDetailPage() {
   return (
     <div className="page-content ma-page">
       <div className="container-fluid">
+        {isLockedForEdit && (
+          <div className="ma-locked-banner" role="status">
+            <span className="ma-locked-banner__icon" aria-hidden="true">
+              <i className="ri-lock-2-fill"></i>
+            </span>
+            <span className="ma-locked-banner__bar" aria-hidden="true" />
+            <div className="min-w-0">
+              <div className="ma-locked-banner__title">{lockedHeadline}</div>
+              {lockedDetail && <div className="ma-locked-banner__detail">{lockedDetail}</div>}
+            </div>
+          </div>
+        )}
+
         <section className="ma-hero ma-detail-hero" aria-labelledby="ma-detail-title">
           <div className="min-w-0">
             <nav aria-label="breadcrumb">
@@ -80,17 +93,12 @@ export default function FundingApplicationDetailPage() {
               <StatusChip status={application.status} tone={toneFromBadgeClass(statusClass)} />
               {canEditApplication && (
                 <Link
-                  to={`/fund-application/${application.funding_request_id}`}
+                  to={`/my-applications/funding/${application.id}/edit`}
                   className="ma-hero-cta"
                   title="Editing will require you to resign the application"
                 >
                   <i className="ri-edit-line" aria-hidden="true"></i>Edit Application
                 </Link>
-              )}
-              {isLockedForEdit && (
-                <button type="button" className="ma-hero-link" disabled title={lockedReason}>
-                  <i className="ri-lock-line" aria-hidden="true"></i>Can't Edit Application
-                </button>
               )}
               <Link to="/my-applications" className="ma-hero-link">
                 <i className="ri-arrow-left-line" aria-hidden="true"></i>Back
@@ -104,13 +112,6 @@ export default function FundingApplicationDetailPage() {
             <KeyFact label="Request status" value={application.funding_request_status} icon="ri-shield-check-line" />
           </div>
         </section>
-
-        {isLockedForEdit && (
-          <div className="alert alert-warning d-flex align-items-start gap-2 mb-4" role="status">
-            <i className="ri-lock-line fs-16" aria-hidden="true"></i>
-            <div>{lockedReason}</div>
-          </div>
-        )}
 
         <StageTracker status={application.status} />
 

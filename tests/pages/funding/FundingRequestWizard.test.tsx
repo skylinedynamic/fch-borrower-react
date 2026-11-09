@@ -65,13 +65,18 @@ const detail = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 })
 
-const renderWizard = (overrides: Record<string, unknown> = {}) => {
-  const submitted: unknown[] = []
+const renderWizard = (
+  overrides: Record<string, unknown> = {},
+  routerState?: Record<string, unknown>,
+  documents: { types?: unknown[]; byType?: Record<number, unknown[]> } = {},
+  path = '/funding/8/review'
+) => {
+  const submitted: any[] = []
   server.use(
     http.get('*/borrower/funding/8', () => HttpResponse.json({ status: true, data: detail(overrides) })),
     http.get('*/common/funding-qualification/*/readiness-factors', () => HttpResponse.json({ status: true, data: [] })),
-    http.get('*/borrower/documents/borrower-document-types', () => HttpResponse.json({ status: true, data: [] })),
-    http.get('*/borrower/documents', () => HttpResponse.json({ status: true, data: [] })),
+    http.get('*/borrower/documents/borrower-document-types', () => HttpResponse.json({ status: true, data: documents.types ?? [] })),
+    http.get('*/borrower/documents', () => HttpResponse.json({ status: true, data: documents.byType ?? [] })),
     http.get('*/borrower/profile/business-info', () => HttpResponse.json({ status: true, data: {} })),
     http.get('*/borrower/profile/financial-info', () => HttpResponse.json({ status: true, data: {} })),
     http.post('*/borrower/funding/requests', async ({ request }) => {
@@ -89,7 +94,7 @@ const renderWizard = (overrides: Record<string, unknown> = {}) => {
       <Route path="/funding/:id" element={<p>Funding detail page</p>} />
       <Route path="/fund-application" element={<p>Fund application page</p>} />
     </Routes>,
-    { route: '/funding/8/review' }
+    { route: routerState ? { pathname: path, state: routerState } : path }
   )
 
   return { ...view, submitted }
@@ -164,5 +169,117 @@ describe('FundingRequestWizard', () => {
 
     await waitFor(() => expect(screen.queryByRole('button', { name: /yes, submit/i })).not.toBeInTheDocument())
     expect(submitted).toHaveLength(0)
+  })
+
+  it('sends no funding_request_id on a fresh request, so the API creates a new one', async () => {
+    const user = userEvent.setup()
+    const { submitted } = renderWizard()
+
+    await user.type(await amountInput(), '50000')
+    await user.click(screen.getByRole('button', { name: /continue to funding request/i }))
+    await user.click(await screen.findByRole('button', { name: /continue to documents/i }))
+    await user.click(await screen.findByRole('button', { name: /submit for underwriting/i }))
+    await user.click(await screen.findByRole('button', { name: /yes, submit/i }))
+
+    await waitFor(() => expect(submitted).toHaveLength(1))
+    expect(submitted[0]).not.toHaveProperty('funding_request_id')
+  })
+
+  /**
+   * Defect: "Update Application" on a rejected request inserted a new funding
+   * request on every submit instead of resubmitting the rejected one.
+   */
+  it('resubmits the rejected request when updating it, instead of creating a new one', async () => {
+    const user = userEvent.setup()
+    const { submitted } = renderWizard({}, { amount: 230000, purpose: 'Working Capital', fromRejectedRequestId: 7 })
+
+    expect(await amountInput()).toHaveValue('230,000')
+    await user.click(screen.getByRole('button', { name: /continue to funding request/i }))
+    await user.click(await screen.findByRole('button', { name: /continue to documents/i }))
+    await user.click(await screen.findByRole('button', { name: /submit for underwriting/i }))
+    await user.click(await screen.findByRole('button', { name: /yes, submit/i }))
+
+    await waitFor(() => expect(submitted).toHaveLength(1))
+    expect(submitted[0]).toMatchObject({ funding_request_id: 7, funding_sequence_id: 8 })
+  })
+
+  /**
+   * Defect: the rejected request's id travelled only in router state, which a
+   * wizard tab opened earlier (or reopened from its URL) does not have - the
+   * submit then inserted yet another request. The id is in the URL now.
+   */
+  it('resubmits the rejected request named in the URL, and says so on screen', async () => {
+    const user = userEvent.setup()
+    const { submitted } = renderWizard({}, undefined, {}, '/funding/8/review?resubmit=7&amount=230000')
+
+    expect(await screen.findByText(/you are updating your rejected funding request/i)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /continue to funding request/i }))
+    await user.click(await screen.findByRole('button', { name: /continue to documents/i }))
+    await user.click(await screen.findByRole('button', { name: /resubmit for underwriting/i }))
+    await user.click(await screen.findByRole('button', { name: /yes, submit/i }))
+
+    await waitFor(() => expect(submitted).toHaveLength(1))
+    expect(submitted[0]).toMatchObject({ funding_request_id: 7, funding_sequence_id: 8 })
+  })
+
+  it('shows no update banner on a fresh request', async () => {
+    renderWizard()
+
+    expect(await screen.findByText('Funding Request Summary')).toBeInTheDocument()
+    expect(screen.queryByText(/you are updating your rejected funding request/i)).not.toBeInTheDocument()
+  })
+
+  describe('documents step', () => {
+    const licence = { id: 3, name: "Driver's License" }
+    const statements = { id: 5, name: 'Business Bank Statements' }
+    const docs = {
+      types: [licence, statements],
+      byType: {
+        3: [{ id: 31, file_name: 'licence.pdf' }],
+        5: [{ id: 51, file_name: 'statement.pdf' }],
+      },
+    }
+    const requiresDocs = { require_documents_uploaded: true, allowed_documents: [3, 5], missing_documents: [] }
+
+    const openDocumentsStep = async () => {
+      const user = userEvent.setup()
+      await user.type(await amountInput(), '50000')
+      await user.click(screen.getByRole('button', { name: /continue to funding request/i }))
+      await user.click(await screen.findByRole('button', { name: /continue to documents/i }))
+      await screen.findByText(licence.name)
+    }
+
+    /**
+     * Defect: "Update Application" on a rejected request opened the wizard
+     * without the optional "Upload Again" button on documents already uploaded:
+     * the button only checked whether the *latest* request on the option was
+     * rejected, and after any later request that was Pending.
+     */
+    it('offers an optional upload on uploaded documents when updating a rejected request', async () => {
+      renderWizard(
+        { ...requiresDocs, latest_review_status: 'Pending' },
+        { purpose: 'Working Capital', fromRejectedRequestId: 7 },
+        docs
+      )
+      await openDocumentsStep()
+
+      expect(await screen.findAllByRole('button', { name: /upload again/i })).toHaveLength(2)
+      // The borrower is told plainly that the extra upload is optional.
+      screen.getAllByRole('button', { name: /upload again/i }).forEach(button =>
+        expect(button).toHaveTextContent(/\(optional\)/i)
+      )
+      expect(screen.getByText(/your previous request was rejected/i)).toBeInTheDocument()
+      expect(screen.getByText(/uploading more is optional/i)).toBeInTheDocument()
+      // Optional: the request can still be submitted without uploading more.
+      expect(screen.getByRole('button', { name: /submit for underwriting/i })).toBeEnabled()
+    })
+
+    it('does not offer it on a fresh request', async () => {
+      renderWizard({ ...requiresDocs, latest_review_status: 'Pending' }, undefined, docs)
+      await openDocumentsStep()
+
+      expect(screen.queryByRole('button', { name: /upload again/i })).not.toBeInTheDocument()
+      expect(screen.queryByText(/your previous request was rejected/i)).not.toBeInTheDocument()
+    })
   })
 })

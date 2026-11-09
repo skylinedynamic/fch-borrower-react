@@ -313,3 +313,13 @@ describe('FundingDetail bank statements banner', () => {
     expect(screen.queryByRole('heading', { name: /bank statements/i })).not.toBeInTheDocument()
   })
 })
+
+// BUG-004 (QA round 2): the description is stored HTML; it must not run script.
+describe('FundingDetail - the description cannot run script (BUG-004)', () => {
+  it('shows the description with its formatting, without the onerror handler', async () => {
+    const { container } = renderDetail({ description: '<b>Net-30</b> accounts <img src=x onerror="window.__xss = 1">' })
+
+    expect((await screen.findByText('Net-30')).tagName).toBe('B')
+    expect(container.querySelector('[onerror]')).toBeNull()
+  })
+})

@@ -25,6 +25,7 @@ import { APPOINTMENT_STATUS_CONFIG } from '../../config/appointmentTypeOptions';
 
 // Components
 import AppointmentModal from './AppointmentModal';
+import { sanitizeHtml } from '../../utils/sanitizeHtml';
 
 export default function Appointments() {
   const calendarRef = useRef(null);
@@ -355,7 +356,7 @@ export default function Appointments() {
                             <div
                               className="text-muted text-truncate-two-lines mb-0 fs-13"
                               style={{ lineHeight: '1.5', letterSpacing: '0.1px' }}
-                              dangerouslySetInnerHTML={{ __html: evt.extendedProps?.description || evt.description || "" }}
+                              dangerouslySetInnerHTML={{ __html: sanitizeHtml(evt.extendedProps?.description || evt.description) }}
                             />
                           </div>
                         </div>

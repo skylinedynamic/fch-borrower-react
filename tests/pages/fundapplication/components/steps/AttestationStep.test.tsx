@@ -285,6 +285,48 @@ describe('AttestationStep', () => {
     expect(screen.getByRole('button', { name: /^Submit$/i })).toBeEnabled()
   })
 
+  /**
+   * Defect: R2 BUG-033 - a submission from a tab left open on an older copy
+   * overwrote what was saved since. It carries the version the page loaded;
+   * the API refuses an older one with 409, and the page says why with a
+   * Reload button instead of a generic failure.
+   */
+  it('a submission from an older copy carries its version and, refused with 409, offers a reload', async () => {
+    const { toast } = await import('react-toastify')
+    const { resetApplicationVersion } = await import('../../../../../src/modules/funding-application/applicationVersion')
+    const { STALE_APPLICATION_TOAST_ID } = await import('../../../../../src/modules/funding-application/saveFeedback')
+    resetApplicationVersion()
+    let sent: Record<string, unknown> | null = null
+    server.use(
+      http.get('*/borrower/funding-application/attestation-authorization', () =>
+        HttpResponse.json({
+          status: true,
+          data: { id: 3, attestation_authorization: false, signature_data: null, requires_resign: false, previous_signature: null, version: 'v-loaded' },
+        })
+      ),
+      http.post('*/borrower/funding-application/attestation-authorization', async ({ request }) => {
+        sent = (await request.json()) as Record<string, unknown>
+        return HttpResponse.json({ status: false, message: 'This application was changed in another tab.' }, { status: 409 })
+      })
+    )
+
+    const user = userEvent.setup()
+    renderStep(false)
+    await screen.findByText(/Electronic Signature & Consent/i)
+    await user.type(screen.getByPlaceholderText(/Enter your full legal name/i), 'Michael Chen')
+    for (const checkbox of screen.getAllByRole('checkbox')) {
+      await user.click(checkbox)
+    }
+    await user.click(screen.getByRole('button', { name: /^Submit$/i }))
+    await user.click(await screen.findByRole('button', { name: 'Submit Application' }))
+
+    await waitFor(() => expect(sent).not.toBeNull())
+    expect(sent).toMatchObject({ expected_version: 'v-loaded' })
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ toastId: STALE_APPLICATION_TOAST_ID })))
+    expect(toast.success).not.toHaveBeenCalled()
+    resetApplicationVersion()
+  })
+
   it('accepts any text as the typed name and stops the input at 255 characters', async () => {
     server.use(
       http.get('*/borrower/funding-application/attestation-authorization', () =>
