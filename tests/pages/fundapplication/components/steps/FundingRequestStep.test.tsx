@@ -42,9 +42,14 @@ const emptyFunding: FundingRequest = {
   additionalFundingTypes: [],
 }
 
-function Harness({ onSaveReady }: { onSaveReady: (fn: () => Promise<boolean>) => void }) {
+type Opened = { fundingRequestId?: number; fundingApplicationId?: number }
+
+function Harness({ onSaveReady, opened }: { onSaveReady: (fn: () => Promise<boolean>) => void; opened: Opened }) {
   const [funding, setFunding] = useState<FundingRequest>(emptyFunding)
   return (
+    <>
+    {/* What the wizard (page header) shows as the product. */}
+    <output data-testid="wizard-approved-funding">{funding.approvedFunding}</output>
     <FundingRequestStep
       funding={funding}
       setFunding={setFunding}
@@ -52,10 +57,16 @@ function Harness({ onSaveReady }: { onSaveReady: (fn: () => Promise<boolean>) =>
       onBack={() => {}}
       loading={false}
       onRegisterSave={(fn) => fn && onSaveReady(fn)}
-      fundingRequestId={7}
+      fundingRequestId={opened.fundingRequestId}
+      fundingApplicationId={opened.fundingApplicationId}
     />
+    </>
   )
 }
+
+// GET /common/funding-sequences?funding_type=..., the Funding Sequence options.
+let sequencesByType: Record<string, { id: number; name: string }[]> = {}
+let sequencesAskedFor: string[] = []
 
 // Lenders > Product Categories, the funding types offered (GET /common/funding-types).
 const categories = ['Term Loan', 'Business Line of Credit', 'SBA Financing', 'Equipment Financing']
@@ -63,6 +74,11 @@ const categories = ['Term Loan', 'Business Line of Credit', 'SBA Financing', 'Eq
 const serve = (data: Record<string, unknown>, onPost?: (body: any) => void) =>
   server.use(
     http.get('*/common/funding-types', () => HttpResponse.json({ status: true, data: categories })),
+    http.get('*/common/funding-sequences', ({ request }) => {
+      const type = new URL(request.url).searchParams.get('funding_type') ?? ''
+      sequencesAskedFor.push(type)
+      return HttpResponse.json({ status: true, data: sequencesByType[type] ?? [] })
+    }),
     http.get('*/borrower/funding-application/funding-request', () => HttpResponse.json({ status: true, data })),
     http.post('*/borrower/funding-application/funding-request', async ({ request }) => {
       const body = await request.json()
@@ -78,12 +94,12 @@ const picker = (container: HTMLElement, inputId: string) =>
 const chipsOf = (container: HTMLElement, inputId: string) =>
   Array.from(picker(container, inputId)?.querySelectorAll('.p-multiselect-token-label') ?? []).map((c) => c.textContent)
 
-const renderStep = () => {
+const renderStep = (opened: Opened = { fundingRequestId: 7 }) => {
   let save: (() => Promise<boolean>) | null = null
   const utils = render(
     <QueryClientProvider client={createTestQueryClient()}>
       <MemoryRouter>
-        <Harness onSaveReady={(fn) => (save = fn)} />
+        <Harness onSaveReady={(fn) => (save = fn)} opened={opened} />
       </MemoryRouter>
     </QueryClientProvider>
   )
@@ -109,7 +125,7 @@ describe('Funding application › Step 4: Funding Request › Additional Funding
     await waitFor(() => expect(chipsOf(container, 'additional_funding_types')).toEqual(['SBA Financing', 'Business Line of Credit']))
   })
 
-  it('shows only Active categories: a saved type that is not one is cleared, to be chosen again', async () => {
+  it('shows only Active categories: a saved additional type that is not one is cleared, the read-only preferred one kept', async () => {
     let posted: any = null
     serve({ ...apiFunding, preferred_funding_type: 'Line of Credit', additional_funding_types: ['SBA Loan', 'Equipment Financing'] }, (body) => (posted = body))
     const user = userEvent.setup()
@@ -127,8 +143,8 @@ describe('Funding application › Step 4: Funding Request › Additional Funding
     expect(Array.from(panel.querySelectorAll('li.p-multiselect-item')).map((o) => o.textContent?.trim())).toEqual(categories)
 
     expect(await save()).toBe(true)
-    // Cleared: the user picks a category (the API asks for one).
-    expect(posted.preferred_funding_type).toBeNull()
+    // Preferred Funding Type is read-only: kept as saved, not cleared.
+    expect(posted.preferred_funding_type).toBe('Line of Credit')
     expect(posted.additional_funding_types).toEqual(['Equipment Financing'])
   })
 
@@ -318,15 +334,91 @@ describe('Funding application › Step 4: Funding Request › Purpose of Funds',
  * the approved funding *product* (FundingSequencingResource matches on that
  * name), not an amount. It is labelled for what it holds.
  */
-describe('Funding application › Step 4: Funding Request › Approved Funding Product', () => {
-  afterEach(() => server.resetHandlers())
+describe('Funding application › Step 4: Funding Request › Funding Sequence', () => {
+  // Converted from the embed form: no funding request, no sequence yet.
+  const embedApplication = { ...apiFunding, funding_request_id: null, funding_sequence_id: null, approved_funding: null, is_from_embed_form: true }
 
-  it('is labelled as the approved product and shows its name', async () => {
+  afterEach(() => {
+    server.resetHandlers()
+    sequencesByType = {}
+    sequencesAskedFor = []
+  })
+
+  const sequenceButton = () => screen.getByText('Funding Sequence').parentElement!.querySelector('button.form-select') as HTMLElement
+
+  it('is labelled Funding Sequence (was Approved Funding Product) and shows its name', async () => {
     serve({ ...apiFunding, approved_funding: 'Term Loans' })
     renderStep()
 
-    expect(await screen.findByText('Approved Funding Product')).toBeInTheDocument()
+    expect(await screen.findByText('Funding Sequence')).toBeInTheDocument()
+    expect(screen.queryByText('Approved Funding Product')).not.toBeInTheDocument()
     expect(await screen.findByDisplayValue('Term Loans')).toBeInTheDocument()
+  })
+
+  it('shows Preferred Funding Type read-only', async () => {
+    serve(embedApplication)
+    renderStep({ fundingApplicationId: 11 })
+
+    const preferred = await screen.findByDisplayValue('Term Loan')
+    expect(preferred).toHaveAttribute('readonly')
+    expect(screen.queryByText('Select preferred funding type')).not.toBeInTheDocument()
+  })
+
+  it('from a funding request: shows the approved sequence read-only, no dropdown, and keeps it', async () => {
+    let posted: any = null
+    serve(apiFunding, (body) => (posted = body))
+    const { save } = renderStep()
+
+    const sequence = await screen.findByDisplayValue('Term Loans')
+    expect(sequence).toHaveAttribute('readonly')
+    expect(screen.queryByText('Select funding sequence')).not.toBeInTheDocument()
+    expect(sequencesAskedFor).toEqual([])
+
+    expect(await save()).toBe(true)
+    expect(posted.funding_sequence_id).toBe(3)
+    expect(posted.approved_funding).toBe('Term Loans')
+  })
+
+  it('not from a funding request: offers the sequences of the preferred funding type and sends the one chosen', async () => {
+    sequencesByType = { 'Term Loan': [{ id: 6, name: 'Term Loans' }, { id: 1, name: '0% Intro Business Cards' }] }
+    let posted: any = null
+    serve(embedApplication, (body) => (posted = body))
+    const user = userEvent.setup()
+    const { save } = renderStep({ fundingApplicationId: 11 })
+
+    await waitFor(() => expect(sequencesAskedFor).toContain('Term Loan'))
+    await waitFor(() => expect(sequenceButton()).not.toBeDisabled())
+    await user.click(sequenceButton())
+    expect(await screen.findByText('0% Intro Business Cards')).toBeInTheDocument()
+    await user.click(screen.getByText('Term Loans'))
+    // The wizard shows the chosen product at once, before any save.
+    expect(screen.getByTestId('wizard-approved-funding')).toHaveTextContent('Term Loans')
+
+    expect(await save()).toBe(true)
+    expect(posted.funding_sequence_id).toBe(6)
+    expect(posted.approved_funding).toBe('Term Loans')
+    expect(posted.funding_request_id).toBeNull()
+  })
+
+  it('no funding request but not converted from the embed form: read-only, no dropdown', async () => {
+    let posted: any = null
+    serve({ ...embedApplication, is_from_embed_form: false, funding_sequence_id: 6, approved_funding: 'Term Loans' }, (body) => (posted = body))
+    const { save } = renderStep({ fundingApplicationId: 11 })
+
+    expect(await screen.findByDisplayValue('Term Loans')).toHaveAttribute('readonly')
+    expect(screen.queryByText('Select funding sequence')).not.toBeInTheDocument()
+    expect(sequencesAskedFor).toEqual([])
+
+    expect(await save()).toBe(true)
+    expect(posted.funding_sequence_id).toBe(6)
+  })
+
+  it('not from a funding request: says so when no sequence is offered for the type', async () => {
+    serve({ ...embedApplication, preferred_funding_type: 'Old Product' })
+    renderStep({ fundingApplicationId: 11 })
+
+    expect(await screen.findByText('No funding sequence is available for Old Product.')).toBeInTheDocument()
+    expect(sequenceButton()).toBeDisabled()
   })
 })
 
