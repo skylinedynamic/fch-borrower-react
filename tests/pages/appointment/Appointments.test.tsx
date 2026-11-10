@@ -80,3 +80,52 @@ describe('Appointments - descriptions cannot run script (BUG-004)', () => {
     expect(view.container.querySelector('[onerror]')).toBeNull()
   })
 })
+
+// Calendly: the borrower books into the company Calendly when it is on, and
+// sees its meetings marked, with their join and reschedule links.
+describe('Appointments - Calendly', () => {
+  const future = () => new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+
+  it('offers booking via Calendly when the borrower may book into it', async () => {
+    useAuthStore.setState({ user: { id: 1, is_host: 0 } })
+    server.use(
+      http.post('*/common/appointments/fetch-all', () => HttpResponse.json({ status: true, data: [] })),
+      http.get('*/common/calendly/status', () => HttpResponse.json({ status: true, data: { connected: true, can_book: true, can_manage: false } })),
+    )
+
+    renderWithProviders(<Appointments />)
+
+    expect(await screen.findByRole('button', { name: /book via calendly/i })).toBeInTheDocument()
+  })
+
+  it('does not offer it when Calendly is off', async () => {
+    useAuthStore.setState({ user: { id: 1, is_host: 0 } })
+    server.use(http.post('*/common/appointments/fetch-all', () => HttpResponse.json({ status: true, data: [] })))
+
+    renderWithProviders(<Appointments />)
+
+    expect(await screen.findByText('No Upcoming Events')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /book via calendly/i })).not.toBeInTheDocument()
+  })
+
+  it('marks a Calendly meeting and links to join and reschedule it', async () => {
+    useAuthStore.setState({ user: { id: 1, is_host: 0 } })
+    server.use(
+      http.post('*/common/appointments/fetch-all', () =>
+        HttpResponse.json({
+          status: true,
+          data: [{
+            id: 2, subject: '30 Minute Meeting', appointment_date: future(), duration_minutes: 30, status: 'confirmed',
+            is_calendly: true, join_url: 'https://meet.google.com/abc', reschedule_url: 'https://calendly.com/reschedulings/INV1',
+          }],
+        })
+      )
+    )
+
+    renderWithProviders(<Appointments />)
+
+    expect(await screen.findByText('Calendly', { selector: '.calendly-badge' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /join/i })).toHaveAttribute('href', 'https://meet.google.com/abc')
+    expect(screen.getByRole('link', { name: /reschedule/i })).toHaveAttribute('href', 'https://calendly.com/reschedulings/INV1')
+  })
+})
