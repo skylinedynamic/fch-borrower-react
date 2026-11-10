@@ -8,6 +8,11 @@ import { http, HttpResponse, type HttpHandler } from 'msw'
  * silently hitting the network.
  */
 export const handlers: HttpHandler[] = [
+  // After every call with a session, apiClient looks at user-details for the
+  // is_refresh flag (and reloads the user when it is set). Default to a user
+  // that is not flagged; tests about the refresh override it with server.use().
+  http.get('*/borrower/user-details', () => HttpResponse.json({ status: true, data: { user: { is_refresh: false } } })),
+
   // The layout (header bell + sidebar "Notifications" badge) loads the latest
   // notifications - and the unread count in their meta - on every page. Default
   // it to empty so tests that render the layout for something else don't need

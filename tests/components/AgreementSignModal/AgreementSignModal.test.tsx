@@ -6,6 +6,9 @@ import { renderWithProviders, screen, waitFor } from '../../test-utils'
 import { server } from '../../mocks/server'
 import { useAuthStore } from '../../../src/store/auth/authStore'
 import AgreementSignModal from '../../../src/components/AgreementSignModal/AgreementSignModal'
+import { USER_REFRESHED_EVENT } from '../../../src/config/appConfig'
+import { act } from '@testing-library/react'
+import { MutationCache, QueryClient } from '@tanstack/react-query'
 
 vi.mock('react-toastify', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-toastify')>()
@@ -209,5 +212,145 @@ describe('AgreementSignModal guided signing', () => {
     await user.click(screen.getByRole('button', { name: /Accept & Continue/ }))
     await waitFor(() => expect(sent()).not.toBeNull())
     expect(sent().fields).toMatchObject({ name: 'Jane Doe', sig: 'data:image/png;base64,SIGNED' })
+  })
+})
+
+/**
+ * The host can require or waive the agreement while the borrower uses the
+ * portal. Once the portal reloads the user (USER_REFRESHED_EVENT), the modal
+ * asks again - no full reload needed.
+ */
+describe('AgreementSignModal after the user is refreshed', () => {
+  const signIn = () =>
+    useAuthStore.setState({ user: { id: 1, is_agreement_signed: false, is_free_trail: false }, userSubscription: null } as any)
+  const needsSign = (yes: boolean) =>
+    HttpResponse.json({
+      status: true,
+      data: yes ? { needs_sign: true, template: { id: 7, version_id: 1, version: 1, template_html: '<p>Terms</p>' } } : { needs_sign: false, template: null },
+    })
+  const userRefreshed = () => act(() => { window.dispatchEvent(new Event(USER_REFRESHED_EVENT)) })
+
+  it('opens once the host requires it, without a full reload', async () => {
+    signIn()
+    let required = false
+    let checks = 0
+    server.use(http.get('*/borrower/agreement-sign/check', () => { checks += 1; return needsSign(required) }))
+    renderWithProviders(<AgreementSignModal />)
+    await waitFor(() => expect(checks).toBe(1))
+    expect(screen.queryByTitle('Agreement Content')).not.toBeInTheDocument()
+
+    required = true
+    userRefreshed()
+
+    expect(await screen.findByTitle('Agreement Content')).toBeInTheDocument()
+    expect(checks).toBe(2)
+  })
+
+  it('closes once the host waives it', async () => {
+    signIn()
+    let required = true
+    server.use(http.get('*/borrower/agreement-sign/check', () => needsSign(required)))
+    renderWithProviders(<AgreementSignModal />)
+    await screen.findByTitle('Agreement Content')
+
+    required = false
+    userRefreshed()
+
+    await waitFor(() => expect(screen.queryByTitle('Agreement Content')).not.toBeInTheDocument())
+  })
+
+  it('keeps the thank-you screen after signing, though signing is no longer needed', async () => {
+    signIn()
+    let signed = false
+    server.use(
+      http.get('*/borrower/agreement-sign/check', () => needsSign(!signed)),
+      http.post('*/borrower/agreement-sign/submit', () => {
+        signed = true
+        return HttpResponse.json({ status: true, message: 'Signed' })
+      }),
+    )
+    const user = userEvent.setup()
+    renderWithProviders(<AgreementSignModal />)
+    await screen.findByTitle('Agreement Content')
+    await user.click(screen.getByRole('checkbox'))
+    await user.click(screen.getByRole('button', { name: /Accept & Continue/ }))
+    const thanks = await screen.findByText('Thank You!')
+
+    userRefreshed()
+
+    await new Promise((r) => setTimeout(r, 50))
+    expect(thanks).toBeInTheDocument()
+  })
+
+  // Flaky in CI: signing invalidates the check, and when that refetch
+  // ("no longer needed") landed before the submit had marked success, the
+  // modal closed and the thank-you screen never showed. Here the refetch is
+  // made to land first, every time.
+  it('shows the thank-you screen even when the post-signing check answers first', async () => {
+    signIn()
+    let signed = false
+    server.use(
+      http.get('*/borrower/agreement-sign/check', () => needsSign(!signed)),
+      http.post('*/borrower/agreement-sign/submit', () => {
+        signed = true
+        return HttpResponse.json({ status: true, message: 'Signed' })
+      }),
+    )
+    // A mutation's cache-level onSuccess is awaited before mutateAsync resolves,
+    // so the check is refetched - and its answer rendered - before the submit
+    // call returns to the component.
+    const queryClient: QueryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+      mutationCache: new MutationCache({
+        onSuccess: async () => {
+          await queryClient.refetchQueries({ type: 'active' })
+          // Let the "no longer needed" answer render before the submit returns.
+          await new Promise((r) => setTimeout(r, 100))
+        },
+      }),
+    })
+    const user = userEvent.setup()
+    renderWithProviders(<AgreementSignModal />, { queryClient })
+    await screen.findByTitle('Agreement Content')
+    await user.click(screen.getByRole('checkbox'))
+    await user.click(screen.getByRole('button', { name: /Accept & Continue/ }))
+
+    expect(await screen.findByText('Thank You!')).toBeInTheDocument()
+  })
+})
+
+/** Once signed, there is nothing to ask - until the host cancels the signature. */
+describe('AgreementSignModal for a borrower who has signed', () => {
+  it('does not ask the API at all, even after the user is refreshed', async () => {
+    useAuthStore.setState({ user: { id: 1, is_agreement_signed: true, is_free_trail: false }, userSubscription: null } as any)
+    let checks = 0
+    server.use(http.get('*/borrower/agreement-sign/check', () => { checks += 1; return HttpResponse.json({ status: true, data: { needs_sign: false } }) }))
+    renderWithProviders(<AgreementSignModal />)
+
+    act(() => { window.dispatchEvent(new Event(USER_REFRESHED_EVENT)) })
+
+    await new Promise((r) => setTimeout(r, 50))
+    expect(checks).toBe(0)
+  })
+
+  it('asks again, and opens, once the host cancels the signature', async () => {
+    useAuthStore.setState({ user: { id: 1, is_agreement_signed: true, is_free_trail: false }, userSubscription: null } as any)
+    let checks = 0
+    server.use(
+      http.get('*/borrower/agreement-sign/check', () => {
+        checks += 1
+        return HttpResponse.json({ status: true, data: { needs_sign: true, template: { id: 7, version_id: 1, version: 1, template_html: '<p>Terms</p>' } } })
+      }),
+    )
+    renderWithProviders(<AgreementSignModal />)
+
+    // refresh-user brings the cancelled signature.
+    act(() => {
+      useAuthStore.setState({ user: { id: 1, is_agreement_signed: false, is_free_trail: false } } as any)
+      window.dispatchEvent(new Event(USER_REFRESHED_EVENT))
+    })
+
+    expect(await screen.findByTitle('Agreement Content')).toBeInTheDocument()
+    expect(checks).toBeGreaterThanOrEqual(1)
   })
 })

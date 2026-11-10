@@ -3,10 +3,12 @@ import { queryKeys } from '../../lib/query';
 import { checkAgreementSign, submitAgreementSign } from './services';
 import { SubmitAgreementSignRequest } from './types';
 
-export const useCheckAgreementSign = () => {
+/** Whether the borrower must sign. `enabled: false` once they have signed - nothing to ask. */
+export const useCheckAgreementSign = (enabled = true) => {
     return useQuery({
         queryKey: queryKeys.agreement.check(),
         queryFn: checkAgreementSign,
+        enabled,
     });
 };
 
