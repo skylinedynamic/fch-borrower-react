@@ -179,6 +179,25 @@ export type ChangeRequestRequest = {
   note?: string
 }
 
+/** A field with a change request waiting for review; entity_id names a bank account row (R2 BUG-039). */
+export type PendingChangeRequest = {
+  /** The request's id, to cancel it. */
+  id: number
+  field_name: string
+  entity_id: number | null
+}
+
+export type PendingChangeRequestsResponse = {
+  status: boolean
+  message?: string
+  data?: PendingChangeRequest[]
+}
+
+export type CancelChangeRequestResponse = {
+  status: boolean
+  message: string
+}
+
 export type ChangeRequestResponse = {
   status: boolean
   message: string

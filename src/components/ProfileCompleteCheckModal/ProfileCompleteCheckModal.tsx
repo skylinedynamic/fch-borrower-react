@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { Modal, ModalBody, ModalHeader } from 'reactstrap'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { formatFieldName } from '../../utils/fieldNames'
 import { useProfileCompletion } from '../../modules/profile'
 import { useAuthStore } from '../../store/auth'
 import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils'
 import { clearStrayModalBackdrops } from '../../utils/modalBackdrop'
+import { PAYMENT_PATHS, isUnderPath } from '../../config/accessRestriction'
 import { clearAuth } from '../../lib/auth'
 import { logout } from '../../modules/auth/services'
 import './ProfileCompleteCheckModal.css'
@@ -31,20 +33,12 @@ const SECTIONS: readonly ProfileSection[] = [
 /** How many missing fields to list per section before "+N more fields". */
 const FIELDS_SHOWN = 3
 
-/** Field-name words that are acronyms, kept in capitals ("business_ein" → "Business EIN"). */
-const ACRONYMS = new Set(['ein', 'ssn', 'dob', 'zip', 'llc'])
-
-const formatFieldName = (field: string) =>
-  field
-    .split('_')
-    .map((word) => (ACRONYMS.has(word) ? word.toUpperCase() : word.charAt(0).toUpperCase() + word.slice(1)))
-    .join(' ')
-
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`
 
 /**
  * Asks the borrower to finish the required parts of their profile (Personal,
- * Business, Financial), on every page but Profile, until they have. Only the
+ * Business, Financial), on every page but Profile and the payment pages
+ * (Invoices, Payments, Billing Details - paying comes first), until they have. Only the
  * sections still to finish are listed, each with what is missing, and the
  * first one pulses with "Start here".
  */
@@ -63,6 +57,13 @@ const ProfileCompleteCheckModal = () => {
   useEffect(() => {
     // If restricted, never show the modal
     if (isRestricted) {
+      setOpen(false)
+      return
+    }
+
+    // Paying comes first: the payment pages stay usable, and the popup comes
+    // back on the next page the borrower opens.
+    if (isUnderPath(location.pathname, PAYMENT_PATHS)) {
       setOpen(false)
       return
     }

@@ -18,6 +18,7 @@ import EditConfirmationModal from './components/shared/EditConfirmationModal'
 import { useCoBorrowers } from './hooks/useCoBorrowers'
 import { FUNDING_PURPOSE_OTHER, purposeOfFundingOptions, timeframeOptions, withoutPreferredFundingType } from '../../data/profile'
 import { useFundingRequest, useFundingApplicationDocuments } from '../../modules/funding-application/queries'
+import { resetApplicationVersion } from '../../modules/funding-application/applicationVersion'
 import { setEditRequiresConfirmation, setEditConfirmationResolving, resetEditConfirmation } from '../../store/fundApplication/editConfirmationStore'
 import { formatCurrency } from '../../utils/formatters'
 import { STEP_INDICES, isWizardStepComplete } from './stepProgress'
@@ -35,6 +36,7 @@ import {
   type FederalCompliance,
   type Attestation,
 } from './types'
+
 
 const matchPurpose = (raw: string | null | undefined): string => {
   if (!raw) return ''
@@ -117,6 +119,11 @@ export default function FundApplication() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const activeStepSaveRef = React.useRef<(() => Promise<boolean>) | null>(null)
+
+  // The application version belongs to this wizard: leaving it (or opening
+  // another request) forgets it, so the next one starts from its own load
+  // (R2 BUG-033).
+  useEffect(() => () => resetApplicationVersion(), [id])
 
   // Co-borrower hook
   const {
@@ -317,6 +324,20 @@ export default function FundApplication() {
   // Callback for steps to register their save function
   const registerSave = useCallback((fn: (() => Promise<boolean>) | null) => {
     activeStepSaveRef.current = fn
+  }, [])
+
+  // Each step is rendered twice - the desktop pane (lg and up) and the mobile
+  // accordion - and only the copy on screen may register its save. Both did,
+  // the hidden mobile copy last, so a save refused from the sidebar put its
+  // field messages on the hidden copy and a desktop showed only the toast.
+  const [isDesktop, setIsDesktop] = useState<boolean>(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 992px)').matches
+  )
+  useEffect(() => {
+    const query = window.matchMedia('(min-width: 992px)')
+    const onChange = () => setIsDesktop(query.matches)
+    query.addEventListener?.('change', onChange)
+    return () => query.removeEventListener?.('change', onChange)
   }, [])
 
   // Validation: Check if business info step can proceed
@@ -842,7 +863,7 @@ export default function FundApplication() {
                 {tabs.map((_, idx) => (
                   <div key={idx} style={{ display: activeStep === idx ? 'block' : 'none' }}>
                     <fieldset disabled={isLocked} className="border-0 p-0 m-0">
-                      {renderStep(idx, activeStep === idx)}
+                      {renderStep(idx, activeStep === idx && isDesktop)}
                     </fieldset>
                   </div>
                 ))}
@@ -886,7 +907,7 @@ export default function FundApplication() {
                             </div>
                           )}
                           <fieldset disabled={isLocked} className="border-0 p-0 m-0">
-                            {renderStep(idx, isOpen)}
+                            {renderStep(idx, isOpen && !isDesktop)}
                           </fieldset>
                         </div>
                       </li>

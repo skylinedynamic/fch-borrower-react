@@ -1,5 +1,5 @@
 import { apiClient } from '../../lib/http/apiClient'
-import type { PersonalInfoResponse, PersonalInfoData, SavePersonalInfoRequest, SavePersonalInfoResponse, BusinessDetailsResponse, BusinessDetailsData, SaveBusinessDetailsRequest, SaveBusinessDetailsResponse, FinancialInfoResponse, FinancialInfoData, SaveFinancialInfoRequest, SaveFinancialInfoResponse, ChangeRequestRequest, ChangeRequestResponse } from './types'
+import type { PersonalInfoResponse, PersonalInfoData, SavePersonalInfoRequest, SavePersonalInfoResponse, BusinessDetailsResponse, BusinessDetailsData, SaveBusinessDetailsRequest, SaveBusinessDetailsResponse, FinancialInfoResponse, FinancialInfoData, SaveFinancialInfoRequest, SaveFinancialInfoResponse, ChangeRequestRequest, ChangeRequestResponse, PendingChangeRequest, PendingChangeRequestsResponse, CancelChangeRequestResponse } from './types'
 
 export interface ProfileCompletionStatus {
   is_complete: boolean
@@ -145,6 +145,18 @@ export const chooseOnboardingPath = async (path: OnboardingPathId): Promise<Comp
 /** Skips the Getting Started step the borrower is on (only some steps allow it). */
 export const skipOnboardingStep = async (step: string): Promise<CompleteOnboardingResponse> => {
   const { data } = await apiClient.post<CompleteOnboardingResponse>('/borrower/profile/onboarding/skip', { step })
+  return data
+}
+
+/** The fields with a change request waiting for review (R2 BUG-039). */
+export const fetchPendingChangeRequests = async (): Promise<PendingChangeRequest[]> => {
+  const { data } = await apiClient.get<PendingChangeRequestsResponse>('/borrower/profile/change-requests/pending')
+  return data.data ?? []
+}
+
+/** Cancels (deletes) a change request still waiting for review. */
+export const cancelChangeRequest = async (id: number): Promise<CancelChangeRequestResponse> => {
+  const { data } = await apiClient.delete<CancelChangeRequestResponse>(`/borrower/profile/change-requests/${id}`)
   return data
 }
 

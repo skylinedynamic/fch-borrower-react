@@ -278,8 +278,8 @@ export default function FundingRequestModal({ show, onHide, review }: FundingReq
                                             {displayReview.status === FUNDING_REVIEW_STATUS.REJECTED && (
                                                 <button className="btn btn-danger shadow-sm" onClick={() => {
                                                     onHide();
-                                                    navigate(`/funding/${displayReview.funding_sequence?.id}/review`, {
-                                                        state: { amount: displayReview.requested_amount || '', purpose: displayReview.use_of_funds || 'Working Capital' }
+                                                    navigate(`/funding/${displayReview.funding_sequence?.id}/review?resubmit=${displayReview.id}`, {
+                                                        state: { amount: displayReview.requested_amount || '', purpose: displayReview.use_of_funds || 'Working Capital', fromRejectedRequestId: displayReview.id }
                                                     });
                                                 }}>
                                                     Update Application <i className="ri-refresh-line ms-1 align-bottom"></i>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { pgRequiredLabel } from '../../src/utils/creditAccounts'
+import { pgRequiredLabel, timeInBusinessLabel } from '../../src/utils/creditAccounts'
 
 /**
  * BUG-084: one card said "Typically required", the next "Typically Required",
@@ -26,5 +26,43 @@ describe('pgRequiredLabel', () => {
 
   it('keeps a specific condition the generic answers would lose', () => {
     expect(pgRequiredLabel('Required above $50k')).toBe('Required above $50k')
+  })
+})
+
+describe('requirementLabel', () => {
+  it('says Not Required for a blank requirement and keeps any other text', async () => {
+    const { requirementLabel } = await import('../../src/utils/creditAccounts')
+    expect(requirementLabel(null)).toBe('Not Required')
+    expect(requirementLabel('   ')).toBe('Not Required')
+    expect(requirementLabel(' Manual review ')).toBe('Manual review')
+  })
+})
+
+describe('creditAccountLogo', () => {
+  it('keeps an absolute URL, puts a stored path under the API storage, and gives null when there is none', async () => {
+    const { creditAccountLogo } = await import('../../src/utils/creditAccounts')
+    expect(creditAccountLogo('https://cdn.example/a.png', 'https://api.example/api/v1')).toBe('https://cdn.example/a.png')
+    expect(creditAccountLogo('logos/a.png', 'https://api.example/api/v1')).toBe('https://api.example/storage/logos/a.png')
+    expect(creditAccountLogo(null, 'https://api.example/api/v1')).toBeNull()
+  })
+})
+
+describe('issuerInitials', () => {
+  it('takes the first letters of the first two words, or the first two of one word', async () => {
+    const { issuerInitials } = await import('../../src/utils/creditAccounts')
+    expect(issuerInitials('Office Depot')).toBe('OD')
+    expect(issuerInitials('staples')).toBe('ST')
+    expect(issuerInitials('Bank of America')).toBe('BA')
+    expect(issuerInitials('The Home Depot')).toBe('HD')
+    expect(issuerInitials('  ')).toBe('?')
+  })
+})
+
+describe('timeInBusinessLabel', () => {
+  it('shows the months with a plus, or "No min" when there is no minimum, never "0 mo+"', () => {
+    expect(timeInBusinessLabel(12)).toBe('12 mo+')
+    expect(timeInBusinessLabel(0)).toBe('No min')
+    expect(timeInBusinessLabel(null)).toBe('No min')
+    expect(timeInBusinessLabel(undefined)).toBe('No min')
   })
 })

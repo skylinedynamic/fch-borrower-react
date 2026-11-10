@@ -3,6 +3,13 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { render, screen } from '@testing-library/react'
 import { useAuthStore } from '../../../src/store/auth'
 import ProtectedRoute from '../../../src/lib/auth/ProtectedRoute'
+import { SUBSCRIPTION_STATUS_CANCELLED } from '../../../src/config/subscriptionConfig'
+
+const daysFromToday = (days: number) => {
+  const d = new Date()
+  d.setDate(d.getDate() + days)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 
 const reset = () => useAuthStore.setState({ token: undefined, user: null, userSubscription: null, rememberMe: true })
 
@@ -64,6 +71,43 @@ describe('ProtectedRoute', () => {
     })
     renderAt('/notifications')
     expect(screen.getByText('Protected Content')).toBeInTheDocument()
+  })
+
+  // BUG-069: a cancelled subscription keeps full access until its end date.
+  describe('after the borrower cancels', () => {
+    const cancelled = (subscription_end_date: string) =>
+      useAuthStore.setState({
+        token: 'abc',
+        user: { id: 1 },
+        userSubscription: { subscription_status: SUBSCRIPTION_STATUS_CANCELLED, subscription_end_date },
+      })
+
+    it.each(['/documents', '/profile', '/billing-details', '/credit-card-stacking'])(
+      'still opens %s before the end date',
+      (path) => {
+        cancelled(daysFromToday(10))
+        renderAt(path)
+        expect(screen.getByText('Protected Content')).toBeInTheDocument()
+      }
+    )
+
+    it.each(['/profile', '/invoices', '/payments', '/billing-details', '/notifications'])(
+      'keeps %s open once the end date has passed',
+      (path) => {
+        cancelled(daysFromToday(-1))
+        renderAt(path)
+        expect(screen.getByText('Protected Content')).toBeInTheDocument()
+      }
+    )
+
+    it.each(['/documents', '/funding-request', '/credit-card-stacking', '/appointment'])(
+      'sends %s back to the dashboard once the end date has passed',
+      (path) => {
+        cancelled(daysFromToday(-1))
+        renderAt(path)
+        expect(screen.getByText('Dashboard Page')).toBeInTheDocument()
+      }
+    )
   })
 
   it('lets a free-trial user reach the notifications page', () => {

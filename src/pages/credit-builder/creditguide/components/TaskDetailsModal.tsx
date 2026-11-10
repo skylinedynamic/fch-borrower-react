@@ -2,6 +2,7 @@ import React from 'react'
 import { Modal, ModalBody } from 'reactstrap'
 import { TierTask } from '../../../../modules/credit-builder/guide/types'
 import { CREDIT_BUILDER_STATUS } from '../../../../data/credit-builder'
+import { sanitizeHtml } from '../../../../utils/sanitizeHtml'
 
 interface TaskDetailsModalProps {
   isOpen: boolean
@@ -77,7 +78,7 @@ export default function TaskDetailsModal({ isOpen, toggle, task, logoSrc, onVeri
 
         <div className="cg-modal-body cg-details-body">
           {task.vendor?.description && (
-            <div className="cg-details-description" dangerouslySetInnerHTML={{ __html: task.vendor.description }} />
+            <div className="cg-details-description" dangerouslySetInnerHTML={{ __html: sanitizeHtml(task.vendor.description) }} />
           )}
 
           <div className="cg-details-grid">

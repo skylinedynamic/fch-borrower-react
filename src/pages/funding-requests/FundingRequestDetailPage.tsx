@@ -15,6 +15,7 @@ import { toast } from 'react-toastify'
 import ReviewProgressCard from './components/ReviewProgressCard'
 import '../../components/Common/StatisticsCardSkeleton.css'
 import '../../../assets/css/funding-requests.css'
+import { sanitizeHtml } from '../../utils/sanitizeHtml'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const formatDate = (d: string) =>
@@ -99,7 +100,7 @@ interface ActivityItemProps {
     isFirst: boolean
 }
 
-const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }) => {
+export const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }) => {
     const [expanded, setExpanded] = useState(false) // All items collapsed by default
 
     const logTypeRaw = activity.log_type_raw || ''
@@ -358,7 +359,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, review, isFirst }
                                         {description ? (
                                             <div
                                                 className="text-muted mb-2 fs-13"
-                                                dangerouslySetInnerHTML={{ __html: description }}
+                                                dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }}
                                             />
                                         ) : (!activity.attachments || activity.attachments.length === 0) ? (
                                             <p className="text-muted fs-12 mb-0">No additional details are available for this action.</p>
@@ -433,12 +434,20 @@ export default function FundingRequestDetailPage() {
     const loadRequest = useCallback((showLoader = true) => {
         if (!id) return Promise.resolve()
         if (showLoader) setLoading(true)
+        // A request that is not this borrower's (or none) answers 404: the page
+        // shows "Request not found", so no error toast on top. A real failure is
+        // toasted once - the id stops a second copy when the load runs twice.
+        const loadFailed = (message?: string) =>
+            toast.error(message || 'Failed to load details', { toastId: 'funding-request-load' })
         return getBorrowerFundingRequest(Number(id))
             .then(res => {
                 if (res.success) setReview(res.data)
-                else toast.error(res.message || 'Failed to load details')
+                else loadFailed(res.message)
             })
-            .catch(() => toast.error('Failed to load details'))
+            .catch((error) => {
+                if (error?.response?.status === 404) return
+                loadFailed()
+            })
             .finally(() => setLoading(false))
     }, [id])
 
@@ -877,10 +886,11 @@ export default function FundingRequestDetailPage() {
                                                         </p>
                                                         <div className="mt-3">
                                                             <Link
-                                                                to={`/funding/${review.funding_sequence_id || review.funding_sequence?.id}/review`}
+                                                                to={`/funding/${review.funding_sequence_id || review.funding_sequence?.id}/review?resubmit=${review.id}`}
                                                                 state={{
                                                                     purpose: review.use_of_funds,
-                                                                    amount: review.requested_amount
+                                                                    amount: review.requested_amount,
+                                                                    fromRejectedRequestId: review.id
                                                                 }}
                                                                 className="btn btn-danger btn-sm fw-medium px-4 d-inline-flex align-items-center"
                                                             >
@@ -1005,22 +1015,27 @@ export default function FundingRequestDetailPage() {
                                                     <React.Fragment key={title}>
                                                         <tr className="border-bottom border-bottom-dashed">
                                                             <td colSpan={4} className="text-start fw-semibold text-dark bg-light-subtle">
-                                                                <i className="ri-folder-3-line me-2 text-primary"></i>
-                                                                {title}
-                                                                <span className="ms-2 badge bg-primary-subtle text-primary">
-                                                                    {files.length} {files.length === 1 ? 'file' : 'files'}
-                                                                </span>
-                                                                {canManageDocuments && documentTypeFor(title) && (
-                                                                    <button
-                                                                        type="button"
-                                                                        className="btn btn-sm btn-soft-primary float-end py-0"
-                                                                        aria-label={`Upload ${title}`}
-                                                                        disabled={savingDocuments}
-                                                                        onClick={() => setUploadDocType(documentTypeFor(title))}
-                                                                    >
-                                                                        <i className="ri-upload-2-line me-1"></i>Upload
-                                                                    </button>
-                                                                )}
+                                                                <div className="d-flex align-items-center justify-content-between gap-2">
+                                                                    <div className="d-flex align-items-center">
+                                                                        <i className="ri-folder-3-line me-2 text-primary"></i>
+                                                                        {title}
+                                                                        <span className="ms-2 badge bg-primary-subtle text-primary">
+                                                                            {files.length} {files.length === 1 ? 'file' : 'files'}
+                                                                        </span>
+                                                                    </div>
+                                                                    {canManageDocuments && documentTypeFor(title) && (
+                                                                        <button
+                                                                            type="button"
+                                                                            className="btn btn-sm btn-soft-primary d-inline-flex align-items-center gap-1 px-3 fs-13 fw-medium"
+                                                                            aria-label={`Upload ${title}`}
+                                                                            disabled={savingDocuments}
+                                                                            onClick={() => setUploadDocType(documentTypeFor(title))}
+                                                                        >
+                                                                            <i className="ri-upload-2-line fs-15 lh-1" aria-hidden="true"></i>
+                                                                            <span>Upload</span>
+                                                                        </button>
+                                                                    )}
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     {(docs as any[]).map((doc: any, idx: number) => {

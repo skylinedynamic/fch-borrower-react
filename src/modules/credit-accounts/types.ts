@@ -1,3 +1,5 @@
+import type { CreditAccountStatus } from '../../config/creditAccountStatusOptions';
+
 export interface CreditAccount {
     id: number;
     card_name: string;
@@ -25,7 +27,7 @@ export interface CreditAccount {
     personal_guarantee: string | null;
     business_credit_profile: string | null;
     final_approval: string | null;
-    status?: 'Requested' | 'Processing' | 'Approved';
+    status?: CreditAccountStatus | null;
     created_at: string;
     updated_at: string;
 }
@@ -70,4 +72,15 @@ export interface CreditAccountResponse {
     };
     message?: string;
     status?: boolean;
+}
+
+export interface ApplyCreditAccountPayload {
+    id: number;
+    status: CreditAccountStatus;
+}
+
+export interface ApplyCreditAccountResponse {
+    status: boolean;
+    message: string;
+    data: unknown;
 }

@@ -127,3 +127,17 @@ describe('Application activity - staff notes (BUG-156)', () => {
     expect(await screen.findByText('Email Sent')).toBeInTheDocument()
   })
 })
+
+// BUG-004 (QA round 2): descriptions are HTML from the API, written with names
+// people typed; a name like `<img src=x onerror=...>` ran in the admin's panel.
+describe('Application activity - details cannot run script (BUG-004)', () => {
+  it('shows the details with their formatting, without the onerror handler', async () => {
+    const user = userEvent.setup()
+    serve([{ ...ACTIVITIES[0], description: '<p><b>Moved</b> for R2-XSS <img src=x onerror="window.__xss = 1"></p>' }])
+    const view = renderWithProviders(<ApplicationActivity fundingApplicationId={8} />)
+
+    await user.click(await screen.findByRole('button', { name: 'Show details' }))
+    expect(screen.getByText('Moved').tagName).toBe('B')
+    expect(view.container.querySelector('[onerror]')).toBeNull()
+  })
+})

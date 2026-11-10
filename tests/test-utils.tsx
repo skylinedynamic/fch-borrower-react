@@ -13,7 +13,8 @@ export const createTestQueryClient = () =>
 
 interface RenderWithProvidersOptions extends Omit<RenderOptions, 'wrapper'> {
   queryClient?: QueryClient
-  route?: string
+  /** A path, or a path with router state (what `<Link state>` / `navigate(path, { state })` pass). */
+  route?: string | { pathname: string; state?: unknown }
 }
 
 export function renderWithProviders(

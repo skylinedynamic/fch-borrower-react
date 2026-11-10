@@ -58,7 +58,38 @@ describe('Sidebar - why a menu is locked (BUG-033)', () => {
 
     const dialog = await screen.findByRole('dialog')
     expect(dialog).toHaveTextContent(/your subscription is not active/i)
+    // BUG-069: a cancelled subscription is resumed from Billing Details.
+    expect(dialog).toHaveTextContent(/resume it from billing details/i)
     expect(screen.getByRole('link', { name: /view invoices/i })).toHaveAttribute('href', '/invoices')
+  })
+
+  // BUG-069: what they owe, how to resume, and their profile stay reachable.
+  it.each([/^profile$/i, /^billing details/i, /^invoices/i, /^payments/i])(
+    'leaves %s unlocked once the subscription is no longer active',
+    (name) => {
+      as(EXPIRED)
+      renderWithProviders(<Sidebar />)
+
+      const links = screen.getAllByRole('link', { name })
+      for (const link of links) expect(link.querySelector('.ri-lock-line')).toBeNull()
+      fireEvent.click(links[0])
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    }
+  )
+
+  it('locks nothing for a cancelled subscription before its end date', () => {
+    const inTenDays = new Date()
+    inTenDays.setDate(inTenDays.getDate() + 10)
+    as({
+      partner_type: PARTNER_TYPES.WHITE_LABEL,
+      partner_payment_for_me: true,
+      subscription_status: SUBSCRIPTION_STATUS_TYPES.CANCELLED,
+      subscription_end_date: `${inTenDays.getFullYear()}-${String(inTenDays.getMonth() + 1).padStart(2, '0')}-${String(inTenDays.getDate()).padStart(2, '0')}`,
+    })
+    renderWithProviders(<Sidebar />)
+
+    expect(screen.getByRole('link', { name: /^documents/i }).querySelector('.ri-lock-line')).toBeNull()
+    expect(screen.getByRole('link', { name: /^funding$/i }).querySelector('.ri-lock-line')).toBeNull()
   })
 
   it('explains the locked Credit Builder group too', async () => {

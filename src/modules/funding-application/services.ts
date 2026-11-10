@@ -1,4 +1,5 @@
 import { apiClient } from '../../lib/http/apiClient'
+import { adoptLoadedVersion, rememberSavedVersion, withExpectedVersion } from './applicationVersion'
 import type { BusinessInfoResponse, BusinessInfoData, OwnershipInfoResponse, OwnershipInfoData, FinancialInfoResponse, FinancialInfoData, DisclosuresConsentResponse, DisclosuresConsentData, FundingRequestResponse, FundingRequestData, FederalComplianceResponse, FederalComplianceData, AttestationData, AttestationResponse, FundingApplicationDocument, FundingApplicationDocumentsResponse } from './types'
 
 export type BusinessInfoPayload = {
@@ -111,6 +112,25 @@ export type CoBorrowerValidationPayload = {
   phone_country_code: string
 }
 
+/**
+ * A step's load: the wizard starts from the first version it sees.
+ */
+const loadStep = async <TResponse extends { data: any }>(url: string, params: Record<string, any>): Promise<TResponse['data']> => {
+  const { data } = await apiClient.get<TResponse>(url, { params })
+  adoptLoadedVersion(data.data)
+  return data.data
+}
+
+/**
+ * A step's save: sent with the version this page is working from, so a save
+ * from an older copy is refused (409) rather than overwriting a newer one
+ * (R2 BUG-033); the version it returns is the one the next save sends.
+ */
+const saveStep = async <TResponse extends { data: any }>(url: string, payload: object): Promise<TResponse['data']> => {
+  const { data } = await apiClient.post<TResponse>(url, withExpectedVersion(payload))
+  rememberSavedVersion(data.data)
+  return data.data
+}
 
 // Which application a wizard step reads. By its own id when the wizard has it:
 // an application converted from the embed form has no funding request.
@@ -124,79 +144,84 @@ const lookupParams = (
 
 export const fetchBusinessInfo = async (fundingRequestId?: number | string | null, fundingApplicationId?: number | string | null): Promise<BusinessInfoData> => {
   const params = lookupParams(fundingRequestId, fundingApplicationId)
-  const { data } = await apiClient.get<BusinessInfoResponse>('/borrower/funding-application/business-info', { params })
-  return data.data
+  return loadStep<BusinessInfoResponse>('/borrower/funding-application/business-info', params)
 }
 
 export const saveBusinessInfo = async (payload: BusinessInfoPayload): Promise<BusinessInfoData> => {
-  const { data } = await apiClient.post<BusinessInfoResponse>('/borrower/funding-application/business-info', payload)
-  return data.data
+  return saveStep<BusinessInfoResponse>('/borrower/funding-application/business-info', payload)
 }
 
 export const saveOwnershipInfo = async (payload: OwnershipInfoPayload): Promise<OwnershipInfoData> => {
-  const { data } = await apiClient.post<OwnershipInfoResponse>('/borrower/funding-application/ownership-info', payload)
-  return data.data
+  return saveStep<OwnershipInfoResponse>('/borrower/funding-application/ownership-info', payload)
 }
 
 export const saveFinancialInfo = async (payload: FinancialInfoPayload): Promise<FinancialInfoData> => {
-  const { data } = await apiClient.post<FinancialInfoResponse>('/borrower/funding-application/financial-info', payload)
-  return data.data
+  return saveStep<FinancialInfoResponse>('/borrower/funding-application/financial-info', payload)
 }
 
 export const fetchOwnershipInfo = async (fundingRequestId?: number | string | null, fundingApplicationId?: number | string | null): Promise<OwnershipInfoData> => {
   const params = lookupParams(fundingRequestId, fundingApplicationId)
-  const { data } = await apiClient.get<OwnershipInfoResponse>('/borrower/funding-application/ownership-info', { params })
-  return data.data
+  return loadStep<OwnershipInfoResponse>('/borrower/funding-application/ownership-info', params)
 }
 
 export const fetchFinancialInfo = async (fundingRequestId?: number | string | null, fundingApplicationId?: number | string | null): Promise<FinancialInfoData> => {
   const params = lookupParams(fundingRequestId, fundingApplicationId)
-  const { data } = await apiClient.get<FinancialInfoResponse>('/borrower/funding-application/financial-info', { params })
-  return data.data
+  return loadStep<FinancialInfoResponse>('/borrower/funding-application/financial-info', params)
 }
 
 export const fetchDisclosuresConsent = async (fundingRequestId?: number | string | null, fundingApplicationId?: number | string | null): Promise<DisclosuresConsentData> => {
   const params = lookupParams(fundingRequestId, fundingApplicationId)
-  const { data } = await apiClient.get<DisclosuresConsentResponse>('/borrower/funding-application/disclosures-and-consent', { params })
-  return data.data
+  return loadStep<DisclosuresConsentResponse>('/borrower/funding-application/disclosures-and-consent', params)
+}
+
+/** Preferred / Additional Funding Types: the Active lender product categories, in their order. */
+export const fetchFundingTypes = async (): Promise<string[]> => {
+  const { data } = await apiClient.get<{ data: string[] }>('/common/funding-types')
+  return data.data ?? []
+}
+
+export interface FundingSequenceOption {
+  id: number
+  name: string
+}
+
+/** The funding sequences offered for a funding type (the application's Preferred Funding Type). */
+export const fetchFundingSequenceOptions = async (fundingType: string): Promise<FundingSequenceOption[]> => {
+  const { data } = await apiClient.get<{ data: FundingSequenceOption[] }>('/common/funding-sequences', {
+    params: { funding_type: fundingType },
+  })
+  return data.data ?? []
 }
 
 export const fetchFundingRequest = async (fundingRequestId?: number | string | null, fundingApplicationId?: number | string | null): Promise<FundingRequestData> => {
   const params = lookupParams(fundingRequestId, fundingApplicationId)
-  const { data } = await apiClient.get<FundingRequestResponse>('/borrower/funding-application/funding-request', { params })
-  return data.data
+  return loadStep<FundingRequestResponse>('/borrower/funding-application/funding-request', params)
 }
 
 export const saveFundingRequest = async (payload: FundingRequestPayload): Promise<FundingRequestData> => {
-  const { data } = await apiClient.post<FundingRequestResponse>('/borrower/funding-application/funding-request', payload)
-  return data.data
+  return saveStep<FundingRequestResponse>('/borrower/funding-application/funding-request', payload)
 }
 
 export const saveDisclosuresConsent = async (payload: DisclosuresConsentPayload): Promise<DisclosuresConsentData> => {
-  const { data } = await apiClient.post<DisclosuresConsentResponse>('/borrower/funding-application/disclosures-and-consent', payload)
-  return data.data
+  return saveStep<DisclosuresConsentResponse>('/borrower/funding-application/disclosures-and-consent', payload)
 }
 
 export const fetchFederalCompliance = async (fundingRequestId?: number | string | null, fundingApplicationId?: number | string | null): Promise<FederalComplianceData> => {
   const params = lookupParams(fundingRequestId, fundingApplicationId)
-  const { data } = await apiClient.get<FederalComplianceResponse>('/borrower/funding-application/federal-compliance-disclosures', { params })
-  return data.data
+  return loadStep<FederalComplianceResponse>('/borrower/funding-application/federal-compliance-disclosures', params)
 }
 
 export const saveFederalCompliance = async (payload: FederalCompliancePayload): Promise<FederalComplianceData> => {
-  const { data } = await apiClient.post<FederalComplianceResponse>('/borrower/funding-application/federal-compliance-disclosures', payload)
-  return data.data
+  return saveStep<FederalComplianceResponse>('/borrower/funding-application/federal-compliance-disclosures', payload)
 }
 
 export const fetchAttestation = async (fundingRequestId?: number | string | null, fundingApplicationId?: number | string | null): Promise<AttestationData> => {
   const params = lookupParams(fundingRequestId, fundingApplicationId)
-  const { data } = await apiClient.get<AttestationResponse>('/borrower/funding-application/attestation-authorization', { params })
-  return data.data
+  return loadStep<AttestationResponse>('/borrower/funding-application/attestation-authorization', params)
 }
 
 export const saveAttestation = async (payload: any): Promise<AttestationData> => {
-  const { data } = await apiClient.post<AttestationResponse>('/borrower/funding-application/attestation-authorization', payload)
-  return data.data
+  return saveStep<AttestationResponse>('/borrower/funding-application/attestation-authorization', payload)
 }
 
 export const fetchFundingApplicationDocuments = async (id: number): Promise<FundingApplicationDocument[]> => {
