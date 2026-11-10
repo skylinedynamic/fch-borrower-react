@@ -7,7 +7,12 @@ import { useAuthStore } from '../../store/auth'
 import { isSubscriptionRestricted } from '../../lib/auth/subscriptionUtils'
 import { clearStrayModalBackdrops } from '../../utils/modalBackdrop'
 import { PAYMENT_PATHS, isUnderPath } from '../../config/accessRestriction'
+import { clearAuth } from '../../lib/auth'
+import { logout } from '../../modules/auth/services'
 import './ProfileCompleteCheckModal.css'
+
+/** Pages the popup never covers: the profile itself, and changing the temporary password (BUG-201). */
+const UNBLOCKED_PATHS = ['/profile', '/change-password']
 
 type SectionType = 'personal' | 'business' | 'financial'
 
@@ -63,15 +68,37 @@ const ProfileCompleteCheckModal = () => {
       return
     }
 
-    // Show modal only if profile is incomplete AND not on profile page
-    if (isComplete === false && !location.pathname.includes('/profile')) {
+    // Show modal only if profile is incomplete AND not on a page it must leave free
+    const onUnblockedPage = UNBLOCKED_PATHS.some((path) => location.pathname.includes(path))
+    if (isComplete === false && !onUnblockedPage) {
       setOpen(true)
+    } else if (onUnblockedPage) {
+      setOpen(false)
     }
   }, [location.pathname, isRestricted, isComplete]) // Re-check on route change or status change
 
   const handleSectionClick = (tab: number) => {
     setOpen(false)
     navigate(`/profile?tab=${tab}`)
+  }
+
+  // The popup covers the page, so it offers the two things it must never block.
+  const handleChangePassword = () => {
+    setOpen(false)
+    navigate('/change-password')
+  }
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch (err) {
+      // Even if the API fails, sign out locally.
+      console.error('Logout request failed', err)
+    } finally {
+      setOpen(false)
+      clearAuth()
+      navigate('/login', { replace: true })
+    }
   }
 
   if (isRestricted || !completionData || completionData.is_complete) {
@@ -83,7 +110,8 @@ const ProfileCompleteCheckModal = () => {
 
   return (
     // It can't be dismissed - no close or cancel button, no Escape: the way out
-    // is to pick a section to complete.
+    // is to pick a section to complete. Changing the password and logging out
+    // stay possible from it (BUG-201).
     <Modal
       isOpen={open}
       // Closing it navigates away at the same time; make sure the page is not left locked.
@@ -133,6 +161,15 @@ const ProfileCompleteCheckModal = () => {
             </button>
           )
         })}
+
+        <div className="pcg-account">
+          <button type="button" className="btn btn-link btn-sm" onClick={handleChangePassword}>
+            <i className="ri-lock-password-line align-middle me-1" aria-hidden="true"></i>Change password
+          </button>
+          <button type="button" className="btn btn-link btn-sm" onClick={handleLogout}>
+            <i className="mdi mdi-logout align-middle me-1" aria-hidden="true"></i>Log out
+          </button>
+        </div>
       </ModalBody>
     </Modal>
   )

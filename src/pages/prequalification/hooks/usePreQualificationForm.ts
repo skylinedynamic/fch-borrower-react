@@ -105,9 +105,10 @@ export const usePreQualificationForm = () => {
       monthlyRevenue: apiData.monthly_revenue ? formatCurrency(apiData.monthly_revenue.toString()) : '',
     })
 
-    // Only populate funding fields from API if the borrower has NOT yet submitted
-    // their funding info in this session, so a background refetch never replaces
-    // what they are editing.
+    // Funding fields come from the saved draft (the GET returns them since
+    // BUG-167 / R2 BUG-026). Only populate them from the API if the borrower has
+    // NOT yet submitted their funding info in this session, so a background
+    // refetch never replaces what they are editing.
     if (resetFunding || !fundingSubmittedRef.current) {
       setSupport({
         fundingRequestedAmount: apiData.funding_requested_amount ? formatCurrency(apiData.funding_requested_amount.toString()) : '',
