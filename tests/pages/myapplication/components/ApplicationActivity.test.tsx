@@ -91,6 +91,43 @@ describe('Application activity - client notes', () => {
   })
 })
 
+/**
+ * Defect (BUG-156, OP-CLI-28): a staff note with visibility "Everyone" reached
+ * the client only as "Activity Created" - the panel titled it by event_label
+ * and never showed its Summary (sent as `subject`), so a summary-only note
+ * showed nothing at all. The Summary is the note's title; the message stays
+ * under Show details.
+ */
+describe('Application activity - staff notes (BUG-156)', () => {
+  const NOTE = { log_type_raw: 'activity', event_label: 'Activity Created', causer_name: 'Host Admin' }
+
+  it("titles a summary-only note by its Summary, with no empty details", async () => {
+    serve([{ ...NOTE, id: 11, subject: 'QA-TEST Run2 vis Everyone', description: null, created_at: '2026-11-01T20:14:00Z' }])
+    renderWithProviders(<ApplicationActivity fundingApplicationId={102} />)
+
+    expect(await screen.findByText('QA-TEST Run2 vis Everyone')).toBeInTheDocument()
+    expect(screen.queryByText('Activity Created')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Show details' })).not.toBeInTheDocument()
+  })
+
+  it('shows the Summary as the title and the message under Show details', async () => {
+    const user = userEvent.setup()
+    serve([{ ...NOTE, id: 12, subject: 'QA-TEST Run2 vis Everyone2 summary', description: 'QA-TEST Run2 message body for the client', created_at: '2026-11-01T20:18:00Z' }])
+    renderWithProviders(<ApplicationActivity fundingApplicationId={102} />)
+
+    expect(await screen.findByText('QA-TEST Run2 vis Everyone2 summary')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Show details' }))
+    expect(screen.getByText('QA-TEST Run2 message body for the client')).toBeInTheDocument()
+  })
+
+  it('keeps the event label for an entry that is not a note, even with a subject', async () => {
+    serve([{ id: 13, log_type_raw: 'email', event_label: 'Email Sent', subject: 'Your documents', created_at: '2026-11-01T20:20:00Z' }])
+    renderWithProviders(<ApplicationActivity fundingApplicationId={102} />)
+
+    expect(await screen.findByText('Email Sent')).toBeInTheDocument()
+  })
+})
+
 // BUG-004 (QA round 2): descriptions are HTML from the API, written with names
 // people typed; a name like `<img src=x onerror=...>` ran in the admin's panel.
 describe('Application activity - details cannot run script (BUG-004)', () => {

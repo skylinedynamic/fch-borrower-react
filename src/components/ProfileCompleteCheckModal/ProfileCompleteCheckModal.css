@@ -172,3 +172,23 @@
     animation: none;
   }
 }
+
+/* Account actions the popup must never block (BUG-201). */
+#profileCompleteModal .pcg-account {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e4e7ec;
+}
+
+#profileCompleteModal .pcg-account .btn-link {
+  font-size: 13px;
+  color: #667085;
+  text-decoration: none;
+}
+
+#profileCompleteModal .pcg-account .btn-link:hover {
+  color: #1b2130;
+}

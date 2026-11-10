@@ -36,6 +36,40 @@ test.describe('Login (live backend)', () => {
     await expect(page).toHaveURL(/\/login$/)
   })
 
+  // BUG-198: a failed sign-in was handled as a logout, which set the tab title
+  // to the host's bare "Four Corner Funding" until a reload.
+  test('a failed sign-in keeps the portal tab title', async ({ page }) => {
+    await page.goto('/login')
+    await expect(page).toHaveTitle('Four Corner Funding | Borrower Portal')
+
+    await page.getByLabel(/^Email/i).fill('e2e-no-such-user@example.invalid')
+    await page.getByLabel(/^Password/i).fill('wrong-password')
+    await page.getByRole('button', { name: /Sign In/i }).click()
+    await expect(page.getByText('Invalid email or password.')).toBeVisible({ timeout: SLOW_TIMEOUT })
+
+    // clearAuth() used to reset it asynchronously, just after the error showed.
+    await page.waitForTimeout(500)
+    await expect(page).toHaveTitle('Four Corner Funding | Borrower Portal')
+  })
+
+  // Same on a white-label portal. Locally every domain is the host's, so only
+  // the branding answer is the partner's; the sign-in is the real backend's.
+  test("a failed sign-in keeps a white-label portal's own tab title", async ({ page }) => {
+    await page.route('**/common/branding', (route) =>
+      route.fulfill({ json: { success: true, data: { branding: { site_name: 'QA-Test WL Partner', is_white_label: true }, css_vars: null } } })
+    )
+    await page.goto('/login')
+    await expect(page).toHaveTitle('QA-Test WL Partner | Borrower Portal')
+
+    await page.getByLabel(/^Email/i).fill('e2e-no-such-user@example.invalid')
+    await page.getByLabel(/^Password/i).fill('wrong-password')
+    await page.getByRole('button', { name: /Sign In/i }).click()
+    await expect(page.getByText('Invalid email or password.')).toBeVisible({ timeout: SLOW_TIMEOUT })
+
+    await page.waitForTimeout(500)
+    await expect(page).toHaveTitle('QA-Test WL Partner | Borrower Portal')
+  })
+
   test('logs in with valid credentials and lands on the dashboard', async ({ page }) => {
     await page.goto('/login')
     await page.getByLabel(/^Email/i).fill(BORROWER_EMAIL)

@@ -197,6 +197,13 @@ const Funding = () => {
                                 aria-label="Search funding options"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
+                                // Enter applies the search and the chosen category, as Filters does (BUG-162 class).
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        applyFilters();
+                                    }
+                                }}
                             />
                         </div>
 

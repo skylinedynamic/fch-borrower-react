@@ -450,6 +450,13 @@
   border-radius: 0 !important;
 }
 
+/* Filter-bar date ranges (.search-box) look like the plain inputs beside them:
+   no theme focus ring. Their border colour comes from `border-light`. */
+.search-box .p-calendar .p-inputtext:enabled:focus,
+.search-box .p-calendar .p-inputtext:enabled:hover {
+  box-shadow: none;
+}
+
 /* A date field with an error (e.g. a date of birth under 18): a red border
    and the message under it. Bootstrap's .is-invalid also draws a warning icon
    in the input; the calendar input does not have room for it (it sat over the

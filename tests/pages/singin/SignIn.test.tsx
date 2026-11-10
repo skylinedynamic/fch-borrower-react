@@ -84,4 +84,31 @@ describe('SignIn', () => {
       await screen.findByText('Your subscription has expired. Please contact your partner to renew your subscription.')
     ).toBeInTheDocument()
   })
+
+  // BUG-198: on a white-label portal a wrong password reset the tab title to
+  // the host's "Four Corner Funding" - the 401 was handled as a logout.
+  it("a wrong password keeps the white-label portal's own tab title", async () => {
+    server.use(
+      http.get('*/common/branding', () =>
+        HttpResponse.json({ success: true, data: { branding: { site_name: 'QA-Test WL Partner', is_white_label: true }, css_vars: null } })
+      ),
+      http.post('*/borrower/login', () =>
+        HttpResponse.json({ status: false, message: 'Invalid email or password.', field: 'password' }, { status: 401 })
+      )
+    )
+
+    const user = userEvent.setup()
+    renderWithProviders(<SignIn />)
+    await waitFor(() => expect(document.title).toBe('QA-Test WL Partner | Borrower Portal'))
+
+    await user.type(screen.getByLabelText(/^Email/i), 'qa.unknown@example.com')
+    await user.type(screen.getByLabelText(/^Password/i), 'wrongpass')
+    await user.click(screen.getByRole('button', { name: /Sign In/i }))
+
+    expect(await screen.findByText('Invalid email or password.')).toBeInTheDocument()
+    // clearAuth() resets the title asynchronously; give it the chance to.
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(document.title).toBe('QA-Test WL Partner | Borrower Portal')
+    expect(navigateMock).not.toHaveBeenCalled()
+  })
 })

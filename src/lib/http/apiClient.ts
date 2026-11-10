@@ -86,7 +86,13 @@ apiClient.interceptors.response.use(
       }
     }
 
-    if (status === 401) {
+    // Only a request sent while signed in can mean the session ended. A 401 on
+    // one sent without a token - a wrong email or password at sign-in - is that
+    // form's own error, and logging out over it reset a white-label login
+    // page's title to the host's name (BUG-198).
+    const sentSignedIn = !!(error.config?.headers as Record<string, unknown> | undefined)?.Authorization
+
+    if (status === 401 && sentSignedIn) {
       // Unauthorized: clear auth and redirect to login
       clearAuth()
       if (typeof window !== 'undefined') {
