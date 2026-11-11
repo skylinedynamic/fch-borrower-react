@@ -54,6 +54,18 @@ describe('Billing - the last installment', () => {
     expect(screen.getAllByText('$558.04').length).toBeGreaterThan(0)
   })
 
+  // BUG-187: the Current / Recent Bill card shows the invoice's own date exactly
+  // as the API sends it; the page never shifts it into the browser's timezone.
+  it('shows the recent bill with the invoice date the API sends', async () => {
+    const base = details({ final_installment_amount: null })
+    const recentBill = { id: 9, invoice_id: 'INV-20261020001', amount: '$300.00', raw_amount: 300, status: 'Paid', type: 'Installment', created_at: '2026-10-20' }
+    server.use(http.get('*/borrower/billing-details', () => HttpResponse.json({ ...base, data: { ...base.data, recent_bill: recentBill } })))
+    renderWithProviders(<BillingDetails />, { route: '/billing-details' })
+
+    expect(await screen.findByText('INV-20261020001', undefined, SLOW)).toBeInTheDocument()
+    expect(screen.getByText('Date:').closest('span')).toHaveTextContent('Date: 2026-10-20')
+  })
+
   it('shows no separate last installment when the plan splits evenly', async () => {
     server.use(http.get('*/borrower/billing-details', () => HttpResponse.json(details({ final_installment_amount: null }))))
     renderWithProviders(<BillingDetails />, { route: '/billing-details' })
