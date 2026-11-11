@@ -202,3 +202,59 @@ describe('InvoicePreviewModal - the invoice date', () => {
   })
 })
 
+
+// BUG-206: the window said "Payment Method: Stripe" and showed a Card Holder for
+// every invoice, also one paid by Bank Transfer or not paid at all.
+describe('InvoicePreviewModal - payment details', () => {
+  const paymentDetails = async () => {
+    const title = await screen.findByRole('heading', { name: /Payment Details/ })
+    return title.parentElement as HTMLElement
+  }
+
+  it('shows Bank Transfer, its reference and the payer for an invoice paid by bank transfer', async () => {
+    respondWith({
+      id: 7, invoice_id: 'INV-7', type: 'Enrollment', status: 'Paid', payment_amount: 2497,
+      payment_method: 'Bank Transfer', payment_reference: 'QA-TEST-REF-0320', is_card_payment: false,
+      billed_from: host, billed_to: reseller,
+    })
+
+    renderModal()
+
+    const details = await paymentDetails()
+    expect(details).toHaveTextContent('Payment Method: Bank Transfer')
+    expect(details).toHaveTextContent('Reference: QA-TEST-REF-0320')
+    expect(details).toHaveTextContent('Paid By: Rita Reseller')
+    expect(details).not.toHaveTextContent('Card Holder')
+    expect(details).not.toHaveTextContent('Stripe')
+    expect(screen.getByText(/NOTES:/).parentElement).not.toHaveTextContent('To be paid by Stripe')
+  })
+
+  it('keeps Card Holder for an invoice paid by card', async () => {
+    respondWith({
+      id: 7, invoice_id: 'INV-7', type: 'Enrollment', status: 'Paid', payment_amount: 500,
+      payment_method: 'Stripe', payment_reference: null, is_card_payment: true,
+      billed_from: host, billed_to: reseller,
+    })
+
+    renderModal()
+
+    const details = await paymentDetails()
+    expect(details).toHaveTextContent('Payment Method: Stripe')
+    expect(details).toHaveTextContent('Card Holder: Rita Reseller')
+  })
+
+  it('says Not paid yet and shows no Card Holder when nothing has paid the invoice', async () => {
+    respondWith({
+      id: 7, invoice_id: 'INV-7', type: 'Enrollment', status: 'Unpaid', payment_amount: 500,
+      payment_method: null, payment_reference: null, is_card_payment: false,
+      billed_from: host, billed_to: reseller,
+    })
+
+    renderModal()
+
+    const details = await paymentDetails()
+    expect(details).toHaveTextContent('Payment Method: Not paid yet')
+    expect(details).not.toHaveTextContent('Card Holder')
+    expect(details).not.toHaveTextContent('Stripe')
+  })
+})
