@@ -6,12 +6,13 @@ import { applyBrandTheme } from '../../utils/brandingTheme'
 import { resolveBrandLogo } from '../../utils/brandLogo'
 import BrandLogo from './BrandLogo'
 import { applyPortalMeta } from '../../utils/portalMeta'
+import { PUBLIC_BRANDING_STORAGE_KEY } from '../../config/portalMeta'
 
 export default function Auth({ header, children, belowCard, colClass = 'col-xl-5 col-lg-6 col-md-8', bodyClass }) {
   const location = useLocation()
   const [settings, setSettings] = React.useState(() => {
     try {
-      const cached = localStorage.getItem('public_branding');
+      const cached = localStorage.getItem(PUBLIC_BRANDING_STORAGE_KEY);
       return cached ? JSON.parse(cached) : null;
     } catch (e) {
       return null;
@@ -28,7 +29,7 @@ export default function Auth({ header, children, belowCard, colClass = 'col-xl-5
         const data = payload?.branding
         if (data) {
           setSettings(data)
-          localStorage.setItem('public_branding', JSON.stringify(data))
+          localStorage.setItem(PUBLIC_BRANDING_STORAGE_KEY, JSON.stringify(data))
           // One call for every brand variable, so the login page cannot drift
           // from the rest of the portal the way it did when it set only two.
           //

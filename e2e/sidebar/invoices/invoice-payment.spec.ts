@@ -40,6 +40,9 @@ test.describe('Sidebar › Invoices (pay with Stripe test card)', () => {
     if (await zip.count()) await zip.pressSequentially('10001', { delay: 30 })
     const payButton = page.getByRole('button', { name: /Pay \$\d/ })
     await expect(payButton).toBeEnabled({ timeout: 30_000 })
+    // The card is kept as the default only when ticked; left unticked here, so
+    // the borrower's card on file is not changed by this spec.
+    await expect(modal.getByRole('checkbox', { name: 'Save card as default payment method' })).not.toBeChecked()
 
     const pay = page.waitForResponse((r) => r.request().method() === 'POST' && r.url().includes('/borrower/process-payment'), { timeout: 120_000 })
     const sent = page.waitForRequest((r) => r.method() === 'POST' && r.url().includes('/borrower/process-payment'))
@@ -48,6 +51,7 @@ test.describe('Sidebar › Invoices (pay with Stripe test card)', () => {
     const payload = (await sent).postDataJSON()
     expect(String(payload.payment_token)).toMatch(/^pm_/)
     expect(JSON.stringify(payload)).not.toContain('4242424242424242')
+    expect(payload.save_card).toBe(false)
     const paid = await pay
     // Read the status first: the page moves on after success, and the body may be gone by then.
     expect(paid.status()).toBe(200)

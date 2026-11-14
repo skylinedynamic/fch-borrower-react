@@ -4,6 +4,17 @@ import { refreshUser as refreshUserService } from '../../modules/auth-profile'
 import { clearBrandTheme } from '../../utils/brandingTheme'
 import { disconnectEcho } from '../realtime/echo'
 import { clearOnboardingSession } from '../../modules/onboarding/storage'
+import { portalMeta, type PortalMetaBranding } from '../../utils/portalMeta'
+import { PUBLIC_BRANDING_STORAGE_KEY } from '../../config/portalMeta'
+
+/** The domain's public branding, as the login page (Layout/Auth) caches it. */
+const cachedPublicBranding = (): PortalMetaBranding => {
+  try {
+    return JSON.parse(localStorage.getItem(PUBLIC_BRANDING_STORAGE_KEY) || 'null') ?? {}
+  } catch {
+    return {}
+  }
+}
 
 const COOKIE_NAME = 'auth_session_active'
 
@@ -79,11 +90,13 @@ export function clearAuth(): void {
   // Close the real-time socket; it is authorized as the user signing out.
   disconnectEcho()
 
-  // Clear branding on logout
+  // Clear branding on logout, and give the tab back this portal's own title -
+  // the branding the login page cached for this domain. With none cached the
+  // title is left alone: no default name, never the host's (BUG-198).
   import('../../store/brandingStore').then(({ clearBranding }) => {
     clearBranding()
-    // Reset title to default
-    document.title = 'Four Corner Funding'
+    const branding = cachedPublicBranding()
+    if (branding.site_name?.trim()) document.title = portalMeta(branding).title
   })
 
   // Drop the paint-ahead brand cache, otherwise the boot script repaints the

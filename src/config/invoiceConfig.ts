@@ -10,6 +10,9 @@ export const STATUS_OVERDUE = 'Overdue';
 export const STATUS_PROCESSING = 'Processing';
 export const STATUS_ALL = 'All Status';
 
+/** Payment Details when nothing has paid the invoice yet (BUG-206). */
+export const PAYMENT_METHOD_NOT_PAID_LABEL = 'Not paid yet';
+
 export const INVOICE_STATUS_OPTIONS = [
     { label: STATUS_ALL, value: null },
     { label: STATUS_PAID, value: STATUS_PAID },

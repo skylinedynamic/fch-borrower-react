@@ -45,3 +45,19 @@ async function openFromSidebarAfterExpand(page: Parameters<typeof openFromSideba
   await expect(page).toHaveURL(/\/credit-builder\/overview$/)
   await expect(link).toHaveClass(/active/)
 }
+
+// BUG-188: each submission of a task is kept, and Task activity listed every
+// one - a task rejected, resubmitted and verified stayed under "Needs
+// attention", and a task verified twice counted twice. Each task is listed once.
+test.describe('Sidebar › Credit Builder › Overview › Task activity', () => {
+  test('lists each task once, as its latest request stands', async ({ page }) => {
+    const overview = page.waitForResponse((r) => r.url().includes('/borrower/credit-builder/task-overview'))
+    await page.goto('/credit-builder/overview')
+    const data = (await (await overview).json()).data
+    const titles = ['verified', 'processing', 'rejected'].flatMap((k) => (data[k] ?? []).map((t: { title: string }) => t.title))
+    expect(new Set(titles).size).toBe(titles.length)
+
+    // The "All" count on the page is that number of tasks.
+    await expect(page.getByRole('tab', { name: new RegExp(`All\s*${titles.length}`) }).or(page.getByText(new RegExp(`All\s*${titles.length}`)).first())).toBeVisible()
+  })
+})

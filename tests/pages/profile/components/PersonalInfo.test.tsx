@@ -396,9 +396,11 @@ describe('Profile — Personal Info tab: changing the email', () => {
   /**
    * A new email isn't applied when the profile is saved. It waits as pending
    * until the link sent to the new address is confirmed with the password, and
-   * until then the borrower keeps signing in with the current one. The tab
-   * keeps showing the current email, says which one is waiting, and lets the
-   * borrower resend the link or cancel the change.
+   * until then the borrower keeps signing in with the current one. While a
+   * change waits the field shows the pending email (so saving other fields
+   * leaves it alone), the notice names the current one, and the borrower can
+   * resend the link or cancel the change - from the notice, or by typing the
+   * current email back into the field (BUG-203).
    */
   afterEach(() => {
     server.resetHandlers()
@@ -418,7 +420,8 @@ describe('Profile — Personal Info tab: changing the email', () => {
     const notice = await screen.findByRole('status')
     expect(notice).toHaveTextContent('jane.new@example.com')
     expect(notice).toHaveTextContent(/waiting for confirmation/i)
-    expect(screen.getByDisplayValue('jane@example.com')).toBeInTheDocument()
+    expect(notice).toHaveTextContent('jane@example.com')
+    expect(screen.getByDisplayValue('jane.new@example.com')).toBeInTheDocument()
   })
 
   it('shows nothing when no change is waiting', async () => {
@@ -430,7 +433,7 @@ describe('Profile — Personal Info tab: changing the email', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
-  it('after saving a new email, keeps the current one in the field and says a link was sent', async () => {
+  it('after saving a new email, shows it in the field as pending and says a link was sent', async () => {
     const { toast } = await import('react-toastify')
     let pending: string | null = null
     server.use(
@@ -453,11 +456,61 @@ describe('Profile — Personal Info tab: changing the email', () => {
     await user.type(email, 'jane.new@example.com')
     await user.click(screen.getByRole('button', { name: /save|update/i }))
 
-    expect(await screen.findByRole('status')).toHaveTextContent('jane.new@example.com')
-    await waitFor(() => expect(screen.getByDisplayValue('jane@example.com')).toBeInTheDocument())
+    const notice = await screen.findByRole('status')
+    expect(notice).toHaveTextContent('jane.new@example.com')
+    expect(notice).toHaveTextContent('jane@example.com')
+    expect(screen.getByDisplayValue('jane.new@example.com')).toBeInTheDocument()
     expect(toast.success).toHaveBeenCalledWith(
       'A confirmation link has been sent to jane.new@example.com. The email will change once it is confirmed.'
     )
+  })
+
+  it('saving other fields while a change waits sends the pending email back, so the change stays', async () => {
+    let sent: { email: string; city: string } | null = null
+    server.use(
+      http.get('*/borrower/profile/personal-info', () => HttpResponse.json(profile('jane.new@example.com'))),
+      http.post('*/borrower/profile/personal-info', async ({ request }) => {
+        sent = (await request.json()) as { email: string; city: string }
+        return HttpResponse.json({ status: true, message: 'Personal profile updated.', data: profile('jane.new@example.com').data })
+      })
+    )
+
+    const user = userEvent.setup()
+    renderTab()
+
+    await screen.findByDisplayValue('jane.new@example.com')
+    await user.click(screen.getByRole('button', { name: /save|update/i }))
+
+    await waitFor(() => expect(sent).not.toBeNull())
+    expect(sent!.email).toBe('jane.new@example.com')
+    expect(screen.getByRole('status')).toHaveTextContent('jane.new@example.com')
+  })
+
+  it('typing the current email back in withdraws the change', async () => {
+    const { toast } = await import('react-toastify')
+    let pending: string | null = 'jane.new@example.com'
+    let sentEmail: string | null = null
+    server.use(
+      http.get('*/borrower/profile/personal-info', () => HttpResponse.json(profile(pending))),
+      http.post('*/borrower/profile/personal-info', async ({ request }) => {
+        sentEmail = ((await request.json()) as { email: string }).email
+        pending = null
+        return HttpResponse.json({ status: true, message: 'The pending email change has been cancelled.', data: profile(null).data })
+      })
+    )
+
+    const user = userEvent.setup()
+    renderTab()
+
+    const email = await screen.findByDisplayValue('jane.new@example.com')
+    await user.clear(email)
+    await user.type(email, 'jane@example.com')
+    await user.click(screen.getByRole('button', { name: /save|update/i }))
+
+    await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument())
+    expect(sentEmail).toBe('jane@example.com')
+    expect(screen.getByDisplayValue('jane@example.com')).toBeInTheDocument()
+    expect(toast.success).toHaveBeenCalledWith('The pending email change has been cancelled.')
   })
 
   it('resends the confirmation link', async () => {
@@ -497,10 +550,12 @@ describe('Profile — Personal Info tab: changing the email', () => {
     const user = userEvent.setup()
     renderTab()
 
+    await screen.findByDisplayValue('jane.new@example.com')
     await user.click(await screen.findByRole('button', { name: 'Cancel change' }))
 
     await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument())
-    expect(screen.getByDisplayValue('jane@example.com')).toBeInTheDocument()
+    // The field goes back to the email the borrower signs in with.
+    await waitFor(() => expect(screen.getByDisplayValue('jane@example.com')).toBeInTheDocument())
   })
 
   it('shows the API message when resending fails', async () => {
