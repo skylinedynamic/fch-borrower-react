@@ -360,6 +360,9 @@
 .ca-page .ca-card-visual {
   position: relative;
   display: grid;
+  /* One definite cell, so the image's max-height: 100% resolves against the
+     box. An auto row grows with its content and a tall card image spilled out. */
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   place-items: center;
   height: 130px;
   padding: 14px 40px;

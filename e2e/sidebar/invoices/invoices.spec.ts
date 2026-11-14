@@ -28,6 +28,21 @@ test.describe('Sidebar › Invoices', () => {
     await expect(dataRows(page).first()).toBeVisible()
   })
 
+  // BUG-206: View Details printed "Payment Method: Stripe" and a Card Holder on every invoice.
+  // It now shows the real method, or "Not paid yet" for an unpaid one.
+  test('View Details does not call an unpaid invoice a Stripe card payment', async ({ page }) => {
+    await expect(dataRows(page).first().or(emptyTableMessage(page))).toBeVisible()
+    const unpaid = dataRows(page).filter({ hasText: 'Unpaid' }).first()
+    test.skip(!(await unpaid.isVisible()), 'No unpaid invoice for this borrower')
+
+    await unpaid.getByTitle('View Details').click()
+
+    const details = page.locator('.modal.show').getByRole('heading', { name: /Payment Details/ }).locator('..')
+    await expect(details).toContainText('Payment Method: Not paid yet')
+    await expect(details).not.toContainText('Card Holder')
+    await expect(details).not.toContainText('Stripe')
+  })
+
   test('clicking a row opens the invoice details', async ({ page }) => {
     await expect(dataRows(page).first().or(emptyTableMessage(page))).toBeVisible()
     test.skip(await emptyTableMessage(page).isVisible(), 'No invoices for this borrower')

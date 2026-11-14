@@ -79,6 +79,10 @@ export const PROVIDER_BANK_TRANSFER = PAYMENT_METHOD_PROVIDER[6];
 export const TRANSACTION_TYPE_DEBIT = 'Debit';
 export const TRANSACTION_TYPE_CREDIT = 'Credit';
 
+// The methods an admin can record a commission payout with (admin portal's
+// COMMISSION_PAYMENT). A client paid a commission sees one of these as Method.
+export const COMMISSION_PAYMENT_METHODS = ['Card', 'Cash', 'Cheque', 'Paypal', PROVIDER_STRIPE, 'Apple Pay', 'Google Pay'];
+
 export const PAYMENT_METHOD_OPTIONS = [
   { label: 'All Methods', value: null },
   { label: PROVIDER_STRIPE, value: PROVIDER_STRIPE },
@@ -87,6 +91,9 @@ export const PAYMENT_METHOD_OPTIONS = [
   { label: PROVIDER_ECRYPT, value: PROVIDER_ECRYPT },
   { label: PROVIDER_AUTHORIZE, value: PROVIDER_AUTHORIZE },
   { label: PROVIDER_CASH, value: PROVIDER_CASH },
+  ...COMMISSION_PAYMENT_METHODS
+    .filter((method) => method !== PROVIDER_STRIPE)
+    .map((method) => ({ label: method, value: method })),
 ];
 
 export const PAYMENT_TYPE_OPTIONS = [

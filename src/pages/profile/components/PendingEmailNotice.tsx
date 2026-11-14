@@ -4,6 +4,8 @@ import { useCancelEmailChange, useResendEmailChange } from '../../../modules/acc
 type Props = {
   /** The new email waiting to be confirmed, if any. */
   pendingEmail?: string | null
+  /** The email the borrower still signs in with. */
+  currentEmail?: string | null
 }
 
 const failure = (error: any) => {
@@ -16,10 +18,11 @@ const failure = (error: any) => {
 /**
  * A new email isn't applied when the profile is saved: it waits until the link
  * sent to the new address is confirmed with the password, and until then the
- * borrower signs in with the current one. This says so under the email field
- * and lets the borrower resend that link or withdraw the change.
+ * borrower signs in with the current one. The field above shows the pending
+ * email, so this names the current one, and lets the borrower resend that link
+ * or withdraw the change (as does typing the current email back in, BUG-203).
  */
-export default function PendingEmailNotice({ pendingEmail }: Props) {
+export default function PendingEmailNotice({ pendingEmail, currentEmail }: Props) {
   const resend = useResendEmailChange()
   const cancel = useCancelEmailChange()
 
@@ -50,7 +53,7 @@ export default function PendingEmailNotice({ pendingEmail }: Props) {
       <span className="flex-grow-1 text-break" style={{ minWidth: 0 }}>
         <i className="ri-mail-send-line me-1 align-middle"></i>
         Waiting for confirmation from <strong>{pendingEmail}</strong>. Keep signing in with your current email
-        until you confirm the link sent there.
+        {currentEmail ? <> (<strong>{currentEmail}</strong>)</> : null} until you confirm the link sent there.
       </span>
       <span className="d-flex flex-shrink-0 gap-3 text-nowrap">
         <button type="button" className="btn btn-link p-0 fs-12 fw-medium" disabled={busy} onClick={onResend}>

@@ -70,27 +70,45 @@ describe('auth', () => {
       expect(disconnectEcho).toHaveBeenCalledTimes(1)
     })
 
-    it('clears branding and resets the document title', async () => {
-      useBrandingStore.getState().setBranding({
-        site_name: 'White Label Co',
-        site_slogan: null,
-        primary_color: null,
-        secondary_color: null,
-        meta_title: null,
-        header_logo: null,
-        footer_logo: null,
-        favicon: null,
-        website_favicon: null,
-        is_white_label: true,
-      })
-      document.title = 'White Label Co'
+    const whiteLabel = {
+      site_name: 'White Label Co',
+      site_slogan: null,
+      primary_color: null,
+      secondary_color: null,
+      meta_title: null,
+      header_logo: null,
+      footer_logo: null,
+      favicon: null,
+      website_favicon: null,
+      is_white_label: true,
+    }
+
+    // BUG-198: the title went to the host's name on every logout, white-label
+    // portals included. It now goes back to this portal's own name - the
+    // branding the login page cached for this domain (public_branding).
+    it("clears branding and puts back this portal's own title", async () => {
+      localStorage.setItem('public_branding', JSON.stringify(whiteLabel))
+      useBrandingStore.getState().setBranding(whiteLabel)
+      document.title = 'Somewhere Else'
 
       clearAuth()
 
       await vi.waitFor(() => {
         expect(useBrandingStore.getState().branding).toBeNull()
-        expect(document.title).toBe('Four Corner Funding')
+        expect(document.title).toBe('White Label Co | Borrower Portal')
       })
+    })
+
+    // No default name either: with this domain's branding unknown, the title
+    // is left as it is - never replaced by "Four Corner Funding".
+    it("leaves the title alone when this domain's branding is unknown", async () => {
+      useBrandingStore.getState().setBranding(whiteLabel)
+      document.title = 'White Label Co | Borrower Portal'
+
+      clearAuth()
+
+      await vi.waitFor(() => expect(useBrandingStore.getState().branding).toBeNull())
+      expect(document.title).toBe('White Label Co | Borrower Portal')
     })
   })
 

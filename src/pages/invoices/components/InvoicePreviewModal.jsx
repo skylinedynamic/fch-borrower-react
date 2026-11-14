@@ -9,6 +9,7 @@ import { useAuthStore } from '../../../store/auth/authStore';
 import { useBrandingStore } from '../../../store/brandingStore';
 import InvoicePreviewSkeleton from './InvoicePreviewSkeleton';
 import InvoicePartyDetails from './InvoicePartyDetails';
+import { STATUS_PAID, PAYMENT_METHOD_NOT_PAID_LABEL } from '../../../config/invoiceConfig';
 
 // Helper to format currency
 const formatCurrency = (amount) => {
@@ -193,6 +194,13 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
 
     const subtotal = amount;
 
+    // How it was actually paid, from the API (BUG-206). It used to say "Stripe"
+    // and show a Card Holder for every invoice, paid or not.
+    const isPaid = displayInvoice?.status?.toLowerCase() === STATUS_PAID.toLowerCase();
+    const paymentMethod = displayInvoice?.payment_method;
+    const paymentMethodLabel = paymentMethod || (isPaid ? '-' : PAYMENT_METHOD_NOT_PAID_LABEL);
+    const paidByCard = paymentMethod ? Boolean(displayInvoice?.is_card_payment) : true;
+
     return (
         <div className="modal fade flip" ref={modalRef} tabIndex="-1" aria-hidden="true">
             <div className="modal-dialog modal-lg modal-dialog-centered">
@@ -302,18 +310,23 @@ export default function InvoicePreviewModal({ show, onHide, invoice }) {
                                             </div>
                                             <div className="mt-3">
                                                 <h6 className="text-muted text-uppercase fw-semibold mb-3">Payment Details:</h6>
-                                                <p className="text-muted mb-1">Payment Method: <span className="fw-medium" id="payment-method">Stripe</span></p>
+                                                <p className="text-muted mb-1">Payment Method: <span className="fw-medium" id="payment-method">{paymentMethodLabel}</span></p>
+                                                {displayInvoice.payment_reference && (
+                                                    <p className="text-muted mb-1">Reference: <span className="fw-medium" id="payment-reference">{displayInvoice.payment_reference}</span></p>
+                                                )}
                                                 <p className="text-muted mb-1">Payment Status: <span className="fw-medium">{displayInvoice.status}</span></p>
                                                 {displayInvoice.payment_date && (
                                                     <p className="text-muted mb-1">Paid Date: <span className="fw-medium" id="paid-date">{displayInvoice.payment_date}</span></p>
                                                 )}
-                                                <p className="text-muted mb-1">Card Holder: <span className="fw-medium" id="card-holder-name">{billedTo.name || billedTo.company_name}</span></p>
+                                                {isPaid && (
+                                                    <p className="text-muted mb-1">{paidByCard ? 'Card Holder' : 'Paid By'}: <span className="fw-medium" id="card-holder-name">{billedTo.name || billedTo.company_name}</span></p>
+                                                )}
                                                 <p className="text-muted">Total Amount: <span className="fw-medium">$</span><span id="card-total-amount" className="fw-bold">{amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p>
                                             </div>
                                             <div className="mt-4">
                                                 <div className="alert alert-info">
                                                     <p className="mb-0"><span className="fw-semibold">NOTES:</span>
-                                                        <span id="note"> All accounts are to be paid within 7 days from receipt of invoice. To be paid by Stripe.
+                                                        <span id="note"> All accounts are to be paid within 7 days from receipt of invoice.{paidByCard ? ' To be paid by Stripe.' : ''}
                                                             If account is not paid within 7
                                                             days the credits details supplied as confirmation of work undertaken
                                                             will be charged the agreed quoted fee noted above.

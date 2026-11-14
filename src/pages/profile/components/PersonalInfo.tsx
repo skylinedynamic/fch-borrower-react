@@ -46,7 +46,9 @@ const transformApiToComponent = (apiData: PersonalInfoData): SavePersonalInfoReq
     first_name: apiData.first_name || '',
     middle_name: apiData.middle_name || '',
     last_name: apiData.last_name || '',
-    email: apiData.email || '',
+    // While a change waits the field shows the pending email, so saving other
+    // fields keeps it; typing the current email back withdraws it (BUG-203).
+    email: apiData.pending_email || apiData.email || '',
     phone_number: apiData.phone_number || '',
     country: apiData.country || '',
     city: apiData.city || '',
@@ -356,14 +358,14 @@ export default function PersonalInfo({ data, onChange, onSave }: PersonalInfoPro
                 className="btn btn-sm btn-soft-primary position-absolute shadow-none change-request-btn z-4"
                 pendingId={pendingChangeId('email')}
                 onCancel={askCancelChange}
-                onClick={() => handleOpenRequestModal('Email Address', 'email', data.email)}
+                onClick={() => handleOpenRequestModal('Email Address', 'email', apiData?.email || data.email)}
               />
             )}
           </div>
           {hasError('email') && (
             <div className="invalid-feedback d-block">{getFieldError('email')}</div>
           )}
-          <PendingEmailNotice pendingEmail={apiData?.pending_email} />
+          <PendingEmailNotice pendingEmail={apiData?.pending_email} currentEmail={apiData?.email} />
         </div>
         <div className="col-md-6">
           <label className="form-label">Phone Number <span className="text-danger">*</span></label>
