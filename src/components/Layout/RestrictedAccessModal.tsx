@@ -29,9 +29,11 @@ export default function RestrictedAccessModal({ reason, isOpen, onClose }: Restr
           </h5>
           <p className="text-muted mb-4">{content.message}</p>
           <div className="d-flex justify-content-center gap-2">
-            <Link to="/invoices" className="btn btn-light" onClick={onClose}>
-              View Invoices
-            </Link>
+            {content.showInvoices && (
+              <Link to="/invoices" className="btn btn-light" onClick={onClose}>
+                View Invoices
+              </Link>
+            )}
             <button type="button" className="btn btn-primary" onClick={onClose}>
               Got it
             </button>

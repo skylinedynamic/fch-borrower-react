@@ -1,19 +1,7 @@
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/auth'
-import { isSubscriptionRestricted, isFreeTrialLocked } from './subscriptionUtils'
-import { RESTRICTED_ALLOWED_PATHS } from '../../config/accessRestriction'
-
-
-// Paths that are blocked while on the Limited Free Edition (free trial)
-const FREE_TRIAL_LOCKED_PATHS = [
-  '/credit-card-stacking',
-  '/invoices',
-  '/payments',
-  // Locked in the menu too; reached by URL it opened with a "Server Error" (BUG-111).
-  '/billing-details',
-  '/resources',
-  '/credit-builder',
-]
+import { isSubscriptionRestricted, isFreeTrialLocked, RESTRICTION_REASON } from './subscriptionUtils'
+import { RESTRICTED_ALLOWED_PATHS, FREE_PLAN_LOCKED_PATHS, isUnderPath } from '../../config/accessRestriction'
 
 export default function ProtectedRoute() {
   const location = useLocation()
@@ -40,12 +28,10 @@ export default function ProtectedRoute() {
     }
   }
 
-  // Block free-trial users from accessing premium modules via direct URL
-  if (isFreeTrialLocked(userSubscription)) {
-    const isLockedPath = FREE_TRIAL_LOCKED_PATHS.some(path => location.pathname.startsWith(path))
-    if (isLockedPath) {
-      return <Navigate to="/dashboard" replace />
-    }
+  // Block free-plan clients from the paid modules by direct URL. The sidebar
+  // reads restrictedFrom and reason and says why (R3-BUG-036).
+  if (isFreeTrialLocked(userSubscription) && isUnderPath(location.pathname, FREE_PLAN_LOCKED_PATHS)) {
+    return <Navigate to="/dashboard" replace state={{ restrictedFrom: location.pathname, reason: RESTRICTION_REASON.FREE_PLAN }} />
   }
 
   return <Outlet />
