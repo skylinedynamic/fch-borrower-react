@@ -26,6 +26,7 @@ import { APPOINTMENT_STATUS_CONFIG } from '../../config/appointmentTypeOptions';
 // Components
 import AppointmentModal from './AppointmentModal';
 import { useCalendlyStatus } from '../../modules/calendly/queries';
+import CalendlyCard from '../../components/Appointment/CalendlyCard';
 import { sanitizeHtml } from '../../utils/sanitizeHtml';
 
 export default function Appointments() {
@@ -252,6 +253,7 @@ export default function Appointments() {
                     <div id="external-events">{/* External events would go here */}</div>
                   </div>
                 </div>
+                <CalendlyCard status={calendlyStatus} onSynced={loadAppointments} />
                 <div className="mb-3 px-1">
                   <h4 className="fs-18 mb-1" style={{ color: '#313a46' }}>Upcoming Appointment</h4>
                   <p className="text-muted fs-13">Don't miss scheduled appointments</p>

@@ -24,7 +24,8 @@ vi.mock('../../../src/hooks/useSummernote', () => ({ useSummernote: () => ({ edi
 const EVENT_TYPE = { uri: 'https://api.calendly.com/event_types/ET1', name: '30 Minute Meeting', duration: 30 }
 const SLOT = { start_time: '2999-06-15T15:00:00Z', local_time: '2999-06-15 10:00:00', label: '10:00 AM' }
 const HOST = { id: 2, name: 'Host Admin (Host)', entity_type: 'Partner', entity_id: 1 }
-const CONNECTED: CalendlyStatus = { connected: true, can_book: true, can_manage: true, is_host: true }
+// Booking with the partner's Calendly (their own not connected) - as the API reports it.
+const CONNECTED: CalendlyStatus = { connected: false, can_book: true, can_manage: true, is_host: false, books_with_partner: true }
 
 type Seen = { calls: number; bodies: any[] }
 
@@ -129,6 +130,21 @@ describe('AppointmentModal - Sync with Calendly (borrower)', () => {
     expect(create.calls).toBe(0)
     await waitFor(() => expect(onSuccess).toHaveBeenCalled())
     expect(toast.success).toHaveBeenCalledWith('Meeting booked in Calendly.')
+  })
+
+  // Their own Calendly connected: they book in it and invite the person they pick.
+  it('with their own Calendly, asks who the meeting is with and books inviting that person', async () => {
+    const { book } = serve()
+    const { user } = await open({ connected: true, can_book: true, can_manage: true, is_host: true })
+
+    await user.type(screen.getByPlaceholderText('Enter appointment title'), 'Funding review')
+    await user.click(screen.getByLabelText(/sync with calendly/i))
+    await pick(user, 'Select an open time', SLOT.label)
+    await user.click(screen.getByRole('button', { name: /confirm appointment/i, hidden: true }))
+
+    // Nobody picked yet: says so instead of booking.
+    expect(await screen.findByText('Choose who the meeting is with')).toBeInTheDocument()
+    expect(book.calls).toBe(0)
   })
 
   it('cannot be confirmed until an open time is chosen', async () => {

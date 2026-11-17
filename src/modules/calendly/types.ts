@@ -1,20 +1,35 @@
 /**
- * The borrower's partner's Calendly (the host's, a WLP's or a certified
- * partner's), as /common/calendly/status reports it. A borrower books with it
- * as the invitee; they never connect or manage one.
+ * The borrower's Calendly, as /common/calendly/status reports it: their own -
+ * connected through their partner's Calendly app - and the one they book with
+ * (their own once connected, else their partner's, as the invitee).
  */
 export interface CalendlyStatus {
-  /** FCH's Calendly app is set up on the server; false = Calendly is off. */
+  /** Their partner's Calendly app is set up: they may connect their own through it. */
   configured?: boolean
+  /** Their own Calendly is connected. */
   connected: boolean
+  /** Their own Calendly's sign-in expired - connect again. */
   needs_reconnect?: boolean
-  /** Always false for a borrower - the partner's team manages it. */
+  /** May connect / disconnect their own Calendly. */
   can_manage: boolean
+  /** Books in their own Calendly, inviting the person they pick. */
   is_host?: boolean
   /** The partner's Calendly is connected: the borrower may book with it. */
   can_book: boolean
+  /** Connected: the borrower may bring in its meetings now (Sync now). */
+  can_sync?: boolean
+  /** Not connected themselves: they book with their partner's Calendly, as the invitee. */
+  books_with_partner?: boolean
+  /** Their partner's Calendly is connected. */
+  partner_connected?: boolean
+  /** The advisor's Calendly account they book with until they connect their own. */
+  partner_name?: string | null
+  /** Their own Calendly account. */
   name?: string | null
+  email?: string | null
   scheduling_url?: string | null
+  webhooks_active?: boolean
+  last_synced_at?: string | null
 }
 
 export interface CalendlyEventType {

@@ -137,7 +137,9 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
     // host's, a WLP's or a certified partner's), a new appointment may be booked
     // with it - at one of its open times, the borrower the invitee - instead
     // of a free time slot.
-    const canBookInCalendly = isNewEvent && Boolean(calendlyStatus?.connected && calendlyStatus?.can_book);
+    // Their own Calendly once connected (they invite who they pick), else their partner's (they are the invitee).
+    const canBookInCalendly = isNewEvent && Boolean(calendlyStatus?.can_book);
+    const booksInOwnCalendly = Boolean(calendlyStatus?.is_host);
     const [bookInCalendly, setBookInCalendly] = useState(false);
     const inCalendly = canBookInCalendly && bookInCalendly && !viewMode;
     const [calendlyEventTypes, setCalendlyEventTypes] = useState<CalendlyEventType[]>([]);
@@ -185,7 +187,9 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
             event_type_uri: calendlyEventType.uri,
             date: formData.date,
             timezone: formData.location,
-        })
+            // In their own Calendly, the person they invite: leaves out that person's FCH meetings too.
+            ...(booksInOwnCalendly && formData.assigned_for ? { assigned_for: Number(formData.assigned_for) } : {}),
+        } as any)
             .then(slots => { if (active) setCalendlySlots(slots); })
             // Why Calendly could not be asked (e.g. the connection expired) - not "no open times".
             .catch((error: any) => { if (active) setCalendlySlotsErrorMessage(error?.response?.data?.message || 'Calendly open times could not be loaded'); })
@@ -541,7 +545,8 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
         }
         if (!calendlyEventType || !calendlySlot || (calendlyAsksLocation && !calendlyLocation.trim())) return;
 
-        // With the partner, the borrower the invitee: nobody to pick.
+        // With the partner's Calendly the borrower is the invitee (nobody to pick);
+        // in their own Calendly they invite the person picked under "Appointment With".
         const payload: Record<string, unknown> = {
             event_type_uri: calendlyEventType.uri,
             start_time: calendlySlot,
@@ -549,6 +554,13 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
             subject: formData.subject.trim(),
             meeting_type: formData.category,
         };
+        if (booksInOwnCalendly) {
+            if (!formData.assigned_for) {
+                setFormErrors({ assigned_for: 'Choose who the meeting is with' });
+                return;
+            }
+            payload.assigned_for = Number(formData.assigned_for);
+        }
         if (calendlyLocationChoice) payload.location_kind = calendlyLocationChoice.kind;
         if (calendlyAsksLocation) payload.location = calendlyLocation.trim();
         if (formData.description) payload.description = formData.description;
@@ -959,8 +971,9 @@ const AppointmentModal = forwardRef<AppointmentModalHandle, AppointmentModalProp
                                         {formErrors.meeting_type && <div className="text-danger fs-11 mt-1">{formErrors.meeting_type}</div>}
                                     </div>
 
-                                    {/* Booked in Calendly, the meeting is with the partner: the borrower is the invitee. */}
-                                    {!inCalendly && (
+                                    {/* Booked in the partner's Calendly, the meeting is with the partner: the borrower is the
+                                        invitee. In their own Calendly they invite the person they pick here. */}
+                                    {(!inCalendly || booksInOwnCalendly) && (
                                     <div className="col-12 mb-3">
                                         <div className="d-flex align-items-center justify-content-between mb-2 mt-1">
                                             <label className="form-label mb-0">

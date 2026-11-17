@@ -18,6 +18,23 @@ export const fetchCalendlyStatus = async (): Promise<CalendlyStatus> => {
   return data.data
 }
 
+/** Connect Calendly: the Calendly sign-in page for the borrower's own Calendly (through their partner's app). */
+export const connectCalendly = async (): Promise<string> => {
+  const { data } = await apiClient.post('/common/calendly/connect')
+  return data.data.url
+}
+
+/** Ends the sign-in of the borrower's own Calendly; meetings already brought in stay. */
+export const disconnectCalendly = async (): Promise<void> => {
+  await apiClient.delete('/common/calendly/connection')
+}
+
+/** Brings in the meetings of the Calendly they book with (their own, else their partner's); returns how many. */
+export const syncCalendly = async (): Promise<number> => {
+  const { data } = await apiClient.post('/common/calendly/sync')
+  return data.data?.synced ?? 0
+}
+
 export const fetchCalendlyEventTypes = async (): Promise<CalendlyEventType[]> => {
   const { data } = await apiClient.get('/common/calendly/event-types')
   return data.data ?? []
