@@ -9,9 +9,9 @@ import type {
 } from './types'
 
 /**
- * The company Calendly account, as a borrower uses it: whether it is on, its
- * event types and open slots, and booking a slot with the host. Connecting it
- * is done in the partner portal.
+ * The borrower's partner's Calendly (the host's, a WLP's or a certified
+ * partner's): whether it is on, its event types and open slots, and booking
+ * with it as the invitee. The partner's team connects it in the partner portal.
  */
 export const fetchCalendlyStatus = async (): Promise<CalendlyStatus> => {
   const { data } = await apiClient.get('/common/calendly/status')

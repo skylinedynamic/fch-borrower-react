@@ -25,7 +25,6 @@ import { APPOINTMENT_STATUS_CONFIG } from '../../config/appointmentTypeOptions';
 
 // Components
 import AppointmentModal from './AppointmentModal';
-import CalendlyBookingModal from './CalendlyBookingModal';
 import { useCalendlyStatus } from '../../modules/calendly/queries';
 import { sanitizeHtml } from '../../utils/sanitizeHtml';
 
@@ -42,10 +41,8 @@ export default function Appointments() {
   const [loading, setLoading] = useState(true);
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
 
-  // Calendly - the company account the borrower can book into
+  // The borrower's own Calendly: booked into from Add Appointment's "Sync with Calendly".
   const { data: calendlyStatus } = useCalendlyStatus();
-  const [calendlyBookingOpen, setCalendlyBookingOpen] = useState(false);
-  const canBookViaCalendly = Boolean(calendlyStatus?.connected && calendlyStatus?.can_book);
 
   // Fetch Appointments
   useEffect(() => {
@@ -252,11 +249,6 @@ export default function Appointments() {
                 <div className="card card-h-100 mb-4">
                   <div className="card-body">
                     <button className="btn btn-primary w-100" id="btn-new-event" onClick={() => handleNewEvent()}><i className="mdi mdi-plus"></i> Create New Appointment</button>
-                    {canBookViaCalendly && (
-                      <button className="btn btn-outline-primary w-100 mt-2" type="button" onClick={() => setCalendlyBookingOpen(true)}>
-                        <i className="ri-calendar-check-line me-1"></i> Book via Calendly
-                      </button>
-                    )}
                     <div id="external-events">{/* External events would go here */}</div>
                   </div>
                 </div>
@@ -536,12 +528,7 @@ export default function Appointments() {
 
           </div>
         </div>
-        <AppointmentModal ref={appointmentModalRef} onSuccess={loadAppointments} />
-        <CalendlyBookingModal
-          show={calendlyBookingOpen}
-          onClose={() => setCalendlyBookingOpen(false)}
-          onBooked={() => loadAppointments()}
-        />
+        <AppointmentModal ref={appointmentModalRef} onSuccess={loadAppointments} calendlyStatus={calendlyStatus} />
       </div>
     </div>
   );
