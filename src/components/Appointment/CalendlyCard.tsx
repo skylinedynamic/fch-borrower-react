@@ -42,6 +42,9 @@ export default function CalendlyCard({ status, onSynced, redirect = (url) => win
       toast.success('Calendly connected')
       refreshStatus()
       onSynced()
+    } else if (result === 'in_use') {
+      // That Calendly account is connected in FCH already (e.g. your advisor's own).
+      toast.error("This Calendly account is already connected in FCH (for example your advisor's). Sign in with your own Calendly account.")
     } else {
       toast.error('Calendly could not be connected')
     }
@@ -153,6 +156,11 @@ export default function CalendlyCard({ status, onSynced, redirect = (url) => win
               </>
             ) : status.needs_reconnect ? 'Reconnect Calendly' : 'Connect Calendly'}
           </button>
+        )}
+        {!connected && canManage && (
+          <p className="text-muted fs-11 mb-2">
+            Calendly signs in with the account open in this browser. Use your own Calendly account - log out at calendly.com first if another one is open.
+          </p>
         )}
 
         {(canSync || (connected && canManage)) && (

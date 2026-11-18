@@ -123,6 +123,12 @@ describe('CalendlyCard (borrower)', () => {
     expect(container.textContent).toBe('')
   })
 
+  it('says the account is already connected in FCH when Calendly sends back in_use', async () => {
+    renderWithProviders(<CalendlyCard status={status({})} onSynced={vi.fn()} />, { route: '/appointment?calendly=in_use' })
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('already connected in FCH')))
+  })
+
   it('says how connecting went when Calendly sends the borrower back', async () => {
     renderWithProviders(<CalendlyCard status={status({ connected: true, can_sync: true })} onSynced={vi.fn()} />, { route: '/appointment?calendly=connected' })
 
