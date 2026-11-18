@@ -6,6 +6,9 @@ import type {
   CalendlyEventType,
   CalendlySlot,
   CalendlyStatus,
+  CalendlySyncDates,
+  CalendlySyncDirection,
+  CalendlySyncResult,
 } from './types'
 
 /**
@@ -33,6 +36,20 @@ export const disconnectCalendly = async (): Promise<void> => {
 export const syncCalendly = async (): Promise<number> => {
   const { data } = await apiClient.post('/common/calendly/sync')
   return data.data?.synced ?? 0
+}
+
+/**
+ * Sync now, the way picked - pull (Calendly into FCH, and meetings set with
+ * them into their Calendly), push (the meetings they set into Calendly) or
+ * both - for the dates the calendar shows (none = this month).
+ */
+export const syncCalendlyDirected = async (direction: CalendlySyncDirection, dates?: CalendlySyncDates | null): Promise<CalendlySyncResult> => {
+  const { data } = await apiClient.post('/common/calendly/sync', {
+    direction,
+    ...(dates ? { from: dates.from, to: dates.to } : {}),
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  })
+  return data.data
 }
 
 export const fetchCalendlyEventTypes = async (): Promise<CalendlyEventType[]> => {

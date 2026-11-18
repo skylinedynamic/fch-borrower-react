@@ -27,6 +27,7 @@ import { APPOINTMENT_STATUS_CONFIG } from '../../config/appointmentTypeOptions';
 import AppointmentModal from './AppointmentModal';
 import { useCalendlyStatus } from '../../modules/calendly/queries';
 import CalendlyCard from '../../components/Appointment/CalendlyCard';
+import { calendarSyncDates } from '../../modules/calendly/syncDates';
 import { sanitizeHtml } from '../../utils/sanitizeHtml';
 
 export default function Appointments() {
@@ -253,7 +254,12 @@ export default function Appointments() {
                     <div id="external-events">{/* External events would go here */}</div>
                   </div>
                 </div>
-                <CalendlyCard status={calendlyStatus} onSynced={loadAppointments} />
+                <CalendlyCard
+                  status={calendlyStatus}
+                  onSynced={loadAppointments}
+                  // Sync now covers the Month / Week / Day the calendar shows.
+                  getSyncDates={() => calendarSyncDates((calendarRef.current as { getApi?: () => unknown } | null)?.getApi?.() as Parameters<typeof calendarSyncDates>[0])}
+                />
                 <div className="mb-3 px-1">
                   <h4 className="fs-18 mb-1" style={{ color: '#313a46' }}>Upcoming Appointment</h4>
                   <p className="text-muted fs-13">Don't miss scheduled appointments</p>
