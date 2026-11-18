@@ -22,6 +22,8 @@ interface ConfirmationModalProps {
   iconTextClass?: string
   children?: React.ReactNode
   hideIcon?: boolean
+  /** A custom icon (e.g. a logo with a badge), shown in place of iconClass or the animated icon. */
+  iconNode?: React.ReactNode
 }
 
 export default function ConfirmationModal({
@@ -42,6 +44,7 @@ export default function ConfirmationModal({
   iconTextClass = 'text-danger',
   children,
   hideIcon = false,
+  iconNode,
 }: ConfirmationModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
   const modalInstanceRef = useRef<Modal | null>(null)
@@ -108,7 +111,9 @@ export default function ConfirmationModal({
             </div>
           )}
           <div className={`modal-body text-center ${hideIcon ? 'px-5 pt-3 pb-4' : 'p-5'}`}>
-            {hideIcon ? null : iconClass ? (
+            {hideIcon ? null : iconNode ? (
+              <div className="mx-auto mb-3">{iconNode}</div>
+            ) : iconClass ? (
               <div className="avatar-xl mx-auto mb-3">
                 <span className={`avatar-title ${iconBgClass || 'bg-danger-subtle'} ${iconTextClass || 'text-danger'} rounded-circle fs-48`}>
                   <i className={iconClass}></i>

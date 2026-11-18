@@ -106,6 +106,10 @@ describe('CalendlyCard (borrower)', () => {
     await user.click(screen.getByRole('button', { name: /^disconnect$/i }))
     expect(disconnectCalls).toBe(0)
     // The confirmation dialog (Bootstrap, mocked) is in the page but not "shown" to role queries.
+    // Its icon: Calendly's logo - not the default animated one.
+    const dialog = (await screen.findByText('Disconnect Calendly?')).closest('.modal') as HTMLElement
+    expect(dialog.querySelector('img')).not.toBeNull()
+    expect(dialog.querySelector('lord-icon')).toBeNull()
     await user.click(await screen.findByText('Yes, disconnect'))
     await waitFor(() => expect(disconnectCalls).toBe(1))
   })

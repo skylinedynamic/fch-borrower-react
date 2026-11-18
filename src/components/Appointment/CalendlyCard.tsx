@@ -188,6 +188,14 @@ export default function CalendlyCard({ status, onSynced, redirect = (url) => win
         message="Your Calendly stops syncing, and new bookings go to your advisor's Calendly again. Meetings already brought in stay on your calendar."
         confirmText="Yes, disconnect"
         confirmBtnClass="btn-danger"
+        iconNode={
+          // Calendly's logo: the integration being disconnected.
+          <div className="avatar-lg d-inline-block" aria-hidden="true">
+            <span className="avatar-title bg-light rounded-circle">
+              <img src={calendlyLogo} alt="" style={{ width: 44, height: 44 }} />
+            </span>
+          </div>
+        }
       />
     </div>
   )
