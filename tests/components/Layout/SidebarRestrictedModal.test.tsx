@@ -102,13 +102,55 @@ describe('Sidebar - why a menu is locked (BUG-033)', () => {
     expect(await screen.findByRole('dialog')).toHaveTextContent(/your account is being activated/i)
   })
 
-  it('opens no modal for a free-trial lock', async () => {
+  // R3-BUG-036: the Limited Free Plan's locked menus did nothing when clicked.
+  it('explains a free-plan lock, without offering the locked Invoices page', async () => {
+    const user = userEvent.setup()
     as({ is_free_trail: true })
     renderWithProviders(<Sidebar />)
 
     fireEvent.click(screen.getByRole('link', { name: /^invoices/i }))
 
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).toHaveTextContent(/not included in the limited free plan/i)
+    expect(dialog).not.toHaveTextContent(/partner/i)
+    expect(screen.queryByRole('link', { name: /view invoices/i })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /got it/i }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  })
+
+  it('explains the free-plan lock on Credit Builder and its items', async () => {
+    const user = userEvent.setup()
+    as({ is_free_trail: true })
+    renderWithProviders(<Sidebar />)
+
+    await user.click(screen.getByRole('button', { name: /credit builder/i }))
+    expect(await screen.findByRole('dialog')).toHaveTextContent(/not included in the limited free plan/i)
+    expect(screen.getByRole('button', { name: /credit builder/i })).toHaveAttribute('aria-expanded', 'false')
+
+    await user.click(screen.getByRole('button', { name: /got it/i }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+
+    fireEvent.click(screen.getByRole('link', { name: /^overview/i, hidden: true }))
+    expect(await screen.findByRole('dialog')).toHaveTextContent(/not included in the limited free plan/i)
+  })
+
+  // R3-BUG-036: a free-plan client sent to a locked page (e.g. a billing
+  // notification's /invoices) was moved to the Dashboard with no reason given.
+  it('explains why a locked free-plan page sent the client back to the Dashboard', async () => {
+    as({ is_free_trail: true })
+    renderWithProviders(
+      <Routes>
+        <Route element={<ProtectedRoute />}>
+          <Route path="/invoices" element={<p>Invoices page</p>} />
+        </Route>
+        <Route path="/dashboard" element={<Sidebar />} />
+      </Routes>,
+      { route: '/invoices' }
+    )
+
+    expect(await screen.findByRole('dialog')).toHaveTextContent(/not included in the limited free plan/i)
+    expect(screen.queryByText('Invoices page')).not.toBeInTheDocument()
   })
 
   it('explains why a locked page sent the client back to the Dashboard', async () => {

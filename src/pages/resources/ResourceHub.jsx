@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { useResources, downloadResource } from '../../modules/resources';
 import ResourceHubLoader from "../../components/Loader/ResourceHubLoader";
+import ResourceFilePreview from './components/ResourceFilePreview';
+import { fileExtension, PDF_EXTENSION } from '../../config/fileTypeConfig';
 import { toast } from 'react-toastify';
 
 
@@ -98,7 +100,7 @@ const ResourceHub = () => {
         const m = contentDisposition.match(/filename="(.+)"/);
         if (m?.[1]) fileName = m[1];
       } else if (item.file_url) {
-        const ext = item.file_url.split('.').pop();
+        const ext = fileExtension(item.file_url);
         if (ext) fileName = `${fileName}.${ext}`;
       }
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -466,7 +468,7 @@ const ResourceHub = () => {
                   <div className="d-flex d-md-none flex-column align-items-center justify-content-center flex-grow-1 p-4 text-center bg-white">
                     <div className="mb-4">
                       <div className="avatar-xl bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3 shadow-sm border border-white border-4">
-                        <i className={`${selectedResource.file_url?.toLowerCase().endsWith('.pdf') ? 'ri-file-pdf-fill text-danger' : 'ri-file-text-line text-primary'} display-4`}></i>
+                        <i className={`${fileExtension(selectedResource.file_url) === PDF_EXTENSION ? 'ri-file-pdf-fill text-danger' : 'ri-file-text-line text-primary'} display-4`}></i>
                       </div>
                       <h5 className="fw-bold fs-18 text-dark mb-2">Secure Document Portal</h5>
                       <p className="text-muted fs-13 mb-4 px-3">
@@ -486,15 +488,11 @@ const ResourceHub = () => {
                     </a>
                   </div>
 
-                  {/* Desktop View: Keep original logic where ONLY PDFs show iframe */}
-                  {selectedResource.file_url?.toLowerCase().endsWith('.pdf') ? (
-                    <iframe
-                      src={`${selectedResource.file_url}#toolbar=0&navpanes=0&scrollbar=1&view=FitH`}
-                      className="resource-modal-iframe d-none d-md-block flex-grow-1"
-                      title={selectedResource.title}
-                      width="100%"
-                      height="100%"
-                    />
+                  {/* Desktop view: only a PDF is previewed, read through the API (R3-BUG-003) */}
+                  {fileExtension(selectedResource.file_url) === PDF_EXTENSION ? (
+                    <div className="d-none d-md-flex flex-column flex-grow-1">
+                      <ResourceFilePreview resourceId={selectedResource.id} title={selectedResource.title} />
+                    </div>
                   ) : (
                     <div className="resource-modal-empty flex-grow-1 d-none d-md-flex">
                       <div className="avatar-lg bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3">

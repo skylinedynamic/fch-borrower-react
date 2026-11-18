@@ -19,8 +19,9 @@ describe('Estimated access card', () => {
   })
 
   it('shows the amount short, with the full amount on hover', () => {
-    renderWithProviders(<EstimatedTotalAccessCard totalAccess="$1.37M" totalAccessFull="$1,365,000.00" />)
+    // The API's short form: at most one decimal, cut, not rounded (R3-BUG-034).
+    renderWithProviders(<EstimatedTotalAccessCard totalAccess="$1.3M" totalAccessFull="$1,365,000.00" />)
 
-    expect(screen.getByText('$1.37M')).toHaveAttribute('title', '$1,365,000.00')
+    expect(screen.getByText('$1.3M')).toHaveAttribute('title', '$1,365,000.00')
   })
 })

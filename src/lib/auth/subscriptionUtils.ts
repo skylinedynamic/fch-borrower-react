@@ -81,6 +81,8 @@ export const RESTRICTION_REASON = {
     ACTIVATION: 'activation',
     /** The subscription has expired, been cancelled or run past its end date. */
     INACTIVE: 'inactive',
+    /** The module is not part of the Limited Free Plan (R3-BUG-036). */
+    FREE_PLAN: 'free_plan',
 } as const;
 
 export type RestrictionReason = (typeof RESTRICTION_REASON)[keyof typeof RESTRICTION_REASON];

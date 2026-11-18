@@ -4,7 +4,7 @@ import { clearAuth } from '../../lib/auth'
 import { logout } from '../../modules/auth/services'
 import { useAuthStore } from '../../store/auth'
 import { useBrandingStore } from '../../store/brandingStore'
-import { isSubscriptionRestricted, isFreeTrialLocked, getRestrictionReason } from '../../lib/auth/subscriptionUtils'
+import { isSubscriptionRestricted, isFreeTrialLocked, getRestrictionReason, RESTRICTION_REASON } from '../../lib/auth/subscriptionUtils'
 import RestrictedAccessModal from './RestrictedAccessModal'
 import { PARTNER_TYPES } from '../../config/partnerTypeOptions'
 import { resolveBrandLogo } from '../../utils/brandLogo'
@@ -26,17 +26,22 @@ export default function Sidebar() {
   const user = useAuthStore((state) => state.user)
   const userSubscription = useAuthStore((state) => state.userSubscription)
   const isRestricted = isSubscriptionRestricted(userSubscription)
-  // A locked menu (or a locked page the guard sent back here) explains itself
-  // in a modal instead of doing nothing (BUG-033).
-  const restrictionReason = getRestrictionReason(userSubscription)
-  const [restrictedOpen, setRestrictedOpen] = useState(false)
-  useEffect(() => {
-    if (location.state?.restrictedFrom && restrictionReason) setRestrictedOpen(true)
-  }, [location.key, restrictionReason])
-
   const isFreeTrial = !!userSubscription?.is_free_trail;
   // Modules locked exclusively during the Limited Free Edition (free trial)
   const isFreeTierModule = isFreeTrialLocked(userSubscription);
+
+  // A locked menu (or a locked page the guard sent back here) explains itself
+  // in a modal instead of doing nothing (BUG-033) - on the free plan too
+  // (R3-BUG-036). The modal shows while lockReason is set.
+  const restrictionReason = getRestrictionReason(userSubscription)
+  const [lockReason, setLockReason] = useState(null)
+  // Why a locked item is locked: the subscription first, else the free plan.
+  const explainLock = () => setLockReason(isRestricted ? restrictionReason : (isFreeTierModule ? RESTRICTION_REASON.FREE_PLAN : null))
+  useEffect(() => {
+    if (!location.state?.restrictedFrom) return
+    const reason = location.state.reason ?? restrictionReason
+    if (reason) setLockReason(reason)
+  }, [location.key, restrictionReason])
   // Credit Builder and each of its items carry the lock, like the other locked menus (BUG-110).
   const creditBuilderLocked = isRestricted || isFreeTierModule;
 
@@ -144,7 +149,7 @@ export default function Sidebar() {
         onClick={(e) => {
           if (restricted) {
             e.preventDefault();
-            if (isRestricted) setRestrictedOpen(true);
+            explainLock();
           } else if (isMobile) {
             closeSidebar();
           }
@@ -251,8 +256,10 @@ export default function Sidebar() {
                 type="button"
                 className={`nav-link menu-link btn material-shadow-none w-100 text-start`}
                 onClick={() => {
-                  if (isRestricted) setRestrictedOpen(true);
-                  if (isRestricted || isFreeTierModule) return;
+                  if (isRestricted || isFreeTierModule) {
+                    explainLock();
+                    return;
+                  }
                   setCreditOpen((s) => !s);
                 }}
                 aria-expanded={creditOpen}
@@ -268,14 +275,14 @@ export default function Sidebar() {
                   <NavLink
                     className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'}
                     to="/credit-builder/overview"
-                    onClick={(e) => { if (isFreeTierModule) { e.preventDefault(); return; } isMobile && closeSidebar(); }}
+                    onClick={(e) => { if (isFreeTierModule) { e.preventDefault(); explainLock(); return; } isMobile && closeSidebar(); }}
                   ><i className="ri-subtract-line"></i> <span>Overview</span>{creditBuilderLocked && <i className="ri-lock-line align-middle ms-1"></i>}</NavLink>
                 </li>
                 <li className={`nav-item${arrowTagFor(ONBOARDING_MENU.STEP_GUIDE) ? ' onb-menu-target' : ''}`}>
                   <NavLink
                     className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'}
                     to="/credit-builder/guide"
-                    onClick={(e) => { if (isFreeTierModule) { e.preventDefault(); return; } isMobile && closeSidebar(); }}
+                    onClick={(e) => { if (isFreeTierModule) { e.preventDefault(); explainLock(); return; } isMobile && closeSidebar(); }}
                   ><i className="ri-subtract-line"></i> <span>Step-By-Step Guide</span>{creditBuilderLocked && <i className="ri-lock-line align-middle ms-1"></i>}
                     {creditOpen && arrowTagFor(ONBOARDING_MENU.STEP_GUIDE) && <OnboardingMenuArrow tag={arrowTagFor(ONBOARDING_MENU.STEP_GUIDE)} />}
                   </NavLink>
@@ -284,7 +291,7 @@ export default function Sidebar() {
                   <NavLink
                     className={({ isActive }) => isActive ? 'nav-link subitem active' : 'nav-link subitem'}
                     to="/credit-builder/credit-accounts"
-                    onClick={(e) => { if (isFreeTierModule) { e.preventDefault(); return; } isMobile && closeSidebar(); }}
+                    onClick={(e) => { if (isFreeTierModule) { e.preventDefault(); explainLock(); return; } isMobile && closeSidebar(); }}
                   ><i className="ri-subtract-line"></i> <span>Credit Accounts</span>{creditBuilderLocked && <i className="ri-lock-line align-middle ms-1"></i>}
                     {creditOpen && arrowTagFor(ONBOARDING_MENU.CREDIT_ACCOUNTS) && <OnboardingMenuArrow tag={arrowTagFor(ONBOARDING_MENU.CREDIT_ACCOUNTS)} />}
                   </NavLink>
@@ -329,7 +336,7 @@ export default function Sidebar() {
 
       <div className="sidebar-background"></div>
 
-      <RestrictedAccessModal reason={restrictionReason} isOpen={restrictedOpen} onClose={() => setRestrictedOpen(false)} />
+      <RestrictedAccessModal reason={lockReason} isOpen={!!lockReason} onClose={() => setLockReason(null)} />
     </div>
   )
 }

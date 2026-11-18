@@ -56,15 +56,31 @@ test.describe('Sidebar › subscription states', () => {
     await expect(page.locator('.sidebar-trial-panel')).toContainText('Free Plan')
   })
 
-  test('free trial: a locked item does not navigate and Credit Builder stays closed', async ({ page }) => {
+  // R3-BUG-036: a free-plan lock explains itself, like the other locks (BUG-033).
+  test('free trial: a locked item does not navigate, says why, and Credit Builder stays closed', async ({ page }) => {
     await asSubscription(page, { is_free_trail: true, is_host: false })
 
     await sidebarLink(page, 'Invoices').click()
     await expect(page).toHaveURL(/\/$/)
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toContainText('Not included in the Limited Free Plan')
+    await expect(dialog.getByRole('link', { name: 'View Invoices' })).toHaveCount(0)
+    await dialog.getByRole('button', { name: 'Got it' }).click()
+    await expect(dialog).toBeHidden()
 
     const creditBuilder = sidebar(page).getByRole('button', { name: /Credit Builder/ })
     await creditBuilder.click()
     await expect(creditBuilder).toHaveAttribute('aria-expanded', 'false')
+    await expect(dialog).toContainText('Not included in the Limited Free Plan')
+  })
+
+  // R3-BUG-036: a billing notification's /invoices link, opened on the free plan.
+  test('free trial: a locked page sends the client to the Dashboard and says why', async ({ page }) => {
+    await asSubscription(page, { is_free_trail: true, is_host: false })
+
+    await page.goto('/invoices')
+    await expect(page).toHaveURL(/\/dashboard$/)
+    await expect(page.getByRole('dialog').filter({ hasText: 'Not included in the Limited Free Plan' })).toBeVisible()
   })
 
   test('expired subscription (non-host): restricted modules are locked, Notification stays open', async ({ page }) => {

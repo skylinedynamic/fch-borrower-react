@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import { Route, Routes, useParams } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
@@ -133,6 +133,66 @@ describe('ResourceHub', () => {
       expect(await screen.findByText('Credit Basics')).toBeInTheDocument()
       expect(screen.getByText('Building Business Credit')).toBeInTheDocument()
       expect(screen.queryByText(/No Education & Help resources match/)).not.toBeInTheDocument()
+    })
+  })
+
+  /**
+   * R3-BUG-003: resource files are private, so file_url is a signed link
+   * (…/ein.pdf?expires=…&signature=…). The hub took it for a non-PDF ("Preview
+   * Not Available"), and the API's frame headers would refuse it in an iframe
+   * anyway. The preview now reads the file through the API and shows it from a
+   * local blob: link.
+   */
+  describe('a file preview', () => {
+    const SIGNED = 'https://api.test/private-files/resources/ein.pdf?expires=1&signature=abc'
+    const doc = (file_url: string) => ({
+      id: 7, title: 'EIN Overview', subtitle: 'Sub', icon: 'ri-file-line', resource_type: 'legal_registration',
+      file_url, link: null, status: true, overview: null, impact: null, providers: [],
+    })
+
+    beforeEach(() => {
+      Object.defineProperty(URL, 'createObjectURL', { configurable: true, writable: true, value: vi.fn(() => 'blob:preview-7') })
+      Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, writable: true, value: vi.fn() })
+    })
+
+    async function openPreview(file_url: string, file: () => Response) {
+      const downloads: string[] = []
+      server.use(
+        http.get('*/borrower/resources', () => HttpResponse.json({
+          status: true,
+          data: { legal_registration: [doc(file_url)], business_services: [], education_help: [], download_assets: [], training_academy: [] },
+        })),
+        http.get('*/borrower/resources/:id/download', ({ params }) => { downloads.push(String(params.id)); return file() }),
+      )
+      renderWithProviders(<ResourceHub />, { route: '/resources' })
+      await userEvent.click(await screen.findByText('EIN Overview'))
+      return downloads
+    }
+
+    const pdf = () => new HttpResponse('%PDF-1.4', { headers: { 'Content-Type': 'application/pdf' } })
+
+    it('shows a PDF behind a signed link, read through the API', async () => {
+      const downloads = await openPreview(SIGNED, pdf)
+
+      const frame = await screen.findByTitle('EIN Overview')
+      expect(frame.tagName).toBe('IFRAME')
+      expect(frame.getAttribute('src')).toMatch(/^blob:preview-7/)
+      expect(downloads).toEqual(['7'])
+      expect(screen.queryByText('Preview Not Available')).not.toBeInTheDocument()
+    })
+
+    it('says so when the file cannot be read', async () => {
+      await openPreview(SIGNED, () => HttpResponse.json({ status: false, message: 'File not found on server' }, { status: 400 }))
+
+      expect(await screen.findByText('The preview could not be loaded.')).toBeInTheDocument()
+      expect(screen.queryByTitle('EIN Overview')).not.toBeInTheDocument()
+    })
+
+    it('does not read a file it cannot preview', async () => {
+      const downloads = await openPreview('https://api.test/private-files/resources/kit.docx?expires=1&signature=abc', pdf)
+
+      expect(await screen.findByText('Preview Not Available')).toBeInTheDocument()
+      expect(downloads).toEqual([])
     })
   })
 })
