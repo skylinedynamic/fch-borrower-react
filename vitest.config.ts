@@ -6,6 +6,11 @@ export default mergeConfig(
   defineConfig({
     test: {
       pool: 'threads',
+      // As the admin portal: each worker boots its own jsdom+MSW environment, so an
+      // uncapped pool (one per core, ~15 here) starves timers and findBy/waitFor calls
+      // in a full run. CI's runner (4 vCPU) already uses fewer than this.
+      maxWorkers: 4,
+      minWorkers: 1,
       environment: 'jsdom',
       globals: true,
       setupFiles: ['tests/setup.ts'],

@@ -81,6 +81,11 @@ describe('FundApplication - a refused save from the sidebar', () => {
     const sidebar = container.querySelector('.col-xl-3.col-lg-4.d-none.d-lg-block') as HTMLElement
     const ownership = await within(sidebar).findByRole('button', { name: /Ownership Information/ }, { timeout: 10000 })
     await waitFor(() => expect(ownership).toBeEnabled(), { timeout: 10000 })
+    // The Business Information step loads its record by its own request. The sidebar
+    // button is enabled before that lands, and a click then (seen under a loaded
+    // full-suite run) moved on with no save registered yet, so no field message came.
+    // Click once the step shows its record, as a user would.
+    expect(await within(desktopPane).findByDisplayValue('Acme', {}, { timeout: 10000 })).toBeInTheDocument()
 
     fireEvent.click(ownership)
 
