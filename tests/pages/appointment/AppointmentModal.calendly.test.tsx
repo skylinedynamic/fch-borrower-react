@@ -167,7 +167,9 @@ describe('AppointmentModal - Sync with Calendly (borrower)', () => {
     await user.click(screen.getByLabelText(/sync with calendly/i))
 
     const alert = await overlapAlert()
-    expect(alert).toHaveTextContent('Calendly Overlap')
+    // No red "overlap" warning: a plain list of the open times to pick from.
+    expect(alert).toHaveTextContent('Pick an open time')
+    expect(alert).not.toHaveTextContent('NOT AVAILABLE')
     expect(alert).toHaveTextContent("9:00 AM - 9:30 AM on 2999-06-15 is outside Calendly's hours that day (10:00 AM - 10:30 AM)")
     expect(confirm()).toBeDisabled()
 
