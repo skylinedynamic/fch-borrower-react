@@ -191,10 +191,10 @@ describe('CalendlyCard (borrower)', () => {
     expect(container.textContent).toBe('')
   })
 
-  it('says the account is already connected in FCH when Calendly sends back in_use', async () => {
+  it('says the account is already connected in the portal when Calendly sends back in_use', async () => {
     renderWithProviders(<CalendlyCard status={status({})} onSynced={vi.fn()} />, { route: '/appointment?calendly=in_use' })
 
-    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('already connected in FCH')))
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('already connected in the portal')))
   })
 
   it('says how connecting went when Calendly sends the borrower back', async () => {
