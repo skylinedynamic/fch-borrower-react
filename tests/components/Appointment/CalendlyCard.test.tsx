@@ -91,9 +91,10 @@ describe('CalendlyCard (borrower)', () => {
     expect(screen.getByText('Kazi Arafat Mia')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /connect calendly/i })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^disconnect$/i })).not.toBeInTheDocument()
-    // Opening the page syncs once, quietly.
-    await waitFor(() => expect(syncCalls).toBe(1))
-    expect(onSynced).toHaveBeenCalled()
+    // Nothing is synced by itself on opening the page - only with Sync now.
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(syncCalls).toBe(0)
+    expect(onSynced).not.toHaveBeenCalled()
   })
 
   it('connected: shows the account, syncs on demand and disconnects after asking', async () => {
@@ -107,15 +108,15 @@ describe('CalendlyCard (borrower)', () => {
 
     expect(screen.getByText('Connected')).toBeInTheDocument()
     expect(screen.getByText(/Jane Calendly · jane@example.test/)).toBeInTheDocument()
-    await waitFor(() => expect(syncCalls).toBe(1))
+    expect(syncCalls).toBe(0)
 
     // Sync now asks which way first - nothing is synced until Sync is pressed.
     await user.click(screen.getByRole('button', { name: /sync now/i }))
     const dialog = await screen.findByRole('dialog', { name: /sync with calendly/i })
-    expect(syncCalls).toBe(1)
+    expect(syncCalls).toBe(0)
     await user.click(within(dialog).getByRole('button', { name: /^sync$/i }))
-    await waitFor(() => expect(syncCalls).toBe(2))
-    expect(syncBodies[1].direction).toBe('pull')
+    await waitFor(() => expect(syncCalls).toBe(1))
+    expect(syncBodies[0].direction).toBe('pull')
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Calendly synced: 2 brought in from Calendly · 1 sent to Calendly'))
     await waitFor(() => expect(screen.queryByRole('dialog', { name: /sync with calendly/i })).not.toBeInTheDocument())
 
@@ -139,7 +140,6 @@ describe('CalendlyCard (borrower)', () => {
         getSyncDates={() => ({ from: '2026-11-15', to: '2026-11-21', label: 'Nov 15 – Nov 21, 2026', view: 'Week view' })}
       />,
     )
-    await waitFor(() => expect(syncCalls).toBe(1))
 
     await user.click(screen.getByRole('button', { name: /sync now/i }))
     const dialog = await screen.findByRole('dialog', { name: /sync with calendly/i })
@@ -155,8 +155,8 @@ describe('CalendlyCard (borrower)', () => {
     expect(pull).not.toBeChecked()
 
     await user.click(within(dialog).getByRole('button', { name: /^sync$/i }))
-    await waitFor(() => expect(syncCalls).toBe(2))
-    expect(syncBodies[1]).toMatchObject({ direction: 'both', from: '2026-11-15', to: '2026-11-21' })
+    await waitFor(() => expect(syncCalls).toBe(1))
+    expect(syncBodies[0]).toMatchObject({ direction: 'both', from: '2026-11-15', to: '2026-11-21' })
   })
 
   it('Sync now without their own Calendly: pull only', async () => {
@@ -201,5 +201,8 @@ describe('CalendlyCard (borrower)', () => {
     renderWithProviders(<CalendlyCard status={status({ connected: true, can_sync: true })} onSynced={vi.fn()} />, { route: '/appointment?calendly=connected' })
 
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Calendly connected'))
+    // Connecting only signs in: no sync, so no appointment is made from its Calendly meetings.
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(syncCalls).toBe(0)
   })
 })
