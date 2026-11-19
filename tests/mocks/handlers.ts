@@ -21,6 +21,12 @@ export const handlers: HttpHandler[] = [
     HttpResponse.json({ status: true, data: [], meta: { current_page: 1, last_page: 1, per_page: 5, total: 0, unread_count: 0 } })
   ),
 
+  // The Appointments page asks whether the company Calendly is connected.
+  // Default to not connected; Calendly tests override it with server.use().
+  http.get('*/common/calendly/status', () =>
+    HttpResponse.json({ status: true, data: { connected: false, can_manage: false, can_book: false } })
+  ),
+
   // The credit profile request form starts from the borrower's profile - its
   // address and the SSN on file. Default to a blank profile with no SSN so a
   // test rendering that form for something else is not an unhandled request;

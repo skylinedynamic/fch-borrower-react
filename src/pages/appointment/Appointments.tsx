@@ -25,6 +25,9 @@ import { APPOINTMENT_STATUS_CONFIG } from '../../config/appointmentTypeOptions';
 
 // Components
 import AppointmentModal from './AppointmentModal';
+import { useCalendlyStatus } from '../../modules/calendly/queries';
+import CalendlyCard from '../../components/Appointment/CalendlyCard';
+import { calendarSyncDates } from '../../modules/calendly/syncDates';
 import { sanitizeHtml } from '../../utils/sanitizeHtml';
 
 export default function Appointments() {
@@ -39,6 +42,9 @@ export default function Appointments() {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
+
+  // The borrower's own Calendly: booked into from Add Appointment's "Sync with Calendly".
+  const { data: calendlyStatus } = useCalendlyStatus();
 
   // Fetch Appointments
   useEffect(() => {
@@ -95,7 +101,9 @@ export default function Appointments() {
             backgroundColor: style.bg,
             borderColor: style.border,
             textColor: style.text,
-            className: `fc-custom-event`,
+            // A Calendly meeting's time is moved with its Reschedule link, not by dragging.
+            ...(apt.is_calendly ? { editable: false } : {}),
+            className: `fc-custom-event${apt.is_calendly ? ' apt-calendly' : ''}`,
             description: apt.description,
             location: apt.timezone,
             extendedProps: {
@@ -110,7 +118,10 @@ export default function Appointments() {
               appointment_code: apt.appointment_code,
               status: apt.status,
               meeting_type: apt.meeting_type,
-              assigned_for: apt.assigned_for
+              assigned_for: apt.assigned_for,
+              is_calendly: Boolean(apt.is_calendly),
+              join_url: apt.join_url,
+              reschedule_url: apt.reschedule_url
             }
           };
         });
@@ -243,6 +254,12 @@ export default function Appointments() {
                     <div id="external-events">{/* External events would go here */}</div>
                   </div>
                 </div>
+                <CalendlyCard
+                  status={calendlyStatus}
+                  onSynced={loadAppointments}
+                  // Sync now covers the Month / Week / Day the calendar shows.
+                  getSyncDates={() => calendarSyncDates((calendarRef.current as { getApi?: () => unknown } | null)?.getApi?.() as Parameters<typeof calendarSyncDates>[0])}
+                />
                 <div className="mb-3 px-1">
                   <h4 className="fs-18 mb-1" style={{ color: '#313a46' }}>Upcoming Appointment</h4>
                   <p className="text-muted fs-13">Don't miss scheduled appointments</p>
@@ -352,12 +369,31 @@ export default function Appointments() {
                                 <span className={`badge ${statusClass} text-nowrap`} style={{ borderRadius: '4px', fontSize: '10px', padding: '2px 4px' }}>{statusLabel}</span>
                               </div>
                             </div>
-                            <h6 className="card-title mb-2 fs-16" style={{ color: eventStyles.text }}>{evt.title}</h6>
+                            <h6 className="card-title mb-2 fs-16" style={{ color: eventStyles.text }}>
+                              {evt.title}
+                              {evt.extendedProps?.is_calendly && (
+                                <span className="badge bg-primary-subtle text-primary ms-2 align-middle calendly-badge" style={{ fontSize: '10px' }}>Calendly</span>
+                              )}
+                            </h6>
                             <div
                               className="text-muted text-truncate-two-lines mb-0 fs-13"
                               style={{ lineHeight: '1.5', letterSpacing: '0.1px' }}
                               dangerouslySetInnerHTML={{ __html: sanitizeHtml(evt.extendedProps?.description || evt.description) }}
                             />
+                            {evt.extendedProps?.is_calendly && (evt.extendedProps?.join_url || evt.extendedProps?.reschedule_url) && (
+                              <div className="d-flex gap-3 mt-2 fs-12" onClick={(e) => e.stopPropagation()}>
+                                {evt.extendedProps?.join_url && (
+                                  <a href={evt.extendedProps.join_url} target="_blank" rel="noopener noreferrer">
+                                    <i className="ri-vidicon-line me-1"></i>Join
+                                  </a>
+                                )}
+                                {evt.extendedProps?.reschedule_url && !isPast && status !== 'cancelled' && (
+                                  <a href={evt.extendedProps.reschedule_url} target="_blank" rel="noopener noreferrer">
+                                    <i className="ri-calendar-schedule-line me-1"></i>Reschedule
+                                  </a>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
                       )
@@ -500,7 +536,7 @@ export default function Appointments() {
 
           </div>
         </div>
-        <AppointmentModal ref={appointmentModalRef} onSuccess={loadAppointments} />
+        <AppointmentModal ref={appointmentModalRef} onSuccess={loadAppointments} calendlyStatus={calendlyStatus} />
       </div>
     </div>
   );

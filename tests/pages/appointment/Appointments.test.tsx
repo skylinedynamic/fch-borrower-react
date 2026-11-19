@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { http, HttpResponse } from 'msw'
-import { renderWithProviders, screen } from '../../test-utils'
+import userEvent from '@testing-library/user-event'
+import { renderWithProviders, screen, waitFor, within } from '../../test-utils'
 import { server } from '../../mocks/server'
 import { useAuthStore } from '../../../src/store/auth'
 import Appointments from '../../../src/pages/appointment/Appointments'
@@ -78,5 +79,51 @@ describe('Appointments - descriptions cannot run script (BUG-004)', () => {
 
     expect((await screen.findAllByText('review')).length).toBeGreaterThan(0)
     expect(view.container.querySelector('[onerror]')).toBeNull()
+  })
+})
+
+// Calendly: the borrower books into the company Calendly when it is on, and
+// sees its meetings marked, with their join and reschedule links.
+describe('Appointments - Calendly', () => {
+  const future = () => new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+
+  // Borrowers never connect, sync or disconnect Calendly: they book with their
+  // partner's (the host's, a WLP's or a certified partner's) from Add Appointment.
+  it('shows no Calendly card to a borrower - no Connect, Sync now or Disconnect', async () => {
+    useAuthStore.setState({ user: { id: 1, is_host: 0 } })
+    server.use(
+      http.post('*/common/appointments/fetch-all', () => HttpResponse.json({ status: true, data: [] })),
+      http.get('*/common/calendly/status', () => HttpResponse.json({ status: true, data: { connected: true, can_book: true, can_manage: false, name: 'Advisor Calendly' } })),
+    )
+
+    renderWithProviders(<Appointments />)
+
+    expect(await screen.findByText('No Upcoming Events')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /connect calendly/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /sync now/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /disconnect/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /book via calendly/i })).not.toBeInTheDocument()
+  })
+
+
+  it('marks a Calendly meeting and links to join and reschedule it', async () => {
+    useAuthStore.setState({ user: { id: 1, is_host: 0 } })
+    server.use(
+      http.post('*/common/appointments/fetch-all', () =>
+        HttpResponse.json({
+          status: true,
+          data: [{
+            id: 2, subject: '30 Minute Meeting', appointment_date: future(), duration_minutes: 30, status: 'confirmed',
+            is_calendly: true, join_url: 'https://meet.google.com/abc', reschedule_url: 'https://calendly.com/reschedulings/INV1',
+          }],
+        })
+      )
+    )
+
+    renderWithProviders(<Appointments />)
+
+    expect(await screen.findByText('Calendly', { selector: '.calendly-badge' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /join/i })).toHaveAttribute('href', 'https://meet.google.com/abc')
+    expect(screen.getByRole('link', { name: /reschedule/i })).toHaveAttribute('href', 'https://calendly.com/reschedulings/INV1')
   })
 })
